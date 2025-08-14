@@ -1,5 +1,6 @@
 'use client';
 
+import type { EmblaOptionsType } from 'embla-carousel';
 import {
   Globe,
   MessageCircle,
@@ -11,13 +12,18 @@ import HeaderLandingPage from '@/components/layout_landing_page/Header';
 import TopBanner from '@/components/layout_landing_page/TopBanner';
 
 export default function LayoutLandingPage({ children }: { children: React.ReactNode }) {
+
+  const OPTIONS: EmblaOptionsType = { axis: 'x' };
+  const SLIDE_COUNT = 5;
+  const SLIDES = Array.from(Array.from({ length: SLIDE_COUNT }).keys());
+
   return (
     <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-900 via-gray-900 to-black text-white">
       {/* Animated Background */}
       <AnimatedBackground />
 
       {/* Top Banner */}
-      <TopBanner />
+      <TopBanner slides={SLIDES} options={OPTIONS} />
 
       {/* Header */}
       <HeaderLandingPage />

@@ -7,18 +7,15 @@ import {
   ChevronDown,
   Clock,
   Globe,
-  Phone,
-  PlayCircle,
+  Phone, PlayCircle,
   Server,
   Shield,
   Star,
   Target,
   TrendingUp,
-  Users,
-  Wifi,
+  Users, Wifi,
   Zap,
 } from 'lucide-react';
-
 import React, { useEffect, useState } from 'react';
 import { FloatingDots } from '@/components/animates/FloatingDots';
 import OrbitingElements from '@/components/animates/OrbitingElements';
@@ -65,6 +62,7 @@ const testimonials = [
 ];
 export default function Page() {
   const [activeFeature, setActiveFeature] = useState(0);
+
   useEffect(() => {
     const interval = setInterval(() => {
       setActiveFeature(prev => (prev + 1) % 4);
@@ -215,6 +213,7 @@ export default function Page() {
                 <FloatingDots />
               </div>
             </div>
+
           </div>
 
           {/* Stats Section */}
