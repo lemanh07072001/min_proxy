@@ -3,23 +3,26 @@ import type { ChildrenType } from '@core/types'
 
 // Component Imports
 import Providers from '@components/Providers'
-import BlankLayout from '@layouts/BlankLayout'
 
 // Util Imports
-import { getSystemMode } from '@core/utils/serverHelpers'
+import { getMode, getSystemMode } from '@core/utils/serverHelpers'
 
-type Props = ChildrenType
+import Header from '@/app/components/Header'
+import Footer from '@/app/components/Footer'
 
-const Layout = async (props: Props) => {
+const Layout = async (props: ChildrenType) => {
   const { children } = props
 
   // Vars
   const direction = 'ltr'
+  const mode = await getMode()
   const systemMode = await getSystemMode()
 
   return (
     <Providers direction={direction}>
-      <BlankLayout systemMode={systemMode}>{children}</BlankLayout>
+      <Header />
+      {children}
+      <Footer />
     </Providers>
   )
 }

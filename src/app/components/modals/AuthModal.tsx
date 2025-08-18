@@ -1,8 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
-import { X, Eye, EyeOff } from 'lucide-react';
+import { X,} from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+
+import LoginForm from '@views/Auth/LoginForm'
+import RegisterForm from '@views/Auth/RegisterForm'
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -12,8 +14,7 @@ interface AuthModalProps {
 }
 
 const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, setMode, isMode }) => {
-  const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
+  const appName = process.env.NEXT_PUBLIC_APP_NAME;
 
   return (
     <AnimatePresence>
@@ -52,61 +53,18 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, setMode, isMode 
                   </svg>
                 </div>
               </div>
-              <h1 className="login-modal-title">Chào mừng đến với HOME PROXY</h1>
-              <p className="login-modal-subtitle">Vui lòng điền thông tin đăng nhập</p>
+              <h1 className="login-modal-title">
+                {isMode === 'login' ? 'Chào mừng bạn quay lại' : `Chào mừng đến với ${appName}`}
+              </h1>
+              <p className="login-modal-subtitle">
+                {isMode === 'login' ? 'Vui lòng điền thông tin đăng nhập' : `Vui lòng điền thông tin đăng ký`}
+              </p>
             </div>
 
             {/* Form */}
-            <form className="login-modal-form">
-              <div className="login-form-group">
-                <label className="login-form-label">Số điện thoại</label>
-                <input
-                  type="tel"
-                  name="phone"
-                  className="login-form-input"
-                  placeholder="Nhập số điện thoại"
-                  required
-                />
-              </div>
+            {isMode === 'login' ? <LoginForm/> : <RegisterForm/>}
 
-              <div className="login-form-group">
-                <label className="login-form-label">Mật khẩu</label>
-                <div className="login-password-wrapper">
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    name="password"
-                    className="login-form-input"
-                    placeholder="Nhập mật khẩu"
-                    required
-                  />
-                  <button
-                    type="button"
-                    className="login-password-toggle"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    {showPassword ? <EyeOff size={20} color="#999" /> : <Eye size={20} color="#999" />}
-                  </button>
-                </div>
-              </div>
 
-              <div className="login-form-options">
-                <label className="login-checkbox-wrapper">
-                  <input
-                    type="checkbox"
-                    checked={rememberMe}
-                    onChange={(e) => setRememberMe(e.target.checked)}
-                    className="login-checkbox-input"
-                  />
-                  <span className="login-checkbox-custom"></span>
-                  <span className="login-checkbox-label">Ghi nhớ đăng nhập</span>
-                </label>
-                <a href="#" className="login-forgot-link">Quên mật khẩu</a>
-              </div>
-
-              <button type="submit" className="login-submit-btn">
-                Đăng nhập
-              </button>
-            </form>
           </motion.div>
         </motion.div>
       )}

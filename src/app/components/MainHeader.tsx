@@ -3,15 +3,22 @@ import { useState, useEffect } from "react";
 
 import { motion, useScroll, useTransform } from "framer-motion";
 
-
 import { Shield } from "lucide-react";
+
 import AuthModal from '@/app/components/modals/AuthModal'
+import { DesktopMenu } from '@/app/components/menus/DesktopMenu'
+import useMediaQuery from '@mui/material/useMediaQuery'
+
+import { breakpoints } from '@/configs/breakpoints'
+import MobileMenu from '@/app/components/menus/MobileMenu'
 
 export default function MainHeader() {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [mode, setMode] = useState<string>('login');
   const { scrollY } = useScroll();
   const [scrolled, setScrolled] = useState(false);
+
+  const isMobile = useMediaQuery(`(max-width:${breakpoints.sm - 1}px)`)
 
   // Đổi màu nền khi scroll
   const bgColor = useTransform(scrollY, [0, 80], ["#f9fafc", "#ffffff"]);
@@ -78,22 +85,15 @@ export default function MainHeader() {
             <span className="navbar-toggler-icon"></span>
           </button>
 
-          {/* Navigation */}
-          <div className="collapse navbar-collapse" id="navbarNav">
-            <ul className="navbar-nav mx-auto">
-              <li className="nav-item"><a className="nav-link nav-link-custom" href="#">Trang chủ</a></li>
-              <li className="nav-item"><a className="nav-link nav-link-custom" href="#">Giới thiệu</a></li>
-              <li className="nav-item"><a className="nav-link nav-link-custom" href="#">Đại lý</a></li>
-              <li className="nav-item"><a className="nav-link nav-link-custom" href="#">Mua Proxy</a></li>
-              <li className="nav-item"><a className="nav-link nav-link-custom" href="#">Chọn Template</a></li>
-              <li className="nav-item"><a className="nav-link nav-link-custom" href="#">Liên hệ</a></li>
-            </ul>
-
-            {/* Auth Buttons */}
-            <div className="d-flex align-items-center gap-2">
-              <button className="btn btn-gradient-primary me-2">Đăng ký</button>
-              <button className="btn btn-gradient-primary" onClick={handleOpenLogin}>Đăng nhập</button>
-            </div>
+          {/* Desktop Menu */}
+          <div className=" navbar-collapse" id="navbarNav">
+            {isMobile ?
+              null
+              :
+              <DesktopMenu
+                setMode={setMode}
+                setIsOpen={setIsOpen}/>
+            }
           </div>
         </div>
       </motion.nav>

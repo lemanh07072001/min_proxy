@@ -1,8 +1,13 @@
-"use client"
 
 import React from 'react';
 
+import Image from "next/image";
+
 import { Shield, Star, CheckCircle, ArrowRight } from 'lucide-react';
+
+import viettel from '../../../public/images/softwares/viettel.png';
+import vnpt from '../../../public/images/softwares/vnpt.png';
+import fpt from '../../../public/images/softwares/fpt.png';
 
 const ProductsSection = () => {
   const products = [
@@ -10,6 +15,7 @@ const ProductsSection = () => {
       id: 1,
       name: 'Viettel Proxy',
       provider: 'Viettel',
+      img: viettel,
       price: '18.000',
       originalPrice: '25.000',
       period: 'tháng',
@@ -28,6 +34,7 @@ const ProductsSection = () => {
       id: 2,
       name: 'FPT Proxy',
       provider: 'FPT',
+      img: fpt,
       price: '18.000',
       originalPrice: '24.000',
       period: 'tháng',
@@ -46,6 +53,7 @@ const ProductsSection = () => {
       id: 3,
       name: 'VNPT Proxy',
       provider: 'VNPT',
+      img: vnpt,
       price: '18.000',
       originalPrice: '26.000',
       period: 'tháng',
@@ -67,10 +75,10 @@ const ProductsSection = () => {
       <div className="container">
         {/* Header */}
         <div className="section-header">
-          <div className="section-badge">
-            <Shield size={20} />
-            <span>Sản phẩm chất lượng</span>
-          </div>
+          {/*<div className="section-badge">*/}
+          {/*  <Shield size={20} />*/}
+          {/*  <span>Sản phẩm chất lượng</span>*/}
+          {/*</div>*/}
           <h2 className="section-title">
             Gói Proxy <span className="text-highlight">Phù Hợp</span> Với Bạn
           </h2>
@@ -104,8 +112,14 @@ const ProductsSection = () => {
                   {/* Card Header */}
                   <div className="card-header">
                     <div className="provider-info">
-                      <div className="provider-logo" style={{ '--color': product.color }}>
-                        {product.provider}
+                      <div className="" style={{ '--color': product.color }}>
+                        <Image
+                        src={product.img}
+                        alt={product.name}
+                        width={100}
+                        height={40}
+                        className="provider-img"
+                        />
                       </div>
                       <h3 className="product-name">{product.name}</h3>
                     </div>
