@@ -1,4 +1,19 @@
-export default function MenuDesktop() {
+type AuthProps = {
+  setIsOpen: (value: boolean) => void
+  setMode: (value: string) => void
+}
+
+export default function MenuDesktop({ setIsOpen, setMode }: AuthProps) {
+  const handleOpenModalLogin = () => {
+    setIsOpen(true)
+    setMode('login')
+  }
+
+  const handleOpenModalRegister = () => {
+    setIsOpen(true)
+    setMode('register')
+  }
+
   return (
     <>
       <ul className='navbar-nav mx-auto'>
@@ -35,8 +50,12 @@ export default function MenuDesktop() {
       </ul>
 
       <div className='d-flex align-items-center gap-2'>
-        <button className='btn btn-gradient-primary me-2'>Đăng ký</button>
-        <button className='btn btn-gradient-primary'>Đăng nhập</button>
+        <button className='btn btn-gradient-primary me-2' onClick={handleOpenModalRegister}>
+          Đăng ký
+        </button>
+        <button className='btn btn-gradient-primary' onClick={handleOpenModalLogin}>
+          Đăng nhập
+        </button>
       </div>
     </>
   )

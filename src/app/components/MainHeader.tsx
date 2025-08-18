@@ -33,11 +33,6 @@ export default function MainHeader() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
-  const handleOpenLogin = () => {
-    setIsOpen(true)
-    setMode('login')
-  }
-
   return (
     <>
       <motion.nav
@@ -85,7 +80,7 @@ export default function MainHeader() {
 
           {/* Navigation */}
           <div className='collapse navbar-collapse' id='navbarNav'>
-            {isMobile ? null : <MenuDesktop />}
+            {isMobile ? null : <MenuDesktop setIsOpen={setIsOpen} setMode={setMode} />}
           </div>
         </div>
       </motion.nav>
