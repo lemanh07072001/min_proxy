@@ -667,7 +667,7 @@ body {
   position: absolute;
   inset-block-start: -12px;
   inset-inline-start: 50%;
-  transform: translateX(-50%);
+  transform: translateX(-50%) !important;
   background: linear-gradient(135deg, #ef4444, #f97316);
   color: white;
   padding-block: 8px;
@@ -4414,6 +4414,11 @@ body {
 .submit-btn-modern:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4);
+}
+
+.nav-link-custom.active {
+  background: #ef44441a;
+  color: #ef4444 !important;
 }
 
 /* Responsive Design */

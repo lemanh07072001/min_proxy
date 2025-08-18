@@ -1,9 +1,16 @@
+import { usePathname } from 'next/navigation'
+
+import MenuLandingPage from '@/app/data/MenuLandingPage'
+import Link from '@/components/Link'
+
 type AuthProps = {
   setIsOpen: (value: boolean) => void
   setMode: (value: string) => void
 }
 
 export default function MenuDesktop({ setIsOpen, setMode }: AuthProps) {
+  const pathname = usePathname()
+
   const handleOpenModalLogin = () => {
     setIsOpen(true)
     setMode('login')
@@ -17,36 +24,19 @@ export default function MenuDesktop({ setIsOpen, setMode }: AuthProps) {
   return (
     <>
       <ul className='navbar-nav mx-auto'>
-        <li className='nav-item'>
-          <a className='nav-link nav-link-custom' href='#'>
-            Trang chủ
-          </a>
-        </li>
-        <li className='nav-item'>
-          <a className='nav-link nav-link-custom' href='#'>
-            Giới thiệu
-          </a>
-        </li>
-        <li className='nav-item'>
-          <a className='nav-link nav-link-custom' href='#'>
-            Đại lý
-          </a>
-        </li>
-        <li className='nav-item'>
-          <a className='nav-link nav-link-custom' href='#'>
-            Mua Proxy
-          </a>
-        </li>
-        <li className='nav-item'>
-          <a className='nav-link nav-link-custom' href='#'>
-            Chọn Template
-          </a>
-        </li>
-        <li className='nav-item'>
-          <a className='nav-link nav-link-custom' href='#'>
-            Liên hệ
-          </a>
-        </li>
+        {MenuLandingPage.map((item, index) => {
+          const isActive = pathname === item.href
+
+          console.log(pathname)
+
+          return (
+            <li key={index} className='nav-item'>
+              <Link href={item.href} className={`nav-link nav-link-custom ${isActive ? 'active' : ''}`}>
+                {item.label}
+              </Link>
+            </li>
+          )
+        })}
       </ul>
 
       <div className='d-flex align-items-center gap-2'>
