@@ -1,9 +1,9 @@
 'use client'
 import { useState, useEffect } from 'react'
 
-import { motion, useScroll, useTransform } from 'framer-motion'
+import Image from 'next/image'
 
-import { Shield } from 'lucide-react'
+import { motion, useScroll, useTransform } from 'framer-motion'
 
 import { useResponsive } from '@/app/hooks/useResponsive'
 
@@ -47,7 +47,7 @@ export default function MainHeader() {
         <div className='container'>
           {/* Logo */}
           <a className='navbar-brand navbar-brand-custom d-flex align-items-center' href='#'>
-            <motion.div
+            {/* <motion.div
               className='me-2 p-2 rounded'
               style={{
                 background: 'linear-gradient(135deg, #ef4444, #f97316)',
@@ -64,7 +64,8 @@ export default function MainHeader() {
               >
                 PROXY
               </div>
-            </div>
+            </div> */}
+            <Image src={product.img} alt={product.name} width={80} height={80} />
           </a>
 
           {/* Mobile Toggle */}

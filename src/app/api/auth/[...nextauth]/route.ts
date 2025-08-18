@@ -95,3 +95,5 @@ const authOptions = {
 // Thay vì export default, ta export GET và POST handler
 const handler = NextAuth(authOptions);
 export { handler as GET, handler as POST };
+
+

@@ -27,8 +27,6 @@ export default function MenuDesktop({ setIsOpen, setMode }: AuthProps) {
         {MenuLandingPage.map((item, index) => {
           const isActive = pathname === item.href
 
-          console.log(pathname)
-
           return (
             <li key={index} className='nav-item'>
               <Link href={item.href} className={`nav-link nav-link-custom ${isActive ? 'active' : ''}`}>

@@ -1403,7 +1403,7 @@ body {
 
 .btn-gradient-primary {
   background: linear-gradient(135deg, #ef4444, #f97316);
-  color: white;
+  color: white !important;
   border: none;
   font-weight: 600;
   padding-block: 8px;
@@ -4419,6 +4419,10 @@ body {
 .nav-link-custom.active {
   background: #ef44441a;
   color: #ef4444 !important;
+}
+
+.nav-link-custom.active::after {
+  inline-size: 80% !important;
 }
 
 /* Responsive Design */
