@@ -45,9 +45,9 @@ const Layout = async (props: ChildrenType & { params: Promise<{ lang: Locale }> 
       <html id='__next' lang={params.lang} dir={direction} suppressHydrationWarning>
       <body className='flex is-full min-bs-full flex-auto flex-col'>
       <InitColorSchemeScript attribute='data' defaultMode={systemMode} />
-      <Header/>
+
       {children}
-      <Footer/>
+
       </body>
       </html>
     </TranslationWrapper>
