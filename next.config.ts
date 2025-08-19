@@ -14,6 +14,7 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  optimizeFonts: false,
 
   // Thêm logging để debug
   logging: {
