@@ -4,9 +4,14 @@ import type { NextConfig } from 'next'
 const nextConfig: NextConfig = {
   basePath: process.env.BASEPATH,
 
-  // Đảm bảo không có redirect nào
   async redirects() {
-    return []
+    return [
+      {
+        source: '/',
+        destination: '/en', // Đặt locale mặc định của bạn tại đây
+        permanent: false, // Sử dụng false để tránh cache vĩnh viễn
+      },
+    ]
   },
   eslint: {
     ignoreDuringBuilds: true,
