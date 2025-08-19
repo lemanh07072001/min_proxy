@@ -27,13 +27,16 @@ export const metadata = {
 const RootLayout = async (props: ChildrenType) => {
   const { children } = props
 
-  // Vars
+  // Nếu locale không nằm trong danh sách thì 404
+  // if (!hasLocale(routing.locales, locale)) {
+  //   notFound()
+  // }
 
   const systemMode = await getSystemMode()
   const direction = 'ltr'
 
   return (
-    <html id='__next' lang='en' dir={direction} suppressHydrationWarning>
+    <html id='__next' lang='vi' dir={direction} suppressHydrationWarning>
       <body className='flex is-full min-bs-full flex-auto flex-col'>
         <InitColorSchemeScript attribute='data' defaultMode={systemMode} />
         {children}

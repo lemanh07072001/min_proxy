@@ -3741,6 +3741,8 @@ body {
   border: 1px solid #e5e7eb;
   transition: all 0.3s ease;
   block-size: 100%;
+  display: flex;
+  gap: 12px;
 }
 
 .contact-card:hover {
@@ -3756,7 +3758,6 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-block-end: 16px;
   color: white;
 }
 
@@ -3803,16 +3804,18 @@ body {
 }
 
 .advantage-card .advantage-icon {
-  inline-size: 64px;
-  block-size: 64px;
-  background: linear-gradient(135deg, #ef4444, #f97316);
+  /*inline-size: 64px;*/
+  /*block-size: 64px;*/
+  /*background: linear-gradient(135deg, #ef4444, #f97316);*/
   border-radius: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-block: 0 20px;
+  /*margin-block: 0 20px;*/
   margin-inline: auto;
   color: white;
+  overflow: hidden;
+  margin-bottom: 10px;
 }
 
 .advantage-card .advantage-title {
@@ -3829,8 +3832,7 @@ body {
 
 /* Team Section Modern */
 .team-section-modern {
-  padding-block: 100px;
-  padding-inline: 0;
+  padding: 100px 0;
   background: white;
 }
 
@@ -3838,33 +3840,32 @@ body {
   font-size: 1.1rem;
   line-height: 1.7;
   color: #6b7280;
-  max-inline-size: 800px;
-  margin-block: 0 60px;
-  margin-inline: auto;
+  max-width: 800px;
+  margin: 0 auto 60px;
 }
 
 .team-content {
-  padding-inline-end: 40px;
+  padding-right: 40px;
 }
 
 .team-content h3 {
   font-size: 1.5rem;
   font-weight: 700;
   color: #1f2937;
-  margin-block-end: 20px;
+  margin-bottom: 20px;
 }
 
 .team-content p {
   font-size: 1rem;
   line-height: 1.7;
   color: #6b7280;
-  margin-block-end: 20px;
+  margin-bottom: 20px;
 }
 
 .team-stats {
   display: flex;
   gap: 40px;
-  margin-block-start: 32px;
+  margin-top: 32px;
 }
 
 .team-stats .stat-item {
@@ -3875,7 +3876,7 @@ body {
   font-size: 2rem;
   font-weight: 800;
   color: #ef4444;
-  margin-block-end: 4px;
+  margin-bottom: 4px;
 }
 
 .team-stats .stat-label {
@@ -3891,62 +3892,106 @@ body {
 
 .team-image-modern {
   position: relative;
-  inline-size: 400px;
-  block-size: 300px;
+  width: 400px;
+  height: 300px;
   border-radius: 20px;
   overflow: hidden;
 }
 
 .team-placeholder {
-  inline-size: 100%;
-  block-size: 100%;
+  width: 100%;
+  height: 100%;
   background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
   position: relative;
 }
 
+/* Team Member Grid Styling */
 .team-grid {
   position: absolute;
-  inset-block: 20px 60px;
-  inset-inline: 20px;
+  top: 20px;
+  right: 20px;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, 60px);
+  grid-template-rows: repeat(2, 60px);
   gap: 10px;
+  z-index: 2;
 }
 
 .team-member {
-  background: #d1d5db;
-  border-radius: 8px;
-  position: relative;
-}
-
-.team-member::before {
-  content: '';
-  position: absolute;
-  inset-block-start: 20%;
-  inset-inline-start: 50%;
-  transform: translateX(-50%);
-  inline-size: 30px;
-  block-size: 30px;
-  background: #9ca3af;
+  width: 60px;
+  height: 60px;
   border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
+  animation: float 3s ease-in-out infinite;
 }
 
-.team-member::after {
-  content: '';
-  position: absolute;
-  inset-block-end: 20%;
-  inset-inline-start: 50%;
-  transform: translateX(-50%);
-  inline-size: 40px;
-  block-size: 20px;
-  background: #9ca3af;
-  border-radius: 10px;
+.team-member:nth-child(2) {
+  animation-delay: 0.5s;
+}
+
+.team-member:nth-child(3) {
+  animation-delay: 1s;
+}
+
+.team-member:nth-child(4) {
+  animation-delay: 1.5s;
+}
+
+.team-member:nth-child(5) {
+  animation-delay: 2s;
+}
+
+.team-member:nth-child(6) {
+  animation-delay: 2.5s;
+}
+
+.team-member img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.team-member:hover {
+  transform: scale(1.1);
+  border-color: #ef4444;
+  box-shadow: 0 6px 20px rgba(239, 68, 68, 0.3);
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* Contact Info Modern Styles */
+.contact-info-modern {
+  padding: 80px 0;
+  background: #f8fafc;
+}
+
+.team-main-image {
+  width: 100%;
+  height: 400px;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.team-main-image:hover {
+  transform: scale(1.05);
 }
 
 .team-overlay-modern {
   position: absolute;
-  inset-block-end: 0;
-  inset-inline: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
   background: rgba(239, 68, 68, 0.9);
   padding: 16px;
   color: white;
@@ -3961,26 +4006,25 @@ body {
 }
 
 .team-values {
-  margin-block-start: 80px;
+  margin-top: 80px;
 }
 
 .values-title {
   font-size: 1.8rem;
   font-weight: 700;
   color: #1f2937;
-  margin-block-end: 40px;
+  margin-bottom: 40px;
   text-align: center;
 }
 
 .value-card {
   background: #f8fafc;
   border-radius: 16px;
-  padding-block: 32px;
-  padding-inline: 24px;
+  padding: 32px 24px;
   text-align: center;
   border: 1px solid #e5e7eb;
   transition: all 0.3s ease;
-  block-size: 100%;
+  height: 100%;
 }
 
 .value-card:hover {
@@ -3990,15 +4034,14 @@ body {
 }
 
 .value-card .value-icon {
-  inline-size: 56px;
-  block-size: 56px;
+  width: 56px;
+  height: 56px;
   background: linear-gradient(135deg, #ef4444, #f97316);
   border-radius: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-block: 0 20px;
-  margin-inline: auto;
+  margin: 0 auto 20px;
   color: white;
 }
 
@@ -4006,7 +4049,7 @@ body {
   font-size: 1.1rem;
   font-weight: 700;
   color: #1f2937;
-  margin-block-end: 12px;
+  margin-bottom: 12px;
 }
 
 .value-card .value-description {
