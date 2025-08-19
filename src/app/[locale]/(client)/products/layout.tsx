@@ -4,20 +4,20 @@ import { notFound } from 'next/navigation'
 
 import { NextIntlClientProvider, hasLocale } from 'next-intl'
 
-import {setRequestLocale} from 'next-intl/server';
+import '@/app/[locale]/(client)/products/main.css'
 
-import "@/app/[locale]/(landing-page)/main.css"
+import {setRequestLocale} from 'next-intl/server';
 
 import InitColorSchemeScript from '@mui/material/InitColorSchemeScript'
 
 import type { ChildrenType } from '@core/types'
-import Header from '@/app/[locale]/(landing-page)/components/Header'
-import Footer from '@/app/[locale]/(landing-page)/components/Footer'
 
 import { routing } from '@/i18n/routing'
+import MainClient from '@/app/[locale]/(client)/layout-client/MainClient'
 
 
 const Layout = async (props: ChildrenType) => {
+
   const { children, params } = props
 
   const { locale } = await params
@@ -31,9 +31,9 @@ const Layout = async (props: ChildrenType) => {
   return (
     <NextIntlClientProvider locale={locale}>
       <InitColorSchemeScript attribute="data" defaultMode="system" />
-      <Header />
-      {children}
-      <Footer />
+
+      <MainClient/>
+
     </NextIntlClientProvider>
   )
 }

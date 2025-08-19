@@ -1,8 +1,12 @@
-import React from 'react'
+import React, { useState } from 'react'
 
-import MainHeader from '@/app/components/MainHeader'
+import MainHeader from '@/app/[locale]/(landing-page)/components/MainHeader'
 
-const Header = () => {
+interface HeaderProps {
+  onToggleSidebar?: () => void
+}
+
+const Header = ({ onToggleSidebar }: HeaderProps) => {
   return (
     <>
       {/* Promotional Banner */}
@@ -10,7 +14,9 @@ const Header = () => {
         <div className='container-fluid'>
           <div className='d-flex align-items-center justify-content-center flex-wrap py-2'>
             <span className='me-2'>🔥</span>
-            <span className='me-3'>Tuyển đại lý: Trở thành đại lý cho {process.env.NEXT_PUBLIC_APP_NAME} để nhận được nhiều ưu đãi hấp dẫn</span>
+            <span className='me-3'>
+              Tuyển đại lý: Trở thành đại lý cho {process.env.NEXT_PUBLIC_APP_NAME} để nhận được nhiều ưu đãi hấp dẫn
+            </span>
             <button className='promo-btn'>Hợp tác ngay</button>
           </div>
         </div>

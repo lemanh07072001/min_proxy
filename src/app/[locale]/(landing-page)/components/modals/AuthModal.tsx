@@ -3,8 +3,8 @@
 import { X, Eye, EyeOff } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 
-import LoginForm from '@/views/Auth/LoginForm'
-import RegisterForm from '@/views/Auth/RegisterForm'
+import LoginForm from '@views/Auth/LoginForm'
+import RegisterForm from '@views/Auth/RegisterForm'
 
 interface AuthModalProps {
   isOpen: boolean

@@ -1,9 +1,9 @@
-import BackgroundPattern from '@/app/components/BackgroundPattern'
+import BackgroundPattern from '@/app/[locale]/(landing-page)/components/BackgroundPattern'
 
-import Hero from '@/app/components/Hero'
-import SocialIcons from '@/app/components/SocialIcons'
-import ProductsSection from '@/app/components/ProductsSection'
-import PartnersSection from '@/app/components/PartnersSection'
+import Hero from '@/app/[locale]/(landing-page)/components/Hero'
+import SocialIcons from '@/app/[locale]/(landing-page)/components/SocialIcons'
+import ProductsSection from '@/app/[locale]/(landing-page)/components/ProductsSection'
+import PartnersSection from '@/app/[locale]/(landing-page)/components/PartnersSection'
 
 export default function Page() {
   return (

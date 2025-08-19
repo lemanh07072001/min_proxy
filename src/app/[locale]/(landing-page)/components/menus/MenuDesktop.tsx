@@ -1,13 +1,11 @@
 "use client"
 
-import { usePathname } from 'next/navigation'
-
 import {useSelectedLayoutSegment} from 'next/navigation';
 
 import MenuLandingPage from '@/app/data/MenuLandingPage'
 import { Link } from '@/i18n/navigation'
 
-import LanguageSelect from '@/app/components/LanguageSelect'
+import LanguageSelect from '@components/language-selector/LanguageSelect'
 
 type AuthProps = {
   setIsOpen: (value: boolean) => void

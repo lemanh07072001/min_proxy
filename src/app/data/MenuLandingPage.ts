@@ -17,12 +17,12 @@ const MenuLandingPage = [
   },
   {
     label: 'Sản phẩm',
-    href: '/abouts',
+    href: '/products',
     icon: 'tabler-info-circle'
   },
   {
     label: 'Liên hệ',
-    href: '/abouts',
+    href: '/hotline',
     icon: 'tabler-info-circle'
   }
 ]

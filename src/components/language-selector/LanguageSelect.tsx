@@ -1,6 +1,8 @@
 
 import { useRef, useState } from 'react'
 
+import "@components/language-selector/main.css"
+
 import LanguagesData from '@/data/languages/languagesData'
 
 export default function LanguageSelect() {

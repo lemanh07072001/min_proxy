@@ -1,19 +1,17 @@
 import React from 'react'
 
-import AboutHero from '@/app/components/abount/AboutHero'
-import CompanyInfo from '@/app/components/abount/CompanyInfo'
-import TeamSection from '@/app/components/abount/TeamSection'
-import MissionVision from '@/app/components/abount/MissionVision'
-import ContactInfo from '@/app/components/abount/ContactInfo'
+import AboutHero from '@/app/[locale]/(landing-page)/components/abount/AboutHero'
+import CompanyInfo from '@/app/[locale]/(landing-page)/components/abount/CompanyInfo'
+import TeamSection from '@/app/[locale]/(landing-page)/components/abount/TeamSection'
+import MissionVision from '@/app/[locale]/(landing-page)/components/abount/MissionVision'
 
-export default function PageIntroduce() {
+export default function PageAbount() {
   return (
     <>
       <AboutHero />
       <CompanyInfo />
       <TeamSection />
       <MissionVision />
-      <ContactInfo />
     </>
   )
 }

@@ -5,12 +5,12 @@ import Image from 'next/image'
 
 import { motion, useScroll, useTransform } from 'framer-motion'
 
-import logo from '../../../public/images/logo/logo.png'
+import logo from '../../../../../public/images/logo/logo.png'
 
 import { useResponsive } from '@/app/hooks/useResponsive'
 
 
-import AuthModal from '@/app/components/modals/AuthModal'
+import AuthModal from '@/app/[locale]/(landing-page)/components/modals/AuthModal'
 import MenuDesktop from './menus/MenuDesktop'
 
 
