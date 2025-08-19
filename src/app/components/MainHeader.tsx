@@ -5,10 +5,14 @@ import Image from 'next/image'
 
 import { motion, useScroll, useTransform } from 'framer-motion'
 
+import logo from '../../../public/images/logo/logo.png'
+
 import { useResponsive } from '@/app/hooks/useResponsive'
+
 
 import AuthModal from '@/app/components/modals/AuthModal'
 import MenuDesktop from './menus/MenuDesktop'
+
 
 export default function MainHeader() {
   const [isOpen, setIsOpen] = useState<boolean>(false)
@@ -65,7 +69,7 @@ export default function MainHeader() {
                 PROXY
               </div>
             </div> */}
-            <Image src={product.img} alt={product.name} width={80} height={80} />
+            <Image src={logo} alt="dsa"width={80} height={80} />
           </a>
 
           {/* Mobile Toggle */}

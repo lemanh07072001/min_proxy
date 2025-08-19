@@ -3,6 +3,8 @@ import { usePathname } from 'next/navigation'
 import MenuLandingPage from '@/app/data/MenuLandingPage'
 import Link from '@/components/Link'
 
+import LanguageSelect from '@/app/components/LanguageSelect'
+
 type AuthProps = {
   setIsOpen: (value: boolean) => void
   setMode: (value: string) => void
@@ -36,6 +38,8 @@ export default function MenuDesktop({ setIsOpen, setMode }: AuthProps) {
           )
         })}
       </ul>
+
+      <LanguageSelect/>
 
       <div className='d-flex align-items-center gap-2'>
         <button className='btn btn-gradient-primary me-2' onClick={handleOpenModalRegister}>
