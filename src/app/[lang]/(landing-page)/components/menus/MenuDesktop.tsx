@@ -1,11 +1,12 @@
 "use client"
 
-import {useSelectedLayoutSegment} from 'next/navigation';
+import { useParams, usePathname } from 'next/navigation'
 
 import MenuLandingPage from '@/app/data/MenuLandingPage'
-import { Link } from '@/i18n/navigation'
 
 import LanguageSelect from '@components/language-selector/LanguageSelect'
+
+import Link from '@components/Link';
 
 type AuthProps = {
   setIsOpen: (value: boolean) => void
@@ -13,10 +14,10 @@ type AuthProps = {
 }
 
 export default function MenuDesktop({ setIsOpen, setMode }: AuthProps) {
+  const pathname = usePathname()
+  const params = useParams()
 
-  const selectedLayoutSegment = useSelectedLayoutSegment();
-
-  const pathname = selectedLayoutSegment ? `/${selectedLayoutSegment}` : '/';
+  const { lang: locale } = params
 
   const handleOpenModalLogin = () => {
     setIsOpen(true)
@@ -33,11 +34,13 @@ export default function MenuDesktop({ setIsOpen, setMode }: AuthProps) {
       <ul className='navbar-nav mx-auto'>
         {MenuLandingPage.map((item, index) => {
 
-          const isActive = pathname === item.href
+          const isActive = pathname === `/${locale }${item.href}`
+
+          console.log(pathname)
 
           return (
             <li key={index} className='nav-item'>
-              <Link href={item.href} className={`nav-link nav-link-custom ${isActive ? 'active' : ''}`}>
+              <Link href={`/${locale }${item.href}`} className={`nav-link nav-link-custom ${isActive ? 'active' : ''}`}>
                 {item.label}
               </Link>
             </li>

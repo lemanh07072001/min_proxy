@@ -2,7 +2,7 @@
 const MenuLandingPage = [
   {
     label: 'Trang chủ',
-    href: '/',
+    href: '',
     icon: 'tabler-smart-home'
   },
   {

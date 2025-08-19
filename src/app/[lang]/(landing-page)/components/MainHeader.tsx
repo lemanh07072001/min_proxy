@@ -10,7 +10,7 @@ import logo from '../../../../../public/images/logo/logo.png'
 import { useResponsive } from '@/app/hooks/useResponsive'
 
 
-import AuthModal from '@/app/[locale]/(landing-page)/components/modals/AuthModal'
+import AuthModal from '@/app/[lang]/(landing-page)/components/modals/AuthModal'
 import MenuDesktop from './menus/MenuDesktop'
 
 

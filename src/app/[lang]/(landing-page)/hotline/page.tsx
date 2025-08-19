@@ -1,4 +1,4 @@
-import ContactInfo from '@/app/[locale]/(landing-page)/components/hotline/ContactInfo'
+import ContactInfo from '@/app/[lang]/(landing-page)/components/hotline/ContactInfo'
 
 
 export default function PageHotline() {
