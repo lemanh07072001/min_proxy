@@ -24,6 +24,7 @@ body {
     line-height: 1.6;
 }
 
+
 .app {
     min-height: 100vh;
 }
@@ -82,34 +83,6 @@ body {
     color: var(--primary-color);
 }
 
-.header-container {
-    width: 100%;
-    max-width: 100%;
-    padding: 0 24px;
-}
-
-.header-content {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 16px 0;
-    gap: 24px;
-}
-
-.header-brand {
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-}
-
-.header-search {
-    flex: 1;
-    max-width: 500px;
-}
-
-.header-actions-container {
-    flex-shrink: 0;
-}
 
 .brand-logo {
     display: flex;
@@ -618,16 +591,6 @@ body {
     color: #64748b;
 }
 
-.protocol-btn.active {
-    background: white;
-    color: var(--primary-color);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.protocol-btn:hover:not(.active) {
-    background: #f1f5f9;
-    color: #475569;
-}
 
 /* Auth section */
 .auth-section-column {

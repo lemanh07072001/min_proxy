@@ -44,7 +44,7 @@ export type Config = {
   layoutPadding: number
   navbar: Navbar
   contentWidth: LayoutComponentWidth
-  compactContentWidth: number
+  compactContentWidth: string
   footer: Footer
   disableRipple: boolean
 }
@@ -58,7 +58,7 @@ const themeConfig: Config = {
   semiDark: false, // true, false
   layout: 'vertical', // 'vertical', 'collapsed', 'horizontal'
   layoutPadding: 24, // Common padding for header, content, footer layout components (in px)
-  compactContentWidth: 1440, // in px
+  compactContentWidth: '100%', // in px
   navbar: {
     type: 'fixed', // 'fixed', 'static'
     contentWidth: 'compact', // 'compact', 'wide'

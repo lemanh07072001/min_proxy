@@ -13,13 +13,13 @@ import '@assets/iconify-icons/generated-icons.css'
 
 import InitColorSchemeScript from '@mui/material/InitColorSchemeScript'
 
-import { i18n } from '@/configs/i18n'
+import { i18n } from '@configs/i18n'
 
 import "@/app/[lang]/(landing-page)/main.css"
 
 import { headers } from 'next/headers'
 
-import type { Locale } from '@/configs/i18n'
+import type { Locale } from '@configs/i18n'
 
 import type { ChildrenType } from '@core/types'
 import Header from '@/app/[lang]/(landing-page)/components/Header'
@@ -41,16 +41,11 @@ const Layout = async (props: ChildrenType & { params: Promise<{ lang: Locale }> 
   const direction = i18n.langDirection[params.lang]
 
   return (
-    <TranslationWrapper headersList={headersList} lang={params.lang}>
-      <html id='__next' lang={params.lang} dir={direction} suppressHydrationWarning>
-        <body className='flex is-full min-bs-full flex-auto flex-col'>
-          <InitColorSchemeScript attribute='data' defaultMode={systemMode} />
-            <Header/>
-            {children}
-            <Footer/>
-        </body>
-      </html>
-    </TranslationWrapper>
+    <>
+      <Header/>
+      {children}
+      <Footer/>
+    </>
   )
 }
 

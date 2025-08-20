@@ -1,0 +1,62 @@
+.quantity-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.quantity-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-block-end: 4px;
+}
+
+.quantity-icon {
+  display: flex;
+  align-items: center;
+  color: #6b7280; /* xám nhạt */
+}
+
+.quantity-controls {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  overflow: hidden;
+  inline-size: fit-content;
+}
+
+.qty-btn {
+  background: #f9fafb;
+  border: none;
+  padding-block: 11px;
+  padding-inline: 13px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.qty-btn:hover:not(:disabled) {
+  background: #e5e7eb;
+}
+
+.qty-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.qty-display {
+  inline-size: 50px;
+  text-align: center;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  padding: 6px;
+}

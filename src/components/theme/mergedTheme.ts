@@ -20,7 +20,26 @@ import coreTheme from '@core/theme'
 const mergedTheme = (settings: Settings, mode: SystemMode, direction: Theme['direction']) => {
   // Vars
   const userTheme = {
-    // Write your overrides here.
+    colorSchemes: {
+      light: {
+        palette: {
+          primary: {
+            main: '#FC4336',
+            light: '#FF9CF2',
+            dark: '#80004E'
+          }
+        }
+      },
+      dark: {
+        palette: {
+          secondary: {
+            main: '#BF2761',
+            light: '#FF9CF2',
+            dark: '#80004E'
+          }
+        }
+      }
+    }
   } as Theme
 
   return deepmerge(coreTheme(settings, mode, direction), userTheme)

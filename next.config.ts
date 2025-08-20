@@ -1,6 +1,5 @@
 import type { NextConfig } from 'next'
 
-
 const nextConfig: NextConfig = {
   basePath: process.env.BASEPATH,
 
@@ -9,8 +8,8 @@ const nextConfig: NextConfig = {
       {
         source: '/',
         destination: '/en', // Đặt locale mặc định của bạn tại đây
-        permanent: false, // Sử dụng false để tránh cache vĩnh viễn
-      },
+        permanent: false // Sử dụng false để tránh cache vĩnh viễn
+      }
     ]
   },
   eslint: {
@@ -28,6 +27,5 @@ const nextConfig: NextConfig = {
     }
   }
 }
-
 
 export default nextConfig
