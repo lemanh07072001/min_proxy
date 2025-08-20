@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 
-import MainHeader from '@/app/[lang]/(landing-page)/components/MainHeader'
+import MainHeader from '@/app/[lang]/(private)/(landing-page)/components/MainHeader'
 
 interface HeaderProps {
   onToggleSidebar?: () => void

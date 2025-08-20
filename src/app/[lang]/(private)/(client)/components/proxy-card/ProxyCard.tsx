@@ -4,7 +4,7 @@ import React, { useState } from 'react'
 
 import Image from 'next/image'
 
-import '@/app/[lang]/(client)/components/proxy-card/styles.css'
+import '@/app/[lang]/(private)/(client)/components/proxy-card/styles.css'
 
 import * as yup from 'yup'
 
@@ -46,12 +46,8 @@ const proxySchema = yup.object({
 }).required();
 
 const ProxyCard: React.FC<ProxyCardProps> = ({ provider, logo, color, price, features }) => {
-  const [quantity, setQuantity] = useState(1)
-  const [days, setDays] = useState(1)
-  const [protocol, setProtocol] = useState('HTTP')
 
   const { register, control, handleSubmit, watch, formState: { errors } } = useForm({
-    // *** THAY ĐỔI 3: Sử dụng yupResolver để kết nối schema với form ***
     resolver: yupResolver(proxySchema),
     defaultValues: {
       location: 'random',
@@ -64,11 +60,6 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, logo, color, price, fea
     mode: 'onChange'
   })
 
-  const handleQuantityChange = (newQuantity: number) => {
-    if (newQuantity >= 1) {
-      setQuantity(newQuantity)
-    }
-  }
 
   const watchedQuantity = watch('quantity')
   const watchedDays = watch('days')
@@ -76,7 +67,18 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, logo, color, price, fea
   const calculateTotal = () => {
     const basePrice = parseInt(price.replace(/[^\d]/g, ''), 10) || 0
     const quantity = parseInt(watchedQuantity, 10) || 1
+
     const days = parseInt(watchedDays, 10) || 1
+
+    return (basePrice * quantity * days)
+  }
+
+  const calculateTotalFormat = () => {
+    const basePrice = parseInt(price.replace(/[^\d]/g, ''), 10) || 0
+    const quantity = parseInt(watchedQuantity, 10) || 1
+
+    const days = parseInt(watchedDays, 10) || 1
+
     return (basePrice * quantity * days).toLocaleString('vi-VN')
   }
 
@@ -99,14 +101,16 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, logo, color, price, fea
     }
   ]
 
-  const onSubmit = (data) => {
+  const onSubmit = (data ) => {
     const total = calculateTotal()
+
     const itemData = {
       ...data,
       provider,
       pricePerDay: price,
       total,
     }
+
     console.log('Adding to cart:', itemData)
 
   }
@@ -129,7 +133,7 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, logo, color, price, fea
           </div>
         </div>
         <div className='price-section'>
-          <div className='price-amount'>{calculateTotal()}đ</div>
+          <div className='price-amount'>{calculateTotalFormat()}đ</div>
           <div className='price-unit'>/ngày</div>
         </div>
       </div>
@@ -183,7 +187,7 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, logo, color, price, fea
           name="protocol"
           control={control}
           render={({ field }) => (
-            <ProtocolSelector protocol={protocol}  {...field}/>
+            <ProtocolSelector {...field}/>
           )}
         />
 
@@ -204,11 +208,10 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, logo, color, price, fea
             name="password"
             control={control}
             render={({ field }) => (
-              <InputCustom placeholder='random' label='Tài khoản' {...field}/>
+              <InputCustom placeholder='random' label='Mật khẩu' {...field}/>
             )}
           />
 
-          <InputCustom placeholder='random' name="password" label='Mật khẩu' {...register('password')} />
         </div>
       </div>
 
@@ -217,7 +220,7 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, logo, color, price, fea
         <div className='col-3'>
           <div className='flex flex-col'>
             <span className='total-label'>Tổng cộng:</span>
-            <span className='total-price'>{calculateTotal()}đ</span>
+            <span className='total-price'>{calculateTotalFormat()}đ</span>
           </div>
         </div>
         <div className='col-9'>

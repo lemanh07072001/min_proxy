@@ -13,7 +13,7 @@ import InitColorSchemeScript from '@mui/material/InitColorSchemeScript'
 
 import { i18n } from '@configs/i18n'
 
-import '@/app/[lang]/(landing-page)/main.css'
+import '@/app/[lang]/(private)/(landing-page)/main.css'
 
 import { headers } from 'next/headers'
 

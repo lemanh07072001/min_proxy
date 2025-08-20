@@ -2,6 +2,8 @@
 
 import React, { useState } from 'react'
 
+import { signIn } from 'next-auth/react'
+
 import { Eye, EyeOff } from 'lucide-react'
 
 import { useForm } from 'react-hook-form'
@@ -32,8 +34,15 @@ export default function LoginForm() {
     resolver: yupResolver(schema)
   })
 
-  const onSubmit = (data: LoginFormInputs) => {
-    console.log('Dữ liệu form:', data)
+  const onSubmit = async (data: LoginFormInputs) => {
+
+    const res = await signIn('credentials', {
+      email: data.email,
+      password: data.password,
+      redirect: false
+    })
+
+    console.log(res)
 
     // Gửi API login ở đây
   }

@@ -1,6 +1,6 @@
 import React from 'react'
 
-import '@/app/[lang]/(landing-page)/hotline/style.css'
+import '@/app/[lang]/(private)/(landing-page)/hotline/style.css'
 
 import { MapPin, Phone, Mail, Globe } from 'lucide-react'
 

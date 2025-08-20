@@ -1,8 +1,8 @@
 
 
-import "@/app/[lang]/(client)/proxy-tinh/styles.css"
+import "@/app/[lang]/(private)/(client)/proxy-tinh/styles.css"
 
-import ProxyCard from '@/app/[lang]/(client)/components/proxy-card/ProxyCard'
+import ProxyCard from '@/app/[lang]/(private)/(client)/components/proxy-card/ProxyCard'
 
 export default function StaticProxy() {
   const proxyProviders = [

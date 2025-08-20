@@ -4,8 +4,8 @@ import Button from '@mui/material/Button'
 // Type Imports
 import type { ChildrenType } from '@core/types'
 
-import "@/app/[lang]/(client)/root.css"
-import "@/app/[lang]/(client)/main.css"
+import "@/app/[lang]/(private)/(client)/root.css"
+import "@/app/[lang]/(private)/(client)/main.css"
 
 // Layout Imports
 import LayoutWrapper from '@layouts/LayoutWrapper'
