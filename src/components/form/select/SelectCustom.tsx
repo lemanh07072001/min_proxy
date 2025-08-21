@@ -1,42 +1,64 @@
 import React from "react";
+
 import "./styles.css";
+import "../main.css"
+
+// Giả sử bạn có một file CSS riêng cho component này
+// import "./styles.css";
+
+// --- 1. Định nghĩa interface cho object classNames ---
+interface ClassNameMap {
+  container?: string;
+  label?: string;
+  icon?: string;
+  select?: string;
+}
 
 interface Option {
   label: string;
   value: string;
 }
 
-interface CustomFieldProps extends React.InputHTMLAttributes<HTMLInputElement> {
+// --- 2. Định nghĩa interface props cho CustomSelect ---
+interface CustomSelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
   label: string;
   icon?: React.ReactNode;
-  type?: "text" | "select"; // chọn kiểu
-  options?: Option[]; // dùng khi type = select
+  options: Option[]; // options là bắt buộc cho select
+  classNames?: ClassNameMap;
 }
 
-const CustomField: React.FC<CustomFieldProps> = ({ label, icon, type = "text", options = [], ...rest }) => {
+const CustomSelect: React.FC<CustomSelectProps> = ({
+                                                     label,
+                                                     icon,
+                                                     options = [],
+                                                     classNames = {},
+                                                     ...rest
+                                                   }) => {
+  // --- 3. Kết hợp class an toàn cho tất cả các phần tử ---
+  const containerClasses = ['custom-field', classNames.container].filter(Boolean).join(' ');
+  const labelClasses = ['custom-field-label', classNames.label].filter(Boolean).join(' ');
+  const iconClasses = ['custom-field-icon', classNames.icon].filter(Boolean).join(' ');
+  const selectClasses = ['custom-field-select', classNames.select, rest.className].filter(Boolean).join(' ');
+
+  // Xóa className khỏi rest để tránh bị áp dụng hai lần
+  delete rest.className;
+
   return (
-    <div className="custom-field">
-      {/* Label + Icon */}
-      <label className="custom-field-label">
-        {icon && <span className="custom-field-icon">{icon}</span>}
+    <div className={containerClasses}>
+      <label className={labelClasses}>
+        {icon && <span className={iconClasses}>{icon}</span>}
         {label}
       </label>
 
-      {/* Input hoặc Select */}
-      {type === "select" ? (
-        <select className="custom-field-select" {...(rest as React.SelectHTMLAttributes<HTMLSelectElement>)}>
-          {/*<option value="">-- Chọn --</option>*/}
-          {options.map((opt, idx) => (
-            <option key={idx} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
-      ) : (
-        <input className="custom-field-input" {...rest} />
-      )}
+      <select className={selectClasses} {...rest}>
+        {options.map((opt, idx) => (
+          <option key={idx} value={opt.value}>
+            {opt.label}
+          </option>
+        ))}
+      </select>
     </div>
   );
 };
 
-export default CustomField;
+export default CustomSelect;

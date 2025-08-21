@@ -1,6 +1,7 @@
 import React from 'react';
 import { Shield } from 'lucide-react';
 import "./styles.css";
+import "../main.css"
 
 // Lỗi xảy ra do không tìm thấy file './styles.css'.
 // Dòng import dưới đây đã được chú thích lại để khắc phục lỗi.

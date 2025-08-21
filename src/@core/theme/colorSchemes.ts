@@ -155,6 +155,13 @@ const colorSchemes = (skin: Skin): Theme['colorSchemes'] => {
           tableHeaderBg: '#FFFFFF',
           tooltipText: '#FFFFFF',
           trackBg: '#F1F0F2'
+        },
+        customCssVars: {
+          bgError200: '#fef2f2',
+          borderError200: '#ef4444',
+          bgSuccess200: '#f0fdf4',
+          borderSuccess200: '#10b981',
+          bgButtonPrimary: 'linear-gradient(45deg, #FC4336, #F88A4B)',
         }
       }
     },
@@ -307,10 +314,17 @@ const colorSchemes = (skin: Skin): Theme['colorSchemes'] => {
           tableHeaderBg: '#2F3349',
           tooltipText: '#2F3349',
           trackBg: '#3A3F57'
+        },
+        customCssVars: {
+          bgError200: '#fef2f2',
+          borderError200: '#ef4444',
+          bgSuccess200: '#f0fdf4',
+          borderSuccess200: '#10b981',
+          bgButtonPrimary: 'linear-gradient(45deg, #FC4336, #F88A4B)',
         }
       }
     }
-  } as Theme['colorSchemes']
+  } as unknown as Theme['colorSchemes']
 }
 
 export default colorSchemes

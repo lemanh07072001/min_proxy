@@ -1,3 +1,5 @@
+import { useParams, usePathname } from 'next/navigation'
+
 import {
   ChartColumn,
   Plus,
@@ -13,14 +15,14 @@ import {
   MessageCircleQuestionMark
 } from 'lucide-react'
 
-import Link from '@components/Link';
-
 // MUI Imports
 import { useTheme } from '@mui/material/styles'
 
 import { motion, AnimatePresence } from 'framer-motion'
 
 import PerfectScrollbar from 'react-perfect-scrollbar'
+
+import Link from '@components/Link'
 
 import { menuClasses } from '@menu/utils/menuClasses'
 
@@ -41,10 +43,7 @@ import StyledVerticalNavExpandIcon from '@menu/styles/vertical/StyledVerticalNav
 // Style Imports
 import menuItemStyles from '@core/styles/vertical/menuItemStyles'
 
-
 import menuSectionStyles from '@core/styles/vertical/menuSectionStyles'
-
-import { useParams, usePathname } from 'next/navigation'
 
 type RenderExpandIconProps = {
   open?: boolean
@@ -96,12 +95,12 @@ const menuSectionHeaderStyles = {
 const activeMenuItemStyles = {
   ['.' + menuClasses.button]: {
     backgroundColor: colors.bgActive,
-    color: `${colors.textActive} !important`,
+    color: `${colors.textActive} !important`
   },
   ['.' + menuClasses.icon]: {
-    color: colors.textActive,
+    color: colors.textActive
   }
-};
+}
 
 // Style cơ bản, dùng chung cho tất cả MenuItem và SubMenu
 const baseMenuItemStyles = {
@@ -170,7 +169,7 @@ const VerticalMenu = ({ scrollMenu }: Props) => {
   const theme = useTheme()
   const verticalNavOptions = useVerticalNav()
 
-  const pathname = usePathname();
+  const pathname = usePathname()
 
   const params = useParams()
 
@@ -186,16 +185,13 @@ const VerticalMenu = ({ scrollMenu }: Props) => {
   const subMenuStyles = getSubMenuStyles()
   const staticProxyItemStyles = getStaticProxyItemStyles()
 
-
   const getMenuItemStyles = (path: string) => {
-    const fullPath = `/${locale}/${path}`;
+    const fullPath = `/${locale}/${path}`
 
-    return pathname === fullPath
-      ? { ...baseMenuItemStyles, ...activeMenuItemStyles }
-      : baseMenuItemStyles;
+    return pathname === fullPath ? { ...baseMenuItemStyles, ...activeMenuItemStyles } : baseMenuItemStyles
   }
 
-  const isProxySubMenuActive = pathname.startsWith(`/${locale}/proxy`);
+  const isProxySubMenuActive = pathname.startsWith(`/${locale}/proxy`)
 
   return (
     // eslint-disable-next-line lines-around-comment
@@ -255,29 +251,27 @@ const VerticalMenu = ({ scrollMenu }: Props) => {
           <MenuItem
             icon={<ChartColumn />}
             rootStyles={getMenuItemStyles('overview')}
-            component={<Link href="overview" />}>
+            component={<Link href='overview' />}
+          >
             Tổng quan
           </MenuItem>
 
           <SubMenu label='Proxy' icon={<Globe />} rootStyles={subMenuStyles} defaultOpen={isProxySubMenuActive}>
-            <MenuItem
-              rootStyles={getMenuItemStyles('proxy-tinh')}
-              component={<Link href="proxy-tinh" />}>
+            <MenuItem rootStyles={getMenuItemStyles('proxy-tinh')} component={<Link href='proxy-tinh' />}>
               Proxy tĩnh
             </MenuItem>
-            <MenuItem
-              rootStyles={staticProxyItemStyles}>
+            <MenuItem rootStyles={getMenuItemStyles('proxy-xoay')} component={<Link href='proxy-xoay' />}>
               Proxy xoay
             </MenuItem>
           </SubMenu>
 
           {/* Check Proxy */}
-          <MenuItem icon={<ShoppingBag />} rootStyles={baseMenuItemStyles}>
+          <MenuItem icon={<ShoppingBag />} rootStyles={getMenuItemStyles('check-proxy')} href='check-proxy'>
             Check Proxy
           </MenuItem>
 
           {/* Đơn hàng Proxy */}
-          <MenuItem icon={<ReceiptText />} rootStyles={baseMenuItemStyles}>
+          <MenuItem icon={<ReceiptText />} rootStyles={getMenuItemStyles('order-proxy')} href='order-proxy'>
             Đơn hàng Proxy
           </MenuItem>
 

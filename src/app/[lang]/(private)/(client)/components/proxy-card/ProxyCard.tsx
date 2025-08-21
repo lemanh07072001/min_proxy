@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React from 'react'
 
 import Image from 'next/image'
 
@@ -10,15 +10,19 @@ import * as yup from 'yup'
 
 import { yupResolver } from '@hookform/resolvers/yup'
 
-import { MapPin, Clock, Users, Shield, Minus, Plus, ShoppingCart } from 'lucide-react'
+import { MapPin, Clock, Users, Globe, ShoppingCart } from 'lucide-react'
 import Chip from '@mui/material/Chip'
+
+import MenuItem from '@mui/material/MenuItem'
+
+import { Controller, useForm } from 'react-hook-form'
+
+import CustomTextField from '@core/components/mui/TextField'
 
 import InputCustom from '@components/form/input/InputCustom'
 import SelectCustom from '@components/form/select/SelectCustom'
 import QuantityControl from '@components/form/input-quantity/QuantityControl'
 import ProtocolSelector from '@components/form/protocol-selector/ProtocolSelector'
-import { watch } from 'node:fs'
-import { Controller, useForm } from 'react-hook-form'
 
 interface ProxyCardProps {
   provider: string
@@ -28,26 +32,35 @@ interface ProxyCardProps {
   features: string[]
 }
 
-const proxySchema = yup.object({
-  location: yup.string().required(),
-  days: yup.number()
-    .typeError('Vui lòng nhập số') // Thông báo lỗi khi nhập không phải số
-    .required('Vui lòng nhập số ngày')
-    .integer('Số ngày phải là số nguyên')
-    .min(1, 'Tối thiểu 1 ngày'),
-  quantity: yup.number()
-    .typeError('Vui lòng nhập số')
-    .required('Vui lòng nhập số lượng')
-    .integer('Số lượng phải là số nguyên')
-    .min(1, 'Tối thiểu 1 proxy'),
-  protocol: yup.string().required(),
-  username: yup.string().min(4, 'Tối thiểu 4 ký tự'),
-  password: yup.string().min(4, 'Tối thiểu 4 ký tự'),
-}).required();
+const proxySchema = yup
+  .object({
+    location: yup.string().required(),
+    days: yup
+      .number()
+      .typeError('Vui lòng nhập số') // Thông báo lỗi khi nhập không phải số
+      .required('Vui lòng nhập số ngày')
+      .integer('Số ngày phải là số nguyên')
+      .min(1, 'Tối thiểu 1 ngày'),
+    quantity: yup
+      .number()
+      .typeError('Vui lòng nhập số')
+      .required('Vui lòng nhập số lượng')
+      .integer('Số lượng phải là số nguyên')
+      .min(1, 'Tối thiểu 1 proxy'),
+    protocol: yup.string().required(),
+    username: yup.string().min(4, 'Tối thiểu 4 ký tự'),
+    password: yup.string().min(4, 'Tối thiểu 4 ký tự')
+  })
+  .required()
 
 const ProxyCard: React.FC<ProxyCardProps> = ({ provider, logo, color, price, features }) => {
-
-  const { register, control, handleSubmit, watch, formState: { errors } } = useForm({
+  const {
+    register,
+    control,
+    handleSubmit,
+    watch,
+    formState: { errors }
+  } = useForm({
     resolver: yupResolver(proxySchema),
     defaultValues: {
       location: 'random',
@@ -55,11 +68,10 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, logo, color, price, fea
       quantity: 1,
       protocol: 'HTTP',
       username: 'random',
-      password: 'random',
+      password: 'random'
     },
     mode: 'onChange'
   })
-
 
   const watchedQuantity = watch('quantity')
   const watchedDays = watch('days')
@@ -70,7 +82,7 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, logo, color, price, fea
 
     const days = parseInt(watchedDays, 10) || 1
 
-    return (basePrice * quantity * days)
+    return basePrice * quantity * days
   }
 
   const calculateTotalFormat = () => {
@@ -101,22 +113,21 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, logo, color, price, fea
     }
   ]
 
-  const onSubmit = (data ) => {
+  const onSubmit = data => {
     const total = calculateTotal()
 
     const itemData = {
       ...data,
       provider,
       pricePerDay: price,
-      total,
+      total
     }
 
     console.log('Adding to cart:', itemData)
-
   }
 
   return (
-    <form  onSubmit={handleSubmit(onSubmit)} className={`proxy-card-column ${color}`}>
+    <form onSubmit={handleSubmit(onSubmit)} className={`proxy-card-column ${color}`}>
       {/* Header với logo và giá */}
       <div className='card-header-column'>
         <div className='provider-section'>
@@ -141,89 +152,138 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, logo, color, price, fea
       {/* Form controls trong layout cột */}
       <div className='form-grid'>
         {/* Location */}
-        <SelectCustom
-          name="location"
-          label='LOCATION'
-          type='select'
-          icon={<MapPin size={16} />}
-          options={dataLocation}
-          {...register('location')}
-        />
+        <CustomTextField
+          select='true'
+          name='location'
+          defaultValue='random'
+          fullWidth
+          id='locale'
+          label={
+            <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+              <MapPin size={16} />
+              LOCATION
+            </span>
+          }
+          sx={{
+            // Nhắm đến thẻ label của component này
+            '& .MuiInputLabel-root': {
+              color: '#64748b', // Đổi màu label thành màu cam
+              fontWeight: '600', // In đậm chữ
+              fontSize: '11px', // Thay đổi kích thước font
+              paddingBottom: '5px'
+            }
+          }}
+        >
+          {dataLocation.map((item, index) => {
+            return (
+              <MenuItem key={index} value={item.value}>
+                {item.label}
+              </MenuItem>
+            )
+          })}
+        </CustomTextField>
 
         {/* Thời gian */}
         <Controller
-          name="days"
+          name='days'
           control={control}
           render={({ field }) => (
-            <InputCustom
-              label="THỜI GIAN"
-              icon={<Clock size={16} />}
-              type="number"
-              min="1"
-              {...field} // Dòng này đã bao gồm value, onChange, onBlur...
-              error={errors.days}
+            <CustomTextField
+              type='number'
+              defaultValue={1}
+              min='1'
+              label={
+                <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <Clock size={16} />
+                  THỜI GIAN
+                </span>
+              }
+              sx={{
+                // Nhắm đến thẻ label của component này
+                '& .MuiInputLabel-root': {
+                  color: '#64748b', // Đổi màu label thành màu cam
+                  fontWeight: '600', // In đậm chữ
+                  fontSize: '11px', // Thay đổi kích thước font
+                  paddingBottom: '5px'
+                }
+              }}
             />
           )}
         />
 
         {/*Số lượng*/}
         <Controller
-          name="quantity"
+          name='quantity'
           control={control}
           render={({ field }) => (
-            <QuantityControl
-              min={1}
-              max={10}
-              value={1}
-              label='SỐ LƯỢNG'
-              icon={<Users size={14} />}
-              {...field}
-            />
+            <QuantityControl min={1} max={100} value={1} label='SỐ LƯỢNG' icon={<Users size={14} />} {...field} />
           )}
         />
 
         {/* Giao thức */}
-        <Controller
-          name="protocol"
-          control={control}
-          render={({ field }) => (
-            <ProtocolSelector {...field}/>
-          )}
-        />
-
+        <Controller name='protocol' control={control} render={({ field }) => <ProtocolSelector {...field} />} />
       </div>
 
       {/* Auth section */}
       <div className='auth-section-column'>
         <div className='auth-row'>
           <Controller
-            name="username"
+            name='username'
             control={control}
             render={({ field }) => (
-              <InputCustom placeholder='random' label='Tài khoản' {...field}/>
+              <CustomTextField
+                type='text'
+                label={<span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>Username</span>}
+                sx={{
+                  // Nhắm đến thẻ label của component này
+                  '& .MuiInputLabel-root': {
+                    color: '#64748b', // Đổi màu label thành màu cam
+                    fontWeight: '600', // In đậm chữ
+                    fontSize: '11px', // Thay đổi kích thước font
+                    paddingBottom: '5px'
+                  },
+                  '&.MuiFilledInput-input': {
+                    background: '#ffffff !important'
+                  }
+                }}
+              />
             )}
           />
 
           <Controller
-            name="password"
+            name='password'
             control={control}
             render={({ field }) => (
-              <InputCustom placeholder='random' label='Mật khẩu' {...field}/>
+              <CustomTextField
+                type='text'
+                label={<span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>Password</span>}
+                sx={{
+                  // Nhắm đến thẻ label của component này
+                  '& .MuiInputLabel-root': {
+                    color: '#64748b', // Đổi màu label thành màu cam
+                    fontWeight: '600', // In đậm chữ
+                    fontSize: '11px', // Thay đổi kích thước font
+                    paddingBottom: '5px'
+                  },
+                  '&.MuiFilledInput-input': {
+                    background: '#ffffff !important'
+                  }
+                }}
+              />
             )}
           />
-
         </div>
       </div>
 
       {/* Footer với tổng tiền và nút mua */}
       <div className='row'>
-        <div className='col-3'>
+        <div className='col-4 col-lg-3'>
           <div className='flex flex-col'>
             <span className='total-label'>Tổng cộng:</span>
             <span className='total-price'>{calculateTotalFormat()}đ</span>
           </div>
         </div>
-        <div className='col-9'>
+        <div className='col-8 col-lg-9'>
           <button className='buy-button'>
             <ShoppingCart size={18} />
             Mua ngay

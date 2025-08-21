@@ -1,8 +1,3 @@
-.custom-textfield {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
 
 .custom-textfield-label {
     font-size: 11px;

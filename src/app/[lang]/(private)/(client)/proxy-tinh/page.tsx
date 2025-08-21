@@ -1,8 +1,7 @@
 
-
 import "@/app/[lang]/(private)/(client)/proxy-tinh/styles.css"
 
-import ProxyCard from '@/app/[lang]/(private)/(client)/components/proxy-card/ProxyCard'
+import StaticProxyPage from '@views/Client/StaticProxy/StaticProxyPage'
 
 export default function StaticProxy() {
   const proxyProviders = [
@@ -68,16 +67,7 @@ export default function StaticProxy() {
 
       {/* Proxy Cards */}
       <div className="proxy-grid">
-        {proxyProviders.map((provider, index) => (
-          <ProxyCard
-            key={index}
-            provider={provider.provider}
-            logo={provider.logo}
-            color={provider.color}
-            price={provider.price}
-            features={provider.features}
-          />
-        ))}
+        <StaticProxyPage data={proxyProviders} />
       </div>
 
 

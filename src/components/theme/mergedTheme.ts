@@ -24,7 +24,7 @@ const mergedTheme = (settings: Settings, mode: SystemMode, direction: Theme['dir
       light: {
         palette: {
           primary: {
-            main: '#FC4336',
+            main: '#F88A4B',
             light: '#FF9CF2',
             dark: '#80004E'
           }

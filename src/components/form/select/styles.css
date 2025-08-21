@@ -6,12 +6,13 @@
 }
 
 .custom-field-label {
-    font-size: 11px;
-    font-weight: 600;
-    color: #64748b;
     display: flex;
-    gap: 4px;
-    letter-spacing: 0.5px;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #4a5568;
+    margin-block-end: 8px;
 }
 
 .custom-field-icon {
@@ -20,19 +21,3 @@
     color: #6b7280;
 }
 
-.custom-field-input,
-.custom-field-select {
-    padding: 9px 10px;
-    font-size: 14px;
-    border: 1px solid #e2e8f0;
-    border-radius: 6px;
-    outline: none;
-    transition: border-color 0.2s, box-shadow 0.2s;
-}
-
-.custom-field-input:focus,
-.custom-field-select:focus {
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 2px var(--primary-light);
-    outline: none;
-}

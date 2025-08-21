@@ -20,8 +20,8 @@ import { headers } from 'next/headers'
 import type { Locale } from '@configs/i18n'
 
 import type { ChildrenType } from '@core/types'
-import Header from '@/app/[lang]/(landing-page)/components/Header'
-import Footer from '@/app/[lang]/(landing-page)/components/Footer'
+
+import TanstackProvider from '@/components/TanstackProvider'
 
 import { getSystemMode } from '@core/utils/serverHelpers'
 import TranslationWrapper from '@/hocs/TranslationWrapper'
@@ -40,8 +40,10 @@ const RootLayout = async (props: ChildrenType & { params: Promise<{ lang: Locale
     <TranslationWrapper headersList={headersList} lang={params.lang}>
       <html id='__next' lang={params.lang} dir={direction} suppressHydrationWarning>
         <body className='flex is-full min-bs-full flex-auto flex-col'>
-          <InitColorSchemeScript attribute='data' defaultMode={systemMode} />
-          {children}
+          <TanstackProvider>
+            <InitColorSchemeScript attribute='data' defaultMode={systemMode} />
+            {children}
+          </TanstackProvider>
         </body>
       </html>
     </TranslationWrapper>

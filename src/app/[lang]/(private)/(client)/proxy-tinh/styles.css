@@ -8,20 +8,21 @@
     background: white;
     border-radius: 16px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    gap: 24px; /* Thêm gap để các thành phần không dính vào nhau khi xuống dòng */
 }
 
 .header-content {
     flex-direction: column;
     display: flex;
     justify-content: start;
-    gap: 16px;
+    gap: 8px; /* Giảm gap để gọn hơn */
 }
 
 .header-content h1 {
     font-size: 28px;
     font-weight: 700;
     color: #2d3748;
-    margin-bottom: 4px;
+    margin: 0; /* Bỏ margin-bottom để dùng gap */
 }
 
 .page-subtitle {
@@ -33,6 +34,7 @@
 .header-stats {
     display: flex;
     gap: 16px;
+    flex-shrink: 0; /* Ngăn các card bị co lại khi không đủ không gian */
 }
 
 .stat-card {
@@ -65,21 +67,23 @@
     padding-top: 32px;
 }
 
-/* Responsive */
-@media (max-width: 1024px) {
 
-    .header-content {
+@media (max-width: 1024px) {
+    .page-header {
+
         flex-direction: column;
-        gap: 16px;
+        align-items: stretch;
     }
 
+    .header-stats {
 
+        flex-wrap: wrap;
+    }
 }
+
 
 @media (max-width: 768px) {
-
-}
-
-@media (max-width: 1024px) and (min-width: 769px) {
-
+    .proxy-grid {
+        grid-template-columns: 1fr;
+    }
 }
