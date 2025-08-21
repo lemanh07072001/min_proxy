@@ -10,6 +10,10 @@ import MenuItem from '@mui/material/MenuItem'
 
 import { InputAdornment } from '@mui/material'
 
+import { useMutation } from '@tanstack/react-query'
+
+import axios from 'axios'
+
 import { useTheme } from '@mui/material/styles'
 
 import Button from '@mui/material/Button'
@@ -28,10 +32,20 @@ const schema = yup.object().shape({
   list_proxy: yup.string().required('Vui lòng nhập danh sách proxy')
 })
 
+const checkProxyApi = async proxyData => {
+  const { data } = await axios.post('/api/check-proxy', proxyData)
+
+  return data
+}
+
 export default function CheckProxyForm() {
   const [isChecking, setIsChecking] = useState(false)
 
   const theme = useTheme()
+
+  const mutation = useMutation({
+    mutationFn: checkProxyApi
+  })
 
   const {
     control,
@@ -48,14 +62,18 @@ export default function CheckProxyForm() {
 
   // Hàm xử lý khi submit form
   const onSubmit = data => {
-    console.log('Dữ liệu form hợp lệ:', data)
-
     const format_proxy = data.format_proxy
     const protocol = data.protocol
+    const list_proxy = data.list_proxy
 
-    if (format_proxy === 'host:port:username:password' && protocol === 'http') {
-    }
+    mutation.mutate({
+      protocol, // 'http' hoặc 'socks5'
+      format_proxy,
+      list_proxy
+    })
   }
+
+  console.log(mutation.data)
 
   const dataLocation = [
     {
