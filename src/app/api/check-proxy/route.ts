@@ -15,13 +15,19 @@ export async function POST(request) {
 
     try {
       // Dùng axios với proxy agent để gọi ra ngoài
-      const response = await axios.get('https://api.ipify.org?format=json', {
+      const response = await axios.get('https://cloudflare.com/cdn-cgi/trace', {
         httpsAgent,
         timeout: 10000 // Timeout 10 giây
       })
 
       // Nếu thành công, trả về IP của proxy
-      return NextResponse.json({ status: 'success', data: response.data })
+      return NextResponse.json({
+        status: 'success',
+        protocol: protocol,
+        proxy: list_proxy,
+        type: format_proxy
+      })
+
     } catch (error) {
       let errorMessage = 'Không thể kết nối tới proxy.'
 

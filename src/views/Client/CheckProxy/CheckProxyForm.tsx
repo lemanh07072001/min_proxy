@@ -40,6 +40,7 @@ const checkProxyApi = async proxyData => {
 
 export default function CheckProxyForm() {
   const [isChecking, setIsChecking] = useState(false)
+  const [results, setResults] = useState([])
 
   const theme = useTheme()
 
