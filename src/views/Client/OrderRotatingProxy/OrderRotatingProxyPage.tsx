@@ -6,16 +6,7 @@ import { headers } from 'next/headers'
 
 import { toast } from 'react-toastify'
 
-import {
-  TriangleAlert,
-  Copy,
-  RotateCcwKey,
-  CircleQuestionMark,
-  BadgeCheck,
-  BadgeMinus,
-  Calendar,
-  Key
-} from 'lucide-react'
+import { TriangleAlert, Copy, CircleQuestionMark, BadgeCheck, BadgeMinus, Download } from 'lucide-react'
 
 import Button from '@mui/material/Button'
 
@@ -33,7 +24,7 @@ import Pagination from '@mui/material/Pagination'
 
 import CustomIconButton from '@core/components/mui/IconButton'
 
-export default function OrderProxyPage({ data }) {
+export default function OrderRotatingProxyPage({ data }) {
   const [showPasswords, setShowPasswords] = useState<{ [key: string]: boolean }>({})
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(50)
@@ -42,29 +33,9 @@ export default function OrderProxyPage({ data }) {
 
   const dataOrder = useMemo(() => data, [data])
 
-  const togglePasswordVisibility = (proxyId: string) => {
-    setShowPasswords(prev => ({
-      ...prev,
-      [proxyId]: !prev[proxyId]
-    }))
-  }
-
   const copyToClipboard = (text: string) => {
     toast.success('Copy thành công.')
     navigator.clipboard.writeText(text)
-  }
-
-  const getProviderColor = (provider: string) => {
-    switch (provider.toLowerCase()) {
-      case 'viettel':
-        return 'text-red-600 bg-red-50'
-      case 'fpt':
-        return 'text-orange-600 bg-orange-50'
-      case 'vnpt':
-        return 'text-blue-600 bg-blue-50'
-      default:
-        return 'text-gray-600 bg-gray-50'
-    }
   }
 
   const getStatusBadge = (status: string) => {
@@ -79,6 +50,13 @@ export default function OrderProxyPage({ data }) {
         return <Chip label='Không xác định' size='small' icon={<CircleQuestionMark />} color='secondary' />
     }
   }
+
+  // const filteredOrders = data.filter(
+  //   order =>
+  //     order.proxy.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  //     order.provider.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  //     order.orderId.includes(searchTerm)
+  // )
 
   const totalPages = Math.ceil(dataOrder.length / pageSize)
 
@@ -130,10 +108,6 @@ export default function OrderProxyPage({ data }) {
         }
       },
       {
-        accessorKey: 'ip',
-        header: 'Ip cũ'
-      },
-      {
         accessorKey: 'protocol',
         header: 'Loại'
       },
@@ -151,10 +125,6 @@ export default function OrderProxyPage({ data }) {
         cell: ({ row }) => {
           return getStatusBadge(row.original.status)
         }
-      },
-      {
-        accessorKey: 'remainingDays',
-        header: 'Ngày'
       }
     ],
     []
@@ -180,24 +150,9 @@ export default function OrderProxyPage({ data }) {
         {/* Proxy Table */}
         <div className='table-container'>
           <div className='table-toolbar'>
-            {/* Đổi password */}
-            <Button variant='outlined' startIcon={<RotateCcwKey size={16} />}>
-              Đổi password
-            </Button>
-
-            {/* Gia hạn */}
-            <Button variant='outlined' startIcon={<Calendar size={16} />}>
-              Gia hạn
-            </Button>
-
-            {/* Đổi bảo mật */}
-            <Button variant='outlined' startIcon={<Key size={16} />}>
-              Đổi bảo mật
-            </Button>
-
-            {/* Đổi proxy */}
-            <Button variant='contained' color='error' disabled>
-              Đổi proxy
+            {/* Download */}
+            <Button variant='outlined' startIcon={<Download size={16} />}>
+              Download
             </Button>
 
             {/* Copy all */}

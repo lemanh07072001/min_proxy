@@ -1,9 +1,10 @@
-import OrderProxyPage from '@/views/Client/OrderProxy/OrderProxyPage'
+import OrderRotatingProxyPage from '@/views/Client/OrderRotatingProxy/OrderRotatingProxyPage'
 
 import './styles.css'
+
 import { Globe } from 'lucide-react'
 
-export default function OrderProxy() {
+export default function OrderRotatingProxy() {
   const proxyOrders = [
     {
       id: 1,
@@ -68,7 +69,7 @@ export default function OrderProxy() {
           </div>
         </div>
       </div>
-      <OrderProxyPage data={proxyOrders} />
+      <OrderRotatingProxyPage data={proxyOrders} />
     </div>
   )
 }

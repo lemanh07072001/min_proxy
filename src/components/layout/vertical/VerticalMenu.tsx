@@ -1,5 +1,7 @@
 import { useParams, usePathname } from 'next/navigation'
 
+import Link from 'next/link'
+
 import {
   ChartColumn,
   Plus,
@@ -21,8 +23,6 @@ import { useTheme } from '@mui/material/styles'
 import { motion, AnimatePresence } from 'framer-motion'
 
 import PerfectScrollbar from 'react-perfect-scrollbar'
-
-import Link from '@components/Link'
 
 import { menuClasses } from '@menu/utils/menuClasses'
 
@@ -266,22 +266,38 @@ const VerticalMenu = ({ scrollMenu }: Props) => {
           </SubMenu>
 
           {/* Check Proxy */}
-          <MenuItem icon={<ShoppingBag />} rootStyles={getMenuItemStyles('check-proxy')} href='check-proxy'>
+          <MenuItem
+            icon={<ShoppingBag />}
+            rootStyles={getMenuItemStyles('check-proxy')}
+            component={<Link href='check-proxy' />}
+          >
             Check Proxy
           </MenuItem>
 
           {/* Đơn hàng Proxy */}
-          <MenuItem icon={<ReceiptText />} rootStyles={getMenuItemStyles('order-proxy')} href='order-proxy'>
+          <MenuItem
+            icon={<ReceiptText />}
+            rootStyles={getMenuItemStyles('order-proxy')}
+            component={<Link href='order-proxy' />}
+          >
             Đơn hàng Proxy
           </MenuItem>
 
           {/* Đơn hàng Proxy xoay */}
-          <MenuItem icon={<PackagePlus />} rootStyles={baseMenuItemStyles}>
+          <MenuItem
+            icon={<PackagePlus />}
+            rootStyles={getMenuItemStyles('order-rotating-proxy')}
+            component={<Link href='order-rotating-proxy' />}
+          >
             Đơn hàng Proxy xoay
           </MenuItem>
 
           {/* Lịch sử mua hàng */}
-          <MenuItem icon={<History />} rootStyles={baseMenuItemStyles}>
+          <MenuItem
+            icon={<History />}
+            rootStyles={getMenuItemStyles('history-order')}
+            component={<Link href='history-order' />}
+          >
             Lịch sử mua hàng
           </MenuItem>
 

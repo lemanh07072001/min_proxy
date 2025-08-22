@@ -28,12 +28,11 @@ import {
 
 import Chip from '@mui/material/Chip'
 
-import './styles.css'
 import Pagination from '@mui/material/Pagination'
 
 import CustomIconButton from '@core/components/mui/IconButton'
 
-export default function OrderProxyPage({ data }) {
+export default function HistoryOrderPage({ data }) {
   const [showPasswords, setShowPasswords] = useState<{ [key: string]: boolean }>({})
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(50)
@@ -103,7 +102,7 @@ export default function OrderProxyPage({ data }) {
         )
       },
       {
-        accessorKey: 'id',
+        accessorKey: 'orderId',
         header: 'ID'
       },
       {
@@ -114,36 +113,22 @@ export default function OrderProxyPage({ data }) {
         }
       },
       {
-        accessorKey: 'proxy',
-        header: 'Proxy',
-        cell: ({ row }) => {
-          console.log(row)
-
-          return (
-            <div className='proxy-cell'>
-              <span className='proxy-label'>{row.original.proxy}</span>
-              <button className='icon-button'>
-                <Copy size={14} />
-              </button>
-            </div>
-          )
-        }
+        accessorKey: 'account',
+        header: 'Tài khoản'
       },
       {
-        accessorKey: 'ip',
-        header: 'Ip cũ'
+        accessorKey: 'amount',
+        header: 'Số tiền',
+        cell: ({ row }) => (
+          <div>
+            <div className='font-bold'>{row.original.amount}</div>
+            <span className='font-sm'>Số tiền: {row.original.amount} VND</span>
+          </div>
+        )
       },
       {
-        accessorKey: 'protocol',
-        header: 'Loại'
-      },
-      {
-        accessorKey: 'note',
-        header: 'Note'
-      },
-      {
-        accessorKey: 'expiryDate',
-        header: 'Ngày hết hạn'
+        accessorKey: 'mst',
+        header: 'MST'
       },
       {
         accessorKey: 'status',
@@ -153,7 +138,11 @@ export default function OrderProxyPage({ data }) {
         }
       },
       {
-        accessorKey: 'remainingDays',
+        accessorKey: 'content',
+        header: 'Note'
+      },
+      {
+        accessorKey: 'date',
         header: 'Ngày'
       }
     ],
@@ -179,33 +168,6 @@ export default function OrderProxyPage({ data }) {
 
         {/* Proxy Table */}
         <div className='table-container'>
-          <div className='table-toolbar'>
-            {/* Đổi password */}
-            <Button variant='outlined' startIcon={<RotateCcwKey size={16} />}>
-              Đổi password
-            </Button>
-
-            {/* Gia hạn */}
-            <Button variant='outlined' startIcon={<Calendar size={16} />}>
-              Gia hạn
-            </Button>
-
-            {/* Đổi bảo mật */}
-            <Button variant='outlined' startIcon={<Key size={16} />}>
-              Đổi bảo mật
-            </Button>
-
-            {/* Đổi proxy */}
-            <Button variant='contained' color='error' disabled>
-              Đổi proxy
-            </Button>
-
-            {/* Copy all */}
-            <CustomIconButton aria-label='capture screenshot' variant='outlined'>
-              <Copy size={16} />
-            </CustomIconButton>
-          </div>
-
           <div className='table-container'>
             {/* Table */}
             <div className='table-wrapper'>
