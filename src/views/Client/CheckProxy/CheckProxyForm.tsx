@@ -41,6 +41,7 @@ const checkProxyApi = async proxyData => {
 export default function CheckProxyForm() {
   const [isChecking, setIsChecking] = useState(false)
   const [results, setResults] = useState([])
+  const [itemList, setItemList] = useState([])
 
   const theme = useTheme()
 
@@ -67,14 +68,23 @@ export default function CheckProxyForm() {
     const protocol = data.protocol
     const list_proxy = data.list_proxy
 
-    mutation.mutate({
-      protocol, // 'http' hoặc 'socks5'
-      format_proxy,
-      list_proxy
+    // Tách và lọc các dòng trống
+    const filteredLines = list_proxy.split('\n').filter(line => line.trim() !== '')
+
+    // Cập nhật state để hiển thị trên UI
+    setItemList(filteredLines)
+
+    filteredLines.forEach(proxy => {
+      console.log(`Đang gửi proxy: ${proxy}`)
+      mutation.mutate({
+        protocol,
+        format_proxy,
+        list_proxy: proxy
+      })
     })
   }
 
-  console.log(mutation.data)
+  console.log(itemList)
 
   const dataLocation = [
     {
