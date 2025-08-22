@@ -13,12 +13,11 @@ const nextConfig: NextConfig = {
     ]
   },
   eslint: {
-    ignoreDuringBuilds: true,
+    ignoreDuringBuilds: true
   },
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: true
   },
-  optimizeFonts: false,
 
   // Thêm logging để debug
   logging: {
