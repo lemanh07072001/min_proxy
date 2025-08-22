@@ -1,5 +1,7 @@
-import { useParams, usePathname } from 'next/navigation'
+// THÊM MỚI: Import useState và useEffect từ React
+import { useState, useEffect } from 'react'
 
+import { useParams, usePathname } from 'next/navigation'
 import Link from 'next/link'
 
 import {
@@ -21,12 +23,9 @@ import {
 import { useTheme } from '@mui/material/styles'
 
 import { motion, AnimatePresence } from 'framer-motion'
-
 import PerfectScrollbar from 'react-perfect-scrollbar'
 
 import { menuClasses } from '@menu/utils/menuClasses'
-
-// Third-party Imports
 
 // Type Imports
 import type { VerticalMenuContextProps } from '@menu/components/vertical-menu/Menu'
@@ -42,7 +41,6 @@ import StyledVerticalNavExpandIcon from '@menu/styles/vertical/StyledVerticalNav
 
 // Style Imports
 import menuItemStyles from '@core/styles/vertical/menuItemStyles'
-
 import menuSectionStyles from '@core/styles/vertical/menuSectionStyles'
 
 type RenderExpandIconProps = {
@@ -61,7 +59,7 @@ const RenderExpandIcon = ({ open, transitionDuration }: RenderExpandIconProps) =
 )
 
 // =================================================================
-// 1. TẬP TRUNG CÁC GIÁ TRỊ VÀO MỘT NƠI (THEME/CONSTANTS)
+// Các hằng số và styles của bạn (giữ nguyên)
 // =================================================================
 const colors = {
   textDefault: '#4a5568',
@@ -70,7 +68,7 @@ const colors = {
   bgHover: '#f7fafc',
   iconHoverSpecial: '#FC4336',
   textActive: '#ffffff',
-  bgActive: '#F88A4B'
+  bgActive: 'var(--primary-gradient)'
 }
 
 const fontSizes = {
@@ -78,11 +76,6 @@ const fontSizes = {
   menuItem: '12px'
 }
 
-// =================================================================
-// 2. TÁCH CÁC OBJECT STYLES RA NGOÀI
-// =================================================================
-
-// Style cho tiêu đề của Section (ví dụ: 'Trang chủ')
 const menuSectionHeaderStyles = {
   fontSize: fontSizes.label,
   fontWeight: 600,
@@ -91,25 +84,27 @@ const menuSectionHeaderStyles = {
   marginBottom: '1rem'
 }
 
-// Style sẽ được áp dụng KHI một mục menu được active
 const activeMenuItemStyles = {
   ['.' + menuClasses.button]: {
-    backgroundColor: colors.bgActive,
-    color: `${colors.textActive} !important`
+    background: `${colors.bgActive} !important`,
+    color: `${colors.textActive} !important`,
+    '&:hover': {
+      background: `${colors.bgHover} !important`,
+      color: `${colors.textActive} !important`
+    }
   },
   ['.' + menuClasses.icon]: {
-    color: colors.textActive
+    color: `${colors.textActive} !important`
   }
 }
 
-// Style cơ bản, dùng chung cho tất cả MenuItem và SubMenu
 const baseMenuItemStyles = {
   ['.' + menuClasses.button]: {
     width: '100%',
     color: `${colors.textDefault} !important`,
     fontSize: fontSizes.label,
     '&:hover': {
-      backgroundColor: `${colors.bgHover} !important`,
+      background: `${colors.bgHover} !important`,
       color: `${colors.textHover} !important`
     }
   },
@@ -119,27 +114,13 @@ const baseMenuItemStyles = {
   }
 }
 
-// Style riêng cho SubMenu khi nó được mở (active)
 const activeSubMenuStyles = {
   ['&.' + menuClasses.open + ' > .' + menuClasses.button]: {
-    backgroundColor: colors.bgActive,
     color: colors.textActive,
     fontSizes: fontSizes.menuItem
   }
 }
 
-// Style đặc biệt cho MenuItem 'Proxy tĩnh' khi hover
-const staticProxyItemHoverStyles = {
-  ['.' + menuClasses.button]: {
-    '&:hover': {
-      ['& .' + menuClasses.icon]: {
-        color: colors.iconHoverSpecial
-      }
-    }
-  }
-}
-
-// Kết hợp các style lại với nhau
 const getSubMenuStyles = () => ({
   ...baseMenuItemStyles,
   ...activeSubMenuStyles,
@@ -149,41 +130,32 @@ const getSubMenuStyles = () => ({
   }
 })
 
-const getStaticProxyItemStyles = () => ({
-  ...baseMenuItemStyles,
-  ['.' + menuClasses.label]: {
-    ...baseMenuItemStyles['.' + menuClasses.label],
-    fontSize: fontSizes.label
-  },
-  ['.' + menuClasses.button]: {
-    ...baseMenuItemStyles['.' + menuClasses.button],
-    '&:hover': {
-      ...baseMenuItemStyles['.' + menuClasses.button]['&:hover'],
-      ...staticProxyItemHoverStyles['.' + menuClasses.button]['&:hover']
-    }
-  }
-})
-
+// =================================================================
+// Bắt đầu Component
+// =================================================================
 const VerticalMenu = ({ scrollMenu }: Props) => {
   // Hooks
   const theme = useTheme()
   const verticalNavOptions = useVerticalNav()
-
   const pathname = usePathname()
-
   const params = useParams()
-
   const { lang: locale } = params
+
+  // THÊM MỚI: State và Effect để kiểm soát hiệu ứng lần đầu
+  const [isInitialLoad, setIsInitialLoad] = useState(true)
+
+  useEffect(() => {
+    // Sau khi component mount xong, đặt lại cờ để các animation sau này hoạt động
+    setIsInitialLoad(false)
+  }, []) // Mảng rỗng đảm bảo effect chỉ chạy một lần
 
   // Vars
   const { isBreakpointReached, transitionDuration, isCollapsed, isHovered } = verticalNavOptions
-
   const ScrollWrapper = isBreakpointReached ? 'div' : PerfectScrollbar
-
   const isWalletVisible = !isCollapsed || isHovered
 
+  // Styles functions (giữ nguyên)
   const subMenuStyles = getSubMenuStyles()
-  const staticProxyItemStyles = getStaticProxyItemStyles()
 
   const getMenuItemStyles = (path: string) => {
     const fullPath = `/${locale}/${path}`
@@ -194,8 +166,6 @@ const VerticalMenu = ({ scrollMenu }: Props) => {
   const isProxySubMenuActive = pathname.startsWith(`/${locale}/proxy`)
 
   return (
-    // eslint-disable-next-line lines-around-comment
-    /* Custom scrollbar instead of browser scroll, remove if you want browser scroll only */
     <ScrollWrapper
       {...(isBreakpointReached
         ? {
@@ -211,9 +181,9 @@ const VerticalMenu = ({ scrollMenu }: Props) => {
       <AnimatePresence>
         {isWalletVisible && (
           <motion.div
-            initial={{ opacity: 0, maxHeight: 0 }} // Trạng thái ban đầu
-            animate={{ opacity: 1, maxHeight: 300 }} // Trạng thái khi xuất hiện
-            exit={{ opacity: 0, maxHeight: 0 }} // Trạng thái khi biến mất
+            initial={isInitialLoad ? { opacity: 1, maxHeight: 300 } : { opacity: 0, maxHeight: 0 }}
+            animate={{ opacity: 1, maxHeight: 300 }}
+            exit={{ opacity: 0, maxHeight: 0 }}
             transition={{ duration: 0.3, ease: 'easeInOut' }}
             style={{ overflow: 'hidden', padding: '0 1rem' }}
           >
@@ -231,15 +201,13 @@ const VerticalMenu = ({ scrollMenu }: Props) => {
                   <Plus size={16} />
                   Nạp tiền
                 </button>
-                <button className='btn-secondary'>Rút tiền</button>
               </div>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Incase you also want to scroll NavHeader to scroll with Vertical Menu, remove NavHeader from above and paste it below this comment */}
-      {/* Vertical Menu */}
+      {/* Vertical Menu (giữ nguyên) */}
       <Menu
         popoutMenuOffset={{ mainAxis: 23 }}
         menuItemStyles={menuItemStyles(verticalNavOptions, theme)}
@@ -248,75 +216,57 @@ const VerticalMenu = ({ scrollMenu }: Props) => {
         menuSectionStyles={menuSectionStyles(verticalNavOptions, theme)}
       >
         <MenuSection label='Trang chủ' rootStyles={menuSectionHeaderStyles}>
-          <MenuItem
-            icon={<ChartColumn />}
-            rootStyles={getMenuItemStyles('overview')}
-            component={<Link href='overview' />}
-          >
+          <MenuItem icon={<ChartColumn />} rootStyles={getMenuItemStyles('overview')} href={`/${locale}/overview`}>
             Tổng quan
           </MenuItem>
 
           <SubMenu label='Proxy' icon={<Globe />} rootStyles={subMenuStyles} defaultOpen={isProxySubMenuActive}>
-            <MenuItem rootStyles={getMenuItemStyles('proxy-tinh')} component={<Link href='proxy-tinh' />}>
+            <MenuItem rootStyles={getMenuItemStyles('proxy-tinh')} href={`/${locale}/proxy-tinh`}>
               Proxy tĩnh
             </MenuItem>
-            <MenuItem rootStyles={getMenuItemStyles('proxy-xoay')} component={<Link href='proxy-xoay' />}>
+            <MenuItem rootStyles={getMenuItemStyles('proxy-xoay')} href={`/${locale}/proxy-xoay`}>
               Proxy xoay
             </MenuItem>
           </SubMenu>
 
-          {/* Check Proxy */}
+          {/* Các MenuItem khác giữ nguyên */}
           <MenuItem
             icon={<ShoppingBag />}
             rootStyles={getMenuItemStyles('check-proxy')}
-            component={<Link href='check-proxy' />}
+            href={`/${locale}/check-proxy`}
           >
             Check Proxy
           </MenuItem>
-
-          {/* Đơn hàng Proxy */}
           <MenuItem
             icon={<ReceiptText />}
             rootStyles={getMenuItemStyles('order-proxy')}
-            component={<Link href='order-proxy' />}
+            href={`/${locale}/order-proxy`}
           >
             Đơn hàng Proxy
           </MenuItem>
-
-          {/* Đơn hàng Proxy xoay */}
           <MenuItem
             icon={<PackagePlus />}
             rootStyles={getMenuItemStyles('order-rotating-proxy')}
-            component={<Link href='order-rotating-proxy' />}
+            href={`/${locale}/order-rotating-proxy`}
           >
             Đơn hàng Proxy xoay
           </MenuItem>
-
-          {/* Lịch sử mua hàng */}
           <MenuItem
             icon={<History />}
             rootStyles={getMenuItemStyles('history-order')}
-            component={<Link href='history-order' />}
+            href={`/${locale}/history-order`}
           >
             Lịch sử mua hàng
           </MenuItem>
-
-          {/* Lịch sử giao dịch */}
           <MenuItem icon={<FileText />} rootStyles={baseMenuItemStyles}>
             Lịch sử giao dịch
           </MenuItem>
-
-          {/* Lịch sử đổi proxy */}
           <MenuItem icon={<History />} rootStyles={baseMenuItemStyles}>
             Lịch sử đổi proxy
           </MenuItem>
-
-          {/* Hướng dẫn */}
           <MenuItem icon={<User />} rootStyles={baseMenuItemStyles}>
             Hướng dẫn
           </MenuItem>
-
-          {/* Hỗ trợ */}
           <MenuItem icon={<MessageCircleQuestionMark />} rootStyles={baseMenuItemStyles}>
             Hỗ trợ
           </MenuItem>

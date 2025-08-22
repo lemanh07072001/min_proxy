@@ -5,22 +5,14 @@ import React from 'react'
 import Image from 'next/image'
 
 import '@/app/[lang]/(private)/(client)/components/proxy-card/styles.css'
-
 import * as yup from 'yup'
-
 import { yupResolver } from '@hookform/resolvers/yup'
-
 import { MapPin, Clock, Users, Globe, ShoppingCart } from 'lucide-react'
 import Chip from '@mui/material/Chip'
-
 import MenuItem from '@mui/material/MenuItem'
-
 import { Controller, useForm } from 'react-hook-form'
 
 import CustomTextField from '@core/components/mui/TextField'
-
-import InputCustom from '@components/form/input/InputCustom'
-import SelectCustom from '@components/form/select/SelectCustom'
 import QuantityControl from '@components/form/input-quantity/QuantityControl'
 import ProtocolSelector from '@components/form/protocol-selector/ProtocolSelector'
 
@@ -29,7 +21,7 @@ interface ProxyCardProps {
   logo: string
   color: string
   price: string
-  features: string[]
+  features: { title: string; class: 'success' | 'warning' | 'info' | 'primary' }[]
 }
 
 const proxySchema = yup
@@ -37,7 +29,7 @@ const proxySchema = yup
     location: yup.string().required(),
     days: yup
       .number()
-      .typeError('Vui lòng nhập số') // Thông báo lỗi khi nhập không phải số
+      .typeError('Vui lòng nhập số')
       .required('Vui lòng nhập số ngày')
       .integer('Số ngày phải là số nguyên')
       .min(1, 'Tối thiểu 1 ngày'),
@@ -55,7 +47,6 @@ const proxySchema = yup
 
 const ProxyCard: React.FC<ProxyCardProps> = ({ provider, logo, color, price, features }) => {
   const {
-    register,
     control,
     handleSubmit,
     watch,
@@ -76,41 +67,20 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, logo, color, price, fea
   const watchedQuantity = watch('quantity')
   const watchedDays = watch('days')
 
+  // Gộp hàm tính tiền để tránh lặp code
   const calculateTotal = () => {
     const basePrice = parseInt(price.replace(/[^\d]/g, ''), 10) || 0
-    const quantity = parseInt(watchedQuantity, 10) || 1
-
-    const days = parseInt(watchedDays, 10) || 1
+    const quantity = Number(watchedQuantity) || 1
+    const days = Number(watchedDays) || 1
 
     return basePrice * quantity * days
   }
 
-  const calculateTotalFormat = () => {
-    const basePrice = parseInt(price.replace(/[^\d]/g, ''), 10) || 0
-    const quantity = parseInt(watchedQuantity, 10) || 1
-
-    const days = parseInt(watchedDays, 10) || 1
-
-    return (basePrice * quantity * days).toLocaleString('vi-VN')
-  }
-
   const dataLocation = [
-    {
-      value: 'random',
-      label: 'random'
-    },
-    {
-      value: 'hanoi',
-      label: 'Hà Nội'
-    },
-    {
-      value: 'da-nang',
-      label: 'Đà Nẵng'
-    },
-    {
-      value: 'hcm',
-      label: 'TP.HCM'
-    }
+    { value: 'random', label: 'Random' },
+    { value: 'hanoi', label: 'Hà Nội' },
+    { value: 'da-nang', label: 'Đà Nẵng' },
+    { value: 'hcm', label: 'TP.HCM' }
   ]
 
   const onSubmit = data => {
@@ -144,44 +114,37 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, logo, color, price, fea
           </div>
         </div>
         <div className='price-section'>
-          <div className='price-amount'>{calculateTotalFormat()}đ</div>
+          {/* SỬA LỖI 4: Hiển thị giá gốc, không phải tổng tiền */}
+          <div className='price-amount'>{price}</div>
           <div className='price-unit'>/ngày</div>
         </div>
       </div>
 
       {/* Form controls trong layout cột */}
       <div className='form-grid'>
-        {/* Location */}
-        <CustomTextField
-          select='true'
+        {/* SỬA LỖI 1: Bọc Location trong Controller */}
+        <Controller
           name='location'
-          defaultValue='random'
-          fullWidth
-          id='locale'
-          label={
-            <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-              <MapPin size={16} />
-              LOCATION
-            </span>
-          }
-          sx={{
-            // Nhắm đến thẻ label của component này
-            '& .MuiInputLabel-root': {
-              color: '#64748b', // Đổi màu label thành màu cam
-              fontWeight: '600', // In đậm chữ
-              fontSize: '11px', // Thay đổi kích thước font
-              paddingBottom: '5px'
-            }
-          }}
-        >
-          {dataLocation.map((item, index) => {
-            return (
-              <MenuItem key={index} value={item.value}>
-                {item.label}
-              </MenuItem>
-            )
-          })}
-        </CustomTextField>
+          control={control}
+          render={({ field }) => (
+            <CustomTextField
+              select
+              fullWidth
+              label={
+                <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                  <MapPin size={16} /> LOCATION
+                </span>
+              }
+              {...field}
+            >
+              {dataLocation.map(item => (
+                <MenuItem key={item.value} value={item.value}>
+                  {item.label}
+                </MenuItem>
+              ))}
+            </CustomTextField>
+          )}
+        />
 
         {/* Thời gian */}
         <Controller
@@ -189,34 +152,36 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, logo, color, price, fea
           control={control}
           render={({ field }) => (
             <CustomTextField
+              {...field}
               type='number'
-              defaultValue={1}
-              min='1'
+              // SỬA LỖI 3: Xóa `defaultValue`
+              inputProps={{ min: 1 }}
               label={
                 <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <Clock size={16} />
-                  THỜI GIAN
+                  <Clock size={16} /> THỜI GIAN
                 </span>
               }
-              sx={{
-                // Nhắm đến thẻ label của component này
-                '& .MuiInputLabel-root': {
-                  color: '#64748b', // Đổi màu label thành màu cam
-                  fontWeight: '600', // In đậm chữ
-                  fontSize: '11px', // Thay đổi kích thước font
-                  paddingBottom: '5px'
-                }
-              }}
+              error={!!errors.days}
+              helperText={errors.days?.message}
             />
           )}
         />
 
-        {/*Số lượng*/}
+        {/* Số lượng */}
         <Controller
           name='quantity'
           control={control}
           render={({ field }) => (
-            <QuantityControl min={1} max={100} value={1} label='SỐ LƯỢNG' icon={<Users size={14} />} {...field} />
+            <QuantityControl
+              min={1}
+              max={100}
+              label='SỐ LƯỢNG'
+              icon={<Users size={14} />}
+              {...field}
+              // SỬA LỖI 2: Xóa `value={1}`
+              error={!!errors.quantity}
+              helperText={errors.quantity?.message}
+            />
           )}
         />
 
@@ -232,43 +197,24 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, logo, color, price, fea
             control={control}
             render={({ field }) => (
               <CustomTextField
+                {...field}
                 type='text'
-                label={<span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>Username</span>}
-                sx={{
-                  // Nhắm đến thẻ label của component này
-                  '& .MuiInputLabel-root': {
-                    color: '#64748b', // Đổi màu label thành màu cam
-                    fontWeight: '600', // In đậm chữ
-                    fontSize: '11px', // Thay đổi kích thước font
-                    paddingBottom: '5px'
-                  },
-                  '&.MuiFilledInput-input': {
-                    background: '#ffffff !important'
-                  }
-                }}
+                label='Username'
+                error={!!errors.username}
+                helperText={errors.username?.message}
               />
             )}
           />
-
           <Controller
             name='password'
             control={control}
             render={({ field }) => (
               <CustomTextField
+                {...field}
                 type='text'
-                label={<span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>Password</span>}
-                sx={{
-                  // Nhắm đến thẻ label của component này
-                  '& .MuiInputLabel-root': {
-                    color: '#64748b', // Đổi màu label thành màu cam
-                    fontWeight: '600', // In đậm chữ
-                    fontSize: '11px', // Thay đổi kích thước font
-                    paddingBottom: '5px'
-                  },
-                  '&.MuiFilledInput-input': {
-                    background: '#ffffff !important'
-                  }
-                }}
+                label='Password'
+                error={!!errors.password}
+                helperText={errors.password?.message}
               />
             )}
           />
@@ -280,13 +226,12 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, logo, color, price, fea
         <div className='col-4 col-lg-3'>
           <div className='flex flex-col'>
             <span className='total-label'>Tổng cộng:</span>
-            <span className='total-price'>{calculateTotalFormat()}đ</span>
+            <span className='total-price'>{calculateTotal().toLocaleString('vi-VN')}đ</span>
           </div>
         </div>
         <div className='col-8 col-lg-9'>
-          <button className='buy-button'>
-            <ShoppingCart size={18} />
-            Mua ngay
+          <button type='submit' className='buy-button'>
+            <ShoppingCart size={18} /> Mua ngay
           </button>
         </div>
       </div>

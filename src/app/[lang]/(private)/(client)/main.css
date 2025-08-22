@@ -6,7 +6,7 @@
   --primary-color: #fc4336;
   --primary-hover: #e63946;
   --primary-light: rgba(252, 67, 54, 0.1);
-  --primary-gradient: linear-gradient(135deg, #fc4336 0%, #e63946 100%);
+  --primary-gradient: var(--mui-palette-customCssVars-bgButtonPrimary);
   --width-sidebar: 300px;
 }
 
@@ -321,16 +321,6 @@ body {
   display: none;
 }
 
-/* Wallet Card Styles */
-.wallet-card {
-  background: var(--primary-gradient);
-  border-radius: 16px;
-  padding: 20px;
-  color: white;
-  margin-block-end: 32px;
-  box-shadow: 0 8px 25px rgba(252, 67, 54, 0.3);
-}
-
 .wallet-header {
   display: flex;
   align-items: center;
@@ -367,14 +357,16 @@ body {
   padding-block: 8px;
   padding-inline: 16px;
   border-radius: 8px;
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 800;
   cursor: pointer;
   transition: background-color 0.3s ease; /* Giữ lại transition cho hover */
   display: flex;
   align-items: center;
   gap: 4px;
   white-space: nowrap;
+  inline-size: 100%;
+  justify-content: center;
 }
 .btn-primary {
   background: rgba(255, 255, 255, 0.2);
@@ -927,10 +919,6 @@ body {
     justify-content: center;
   }
 
-  .main-content-modern {
-    padding: 16px;
-  }
-
   .page-header {
     flex-direction: column;
     gap: 20px;
@@ -939,31 +927,6 @@ body {
   .header-stats {
     inline-size: 100%;
     justify-content: space-between;
-  }
-
-  .proxy-xoay-page {
-    padding: 16px;
-  }
-
-  .feature-content {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-  }
-
-  .plan-footer {
-    flex-direction: column;
-    gap: 16px;
-    align-items: stretch;
-  }
-
-  .header-brand {
-    display: flex;
-    justify-content: space-between;
-  }
-
-  .promo-banner {
-    display: none;
   }
 }
 
@@ -2278,15 +2241,6 @@ body {
 }
 
 @media (max-width: 768px) {
-  .proxy-orders-page {
-    padding: 16px;
-  }
-
-  .page-header-orders .header-content {
-    flex-direction: column;
-    gap: 20px;
-  }
-
   .header-actions {
     inline-size: 100%;
     justify-content: center;
@@ -2360,10 +2314,6 @@ body {
 }
 
 @media (max-width: 768px) {
-  .check-proxy-page {
-    padding: 16px;
-  }
-
   .pagination-check {
     flex-direction: column;
     gap: 16px;

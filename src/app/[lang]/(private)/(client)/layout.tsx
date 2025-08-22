@@ -33,7 +33,11 @@ const Layout = async (props: ChildrenType) => {
     <Providers direction={direction}>
       <LayoutWrapper
         systemMode={systemMode}
-        verticalLayout={<VerticalLayout navigation={<Navigation mode={mode} />}>{children}</VerticalLayout>}
+        verticalLayout={
+          <VerticalLayout navigation={<Navigation mode={mode} />} navbar={<Navbar />}>
+            {children}
+          </VerticalLayout>
+        }
       />
       <ScrollToTop className='mui-fixed'>
         <Button variant='contained' className='is-10 bs-10 rounded-full p-0 min-is-0 flex items-center justify-center'>

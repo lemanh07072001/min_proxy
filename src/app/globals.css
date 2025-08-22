@@ -1,3 +1,20 @@
+.page-header-orders {
+  background: white;
+  border-radius: 16px;
+  padding: 32px;
+  margin-block-end: 32px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.wallet-card {
+  background: var(--primary-gradient);
+  border-radius: 20px;
+  padding: 24px;
+  color: white;
+  position: relative;
+  overflow: hidden;
+}
+
 /* App.css */
 .app-container {
   min-block-size: 100vh;
@@ -199,4 +216,24 @@
   border-radius: 0.25rem;
   font-size: 0.875rem;
   font-weight: 500;
+}
+
+@media (max-width: 768px) {
+  .table-toolbar {
+    flex-direction: column;
+  }
+
+  .pagination-info,
+  .pagination-wrapper,
+  .page-size-select {
+    flex-direction: column;
+  }
+
+  .pagination-info {
+    gap: 0.5rem !important;
+  }
+
+  .pagination-wrapper {
+    gap: 0.5rem !important;
+  }
 }

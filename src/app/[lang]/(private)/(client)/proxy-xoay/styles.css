@@ -1,40 +1,39 @@
 /* Main Content Styles */
 
 .page-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    padding: 24px;
-    background: white;
-    border-radius: 16px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-    gap: 24px; /* Thêm gap để các thành phần không dính vào nhau khi xuống dòng */
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 24px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  gap: 24px; /* Thêm gap để các thành phần không dính vào nhau khi xuống dòng */
 }
 
 .header-content {
-    flex-direction: column;
-    display: flex;
-    justify-content: start;
-    gap: 8px; /* Giảm gap để gọn hơn */
+  flex-direction: column;
+  display: flex;
+  justify-content: start;
+  gap: 8px; /* Giảm gap để gọn hơn */
 }
 
 .header-content h1 {
-    font-size: 28px;
-    font-weight: 700;
-    color: #2d3748;
-    margin: 0; /* Bỏ margin-bottom để dùng gap */
+  font-size: 28px;
+  font-weight: 700;
+  color: #2d3748;
+  margin: 0; /* Bỏ margin-bottom để dùng gap */
 }
 
 .page-subtitle {
-    color: #718096;
-    font-size: 16px;
-    margin: 0;
+  color: #718096;
+  font-size: 16px;
+  margin: 0;
 }
 
-
 .plans-container {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 24px;
-    padding-block-start: 32px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  padding-block-start: 32px;
 }
