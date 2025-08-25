@@ -6,7 +6,7 @@ on:
   push:
     branches: [ "main" ]
 
-# Các công việc cần làm
+# Các công việc cần làmv
 jobs:
   build-and-deploy:
     # Chạy trên máy ảo Ubuntu của GitHub
