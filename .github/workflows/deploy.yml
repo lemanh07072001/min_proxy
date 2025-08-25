@@ -45,7 +45,7 @@ jobs:
           REMOTE_USER: ${{ secrets.SERVER_USERNAME }}
           TARGET: ${{ secrets.TARGET_DIR }}
           # Chỉ gửi những thư mục/file này, giúp tăng tốc độ
-          SOURCE: ".next/, node_modules/, public/, package.json, package-lock.json, next.config.js"
+          EXCLUDE: "/.git/, /.github/"
 
       # 7. Chạy lệnh trên server để khởi động lại ứng dụng
       - name: Restart Application on Server
