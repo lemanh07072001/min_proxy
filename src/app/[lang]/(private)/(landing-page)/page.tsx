@@ -8,6 +8,7 @@ export default function Page() {
   return (
     <div >
       <Hero />
+
       <ProductsSection />
       <PartnersSection />
     </div>
