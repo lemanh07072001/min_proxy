@@ -5,9 +5,9 @@ import { Dialog, DialogActions, DialogContent, DialogTitle, InputAdornment } fro
 import Typography from '@mui/material/Typography'
 import Button from '@mui/material/Button'
 import IconButton from '@mui/material/IconButton'
-import { Alert } from '@mui/lab'
+import { Alert, AlertTitle } from '@mui/lab'
 
-import { CircleAlert, QrCode } from 'lucide-react'
+import { CircleAlert, Loader, QrCode } from 'lucide-react'
 
 import Image from 'next/image'
 
@@ -26,8 +26,9 @@ interface RechargeDialogProps {
 export default function RechargeDialog({ isOpen, handleClose } : RechargeDialogProps) {
   const [rechargeAmount, setRechargeAmount] = useState('')
   const [amount, setAmount] = useState('')
-  const [isQrCode, setQrCode] = useState(false)
   const [qrData, setQrData] = useState(null);
+  const [isGeneratingQR, setIsGeneratingQR] = useState(false);
+  const [isQRModalOpen, setIsQRModalOpen] = useState(false);
 
   const BANK_INFO = {
     bankCode: 'vcb',
@@ -37,9 +38,8 @@ export default function RechargeDialog({ isOpen, handleClose } : RechargeDialogP
     note : 'ck 0335641332'
   };
 
-  useEffect(() => {
+  useEffect( () => {
     if (!isOpen) {
-      setQrCode(false)
       setQrData(null)
       setRechargeAmount('')
       setAmount('')
@@ -53,21 +53,33 @@ export default function RechargeDialog({ isOpen, handleClose } : RechargeDialogP
     return numericValue.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   };
 
-  const changeInputAmount = (event :any) => {
+  const changeInputAmount = async (event :any) => {
     const formatted = formatCurrency(event.target.value);
     const rawValue = event.target.value.replace(/[^0-9]/g, '');
 
     setAmount( rawValue)
 
     setRechargeAmount(formatted);
+
+
   }
 
   const handleQrCode = () => {
-    setQrCode(true)
+    setIsGeneratingQR(true);
 
     const qrUrl = `https://img.vietqr.io/image/${BANK_INFO.bankCode}-${BANK_INFO.accountNumber}-compact2.png?addInfo=${encodeURIComponent(BANK_INFO.note)}`;
 
     setQrData(qrUrl);
+
+
+    setTimeout(() => {
+      setIsGeneratingQR(false);
+      setIsQRModalOpen(true);
+    }, 2000);
+  }
+
+  const handleCloseQrCode = () => {
+    setIsQRModalOpen(false);
   }
 
   // Điều kiện để bật/tắt nút
@@ -79,7 +91,7 @@ export default function RechargeDialog({ isOpen, handleClose } : RechargeDialogP
         onClose={handleClose}
         aria-labelledby='recharge-dialog'
         open={isOpen}
-        maxWidth={'md'}
+        maxWidth={'sm'}
         fullWidth={true}
         closeAfterTransition={false}
         PaperProps={{ sx: { overflow: 'hidden' } }}
@@ -107,6 +119,7 @@ export default function RechargeDialog({ isOpen, handleClose } : RechargeDialogP
                 alignItems: 'center',
               }}
             >
+              <QrCode size={20} className="me-2"/>
               Nạp tiền thanh toán
             </Typography>
 
@@ -135,77 +148,101 @@ export default function RechargeDialog({ isOpen, handleClose } : RechargeDialogP
             }
           }}
         >
-          {!isQrCode ? (
-            <>
-              <Alert
-                variant='outlined'
-              >
-                Nạp tiền bằng cách chuyển khoản ngân hàng
-              </Alert>
+          <>
+            <Alert
+              variant='outlined'
+            >
+              Nạp tiền bằng cách chuyển khoản ngân hàng
+            </Alert>
 
-              <div className="d-flex flex-column gap-2">
-                <Typography
-                  variant='h5'
-                  component='span'
-                  sx={{
-                    fontSize: '14px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    color: 'red',
-                    fontWeight: '200'
-                  }}
-                >
-                  <CircleAlert size={16} className="me-2"/>
-                  Vui lòng tạo QR thanh toán nhận tiền sau 1-3 phút
-                </Typography>
+            <CustomTextField
+              label='Số tiền nạp (VNĐ)'
+              placeholder='10,000'
+              type='text'
+              value={rechargeAmount}
+              onInput={changeInputAmount}
+              slotProps={{
+                input: {
+                  endAdornment: (
+                    <InputAdornment position='start'>
+                      VND
+                    </InputAdornment>
+                  )
+                }
+              }}
+              sx={{
+                '& .MuiInputBase-root' : {
+                  padding: '5px',
+                  fontSize: '16px',
+                  fontWeight: 'bold',
+                },
+                '& .MuiInputLabel-root' : {
+                  fontSize: '14px',
+                  fontWeight: 'bold',
+                  marginBottom: '10px'
+                }
 
-                <Typography
-                  variant='h5'
-                  component='span'
-                  sx={{
-                    fontSize: '14px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    color: 'red',
-                    fontWeight: '200'
-                  }}
-                >
-                  <CircleAlert size={16} className="me-2"/>
-                  Sai nội dung hoặc 10 phút không lên tiền cần liên hệ để kiểm tra
-                </Typography>
-              </div>
+              }}
+            />
 
-              <CustomTextField
-                label='Số tiền nạp (VNĐ)'
-                placeholder='10,000'
-                type='text'
-                value={rechargeAmount}
-                onInput={changeInputAmount}
-                slotProps={{
-                  input: {
-                    endAdornment: (
-                      <InputAdornment position='start'>
-                        VND
-                      </InputAdornment>
-                    )
-                  }
-                }}
+            <Alert
+              severity='warning'
+              sx={{
+                fontSize:'13px',
+                background:'#fffbeb',
+                border:'1px solid #fde68a'
+              }}
+            >
+              <AlertTitle
                 sx={{
-                  '& .MuiInputBase-root' : {
-                    padding: '5px',
-                    fontSize: '16px',
-                    fontWeight: 'bold',
-                  },
-                  '& .MuiInputLabel-root' : {
-                    fontSize: '14px',
-                    fontWeight: 'bold',
-                    marginBottom: '10px'
-                  }
-
+                  fontSize:'15px',
+                  color:'#9f5729',
+                  fontWeight:'600'
                 }}
-              />
+              >
+                QR thanh toán sẽ được tạo sau 1-3 phút
+              </AlertTitle>
+              Vui lòng chờ hệ thống xử lý yêu cầu của bạn
+            </Alert>
 
+            <Alert
+              severity='error'
+              sx={{
+                fontSize:'13px',
+                background:'#fef2f2',
+                border:'1px solid #fecaca'
+              }}
+            >
+              <AlertTitle
+                sx={{
+                  fontSize:'15px',
+                  color:'#991b1b',
+                  fontWeight:'600'
+                }}
+              >
+                Lưu ý quan trọng
+              </AlertTitle>
+              Sai nội dung hoặc 10 phút không lên tiền, vui lòng liên hệ hỗ trợ để kiểm tra
+            </Alert>
 
+            {isGeneratingQR ? (
+              <Button
+                disabled={true}
+                variant='contained'
+                fullWidth
+                sx={{
+                  padding: '12px 16px',
+                  color: 'white',
+                  '&.MuiButtonBase-root-MuiButton-root, &.Mui-disabled': {
+                    backgroundColor: '#dfe0e1',
+                    cursor: 'not-allowed !important',
+                  }
+                }}
+              >
+                <Loader size={16} className="spinning-icon me-2"/>
+                Đang tạo QR...
+              </Button>
+            ):(
               <Button
                 onClick={handleQrCode}
                 disabled={isButtonDisabled}
@@ -220,16 +257,94 @@ export default function RechargeDialog({ isOpen, handleClose } : RechargeDialogP
                   }
                 }}
               >
-                <QrCode size={16}/>
+                <QrCode size={16} className="me-2"/>
                 Tạo QR Bank
               </Button>
-            </>
-          ) : (
+            )}
+
+          </>
+        </DialogContent>
+
+        <DialogActions>
+
+        </DialogActions>
+      </Dialog>
+
+        {/* Modal Qr Code */}
+        <Dialog
+          onClose={handleCloseQrCode}
+          aria-labelledby='qr-dialog'
+          open={isQRModalOpen}
+          maxWidth={'md'}
+          fullWidth={true}
+          closeAfterTransition={false}
+          PaperProps={{ sx: { overflow: 'hidden' } }}
+        >
+          <DialogTitle
+            id='ar-dialog'
+            sx={{
+              display: 'flex',
+              gap:'10px',
+              flexDirection: 'column',
+              background: 'var(--primary-gradient)',
+              padding: theme => theme.spacing(4)
+            }}
+          >
+            <div className="d-flex justify-content-between align-content-center">
+              <Typography
+                variant='h5'
+                component='span'
+                sx={{
+                  fontWeight: 'bold',
+                  fontSize: '18px',
+                  color: 'white',
+                  display: 'flex',
+                  alignItems: 'center',
+                }}
+              >
+                <QrCode size={20} className="me-2"/>
+                Nạp tiền thanh toán
+              </Typography>
+
+              <IconButton
+                onClick={handleCloseQrCode}
+                disableRipple
+                sx={{
+                  color: 'white',
+
+                }}
+              >
+                <i className='tabler-x' />
+              </IconButton>
+            </div>
+          </DialogTitle>
+
+          <DialogContent
+            sx={{
+              padding: theme => theme.spacing(4),
+              gap: theme => theme.spacing(4),
+              display: 'flex',
+              flexDirection: 'column',
+              '&.MuiDialogContent-root': {
+                padding: theme => theme.spacing(4),
+              }
+            }}
+          >
             <>
               <Box component="section" >
                 <div className="row ">
-                  <div className="col-12 col-lg-6 ">
-                    <div className="flex flex-column gap-3">
+                  <div className="col-12 col-lg-6 order-1 order-lg-0">
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '12px',
+                        background: '#f8fafc',
+                        padding: '12px',
+                        borderRadius: '12px',
+                        border: '1px solid #e2e8f0',
+                      }}
+                    >
                       {/* BankName */}
                       <div className="flex flex-column gap-1">
                         <Typography
@@ -349,26 +464,50 @@ export default function RechargeDialog({ isOpen, handleClose } : RechargeDialogP
                           {BANK_INFO['note']}
                         </Typography>
                       </div>
-                    </div>
+                    </Box>
                   </div>
 
-                  <div className="col-12 col-lg-6 ">
-
-                    <img src={qrData} alt="VietQR Code" style={{ width: '100%', height: 'auto' }} />
+                  <div className="col-12 col-lg-6 mt-3 mt-lg-0 order-0 order-lg-1">
+                    <div className="d-flex justify-content-center align-content-center">
+                      <img src={qrData} alt="VietQR Code" style={{ width: '300px', height: 'auto' }} />
+                    </div>
                   </div>
                 </div>
               </Box>
+              <Alert
+                severity='error'
+                icon={false}
+                sx={{
+                  fontSize:'13px',
+                  background:'#fef2f2',
+                  border:'1px solid #fecaca'
+                }}
+              >
+                <AlertTitle
+                  sx={{
+                    fontSize:'13px',
+                    color:'#991b1b',
+                    fontWeight:'600'
+                  }}
+                >
+                  Lưu ý quan trọng:
+                </AlertTitle>
+                <ul className="text-red-600 text-sm ">
+                  <li>• Chuyển đúng số tiền: <strong>{formatCurrency(amount)} VNĐ</strong></li>
+                  <li>• Nhập đúng nội dung: <strong>{BANK_INFO.note}</strong></li>
+                  <li>• Tiền sẽ được cộng vào tài khoản sau 1-5 phút</li>
+                  <li>• Liên hệ hỗ trợ nếu sau 10 phút chưa nhận được tiền</li>
+                </ul>
+              </Alert>
+
 
             </>
-          )}
+          </DialogContent>
 
+          <DialogActions>
 
-        </DialogContent>
-
-        <DialogActions>
-
-        </DialogActions>
-      </Dialog>
+          </DialogActions>
+        </Dialog>
     </>
   )
 }
