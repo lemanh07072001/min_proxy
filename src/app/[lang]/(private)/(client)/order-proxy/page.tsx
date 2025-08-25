@@ -53,7 +53,7 @@ export default function OrderProxy() {
   ]
 
   return (
-    <div className='proxy-orders-page'>
+    <div className='main-page'>
       {/* Page Header */}
       <div className='page-header-orders'>
         <div className='header-content'>

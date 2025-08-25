@@ -1445,37 +1445,6 @@ body {
   box-shadow: 0 6px 16px rgba(252, 67, 54, 0.4);
 }
 
-/* Results Panel */
-.results-panel {
-  display: flex;
-  flex-direction: column;
-}
-
-.results-card {
-  background: white;
-  border-radius: 16px;
-  padding: 24px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  block-size: fit-content;
-}
-
-.results-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-block-end: 24px;
-  padding-block-end: 16px;
-  border-block-end: 1px solid #f1f5f9;
-}
-
-.results-title {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-size: 18px;
-  font-weight: 600;
-  color: #1e293b;
-}
 
 .results-actions {
   display: flex;

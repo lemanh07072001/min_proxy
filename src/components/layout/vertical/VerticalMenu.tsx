@@ -42,6 +42,7 @@ import StyledVerticalNavExpandIcon from '@menu/styles/vertical/StyledVerticalNav
 // Style Imports
 import menuItemStyles from '@core/styles/vertical/menuItemStyles'
 import menuSectionStyles from '@core/styles/vertical/menuSectionStyles'
+import { getDictionary } from '@/utils/getDictionary'
 
 type RenderExpandIconProps = {
   open?: boolean
@@ -49,6 +50,7 @@ type RenderExpandIconProps = {
 }
 
 type Props = {
+  dictionary: Awaited<ReturnType<typeof getDictionary>>
   scrollMenu: (container: any, isPerfectScrollbar: boolean) => void
 }
 
@@ -133,7 +135,7 @@ const getSubMenuStyles = () => ({
 // =================================================================
 // Bắt đầu Component
 // =================================================================
-const VerticalMenu = ({ scrollMenu }: Props) => {
+const VerticalMenu = ({ scrollMenu, dictionary }: Props) => {
   // Hooks
   const theme = useTheme()
   const verticalNavOptions = useVerticalNav()
@@ -217,15 +219,15 @@ const VerticalMenu = ({ scrollMenu }: Props) => {
       >
         <MenuSection label='Trang chủ' rootStyles={menuSectionHeaderStyles}>
           <MenuItem icon={<ChartColumn />} rootStyles={getMenuItemStyles('overview')} href={`/${locale}/overview`}>
-            Tổng quan
+            {dictionary['navigation'].overview}
           </MenuItem>
 
-          <SubMenu label='Proxy' icon={<Globe />} rootStyles={subMenuStyles} defaultOpen={isProxySubMenuActive}>
+          <SubMenu label={dictionary['navigation'].proxy} icon={<Globe />} rootStyles={subMenuStyles} defaultOpen={isProxySubMenuActive}>
             <MenuItem rootStyles={getMenuItemStyles('proxy-tinh')} href={`/${locale}/proxy-tinh`}>
-              Proxy tĩnh
+              {dictionary['navigation'].staticProxy}
             </MenuItem>
             <MenuItem rootStyles={getMenuItemStyles('proxy-xoay')} href={`/${locale}/proxy-xoay`}>
-              Proxy xoay
+              {dictionary['navigation'].rotatingProxy}
             </MenuItem>
           </SubMenu>
 
@@ -235,40 +237,43 @@ const VerticalMenu = ({ scrollMenu }: Props) => {
             rootStyles={getMenuItemStyles('check-proxy')}
             href={`/${locale}/check-proxy`}
           >
-            Check Proxy
+            {dictionary['navigation'].checkProxy}
           </MenuItem>
           <MenuItem
             icon={<ReceiptText />}
             rootStyles={getMenuItemStyles('order-proxy')}
             href={`/${locale}/order-proxy`}
           >
-            Đơn hàng Proxy
+            {dictionary['navigation'].proxyOrders}
           </MenuItem>
           <MenuItem
             icon={<PackagePlus />}
             rootStyles={getMenuItemStyles('order-rotating-proxy')}
             href={`/${locale}/order-rotating-proxy`}
           >
-            Đơn hàng Proxy xoay
+            {dictionary['navigation'].rotatingProxyOrders}
           </MenuItem>
           <MenuItem
             icon={<History />}
             rootStyles={getMenuItemStyles('history-order')}
             href={`/${locale}/history-order`}
           >
-            Lịch sử mua hàng
+            {dictionary['navigation'].purchaseHistory}
           </MenuItem>
-          <MenuItem icon={<FileText />} rootStyles={baseMenuItemStyles}>
-            Lịch sử giao dịch
+          <MenuItem
+            icon={<FileText />}
+            rootStyles={getMenuItemStyles('transaction-history')}
+            href={`/${locale}/transaction-history`}>
+            {dictionary['navigation'].transactionHistory}
           </MenuItem>
           <MenuItem icon={<History />} rootStyles={baseMenuItemStyles}>
-            Lịch sử đổi proxy
+            {dictionary['navigation'].proxyChangeHistory}
           </MenuItem>
           <MenuItem icon={<User />} rootStyles={baseMenuItemStyles}>
-            Hướng dẫn
+            {dictionary['navigation'].guide}
           </MenuItem>
           <MenuItem icon={<MessageCircleQuestionMark />} rootStyles={baseMenuItemStyles}>
-            Hỗ trợ
+            {dictionary['navigation'].support}
           </MenuItem>
         </MenuSection>
       </Menu>

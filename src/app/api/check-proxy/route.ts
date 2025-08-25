@@ -14,17 +14,25 @@ export async function POST(request) {
     const httpsAgent = new HttpsProxyAgent(proxyUrl)
 
     try {
+      const startTime = performance.now();
+
       // Dùng axios với proxy agent để gọi ra ngoài
       const response = await axios.get('https://cloudflare.com/cdn-cgi/trace', {
         httpsAgent,
         timeout: 10000 // Timeout 10 giây
       })
 
+      const endTime = performance.now();
+
+      const duration = Math.round(endTime - startTime);
+
       // Nếu thành công, trả về IP của proxy
       return NextResponse.json({
-        status: 'success',
-        protocol: protocol,
         proxy: list_proxy,
+        ip: host,
+        protocol: protocol,
+        status: 'success',
+        responseTime: duration,
         type: format_proxy
       })
 

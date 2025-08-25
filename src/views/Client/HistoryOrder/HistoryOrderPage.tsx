@@ -2,22 +2,12 @@
 
 import { useMemo, useState } from 'react'
 
-import { headers } from 'next/headers'
-
-import { toast } from 'react-toastify'
-
 import {
   TriangleAlert,
-  Copy,
-  RotateCcwKey,
   CircleQuestionMark,
   BadgeCheck,
   BadgeMinus,
-  Calendar,
-  Key
 } from 'lucide-react'
-
-import Button from '@mui/material/Button'
 
 import {
   useReactTable,
@@ -29,8 +19,6 @@ import {
 import Chip from '@mui/material/Chip'
 
 import Pagination from '@mui/material/Pagination'
-
-import CustomIconButton from '@core/components/mui/IconButton'
 
 export default function HistoryOrderPage({ data }) {
   const [showPasswords, setShowPasswords] = useState<{ [key: string]: boolean }>({})
@@ -49,7 +37,6 @@ export default function HistoryOrderPage({ data }) {
   }
 
   const copyToClipboard = (text: string) => {
-    toast.success('Copy thành công.')
     navigator.clipboard.writeText(text)
   }
 

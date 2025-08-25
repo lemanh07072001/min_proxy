@@ -1,0 +1,40 @@
+{
+  "navigation": {
+    "home": "Trang chủ",
+    "overview": "Tổng quan",
+    "proxy": "Proxy",
+    "staticProxy": "Proxy Tĩnh",
+    "rotatingProxy": "Proxy Xoay",
+    "checkProxy": "Check Proxy",
+    "proxyOrders": "Đơn hàng proxy",
+    "rotatingProxyOrders": "Đơn hàng proxy xoay",
+    "purchaseHistory": "Lịch sử mua hàng",
+    "transactionHistory": "Lịch sử giao dịch",
+    "proxyChangeHistory": "Lịch sử đổi proxy",
+    "guide": "Hướng dẫn",
+    "support": "Hỗ trợ"
+  },
+  "staticProxy": {
+    "title": "Proxy dân cư",
+    "describe": "Chọn gói proxy phù hợp với nhu cầu của bạn",
+    "days": "Ngày",
+    "location": "Location",
+    "duration": "Thời gian",
+    "quantity": "Số lượng",
+    "protocol": "Giao thức",
+    "username": "Tài khoản",
+    "password": "Mật khẩu",
+    "total": "Tổng cộng",
+    "buyNow": "Mua ngay",
+    "validation": {
+      "pleaseEnterNumber": "Vui lòng nhập số",
+      "pleaseEnterDays": "Vui lòng nhập số ngày",
+      "daysMustBeInteger": "Số ngày phải là số nguyên",
+      "minDays": "Tối thiểu 1 ngày",
+      "pleaseEnterQuantity": "Vui lòng nhập số lượng",
+      "quantityMustBeInteger": "Số lượng phải là số nguyên",
+      "minQuantity": "Tối thiểu 1 proxy",
+      "minChars": "Tối thiểu 4 ký tự"
+    }
+  }
+}

@@ -10,6 +10,7 @@ import '@/app/[lang]/(private)/(client)/main.css'
 // Layout Imports
 import LayoutWrapper from '@layouts/LayoutWrapper'
 import VerticalLayout from '@layouts/VerticalLayout'
+import { getDictionary } from '@/utils/getDictionary'
 
 // Component Imports
 import Providers from '@components/Providers'
@@ -24,17 +25,21 @@ import { getMode, getSystemMode } from '@core/utils/serverHelpers'
 const Layout = async (props: ChildrenType) => {
   const { children } = props
 
+  const params = await props.params
+
   // Vars
   const direction = 'ltr'
   const mode = await getMode()
   const systemMode = await getSystemMode()
+
+  const dictionary = await getDictionary(params.lang)
 
   return (
     <Providers direction={direction}>
       <LayoutWrapper
         systemMode={systemMode}
         verticalLayout={
-          <VerticalLayout navigation={<Navigation mode={mode} />} navbar={<Navbar />}>
+          <VerticalLayout navigation={<Navigation dictionary={dictionary} mode={mode} />} navbar={<Navbar />}>
             {children}
           </VerticalLayout>
         }

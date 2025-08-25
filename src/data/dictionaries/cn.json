@@ -1,0 +1,40 @@
+{
+  "navigation": {
+    "home": "首页",
+    "overview": "概览",
+    "proxy": "代理",
+    "staticProxy": "静态代理",
+    "rotatingProxy": "轮换代理",
+    "checkProxy": "检查代理",
+    "proxyOrders": "代理订单",
+    "rotatingProxyOrders": "轮换代理订单",
+    "purchaseHistory": "购买历史",
+    "transactionHistory": "交易历史",
+    "proxyChangeHistory": "代理更换历史",
+    "guide": "指南",
+    "support": "支持"
+  },
+  "staticProxy": {
+    "title": "住宅代理",
+    "describe": "选择适合您需求的代理套餐",
+    "days": "天数",
+    "location": "地点",
+    "duration": "时长",
+    "quantity": "数量",
+    "protocol": "协议",
+    "username": "用户名",
+    "password": "密码",
+    "total": "总计",
+    "buyNow": "立即购买",
+    "validation": {
+      "pleaseEnterNumber": "请输入数字",
+      "pleaseEnterDays": "请输入天数",
+      "daysMustBeInteger": "天数必须是整数",
+      "minDays": "最少1天",
+      "pleaseEnterQuantity": "请输入数量",
+      "quantityMustBeInteger": "数量必须是整数",
+      "minQuantity": "最少1个代理",
+      "minChars": "最少4个字符"
+    }
+  }
+}

@@ -223,13 +223,13 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, logo, color, price, fea
 
       {/* Footer với tổng tiền và nút mua */}
       <div className='row'>
-        <div className='col-4 col-lg-3'>
+        <div className='col-5 col-sm-5 col-md-5 col-lg-4'>
           <div className='flex flex-col'>
             <span className='total-label'>Tổng cộng:</span>
             <span className='total-price'>{calculateTotal().toLocaleString('vi-VN')}đ</span>
           </div>
         </div>
-        <div className='col-8 col-lg-9'>
+        <div className='col-7 col-sm-7 col-md-7  col-lg-8'>
           <button type='submit' className='buy-button'>
             <ShoppingCart size={18} /> Mua ngay
           </button>

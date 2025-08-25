@@ -50,7 +50,6 @@ export default function OrderProxyPage({ data }) {
   }
 
   const copyToClipboard = (text: string) => {
-    toast.success('Copy thành công.')
     navigator.clipboard.writeText(text)
   }
 

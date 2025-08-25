@@ -37,3 +37,18 @@
   gap: 24px;
   padding-block-start: 32px;
 }
+
+/* Tablet & Small Desktops */
+@media (max-width: 1024px) {
+  .plans-container {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .plans-container {
+    grid-template-columns: 1fr;
+  }
+}

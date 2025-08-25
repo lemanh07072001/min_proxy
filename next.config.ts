@@ -7,7 +7,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: '/',
-        destination: '/en', // Đặt locale mặc định của bạn tại đây
+        destination: '/vi', // Đặt locale mặc định của bạn tại đây
         permanent: false // Sử dụng false để tránh cache vĩnh viễn
       }
     ]

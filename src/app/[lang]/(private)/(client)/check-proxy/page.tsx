@@ -1,22 +1,41 @@
+"use client"
+
 import './styles.css'
+
+import { useEffect, useState } from 'react'
 
 // eslint-disable-next-line import/order
 import { Search } from 'lucide-react'
 import CheckProxyForm from '@views/Client/CheckProxy/CheckProxyForm'
+
 import CheckProxyTable from '@views/Client/CheckProxy/CheckProxyTable'
 
-export default function CheckProxy() {
-  const checkResults = [
-    {
-      id: 1,
-      proxy: '171.246.183.233:35403:ava634:oqg3mjczruu0ng==',
-      ip: '171.246.183.233',
-      protocol: 'HTTP',
-      status: 'active',
-      responseTime: '245ms',
-      location: 'Vietnam'
+export default function CheckProxy( ) {
+  const [checkResults, setCheckResults] = useState<string[]>([])
+  const [checkedProxy, setCheckedProxy] = useState()
+
+  useEffect(() => {
+    // Nếu checkedProxy chưa có dữ liệu thì không làm gì cả
+    if (!checkedProxy) {
+      return
     }
-  ]
+
+    // Cập nhật lại state checkResults
+    setCheckResults(prevResults => {
+      // Dùng .map() để tạo ra một mảng mới
+      return prevResults.map(item => {
+        // So sánh proxy trong mảng với proxy vừa được check xong
+        // Giả sử cả hai object đều có thuộc tính `proxy` là chuỗi proxy gốc
+        if (item.proxy === checkedProxy.proxy) {
+          // Nếu tìm thấy, cập nhật item đó bằng dữ liệu mới từ checkedProxy
+          return { ...item, ...checkedProxy }
+        }
+
+        // Nếu không khớp, giữ nguyên item cũ
+        return item
+      })
+    })
+  }, [checkedProxy])
 
   return (
     <>
@@ -39,9 +58,9 @@ export default function CheckProxy() {
       <div className='check-proxy-content'>
         <div className='check-proxy-grid'>
           {/*  Form  */}
-          <CheckProxyForm />
+          <CheckProxyForm onItemListChange={setCheckResults} onCheckedProxy={setCheckedProxy}/>
           {/* Table */}
-          <CheckProxyTable data={checkResults} />
+          <CheckProxyTable data={checkResults} checkedProxy={checkedProxy}/>
         </div>
       </div>
     </>

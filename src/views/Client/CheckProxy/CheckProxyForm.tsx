@@ -1,6 +1,18 @@
 'use client'
 
-import { AlertCircle, CheckCircle, Clock, Copy, Globe, MapPin, RefreshCw, Search, Shield, XCircle } from 'lucide-react'
+import {
+  AlertCircle,
+  CheckCircle,
+  Clock,
+  Copy,
+  Globe,
+  Loader,
+  MapPin,
+  RefreshCw,
+  Search,
+  Shield,
+  XCircle
+} from 'lucide-react'
 
 import './styles.css'
 
@@ -10,7 +22,7 @@ import MenuItem from '@mui/material/MenuItem'
 
 import { InputAdornment } from '@mui/material'
 
-import { useMutation } from '@tanstack/react-query'
+import { useIsMutating, useMutation } from '@tanstack/react-query'
 
 import axios from 'axios'
 
@@ -24,6 +36,7 @@ import { yupResolver } from '@hookform/resolvers/yup'
 
 import CustomTextField from '@core/components/mui/TextField'
 import CustomIconButton from '@core/components/mui/IconButton'
+import { LoadingButton } from '@mui/lab'
 
 // Tạo schema validation bằng Yup
 const schema = yup.object().shape({
@@ -32,21 +45,48 @@ const schema = yup.object().shape({
   list_proxy: yup.string().required('Vui lòng nhập danh sách proxy')
 })
 
-const checkProxyApi = async proxyData => {
+const checkProxyApi = async (proxyData: any) => {
   const { data } = await axios.post('/api/check-proxy', proxyData)
 
   return data
 }
 
-export default function CheckProxyForm() {
-  const [isChecking, setIsChecking] = useState(false)
-  const [results, setResults] = useState([])
-  const [itemList, setItemList] = useState([])
+interface CheckProxyFormProps {
+  onItemListChange: (items: string[]) => void;
+  onCheckedProxy: (items: string[]) => void;
+}
+
+export default function CheckProxyForm({onItemListChange, onCheckedProxy } : CheckProxyFormProps) {
+  const [successProxies, setSuccessProxies] = useState([]);
+  const [errorProxies, setErrorProxies] = useState([]);
 
   const theme = useTheme()
 
+  // Đếm số lượng mutation có key là ['check-proxy'] đang chạy
+  const pendingMutations = useIsMutating({ mutationKey: ['check-proxy'] });
+
+  // isLoading sẽ là true nếu có ít nhất 1 mutation đang chạy
+  const isLoading = pendingMutations > 0;
+
   const mutation = useMutation({
-    mutationFn: checkProxyApi
+    mutationKey: ['check-proxy'],
+    mutationFn: checkProxyApi,
+    onSuccess: (dataFromApi) => {
+      // Khi một proxy được check thành công, `dataFromApi` là kết quả trả về.
+      // Bây giờ, chúng ta gọi callback để báo cho component cha.
+      onCheckedProxy(dataFromApi);
+      handleProxyChecked(dataFromApi)
+    },
+    onError: (error, variables) => {
+      const failedProxyData = {
+        proxy: variables.list_proxy,
+        responseTime: -1,
+        status: 'error',
+      };
+
+      onCheckedProxy(failedProxyData);
+      handleProxyChecked(failedProxyData)
+    }
   })
 
   const {
@@ -72,19 +112,44 @@ export default function CheckProxyForm() {
     const filteredLines = list_proxy.split('\n').filter(line => line.trim() !== '')
 
     // Cập nhật state để hiển thị trên UI
-    setItemList(filteredLines)
+    const proxyObjectsArray = filteredLines.map((proxyString, index) => {
+      const [host] = proxyString.split(':')
+
+      return {
+        id: index + 1,
+        proxy : proxyString,
+        ip : host,
+        protocol: protocol,
+        status : 'checking',
+        responseTime: 'checking',
+        type : format_proxy
+      };
+    });
+
+    setSuccessProxies([]);
+    setErrorProxies([]);
+
+    // Gọi callback để báo cho component cha
+    onItemListChange(proxyObjectsArray)
 
     filteredLines.forEach(proxy => {
-      console.log(`Đang gửi proxy: ${proxy}`)
       mutation.mutate({
         protocol,
         format_proxy,
         list_proxy: proxy
       })
+
     })
   }
 
-  console.log(itemList)
+  const handleProxyChecked = (checkedProxyResult) => {
+    // Phân loại vào danh sách success hoặc error
+    if (checkedProxyResult.status === 'success') {
+      setSuccessProxies(prev => [...prev, checkedProxyResult.proxy]);
+    } else {
+      setErrorProxies(prev => [...prev, checkedProxyResult.proxy]);
+    }
+  };
 
   const dataLocation = [
     {
@@ -243,11 +308,13 @@ export default function CheckProxyForm() {
           </div>
 
           {/* Check Button */}
-          <Button
+          <LoadingButton
             variant='contained'
             color='warning'
             type='submit'
             fullWidth
+            loading={isLoading}
+            loadingIndicator={<Loader size={25} className="spinning-icon spinning-icon-loading " />}
             sx={{
               background: 'var(--mui-palette-customCssVars-bgButtonPrimary)',
               padding: '16px 24px',
@@ -260,7 +327,7 @@ export default function CheckProxyForm() {
             }}
           >
             Kiểm tra
-          </Button>
+          </LoadingButton>
 
           {/* Proxy đang hoạt động */}
           <div className='form-group-check'>
@@ -270,6 +337,7 @@ export default function CheckProxyForm() {
               fullWidth
               name='proxy_success'
               id='proxy_success'
+              value={successProxies.join('\n')}
               label={
                 <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
                   <CheckCircle size={16} className='text-green-500' />
@@ -290,7 +358,7 @@ export default function CheckProxyForm() {
                 }
               }}
             />
-            <button className='copy-btn'>
+            <button  type="button" className='copy-btn'>
               <Copy size={14} />
             </button>
           </div>
@@ -303,6 +371,7 @@ export default function CheckProxyForm() {
               fullWidth
               name='proxy_error'
               id='proxy_error'
+              value={errorProxies.join('\n')}
               label={
                 <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
                   <XCircle size={16} className='text-red-500' />
@@ -323,7 +392,7 @@ export default function CheckProxyForm() {
                 }
               }}
             />
-            <CustomIconButton aria-label='capture screenshot' color='success' variant='contained' className='copy-btn'>
+            <CustomIconButton type="button" aria-label='capture screenshot' color='success' variant='contained' className='copy-btn'>
               <Copy size={14} />
             </CustomIconButton>
           </div>

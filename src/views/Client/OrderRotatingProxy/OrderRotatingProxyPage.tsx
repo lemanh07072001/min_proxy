@@ -4,7 +4,6 @@ import { useMemo, useState } from 'react'
 
 import { headers } from 'next/headers'
 
-import { toast } from 'react-toastify'
 
 import { TriangleAlert, Copy, CircleQuestionMark, BadgeCheck, BadgeMinus, Download } from 'lucide-react'
 
