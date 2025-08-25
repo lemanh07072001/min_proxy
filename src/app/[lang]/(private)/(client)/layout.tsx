@@ -49,7 +49,11 @@ const Layout = async (props: ChildrenType) => {
             {children}
           </VerticalLayout>
         }
-
+        horizontalLayout={
+          <HorizontalLayout header={<Header dictionary={dictionary} />} footer={<HorizontalFooter />}>
+            {children}
+          </HorizontalLayout>
+        }
       />
       <ScrollToTop className='mui-fixed'>
         <Button variant='contained' className='is-10 bs-10 rounded-full p-0 min-is-0 flex items-center justify-center'>

@@ -63,7 +63,7 @@ export default function TransactionHistoryPage({data} : any) {
                 </div>
               )
             )
-          }else if(row.original.type === 'recharge'){
+          }else if(row.original.type === 'wallet'){
             return (
               (
                 <div>

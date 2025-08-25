@@ -22,6 +22,9 @@ import type { Locale } from '@configs/i18n'
 import type { ChildrenType } from '@core/types'
 import Header from '@/app/[lang]/(private)/(landing-page)/components/Header'
 import Footer from '@/app/[lang]/(private)/(landing-page)/components/Footer'
+import { getMode, getSystemMode } from '@core/utils/serverHelpers'
+import { getDictionary } from '@/utils/getDictionary'
+import Providers from '@components/Providers'
 
 
 
@@ -29,13 +32,24 @@ import Footer from '@/app/[lang]/(private)/(landing-page)/components/Footer'
 const Layout = async (props: ChildrenType & { params: Promise<{ lang: Locale }> }) => {
   const { children } = props
 
+  const params = await props.params
+
+  // Vars
+  const direction = 'ltr'
+  const mode = await getMode()
+  const systemMode = await getSystemMode()
+
+  const dictionary = await getDictionary(params.lang)
+
 
 
   return (
     <>
+      <Providers direction={direction}>
       <Header/>
       {children}
       <Footer/>
+      </Providers>
     </>
   )
 }

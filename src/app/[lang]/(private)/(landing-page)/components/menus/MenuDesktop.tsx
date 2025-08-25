@@ -7,6 +7,7 @@ import MenuLandingPage from '@/app/data/MenuLandingPage'
 import LanguageSelect from '@components/language-selector/LanguageSelect'
 
 import Link from '@components/Link';
+import LanguageDropdown from '@components/layout/shared/LanguageDropdown'
 
 type AuthProps = {
   setIsOpen: (value: boolean) => void
@@ -36,11 +37,14 @@ export default function MenuDesktop({ setIsOpen, setMode }: AuthProps) {
 
           const isActive = pathname === `/${locale }${item.href}`
 
-          console.log(pathname)
-
           return (
             <li key={index} className='nav-item'>
-              <Link href={`/${locale }${item.href}`} className={`nav-link nav-link-custom ${isActive ? 'active' : ''}`}>
+              <Link
+                href={`/${locale }${item.href}`}
+                className={`nav-link nav-link-custom ${isActive ? 'active' : ''}`}
+                target={item.target}
+                rel={item.target === '_blank' ? 'noopener noreferrer' : undefined}
+              >
                 {item.label}
               </Link>
             </li>
@@ -48,7 +52,9 @@ export default function MenuDesktop({ setIsOpen, setMode }: AuthProps) {
         })}
       </ul>
 
-      <LanguageSelect />
+      <div className="me-2">
+        <LanguageDropdown />
+      </div>
 
       <div className='d-flex align-items-center gap-2'>
         <button className='btn btn-gradient-primary me-2' onClick={handleOpenModalRegister}>

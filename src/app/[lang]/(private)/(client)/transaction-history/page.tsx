@@ -22,7 +22,7 @@ export default function TransactionHistory(){
     },
     {
       id: '714b94a6-c831-4a3a-a448-66788bf2bc2c',
-      type: 'recharge',
+      type: 'wallet',
       amount: '1000',
       description: 'ck 0335641332',
       status: 'truncate',

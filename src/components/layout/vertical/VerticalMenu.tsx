@@ -2,12 +2,9 @@
 import { useState, useEffect } from 'react'
 
 import { useParams, usePathname } from 'next/navigation'
-import Link from 'next/link'
 
 import {
   ChartColumn,
-  Plus,
-  Wallet,
   Globe,
   CircleSmall,
   ShoppingBag,
@@ -21,8 +18,6 @@ import {
 
 // MUI Imports
 import { useTheme } from '@mui/material/styles'
-
-import { motion, AnimatePresence } from 'framer-motion'
 import PerfectScrollbar from 'react-perfect-scrollbar'
 
 import { menuClasses } from '@menu/utils/menuClasses'
@@ -43,6 +38,7 @@ import StyledVerticalNavExpandIcon from '@menu/styles/vertical/StyledVerticalNav
 import menuItemStyles from '@core/styles/vertical/menuItemStyles'
 import menuSectionStyles from '@core/styles/vertical/menuSectionStyles'
 import { getDictionary } from '@/utils/getDictionary'
+import BalanceCard from '@/app/[lang]/(private)/(client)/components/wallet/BalanceCard'
 
 type RenderExpandIconProps = {
   open?: boolean
@@ -180,34 +176,7 @@ const VerticalMenu = ({ scrollMenu, dictionary }: Props) => {
           })}
     >
       {/* Wallet Section */}
-      <AnimatePresence>
-        {isWalletVisible && (
-          <motion.div
-            initial={isInitialLoad ? { opacity: 1, maxHeight: 300 } : { opacity: 0, maxHeight: 0 }}
-            animate={{ opacity: 1, maxHeight: 300 }}
-            exit={{ opacity: 0, maxHeight: 0 }}
-            transition={{ duration: 0.3, ease: 'easeInOut' }}
-            style={{ overflow: 'hidden', padding: '0 1rem' }}
-          >
-            <div className='wallet-card'>
-              <div className='wallet-header'>
-                <Wallet className='wallet-icon' size={20} />
-                <span className='wallet-title'>Ví của bạn</span>
-              </div>
-              <div className='wallet-balance'>
-                <span className='balance-amount'>2,450,000</span>
-                <span className='balance-currency'>VNĐ</span>
-              </div>
-              <div className='wallet-actions'>
-                <button className='btn-primary'>
-                  <Plus size={16} />
-                  Nạp tiền
-                </button>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <BalanceCard isInitialLoad={isInitialLoad} isWalletVisible={isWalletVisible} />
 
       {/* Vertical Menu (giữ nguyên) */}
       <Menu
