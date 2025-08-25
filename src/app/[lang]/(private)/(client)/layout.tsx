@@ -21,6 +21,12 @@ import ScrollToTop from '@core/components/scroll-to-top'
 
 // Util Imports
 import { getMode, getSystemMode } from '@core/utils/serverHelpers'
+import HorizontalLayout from '@layouts/HorizontalLayout'
+import Header from '@components/layout/horizontal/Header'
+
+function HorizontalFooter() {
+  return null
+}
 
 const Layout = async (props: ChildrenType) => {
   const { children } = props
@@ -42,6 +48,11 @@ const Layout = async (props: ChildrenType) => {
           <VerticalLayout navigation={<Navigation dictionary={dictionary} mode={mode} />} navbar={<Navbar />}>
             {children}
           </VerticalLayout>
+        }
+        horizontalLayout={
+          <HorizontalLayout header={<Header  />} footer={<HorizontalFooter />}>
+            {children}
+          </HorizontalLayout>
         }
       />
       <ScrollToTop className='mui-fixed'>

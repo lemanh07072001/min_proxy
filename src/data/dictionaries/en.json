@@ -34,7 +34,9 @@
       "pleaseEnterQuantity": "Please enter the quantity",
       "quantityMustBeInteger": "Quantity must be an integer",
       "minQuantity": "Minimum 1 proxy",
-      "minChars": "Minimum 4 characters"
+      "minChars": "Minimum 4 characters",
+      "pleaseEnterUsername": "Please enter a username",
+      "pleaseEnterPassword": "Please enter a password"
     }
   }
 }

@@ -34,7 +34,9 @@
       "pleaseEnterQuantity": "Vui lòng nhập số lượng",
       "quantityMustBeInteger": "Số lượng phải là số nguyên",
       "minQuantity": "Tối thiểu 1 proxy",
-      "minChars": "Tối thiểu 4 ký tự"
+      "minChars": "Tối thiểu 4 ký tự",
+      "pleaseEnterUsername": "Vui lòng nhập tài khoản",
+      "pleaseEnterPassword": "Vui lòng nhập mật khẩu"
     }
   }
 }

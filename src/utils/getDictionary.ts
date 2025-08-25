@@ -2,7 +2,7 @@
 
 import 'server-only' // Đảm bảo code này chỉ chạy trên server
 
-type Locale = 'en' | 'vi'
+type Locale = 'en' | 'vi' | 'cn'
 
 // Định nghĩa các hàm tải từ điển
 const dictionaries = {

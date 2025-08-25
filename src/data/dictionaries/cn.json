@@ -34,7 +34,9 @@
       "pleaseEnterQuantity": "请输入数量",
       "quantityMustBeInteger": "数量必须是整数",
       "minQuantity": "最少1个代理",
-      "minChars": "最少4个字符"
+      "minChars": "最少4个字符",
+      "pleaseEnterUsername": "请输入用户名",
+      "pleaseEnterPassword": "请输入密码"
     }
   }
 }

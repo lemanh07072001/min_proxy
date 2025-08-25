@@ -1,20 +1,25 @@
 'use client'
 
-import React from 'react'
+import React, { useMemo } from 'react'
 
 import Image from 'next/image'
 
 import '@/app/[lang]/(private)/(client)/components/proxy-card/styles.css'
 import * as yup from 'yup'
 import { yupResolver } from '@hookform/resolvers/yup'
-import { MapPin, Clock, Users, Globe, ShoppingCart } from 'lucide-react'
+import { MapPin, Clock, Users, ShoppingCart } from 'lucide-react'
 import Chip from '@mui/material/Chip'
 import MenuItem from '@mui/material/MenuItem'
 import { Controller, useForm } from 'react-hook-form'
 
+import { useTranslation } from 'react-i18next'
+
 import CustomTextField from '@core/components/mui/TextField'
 import QuantityControl from '@components/form/input-quantity/QuantityControl'
+
 import ProtocolSelector from '@components/form/protocol-selector/ProtocolSelector'
+
+
 
 interface ProxyCardProps {
   provider: string
@@ -24,28 +29,35 @@ interface ProxyCardProps {
   features: { title: string; class: 'success' | 'warning' | 'info' | 'primary' }[]
 }
 
-const proxySchema = yup
-  .object({
-    location: yup.string().required(),
-    days: yup
-      .number()
-      .typeError('Vui lòng nhập số')
-      .required('Vui lòng nhập số ngày')
-      .integer('Số ngày phải là số nguyên')
-      .min(1, 'Tối thiểu 1 ngày'),
-    quantity: yup
-      .number()
-      .typeError('Vui lòng nhập số')
-      .required('Vui lòng nhập số lượng')
-      .integer('Số lượng phải là số nguyên')
-      .min(1, 'Tối thiểu 1 proxy'),
-    protocol: yup.string().required(),
-    username: yup.string().min(4, 'Tối thiểu 4 ký tự'),
-    password: yup.string().min(4, 'Tối thiểu 4 ký tự')
-  })
-  .required()
 
 const ProxyCard: React.FC<ProxyCardProps> = ({ provider, logo, color, price, features }) => {
+  const { t: staticProxy } = useTranslation('staticProxy')
+
+  const proxySchema = useMemo(() => {
+    return yup.object({
+      location: yup.string().required(),
+      days: yup.number()
+        .required(staticProxy('validation.pleaseEnterDays')) // Bỏ 'staticProxy.'
+        .typeError(staticProxy('validation.pleaseEnterNumber'))
+        .integer(staticProxy('validation.daysMustBeInteger'))
+        .min(1, staticProxy('validation.minDays')),
+      quantity: yup.number()
+        .required(staticProxy('validation.pleaseEnterQuantity')) // Bỏ 'staticProxy.'
+        .typeError(staticProxy('validation.pleaseEnterNumber'))
+        .integer(staticProxy('validation.quantityMustBeInteger'))
+        .min(1, staticProxy('validation.minQuantity')),
+      protocol: yup.string().required(),
+      username: yup.string()
+        .required(staticProxy('validation.pleaseEnterUsername')) // Bỏ 'staticProxy.'
+        .min(4, staticProxy('validation.minChars')),
+      password: yup.string()
+        .required(staticProxy('validation.pleaseEnterPassword')) // Bỏ 'staticProxy.'
+        .min(4, staticProxy('validation.minChars'))
+    });
+  }, [staticProxy])
+
+
+
   const {
     control,
     handleSubmit,
@@ -116,7 +128,7 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, logo, color, price, fea
         <div className='price-section'>
           {/* SỬA LỖI 4: Hiển thị giá gốc, không phải tổng tiền */}
           <div className='price-amount'>{price}</div>
-          <div className='price-unit'>/ngày</div>
+          <div className='price-unit'>/{staticProxy('days')}</div>
         </div>
       </div>
 
