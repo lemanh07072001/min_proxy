@@ -19,7 +19,22 @@ import QuantityControl from '@components/form/input-quantity/QuantityControl'
 
 import ProtocolSelector from '@components/form/protocol-selector/ProtocolSelector'
 
-
+const textFieldStyles = {
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '8px',
+  '& .MuiInputLabel-root': {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px',
+    fontSize: '11px',
+    fontWeight: '600',
+    color: '#64748b',
+    textTransform: 'uppercase',
+    letterSpacing: '0.5px',
+    marginBottom: '4px',
+  }
+};
 
 interface ProxyCardProps {
   provider: string
@@ -126,20 +141,18 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, logo, color, price, fea
           </div>
         </div>
         <div className='price-section'>
-          {/* SỬA LỖI 4: Hiển thị giá gốc, không phải tổng tiền */}
           <div className='price-amount'>{price}</div>
           <div className='price-unit'>/{staticProxy('days')}</div>
         </div>
       </div>
 
-      {/* Form controls trong layout cột */}
       <div className='form-grid'>
-        {/* SỬA LỖI 1: Bọc Location trong Controller */}
         <Controller
           name='location'
           control={control}
           render={({ field }) => (
             <CustomTextField
+              className=''
               select
               fullWidth
               label={
@@ -148,6 +161,9 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, logo, color, price, fea
                 </span>
               }
               {...field}
+              error={!!errors.location}
+              helperText={errors.location?.message}
+              sx={textFieldStyles}
             >
               {dataLocation.map(item => (
                 <MenuItem key={item.value} value={item.value}>
@@ -166,7 +182,6 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, logo, color, price, fea
             <CustomTextField
               {...field}
               type='number'
-              // SỬA LỖI 3: Xóa `defaultValue`
               inputProps={{ min: 1 }}
               label={
                 <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -175,6 +190,7 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, logo, color, price, fea
               }
               error={!!errors.days}
               helperText={errors.days?.message}
+              sx={textFieldStyles}
             />
           )}
         />
@@ -190,7 +206,6 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, logo, color, price, fea
               label='SỐ LƯỢNG'
               icon={<Users size={14} />}
               {...field}
-              // SỬA LỖI 2: Xóa `value={1}`
               error={!!errors.quantity}
               helperText={errors.quantity?.message}
             />
@@ -214,6 +229,7 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, logo, color, price, fea
                 label='Username'
                 error={!!errors.username}
                 helperText={errors.username?.message}
+                sx={textFieldStyles}
               />
             )}
           />
@@ -227,6 +243,7 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, logo, color, price, fea
                 label='Password'
                 error={!!errors.password}
                 helperText={errors.password?.message}
+                sx={textFieldStyles}
               />
             )}
           />

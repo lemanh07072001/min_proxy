@@ -33,11 +33,12 @@ const TextFieldStyled = styled(TextField)<TextFieldProps>(({ theme }) => ({
     backgroundColor: 'transparent !important',
     border: `1px solid var(--mui-palette-customColors-inputBorder)`,
     '&:not(.Mui-focused):not(.Mui-disabled):not(.Mui-error):hover': {
-      borderColor: 'var(--mui-palette-action-active)'
+      // borderColor: 'var(--mui-palette-action-active)'
     },
     '&:before, &:after': {
       display: 'none'
     },
+
     '&.MuiInputBase-sizeSmall': {
       borderRadius: 'var(--mui-shape-borderRadius)'
     },

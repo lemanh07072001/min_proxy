@@ -3,12 +3,15 @@
 
 /* Color Variables */
 :root {
-  --primary-color: #fc4336;
+  --primary-color: var(--mui-palette-customCssVars-colorMain);
   --primary-hover: #e63946;
   --primary-light: rgba(252, 67, 54, 0.1);
   --primary-gradient: var(--mui-palette-customCssVars-bgButtonPrimary);
   --width-sidebar: 300px;
 }
+
+/* Sidebar Styles */
+/* Biến màu (thêm vào để code chạy được) */
 
 /* CSS Reset & Base Styles */
 * {
@@ -269,12 +272,6 @@ body {
   background: rgba(255, 255, 255, 0.2);
 }
 
-/* Sidebar Styles */
-/* Biến màu (thêm vào để code chạy được) */
-:root {
-  --primary-gradient: linear-gradient(45deg, #fc4336, #f88a4b);
-  --primary-color: #fc4336;
-}
 
 /* Sidebar Styles */
 .modern-sidebar {
@@ -574,7 +571,7 @@ body {
 .price-amount {
   font-size: 28px;
   font-weight: 700;
-  color: #e53e3e;
+  color: var(--primary-color);
   line-height: 1;
   font-family: 'Inter', monospace;
 }

@@ -6,7 +6,7 @@ import PartnersSection from '@/app/[lang]/(private)/(landing-page)/components/Pa
 
 export default function Page() {
   return (
-    <div className='position-relative' style={{ background: 'linear-gradient(#f8fafc 0%, #fff 100%)' }}>
+    <div >
       <Hero />
       <ProductsSection />
       <PartnersSection />

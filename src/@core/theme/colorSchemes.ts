@@ -162,6 +162,7 @@ const colorSchemes = (skin: Skin): Theme['colorSchemes'] => {
           bgSuccess200: '#f0fdf4',
           borderSuccess200: '#10b981',
           bgButtonPrimary: 'linear-gradient(45deg, #FC4336, #F88A4B)',
+          colorMain: '#f88a4b'
         }
       }
     },
