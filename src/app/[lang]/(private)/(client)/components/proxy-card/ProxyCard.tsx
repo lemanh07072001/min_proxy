@@ -19,8 +19,6 @@ import { Controller, useForm } from 'react-hook-form'
 
 import CustomTextField from '@core/components/mui/TextField'
 
-import InputCustom from '@components/form/input/InputCustom'
-import SelectCustom from '@components/form/select/SelectCustom'
 import QuantityControl from '@components/form/input-quantity/QuantityControl'
 import ProtocolSelector from '@components/form/protocol-selector/ProtocolSelector'
 
