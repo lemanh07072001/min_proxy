@@ -3,6 +3,13 @@ import "@/app/[lang]/(private)/(client)/proxy-tinh/styles.css"
 
 import StaticProxyPage from '@views/Client/StaticProxy/StaticProxyPage'
 
+import { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: `${process.env.NEXT_PUBLIC_APP_NAME} | Proxy Tĩnh`,
+  description: 'Mô tả ngắn gọn về trang web.',
+};
+
 export default function StaticProxy() {
   const proxyProviders = [
     {

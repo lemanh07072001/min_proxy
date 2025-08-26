@@ -3,6 +3,12 @@ import OrderRotatingProxyPage from '@/views/Client/OrderRotatingProxy/OrderRotat
 import './styles.css'
 
 import { Globe } from 'lucide-react'
+import { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: `${process.env.NEXT_PUBLIC_APP_NAME} | Đơn hàng proxy xoay`,
+  description: 'Mô tả ngắn gọn về trang web.',
+};
 
 export default function OrderRotatingProxy() {
   const proxyOrders = [

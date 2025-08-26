@@ -1,7 +1,22 @@
-export default function MenuMobile() {
+interface MenuMobileProps {
+  setIsOpen?: (isOpen: boolean) => void;
+  setMode?: (mode: string) => void;
+}
+
+export default function MenuMobile({ setIsOpen, setMode }: MenuMobileProps) {
+  const handleLogin = () => {
+    if (setMode) setMode('login');
+    if (setIsOpen) setIsOpen(true);
+  };
+
+  const handleRegister = () => {
+    if (setMode) setMode('register');
+    if (setIsOpen) setIsOpen(true);
+  };
+
   return (
     <>
-      <ul className='navbar-nav mx-auto'>
+      <ul className='navbar-nav mx-auto menu-mobile'>
         <li className='nav-item'>
           <a className='nav-link nav-link-custom' href='#'>
             Trang chủ
@@ -35,8 +50,8 @@ export default function MenuMobile() {
       </ul>
 
       <div className='d-flex align-items-center gap-2'>
-        <button className='btn btn-gradient-primary me-2'>Đăng ký</button>
-        <button className='btn btn-gradient-primary'>Đăng nhập</button>
+        <button className='btn btn-gradient-primary me-2' onClick={handleRegister}>Đăng ký</button>
+        <button className='btn btn-gradient-primary' onClick={handleLogin}>Đăng nhập</button>
       </div>
     </>
   )

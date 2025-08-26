@@ -1,10 +1,15 @@
 
 import React from 'react'
-
-
 import "./styles.css"
+
 import RotatingProxyPage from '@views/Client/RotatingProxy/RotatingProxyPage'
 
+import { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: `${process.env.NEXT_PUBLIC_APP_NAME} | Proxy Xoay`,
+  description: 'Mô tả ngắn gọn về trang web.',
+};
 
 export default function RotatingProxy() {
   const proxyPlans = [

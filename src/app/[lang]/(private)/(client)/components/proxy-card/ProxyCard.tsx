@@ -196,6 +196,7 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, logo, color, price, fea
                   THỜI GIAN
                 </span>
               }
+              {...field}
               sx={{
                 // Nhắm đến thẻ label của component này
                 '& .MuiInputLabel-root': {
@@ -231,6 +232,7 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, logo, color, price, fea
             render={({ field }) => (
               <CustomTextField
                 type='text'
+                {...field}
                 label={<span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>Username</span>}
                 sx={{
                   // Nhắm đến thẻ label của component này
@@ -253,6 +255,7 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, logo, color, price, fea
             control={control}
             render={({ field }) => (
               <CustomTextField
+                {...field}
                 type='text'
                 label={<span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>Password</span>}
                 sx={{

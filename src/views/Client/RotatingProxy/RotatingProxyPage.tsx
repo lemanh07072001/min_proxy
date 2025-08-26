@@ -27,9 +27,10 @@ const proxyPlanSchema = yup.object({
   rotationTime: yup
     .number()
     .typeError('Vui lòng nhập số')
+    .min(1, 'Tối thiểu 1 phút')
     .when('autoRotate', {
       is: true,
-      then: schema => schema.required('Vui lòng nhập thời gian xoay').min(1, 'Tối thiểu 1 phút'),
+      then: schema => schema.required('Vui lòng nhập thời gian xoay'),
       otherwise: schema => schema.notRequired()
     })
 })
@@ -48,7 +49,7 @@ const StaticFeatureRow = ({ feature }) => (
 )
 
 // Component này render một dòng feature có input
-const InputFeatureRow = ({ feature, control, errors, planId }) => (
+const InputFeatureRow = ({ feature, control, errors, planId, isDisabled = false}) => (
   <Controller
     name={feature.field}
     control={control}
@@ -72,6 +73,7 @@ const InputFeatureRow = ({ feature, control, errors, planId }) => (
               {...(feature.inputType === 'number' && { min: 1, max: 100 })}
               className={`${errors[feature.field] ? 'border-red-500' : ''}`}
               {...field}
+              disabled={isDisabled}
             />
           </div>
         </div>
@@ -130,7 +132,7 @@ const PlanCard = ({ plan }) => {
       username: 'random',
       password: 'random',
       autoRotate: false,
-      rotationTime: 0
+      rotationTime: 1
     },
     mode: 'onChange'
   })
@@ -172,8 +174,9 @@ const PlanCard = ({ plan }) => {
             case 'success':
               return <StaticFeatureRow key={index} feature={feature} />
             case 'input':
+              const isRotationTimeInput = feature.field === 'rotationTime';
               return (
-                <InputFeatureRow key={index} feature={feature} control={control} errors={errors} planId={plan.id} />
+                <InputFeatureRow key={index} feature={feature} control={control} errors={errors} planId={plan.id} isDisabled={isRotationTimeInput && !watchedFields.autoRotate}/>
               )
             case 'checkbox':
               return <SwitchFeatureRow key={index} feature={feature} control={control} planId={plan.id} />

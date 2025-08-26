@@ -3,6 +3,12 @@ import HistoryOrderPage from '@/views/Client/HistoryOrder/HistoryOrderPage'
 import './styles.css'
 
 import { Globe } from 'lucide-react'
+import { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: `${process.env.NEXT_PUBLIC_APP_NAME} | Lịch sử đơn hàng`,
+  description: 'Mô tả ngắn gọn về trang web.',
+};
 
 export default function HistoryOrder() {
   const purchaseHistory = [

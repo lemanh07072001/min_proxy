@@ -12,10 +12,12 @@ import { useResponsive } from '@/app/hooks/useResponsive'
 
 import AuthModal from '@/app/[lang]/(private)/(landing-page)/components/modals/AuthModal'
 import MenuDesktop from './menus/MenuDesktop'
+import MenuMobile from '@/app/[lang]/(private)/(landing-page)/components/menus/MenuMobile'
 
 
 export default function MainHeader() {
   const [isOpen, setIsOpen] = useState<boolean>(false)
+  const [isOpenMenu, setIsOpenMenu] = useState<boolean>(false)
   const [mode, setMode] = useState<string>('login')
   const { scrollY } = useScroll()
   const [scrolled, setScrolled] = useState(false)
@@ -36,6 +38,8 @@ export default function MainHeader() {
 
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
+
+
 
   return (
     <>
@@ -69,23 +73,25 @@ export default function MainHeader() {
                 PROXY
               </div>
             </div> */}
-            <Image src={logo} alt="dsa"width={80} height={80} />
+            {/*<Image src={logo} alt="dsa"width={80} height={80} />*/}
           </a>
 
           {/* Mobile Toggle */}
           <button
             className='navbar-toggler'
             type='button'
-            data-bs-toggle='collapse'
-            data-bs-target='#navbarNav'
             style={{ border: 'none', boxShadow: 'none' }}
+            onClick={() => setIsOpenMenu(!isOpenMenu)}
           >
             <span className='navbar-toggler-icon'></span>
           </button>
 
-          {/* Navigation */}
-          <div className='collapse navbar-collapse' id='navbarNav'>
-            {isMobile ? null : <MenuDesktop setIsOpen={setIsOpen} setMode={setMode} />}
+          <div className={`collapse navbar-collapse ${isOpenMenu ? 'show' : ''}`} id='navbarNav'>
+            {isMobile ? (
+              <MenuMobile setIsOpen={setIsOpen} setMode={setMode} />
+            ) : (
+              <MenuDesktop setIsOpen={setIsOpen} setMode={setMode} />
+            )}
           </div>
         </div>
       </motion.nav>

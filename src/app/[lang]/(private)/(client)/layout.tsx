@@ -23,6 +23,7 @@ import ScrollToTop from '@core/components/scroll-to-top'
 import { getMode, getSystemMode } from '@core/utils/serverHelpers'
 import HorizontalLayout from '@layouts/HorizontalLayout'
 import Header from '@components/layout/horizontal/Header'
+import { ToastContainer } from 'react-toastify'
 
 function HorizontalFooter() {
   return null
@@ -47,6 +48,18 @@ const Layout = async (props: ChildrenType) => {
         verticalLayout={
           <VerticalLayout navigation={<Navigation dictionary={dictionary} mode={mode} />} navbar={<Navbar />}>
             {children}
+            <ToastContainer
+              position="top-right"
+              autoClose={2000}
+              hideProgressBar={false}
+              newestOnTop={false}
+              closeOnClick
+              rtl={false}
+              pauseOnFocusLoss
+              draggable
+              pauseOnHover
+              theme="light"
+            />
           </VerticalLayout>
         }
         horizontalLayout={
