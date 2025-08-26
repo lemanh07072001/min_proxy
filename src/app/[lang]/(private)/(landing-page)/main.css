@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+@import './mobile-responsive.css';
 
 * {
     margin: 0;
@@ -248,8 +249,7 @@ body {
     justify-content: center;
     inline-size: 40px;
     block-size: 40px;
-    background: rgba(239, 68, 68, 0.1);
-    border: 1px solid rgba(239, 68, 68, 0.3);
+
     border-radius: 50%;
     color: #ef4444;
 }
@@ -1343,10 +1343,10 @@ body {
     position: relative;
 }
 
-.nav-link-custom:hover {
-    color: #ef4444 !important;
-    background: rgba(239, 68, 68, 0.1);
-}
+/*.nav-link-custom:hover {*/
+/*    color: #ef4444 !important;*/
+/*    background: rgba(239, 68, 68, 0.1);*/
+/*}*/
 
 .nav-link-custom::after {
     content: '';
@@ -1711,6 +1711,14 @@ body {
 .register-switch-btn:hover {
     color: #dc2626;
     text-decoration: underline;
+}
+
+.w-full {
+    width: 100%;
+}
+
+.header-mobile{
+    display: none;
 }
 
 /* Modal Animations */
@@ -3064,7 +3072,7 @@ body {
     justify-content: center;
     inline-size: 32px;
     block-size: 32px;
-    background: rgba(239, 68, 68, 0.1);
+
     border-radius: 50%;
     color: #ef4444;
     flex-shrink: 0;

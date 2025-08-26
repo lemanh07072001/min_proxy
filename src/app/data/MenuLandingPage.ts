@@ -17,7 +17,7 @@ const MenuLandingPage = [
   },
   {
     label: 'Sản phẩm',
-    href: '/products',
+    href: '/overview',
     icon: 'tabler-info-circle',
     target: '_blank'
   },
