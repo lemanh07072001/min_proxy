@@ -4,6 +4,8 @@ import React from 'react'
 
 import Image from 'next/image'
 
+import { useParams } from 'next/navigation'
+
 import '@/app/[lang]/(private)/(client)/components/proxy-card/styles.css'
 
 import * as yup from 'yup'
@@ -21,6 +23,7 @@ import CustomTextField from '@core/components/mui/TextField'
 
 import QuantityControl from '@components/form/input-quantity/QuantityControl'
 import ProtocolSelector from '@components/form/protocol-selector/ProtocolSelector'
+import Link from '@/components/Link'
 
 interface ProxyCardProps {
   provider: string
@@ -52,6 +55,9 @@ const proxySchema = yup
   .required()
 
 const ProxyCard: React.FC<ProxyCardProps> = ({ provider, logo, color, price, features }) => {
+  const params = useParams()
+  const { lang: locale } = params
+
   const {
     register,
     control,
@@ -285,10 +291,10 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, logo, color, price, fea
           </div>
         </div>
         <div className='col-8 col-lg-9'>
-          <button className='buy-button'>
+          <Link target='_blank' href={`/${locale}/overview`} className='buy-button'>
             <ShoppingCart size={18} />
             Mua ngay
-          </button>
+          </Link>
         </div>
       </div>
     </form>
