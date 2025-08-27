@@ -26,69 +26,38 @@ const CompanyInfo = () => {
 
   // @ts-ignore
   return (
-    <section className='company-info-modern'>
-      <div className='container-lg'>
-        {/* Company Overview */}
-        <div className='company-overview'>
-          <div className='row align-items-center'>
-            <div className='col-lg-6'>
-              <div className='company-content'>
-                <h2 className='section-title-modern'>
-                  <span className='title-highlight'>{process.env.NEXT_PUBLIC_APP_NAME}</span>
-                  <span className='title-main'>Kết Nối Tới Thành Công.</span>
-                </h2>
-
-                <p className='company-description'>
-                  Tại {process.env.NEXT_PUBLIC_APP_NAME}, chúng tôi hiểu rằng sự ổn định và tốc độ của kết nối internet
-                  là nền tảng cho thành công trong công việc của bạn. Chính vì vậy, chúng tôi cung cấp dịch vụ proxy dân
-                  cư chất lượng cao hàng đầu Việt Nam, được thiết kế để mang lại hiệu suất vượt trội và sự an tâm tuyệt
-                  đối. Với hệ thống IP sạch, tốc độ cao và độ tin cậy đã được kiểm chứng, chúng tôi đảm bảo mọi hoạt
-                  động trực tuyến của bạn diễn ra mượt mà, không gián đoạn. Hơn cả một nhà cung cấp,{' '}
-                  {process.env.NEXT_PUBLIC_APP_NAME} là đối tác đồng hành, luôn sẵn sàng hỗ trợ bạn 24/7 để bạn có thể
-                  tập trung hoàn toàn vào việc chinh phục các mục tiêu lớn.
-                </p>
-              </div>
+    <section id='about' className='py-20 bg-gray-50'>
+      <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
+        <div className='grid lg:grid-cols-2 gap-16 items-center'>
+          {/* Content */}
+          <div className='space-y-8'>
+            <div>
+              <p className='text-orange-500 font-semibold text-lg mb-4'>Min Proxy</p>
+              <h2 className='text-3xl md:text-4xl font-bold text-gray-900 mb-6'>Kết Nối Tới Thành Công.</h2>
+              <p className='text-gray-600 text-lg leading-relaxed'>
+                Tại Min Proxy, chúng tôi hiểu rằng sự ổn định và tốc độ của kết nối internet là nền tảng cho thành công
+                trong công việc của bạn. Chính vì vậy, chúng tôi cung cấp dịch vụ proxy dân cư chất lượng cao hàng đầu
+                Việt Nam, được thiết kế để mang lại hiệu suất vượt trội và sự an tâm tuyệt đối.
+              </p>
             </div>
 
-            <div className='col-lg-6'>
-              <div className='company-visual'>
-                <div className='company-showcase'>
-                  <div className='company-image-container'>
-                    <img
-                      src='https://images.pexels.com/photos/3184465/pexels-photo-3184465.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&fit=crop'
-                      alt='HomeProxy Office'
-                      className='company-image'
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
+            <p className='text-gray-600 leading-relaxed'>
+              Với hệ thống IP sạch, tốc độ cao và đội ngũ hỗ trợ tận tình chuyên nghiệp, Min Proxy là đối tác đồng hành
+              tin cậy trong mọi dự án quan trọng.
+            </p>
           </div>
-        </div>
 
-        {/* Advantages */}
-        <div className='advantages-section'>
-          <h3 className='advantages-title'>Ưu điểm vượt trội</h3>
-          <div className='row'>
-            {advantages.map((advantage, index) => (
-              <div key={index} className='col-lg-4 col-md-6 mb-4'>
-                <div className='advantage-card'>
-                  <div className=''>
-                    <Image
-                      src={advantage.icon}
-                      width={200}
-                      height={200}
-                      alt='Picture of the author'
-                      className='advantage-icon'
-                    />
-                  </div>
-                  <div className='advantage-content'>
-                    <h4 className='advantage-title'>{advantage.title}</h4>
-                    <p className='advantage-description'>{advantage.description}</p>
-                  </div>
+          {/* Image */}
+          <div className='relative'>
+            <div className='bg-gradient-to-br from-orange-500 to-red-600 rounded-3xl p-8 text-center text-white'>
+              <div className='mb-6'>
+                <div className='w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4'>
+                  <Users className='w-10 h-10 text-white' />
                 </div>
+                <h3 className='text-2xl font-bold'>Kết nối thành công</h3>
               </div>
-            ))}
+              <p className='text-white/90'>Đối tác tin cậy của hàng nghìn doanh nghiệp</p>
+            </div>
           </div>
         </div>
       </div>

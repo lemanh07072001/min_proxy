@@ -10,8 +10,8 @@ const Header = ({ onToggleSidebar }: HeaderProps) => {
   return (
     <>
       {/* Promotional Banner */}
-      <div className='promo-banner'>
-        <div className='container-fluid'>
+      {/* <div className='promo-banner'>
+        <div className='container-lg'>
           <div className='d-flex align-items-center justify-content-center flex-wrap py-2'>
             <span className='me-2'>🔥</span>
             <span className='me-3'>
@@ -20,7 +20,7 @@ const Header = ({ onToggleSidebar }: HeaderProps) => {
             <button className='promo-btn'>Hợp tác ngay</button>
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* Main Header */}
       <MainHeader />

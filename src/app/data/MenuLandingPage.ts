@@ -12,7 +12,7 @@ const MenuLandingPage = [
   },
   {
     label: 'Hợp tác',
-    href: '/abouts',
+    href: '/cooperate',
     icon: 'tabler-info-circle'
   },
   {
