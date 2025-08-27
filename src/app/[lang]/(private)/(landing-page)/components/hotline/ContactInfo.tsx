@@ -5,10 +5,9 @@ import '@/app/[lang]/(private)/(landing-page)/hotline/style.css'
 import { MapPin, Phone, Mail, Globe } from 'lucide-react'
 
 const ContactInfo = () => {
-
   return (
     <section id='contact' className='contact-section'>
-      <div className='container'>
+      <div className='container-lg'>
         <div className='section-header text-center'>
           <h2 className='section-title'>Liên hệ với chúng tôi</h2>
           <p className='section-subtitle'>Chúng tôi luôn sẵn sàng hỗ trợ và tư vấn cho bạn</p>

@@ -52,7 +52,7 @@ const ProductsSection = () => {
 
   return (
     <section className='products-section-new'>
-      <div className='container'>
+      <div className='container-lg'>
         {/* Header */}
         <div className='section-header'>
           <h2 className='section-title'>
@@ -65,7 +65,7 @@ const ProductsSection = () => {
 
         {/* Products Grid */}
         <div className='products-grid-new'>
-          <div className='row justify-content-center'>
+          <div className='row justify-content-center gap-4 gap-lg-0'>
             {products.map((product, index) => (
               <div key={product.id} className='col-lg-4 col-md-6 mb-4'>
                 <div

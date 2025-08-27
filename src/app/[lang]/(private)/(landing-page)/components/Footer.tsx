@@ -7,7 +7,7 @@ const Footer = () => {
     <footer className='footer-main'>
       {/* CTA Section */}
       <div className='footer-cta'>
-        <div className='container'>
+        <div className='container-lg'>
           <div className='cta-content'>
             <h2>HÃY CỘNG TÁC VỚI CHÚNG TÔI</h2>
             <p>Trở thành đại lý ngay hôm nay, hưởng chính sách giá ưu đãi và bảo vệ quyền lợi độc quyền của bạn</p>
@@ -25,7 +25,7 @@ const Footer = () => {
 
       {/* Main Footer */}
       <div className='footer-content'>
-        <div className='container'>
+        <div className='container-lg'>
           <div className='row'>
             {/* Company Info */}
             <div className='col-lg-3 col-md-6 mb-4'>
@@ -116,15 +116,12 @@ const Footer = () => {
 
       {/* Bottom Footer */}
       <div className='footer-bottom'>
-        <div className='container'>
+        <div className='container-lg'>
           <div className='row align-items-center'>
             <div className='col-md-6'>
               <div className='footer-logo'>
                 <Shield size={32} />
-                <div className='logo-text'>
-                  <div className='logo-main'>HOME</div>
-                  <div className='logo-sub'>PROXY</div>
-                </div>
+                <div className='logo-text'>{process.env.NEXT_PUBLIC_APP_NAME}</div>
               </div>
             </div>
             <div className='col-md-6'>

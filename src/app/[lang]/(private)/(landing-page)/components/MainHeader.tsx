@@ -11,6 +11,7 @@ import AuthModal from '@/app/[lang]/(private)/(landing-page)/components/modals/A
 import MenuDesktop from './menus/MenuDesktop'
 import MenuMobile from '@/app/[lang]/(private)/(landing-page)/components/menus/MenuMobile'
 import LanguageDropdown from '@components/layout/shared/LanguageDropdown'
+import UserDropdown from '@components/layout/shared/UserDropdown'
 
 export default function MainHeader() {
   const [isOpen, setIsOpen] = useState<boolean>(false)
@@ -33,7 +34,6 @@ export default function MainHeader() {
       const target = event.target as Element
 
       if (isOpenMenu && !target.closest('.navbar-collapse') && !target.closest('.navbar-toggler')) {
-
         setIsOpenMenu(false)
       }
     }
@@ -75,21 +75,15 @@ export default function MainHeader() {
           boxShadow: shadow,
           height: height
         }}
-
         transition={{ duration: 0.3, ease: 'easeInOut' }}
       >
-        <div className='container'>
+        <div className='container-lg'>
           {/* Logo */}
           <a className='navbar-brand navbar-brand-custom d-flex align-items-center logo' href='#'>
-            <Image
-              src={logo}
-              alt="Minsoftware Logo"
-              width={50}
-              height={50}
-            />
+            <Image src={logo} alt='Minsoftware Logo' width={50} height={50} />
           </a>
 
-          <div className="header-mobile">
+          <div className='header-mobile'>
             {/* Mobile Toggle */}
             <button
               className='navbar-toggler'
@@ -102,13 +96,11 @@ export default function MainHeader() {
 
             <div>
               <LanguageDropdown />
+              <UserDropdown />
             </div>
           </div>
 
-          <div
-            className={`collapse navbar-collapse ${isOpenMenu ? 'show' : ''}`}
-            id='navbarNav'
-          >
+          <div className={` navbar-collapse ${isOpenMenu ? 'show' : ''}`} id='navbarNav'>
             {isMobile ? (
               <MenuMobile setIsOpen={setIsOpen} setMode={setMode} onClose={handleCloseMenu} />
             ) : (

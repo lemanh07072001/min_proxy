@@ -46,6 +46,8 @@ const UserDropdown = () => {
 
   const { settings } = useSettings()
 
+  console.log(settings)
+
   const handleDropdownOpen = () => {
     !open ? setOpen(true) : setOpen(false)
   }

@@ -2,9 +2,16 @@
 
 import React from 'react'
 
+import { useParams, usePathname } from 'next/navigation'
+
 import { Shield, Zap, Globe, Users, ArrowRight, Play } from 'lucide-react'
 
+import Link from '@/components/Link'
+
 const Hero = () => {
+  const params = useParams()
+  const { lang: locale } = params
+
   return (
     <section className='hero-main'>
       {/* Animated Background */}
@@ -31,7 +38,7 @@ const Hero = () => {
         </div>
       </div>
 
-      <div className='container'>
+      <div className='container-lg'>
         <div className='row align-items-center min-vh-100'>
           {/* Left Content */}
           <div className='col-lg-6'>
@@ -85,7 +92,9 @@ const Hero = () => {
               {/* CTA Buttons */}
               <div className='hero-actions'>
                 <button className='btn-primary'>
-                  <span>Mua Proxy Ngay</span>
+                  <Link target='_blank' href={`/${locale}/overview`}>
+                    Mua Proxy Ngay
+                  </Link>
                   <ArrowRight size={20} />
                 </button>
                 <button className='btn-secondary'>

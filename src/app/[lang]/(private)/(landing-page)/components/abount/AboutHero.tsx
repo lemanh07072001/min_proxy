@@ -17,7 +17,7 @@ const AboutHero = () => {
         </div>
       </div>
 
-      <div className='container'>
+      <div className='container-lg'>
         <div className='row align-items-center min-vh-100'>
           <div className='col-lg-6'>
             <div className='about-hero-content'>
@@ -27,7 +27,9 @@ const AboutHero = () => {
               </h1>
 
               <p className='about-hero-subtitle-modern'>
-                {process.env.NEXT_PUBLIC_APP_NAME} - Nền tảng proxy dân cư hàng đầu Việt Nam, là lựa chọn tin cậy của hơn 5000+ doanh nghiệp và chuyên gia để tối ưu hóa hiệu suất công việc và chinh phục các dự án quan trọng.
+                {process.env.NEXT_PUBLIC_APP_NAME} - Nền tảng proxy dân cư hàng đầu Việt Nam, là lựa chọn tin cậy của
+                hơn 5000+ doanh nghiệp và chuyên gia để tối ưu hóa hiệu suất công việc và chinh phục các dự án quan
+                trọng.
               </p>
 
               <div className='hero-features-modern'>

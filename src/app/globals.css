@@ -5,7 +5,9 @@ html, body {
   font-family: sans-serif; /* Thêm font chữ cho dễ đọc */
 }
 
-/* --- CONTAINER CHÍNH CỦA ỨNG DỤNG --- */
+
+
+  /* --- CONTAINER CHÍNH CỦA ỨNG DỤNG --- */
 .app-container {
   min-height: 100vh; /* Giữ nguyên: đảm bảo chiều cao tối thiểu là toàn màn hình */
   background-color: #f9fafb;

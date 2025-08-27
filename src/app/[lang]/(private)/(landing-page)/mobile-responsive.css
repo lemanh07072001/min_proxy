@@ -55,7 +55,7 @@
     display: flex !important;
     justify-content: space-between !important;
     align-content: center;
-    width: 100%;
+    inline-size: 100%;
   }
 
   /* Silver background pattern */
@@ -63,8 +63,7 @@
     content: '';
     position: absolute;
     inset: 0;
-    background: 
-      radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.4) 0%, transparent 50%),
+    background: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.4) 0%, transparent 50%),
       radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.3) 0%, transparent 50%),
       linear-gradient(45deg, rgba(192, 192, 192, 0.1) 0%, transparent 50%);
     pointer-events: none;
@@ -109,7 +108,7 @@
     justify-content: space-between;
   }
 
-  .mobile-logo>span{
+  .mobile-logo > span {
     margin-inline-start: 10px;
     text-transform: uppercase;
     font-weight: bold;
@@ -128,7 +127,6 @@
   }
 
   .menu-mobile .nav-item {
-
   }
 
   .menu-mobile .nav-link {
@@ -137,7 +135,6 @@
   }
 
   .menu-mobile .nav-link:hover {
-
   }
 
   .menu-mobile .d-flex {
@@ -181,7 +178,7 @@
   }
 
   .nav-link-custom:hover::after,
-  .nav-link-custom.active::after{
+  .nav-link-custom.active::after {
     inline-size: unset !important;
   }
 
@@ -975,7 +972,9 @@
     background: white;
     border-radius: 12px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    transition:
+      transform 0.3s ease,
+      box-shadow 0.3s ease;
   }
 
   .advantage-card:hover {
@@ -1166,7 +1165,9 @@
     border-radius: 16px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
     overflow: hidden;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    transition:
+      transform 0.3s ease,
+      box-shadow 0.3s ease;
   }
 
   .mission-card-modern:hover,
@@ -1183,8 +1184,6 @@
   }
 
   .card-icon-modern {
-    inline-size: 64px;
-    block-size: 64px;
     margin-block: 0 1rem;
     margin-inline: auto;
     border-radius: 50%;

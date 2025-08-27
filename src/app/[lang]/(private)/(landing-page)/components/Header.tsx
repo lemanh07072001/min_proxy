@@ -11,7 +11,7 @@ const Header = ({ onToggleSidebar }: HeaderProps) => {
     <>
       {/* Promotional Banner */}
       <div className='promo-banner'>
-        <div className='container-fluid'>
+        <div className='container-lg'>
           <div className='d-flex align-items-center justify-content-center flex-wrap py-2'>
             <span className='me-2'>🔥</span>
             <span className='me-3'>

@@ -62,7 +62,6 @@ const languageData: LanguageDataType[] = [
   }
 ]
 
-
 const LanguageDropdown = () => {
   // States
   const [open, setOpen] = useState(false)
@@ -87,14 +86,16 @@ const LanguageDropdown = () => {
 
   return (
     <>
-      <IconButton ref={anchorRef} onClick={handleToggle} sx={{
-
-        borderRadius: '5px',
-
-        '&:hover' : {
-          borderRadius: '5px'
-        }
-      }}>
+      <IconButton
+        ref={anchorRef}
+        onClick={handleToggle}
+        sx={{
+          borderRadius: '5px',
+          '&:hover': {
+            borderRadius: '5px'
+          }
+        }}
+      >
         <div className='flex items-center gap-1'>
           {/* Phần hiển thị cờ hoặc icon ngôn ngữ */}
           {currentLanguage ? (
@@ -103,14 +104,14 @@ const LanguageDropdown = () => {
               alt={currentLanguage.langName}
               width={22}
               height={22}
-              className="rounded-full"
+              className='rounded-full'
             />
           ) : (
             <i className='tabler-language' />
           )}
 
           {/* Icon mũi tên thay đổi theo state 'open' */}
-          <i style={{fontSize:'16px'}} className={open ? 'tabler-chevron-up' : 'tabler-chevron-down'} />
+          <i style={{ fontSize: '16px' }} className={open ? 'tabler-chevron-up' : 'tabler-chevron-down'} />
         </div>
       </IconButton>
       <Popper
@@ -138,13 +139,7 @@ const LanguageDropdown = () => {
                       selected={lang === locale.langCode}
                     >
                       <div>
-                        <Image
-                          className="me-2"
-                          src={locale.flag}
-                          width={20}
-                          height={20}
-                          alt="Picture of the author"
-                        />
+                        <Image className='me-2' src={locale.flag} width={20} height={20} alt='Picture of the author' />
                         {locale.langName}
                       </div>
                     </MenuItem>
