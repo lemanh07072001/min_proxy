@@ -94,7 +94,9 @@ export default function RegisterForm() {
 
       {/* password_confirmation */}
       <div className='login-form-group'>
-        <label className={`login-form-label ${errors.password_confirmation && 'text-red-500'}`}>Mật khẩu</label>
+        <label className={`login-form-label ${errors.password_confirmation && 'text-red-500'}`}>
+          Nhập lại mật khẩu
+        </label>
         <div className='login-password-wrapper'>
           <input
             type={showPasswordConfirmation ? 'text' : 'password'}
