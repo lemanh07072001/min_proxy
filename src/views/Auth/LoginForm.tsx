@@ -52,10 +52,10 @@ export default function LoginForm() {
 
     if (res.status == 200 && res.ok == true) {
       toast.success('Đăng nhập thành công.')
-      router.push(`/${locale}/overview`)
+      window.open(`/${locale}/overview`, '_blank')
+    } else {
+      toast.error('Tài khoản hoặc mật khẩu không chính xác.')
     }
-
-    toast.error('Tài khoản hoặc mật khẩu không chính xác.')
   }
 
   return (

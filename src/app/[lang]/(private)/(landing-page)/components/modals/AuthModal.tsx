@@ -63,7 +63,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, isMode }) => {
               </p>
             </div>
             {/* Form */}
-            {isMode === 'login' ? <LoginForm /> : <RegisterForm />}
+            {isMode === 'login' ? <LoginForm /> : <RegisterForm onClose={onClose} />}
           </motion.div>
         </motion.div>
       )}

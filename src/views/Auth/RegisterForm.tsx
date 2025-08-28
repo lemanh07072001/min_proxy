@@ -6,18 +6,28 @@ import { useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
 
+import { useMutation } from '@tanstack/react-query'
+
 import { Eye, EyeOff } from 'lucide-react'
 
+import { toast } from 'react-toastify'
+
+import axiosInstance from '@/libs/axios'
+
 type RegisterFormInputs = {
-  username: string
+  name: string
   email: string
   password: string
   password_confirmation: string
 }
 
+interface RegisterFormProps {
+  onClose: () => void
+}
+
 const schema = yup
   .object({
-    username: yup.string().required('Vui lòng nhập tên'),
+    name: yup.string().required('Vui lòng nhập tên'),
     email: yup.string().email('Email không hợp lệ').required('Vui lòng nhập email'),
     password: yup.string().min(6, 'Mật khẩu ít nhất 6 ký tự').required('Vui lòng nhập mật khẩu'),
     password_confirmation: yup
@@ -27,14 +37,39 @@ const schema = yup
   })
   .required()
 
-export default function RegisterForm() {
+const registerUser = async (data: RegisterFormInputs) => {
+  const response = await axiosInstance.post('/register', data)
+
+  return response.data
+}
+
+export default function RegisterForm({ onClose }: RegisterFormProps) {
   const [showPassword, setShowPassword] = useState(false)
   const [showPasswordConfirmation, setPasswordConfirmation] = useState(false)
   const [rememberMe, setRememberMe] = useState(false)
 
+  const { mutation, isPending } = useMutation({
+    mutationFn: registerUser,
+    onSuccess: data => {
+      console.log('Đăng ký thành công:', data)
+
+      toast.success(data.message)
+
+      reset()
+
+      onClose()
+    },
+    onError: error => {
+      console.error('Lỗi đăng ký:', error)
+
+      toast.error('Đăng ký thất bại. Vui lòng thử lại.')
+    }
+  })
+
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors }
   } = useForm<RegisterFormInputs>({
     resolver: yupResolver(schema)
@@ -42,8 +77,7 @@ export default function RegisterForm() {
 
   const onSubmit = (data: RegisterFormInputs) => {
     console.log('Dữ liệu form:', data)
-
-    // Gửi API login ở đây
+    mutation.mutate(data)
   }
 
   return (
@@ -63,15 +97,15 @@ export default function RegisterForm() {
 
       {/* Username */}
       <div className='login-form-group'>
-        <label className={`login-form-label ${errors.username && 'text-red-500'}`}>Username</label>
+        <label className={`login-form-label ${errors.name && 'text-red-500'}`}>Username</label>
         <input
           type='text'
-          name='username'
-          className={`login-form-input ${errors.username && 'border-red-500'}`}
+          name='name'
+          className={`login-form-input ${errors.name && 'border-red-500'}`}
           placeholder='Nhập họ tên'
-          {...register('username')}
+          {...register('name')}
         />
-        {errors.username && <p className='text-red-500 text-sm mt-1'>{errors.username.message}</p>}
+        {errors.name && <p className='text-red-500 text-sm mt-1'>{errors.name.message}</p>}
       </div>
 
       {/* Password */}
@@ -118,8 +152,12 @@ export default function RegisterForm() {
         )}
       </div>
 
-      <button type='submit' className='login-submit-btn'>
-        Đăng ký
+      <button
+        type='submit'
+        className='login-submit-btn'
+        disabled={isPending} // Vô hiệu hóa nút khi đang loading
+      >
+        {isPending ? 'Đang xử lý...' : 'Đăng ký'}
       </button>
     </form>
   )
