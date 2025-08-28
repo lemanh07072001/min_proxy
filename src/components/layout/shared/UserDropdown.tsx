@@ -4,8 +4,11 @@
 import { useRef, useState } from 'react'
 import type { MouseEvent } from 'react'
 
-// Next Imports
 import { useRouter } from 'next/navigation'
+
+import { useSession } from 'next-auth/react'
+
+// Next Imports
 
 // MUI Imports
 import { styled } from '@mui/material/styles'
@@ -41,12 +44,12 @@ const UserDropdown = () => {
   // Refs
   const anchorRef = useRef<HTMLDivElement>(null)
 
+  const { data: session, status } = useSession()
+
   // Hooks
   const router = useRouter()
 
   const { settings } = useSettings()
-
-  console.log(settings)
 
   const handleDropdownOpen = () => {
     !open ? setOpen(true) : setOpen(false)

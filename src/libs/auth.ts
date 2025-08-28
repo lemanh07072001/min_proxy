@@ -33,7 +33,6 @@ export const authOptions: NextAuthOptions = {
          * You can also use the `req` object to obtain additional parameters (i.e., the request IP address)
          */
 
-
         const { email, password } = credentials as { email: string; password: string }
 
         try {
@@ -58,7 +57,11 @@ export const authOptions: NextAuthOptions = {
              * user data below. Below return statement will set the user object in the token and the same is set in
              * the session which will be accessible all over the app.
              */
-            return data
+            return {
+              accessToken: data.access_token,
+              accessTokenExpires: Date.now() + data.expires_in * 1000,
+              user: data.user
+            }
           }
 
           return null
@@ -108,19 +111,20 @@ export const authOptions: NextAuthOptions = {
      */
     async jwt({ token, user }) {
       if (user) {
-        /*
-         * For adding custom parameters to user in session, we first need to add those parameters
-         * in token which then will be available in the `session()` callback
-         */
-        token.name = user.name
+        token.accessToken = user.accessToken
+        token.accessTokenExpires = user.accessTokenExpires
+        token.user = user.user
+
+        return token
       }
 
       return token
     },
     async session({ session, token }) {
       if (session.user) {
-        // ** Add custom params to user in session which are added in `jwt()` callback via `token` parameter
-        session.user.name = token.name
+        session.user = token.user
+        session.accessToken = token.accessToken
+        session.error = token.error
       }
 
       return session

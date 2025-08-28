@@ -35,14 +35,15 @@ export default function LoginForm() {
   })
 
   const onSubmit = async (data: LoginFormInputs) => {
-
     const res = await signIn('credentials', {
       email: data.email,
       password: data.password,
       redirect: false
     })
 
-    console.log(res)
+    if (res.status == 200 && res.ok == true) {
+      console.log('ok')
+    }
 
     // Gửi API login ở đây
   }
