@@ -1,6 +1,8 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { use, useState } from 'react'
+
+import { useParams, useRouter } from 'next/navigation'
 
 import { signIn } from 'next-auth/react'
 
@@ -9,6 +11,8 @@ import { Eye, EyeOff } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 
 import { yupResolver } from '@hookform/resolvers/yup'
+
+import { toast } from 'react-toastify'
 
 import * as yup from 'yup'
 
@@ -26,6 +30,11 @@ export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false)
   const [rememberMe, setRememberMe] = useState(false)
 
+  const router = useRouter()
+  const params = useParams()
+
+  const { lang: locale } = params
+
   const {
     register,
     handleSubmit,
@@ -42,10 +51,11 @@ export default function LoginForm() {
     })
 
     if (res.status == 200 && res.ok == true) {
-      console.log('ok')
+      toast.success('Đăng nhập thành công.')
+      router.push(`/${locale}/overview`)
     }
 
-    // Gửi API login ở đây
+    toast.error('Tài khoản hoặc mật khẩu không chính xác.')
   }
 
   return (
