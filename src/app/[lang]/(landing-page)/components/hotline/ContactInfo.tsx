@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 
-import '@/app/[lang]/(private)/(landing-page)/hotline/style.css'
+import '@/app/[lang]/(landing-page)/hotline/style.css'
 
 import { Phone, Mail, MapPin, Globe, Send, CheckCircle, Menu, X } from 'lucide-react'
 

@@ -1,14 +1,13 @@
+import '@/app/[lang]/(public)/proxy-tinh/styles.css'
 
-import "@/app/[lang]/(private)/(client)/proxy-tinh/styles.css"
+import type { Metadata } from 'next'
 
 import StaticProxyPage from '@views/Client/StaticProxy/StaticProxyPage'
 
-import { Metadata } from 'next'
-
 export const metadata: Metadata = {
   title: `${process.env.NEXT_PUBLIC_APP_NAME} | Proxy Tĩnh`,
-  description: 'Mô tả ngắn gọn về trang web.',
-};
+  description: 'Mô tả ngắn gọn về trang web.'
+}
 
 export default function StaticProxy() {
   const proxyProviders = [
@@ -59,25 +58,23 @@ export default function StaticProxy() {
           class: 'info'
         }
       ]
-    },
-  ];
+    }
+  ]
 
   return (
-    <div className="main-content-modern">
+    <div className='main-content-modern'>
       {/* Page Header */}
-      <div className="page-header">
-        <div className="header-content">
-          <h1 className="page-title">Proxy Dân Cư</h1>
-          <p className="page-subtitle">Chọn gói proxy phù hợp với nhu cầu của bạn</p>
+      <div className='page-header'>
+        <div className='header-content'>
+          <h1 className='page-title'>Proxy Dân Cư</h1>
+          <p className='page-subtitle'>Chọn gói proxy phù hợp với nhu cầu của bạn</p>
         </div>
       </div>
 
       {/* Proxy Cards */}
-      <div className="proxy-grid">
+      <div className='proxy-grid'>
         <StaticProxyPage data={proxyProviders} />
       </div>
-
-
     </div>
-    )
+  )
 }

@@ -6,7 +6,7 @@ import Button from '@mui/material/Button'
 import '@/app/globals.css'
 import '@/app/root.css'
 import '@/app/[lang]/(private)/(client)/root.css'
-import '@/app/[lang]/(private)/(landing-page)/main.css'
+import '@/app/[lang]/(landing-page)/main.css'
 
 // Generated Icon CSS Imports
 import '@assets/iconify-icons/generated-icons.css'
@@ -17,7 +17,7 @@ import type { Locale } from '@configs/i18n'
 import LayoutWrapper from '@layouts/LayoutWrapper'
 
 import type { ChildrenType } from '@core/types'
-import Header from '@/app/[lang]/(private)/(landing-page)/components/Header'
+import Header from '@/app/[lang]/(landing-page)/components/Header'
 import { getMode, getSystemMode } from '@core/utils/serverHelpers'
 import { getDictionary } from '@/utils/getDictionary'
 import VerticalLayout from '@layouts/VerticalLayout'

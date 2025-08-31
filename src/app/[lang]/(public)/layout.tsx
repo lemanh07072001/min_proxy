@@ -19,7 +19,7 @@ import Navbar from '@components/layout/vertical/Navbar'
 import VerticalFooter from '@components/layout/vertical/Footer'
 import ScrollToTop from '@core/components/scroll-to-top'
 
-import AuthGuard from '@/hocs/AuthGuard'
+
 
 // Util Imports
 import { getMode, getSystemMode } from '@core/utils/serverHelpers'
@@ -50,9 +50,7 @@ const Layout = async (props: ChildrenType) => {
         systemMode={systemMode}
         verticalLayout={
           <VerticalLayout navigation={<Navigation dictionary={dictionary} mode={mode} />} navbar={<Navbar />}>
-            <AuthGuard locale={params.lang}>
-              {children}
-            </AuthGuard>
+            {children}
             <ToastContainer
               position='top-right'
               autoClose={2000}
@@ -69,9 +67,7 @@ const Layout = async (props: ChildrenType) => {
         }
         horizontalLayout={
           <HorizontalLayout header={<Header dictionary={dictionary} />} footer={<HorizontalFooter />}>
-            <AuthGuard locale={params.lang}>
-              {children}
-            </AuthGuard>
+            {children}
           </HorizontalLayout>
         }
       />

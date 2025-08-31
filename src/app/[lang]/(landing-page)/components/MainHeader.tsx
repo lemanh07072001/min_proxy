@@ -5,11 +5,11 @@ import Image from 'next/image'
 
 import { motion, useScroll, useTransform } from 'framer-motion'
 
-import logo from '../../../../../../public/images/logo/logo-minsoftware-new-small.png'
+import logo from '../../../../../public/images/logo/logo-minsoftware-new-small.png'
 import { useResponsive } from '@/app/hooks/useResponsive'
-import AuthModal from '@/app/[lang]/(private)/(landing-page)/components/modals/AuthModal'
+import AuthModal from '@/app/[lang]/(landing-page)/components/modals/AuthModal'
 import MenuDesktop from './menus/MenuDesktop'
-import MenuMobile from '@/app/[lang]/(private)/(landing-page)/components/menus/MenuMobile'
+import MenuMobile from '@/app/[lang]/(landing-page)/components/menus/MenuMobile'
 import LanguageDropdown from '@components/layout/shared/LanguageDropdown'
 import UserDropdown from '@components/layout/shared/UserDropdown'
 
