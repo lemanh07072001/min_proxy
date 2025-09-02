@@ -5,8 +5,42 @@ import { PrismaAdapter } from '@auth/prisma-adapter'
 import { PrismaClient } from '@prisma/client'
 import type { NextAuthOptions } from 'next-auth'
 import type { Adapter } from 'next-auth/adapters'
+import axiosInstance from '@/libs/axios'
 
-// const prisma = new PrismaClient()
+async function refreshAccessToken(token: any) {
+  try {
+    const url = `${process.env.NEXT_PUBLIC_API_URL}/refresh`;
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token.refreshToken}`, // Gửi refresh token cũ
+      },
+    });
+
+    const refreshedTokens = await response.json();
+
+    if (!response.ok) {
+      throw refreshedTokens;
+    }
+
+    // Trả về token mới và giữ lại refresh token cũ nếu server không trả về cái mới
+    return {
+      ...token,
+      accessToken: refreshedTokens.access_token,
+      accessTokenExpires: Date.now() + refreshedTokens.expires_in * 1000,
+      refreshToken: refreshedTokens.refresh_token ?? token.refreshToken,
+    };
+  } catch (error) {
+    console.error("Error refreshing access token", error);
+
+    return {
+      ...token,
+      error: "RefreshAccessTokenError",
+    };
+  }
+}
 
 export const authOptions: NextAuthOptions = {
   // adapter: PrismaAdapter(prisma) as Adapter,
@@ -59,7 +93,8 @@ export const authOptions: NextAuthOptions = {
              */
             return {
               accessToken: data.access_token,
-              accessTokenExpires: Date.now() + data.expires_in * 1000,
+              accessTokenExpires: Date.now() + user.expires_in * 1000,
+              refreshToken: user.refresh_token,
               user: data.user
             }
           }
@@ -81,20 +116,7 @@ export const authOptions: NextAuthOptions = {
 
   // ** Please refer to https://next-auth.js.org/configuration/options#session for more `session` options
   session: {
-    /*
-     * Choose how you want to save the user session.
-     * The default is `jwt`, an encrypted JWT (JWE) stored in the session cookie.
-     * If you use an `adapter` however, NextAuth default it to `database` instead.
-     * You can still force a JWT session by explicitly defining `jwt`.
-     * When using `database`, the session cookie will only contain a `sessionToken` value,
-     * which is used to look up the session in the database.
-     * If you use a custom credentials provider, user accounts will not be persisted in a database by NextAuth.js (even if one is configured).
-     * The option to use JSON Web Tokens for session tokens must be enabled to use a custom credentials provider.
-     */
     strategy: 'jwt',
-
-    // ** Seconds - How long until an idle session expires and is no longer valid
-    maxAge: 30 * 24 * 60 * 60 // ** 30 days
   },
 
   // ** Please refer to https://next-auth.js.org/configuration/options#pages for more `pages` options
@@ -112,18 +134,25 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.accessToken = user.accessToken
-        token.accessTokenExpires = user.accessTokenExpires
+        accessTokenExpires: Date.now() + user.expires_in * 1000
+        refreshToken: user.refresh_token
         token.user = user.user
 
         return token
       }
 
-      return token
+      // Nếu access token chưa hết hạn, trả về token hiện tại
+      if (Date.now() < token.accessTokenExpires) {
+        return token;
+      }
+
+      // Nếu access token đã hết hạn, thử làm mới nó
+      return refreshAccessToken(token);
     },
     async session({ session, token }) {
       if (session.user) {
         session.user = token.user
-        session.accessToken = token.accessToken
+        session.accessToken = token.accessToken;
         session.error = token.error
       }
 
