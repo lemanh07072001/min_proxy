@@ -31,6 +31,7 @@ const NavbarContent = () => {
   const session = useSession()
   const { openAuthModal } = useModalContext();
 
+  console.log(session)
   const handleOpenLoginModal = () => {
       openAuthModal('login')
   }
@@ -42,7 +43,7 @@ const NavbarContent = () => {
         <ModeDropdown />
 
         {/* Hiển thị thông tin user khi đã đăng nhập - KHÔNG flicker */}
-        {session && (
+        {session.status === 'authenticated' && (
           <div className='hidden md:flex items-center gap-2 px-3 py-1 bg-gray-100 rounded-lg text-sm'>
             <span className='text-green-600'>●</span>
             <span className='text-gray-700'>{session?.user?.name || session?.user?.email || 'User'}</span>
@@ -53,7 +54,7 @@ const NavbarContent = () => {
         <LanguageDropdown />
 
         {/* Hiển thị UserDropdown nếu đã đăng nhập, button đăng nhập nếu chưa */}
-        {session ? (
+        {session.status === 'authenticated' ? (
           <UserDropdown />
         ) : (
           <Button

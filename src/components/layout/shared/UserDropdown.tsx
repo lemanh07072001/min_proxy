@@ -30,7 +30,9 @@ import { SessionContext } from '@/app/contexts/SessionContext'
 
 // Hook Imports
 import { useSettings } from '@core/hooks/useSettings'
-import { useSession } from 'next-auth/react'
+import { signOut, useSession } from 'next-auth/react'
+import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material'
+import ConfirmDialog from '@components/confirm-modal/ConfirmDialog'
 
 // Styled component for badge content
 const BadgeContentSpan = styled('span')({
@@ -46,14 +48,13 @@ const BadgeContentSpan = styled('span')({
 const UserDropdown = () => {
   // States
   const [open, setOpen] = useState(false)
+  const [openConfirm, setOpenConfirm] = useState(false);
 
   // Refs
   const anchorRef = useRef<HTMLDivElement>(null)
 
   // Fallback to useSession nếu không có session từ props (backward compatibility)
   const session = useSession()
-
-  console.log(session)
 
   // Hooks
   const router = useRouter()
@@ -76,10 +77,13 @@ const UserDropdown = () => {
     setOpen(false)
   }
 
-  const handleUserLogout = async () => {
-    // Redirect to login page
-    router.push('/login')
-  }
+  const handleConfirmLogout =  () => {
+    console.log('Hành động XÓA đã được xác nhận!');
+
+    signOut({ redirect: false });
+
+    setOpenConfirm(false);
+  };
 
   return (
     <>
@@ -149,7 +153,7 @@ const UserDropdown = () => {
                       color='error'
                       size='small'
                       endIcon={<i className='tabler-logout' />}
-                      onClick={handleUserLogout}
+                      onClick={() => setOpenConfirm(true)}
                       sx={{ '& .MuiButton-endIcon': { marginInlineStart: 1.5 } }}
                     >
                       Logout
@@ -161,6 +165,17 @@ const UserDropdown = () => {
           </Fade>
         )}
       </Popper>
+
+      <ConfirmDialog
+        open={openConfirm}
+        onClose={() => setOpenConfirm(false)}
+        onConfirm={handleConfirmLogout}
+        title="Xác nhận đăng xuất" // <-- THAY ĐỔI Ở ĐÂY
+        confirmText="Đăng xuất"
+        cancelText="Hủy bỏ"
+      >
+        Bạn có chắc chắn muốn kết thúc phiên làm việc và đăng xuất khỏi tài khoản này không?
+      </ConfirmDialog>
     </>
   )
 }

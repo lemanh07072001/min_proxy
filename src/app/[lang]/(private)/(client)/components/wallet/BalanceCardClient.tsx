@@ -76,14 +76,15 @@ export default function BalanceCardClient({
                 <span className='balance-currency'>VNĐ</span>
               </div>
               <div className='wallet-actions'>
-                {!session ? (
+                {session.status === 'authenticated' ? (
+                    <button className='btn-primary' onClick={() => setIsInputOpen(true)}>
+                      <Plus size={16} />
+                      Nạp tiền
+                    </button>
+
+                ):(
                   <button className='btn-primary' onClick={() => openAuthModal('login')}>
                     Đăng nhập
-                  </button>
-                ):(
-                  <button className='btn-primary' onClick={() => setIsInputOpen(true)}>
-                    <Plus size={16} />
-                    Nạp tiền
                   </button>
                 )}
 
