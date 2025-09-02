@@ -22,7 +22,7 @@ import { getMode, getSystemMode } from '@core/utils/serverHelpers'
 import HorizontalLayout from '@layouts/HorizontalLayout'
 import Header from '@components/layout/horizontal/Header'
 
-// CSS riêng cho private layout (không import CSS chung nữa)
+// CSS imports - Import shared-layout.css trước để có CSS variables
 import '@/app/[lang]/(private)/(client)/private-specific.css'
 
 function HorizontalFooter() {

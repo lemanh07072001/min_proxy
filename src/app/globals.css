@@ -49,14 +49,7 @@ html, body {
   flex-shrink: 0;
 }
 
-.wallet-card {
-  background: var(--primary-gradient); /* Thay var() để dễ test */
-  border-radius: 20px;
-  padding: 24px;
-  color: white;
-  position: relative;
-  overflow: hidden;
-}
+/* .wallet-card đã được định nghĩa trong shared-layout.css */
 
 /* --- CONTAINER CỦA BẢNG (Toolbar, Table, Pagination) --- */
 .table-container {

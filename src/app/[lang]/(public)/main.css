@@ -4,7 +4,7 @@
   --primary-color: var(--mui-palette-customCssVars-colorMain);
   --primary-hover: #e63946;
   --primary-light: rgba(252, 67, 54, 0.1);
-  --primary-gradient: var(--mui-palette-customCssVars-bgButtonPrimary);
+  /* --primary-gradient đã được định nghĩa trong shared-layout.css */
   --width-sidebar: 300px;
 }
 

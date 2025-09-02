@@ -9,7 +9,7 @@ import { createPortal } from 'react-dom'
 import classnames from 'classnames'
 
 // Component Imports
-import { SessionContext, useSession } from 'next-auth/react'
+import { SessionContext } from 'next-auth/react'
 
 import NavToggle from './NavToggle'
 import ModeDropdown from '@components/layout/shared/ModeDropdown'
@@ -17,23 +17,18 @@ import UserDropdown from '@components/layout/shared/UserDropdown'
 import AuthModal from '@/components/modals/AuthModal'
 import { useModalContext } from '@/app/contexts/ModalContext'
 
-// Style Imports
-import '@/app/[lang]/(landing-page)/main.css'
-
 // Util Imports
 import { verticalLayoutClasses } from '@layouts/utils/layoutClasses'
 
 import LanguageDropdown from '@components/layout/shared/LanguageDropdown'
-import Button from '@mui/material/Button'
 
 const NavbarContent = () => {
   // Log session để debug
-  const session = useSession()
+  const {data} = useContext(SessionContext);
   const { openAuthModal } = useModalContext();
 
-  console.log(session)
   const handleOpenLoginModal = () => {
-      openAuthModal('login')
+    openAuthModal('login')
   }
 
   return (
@@ -43,10 +38,10 @@ const NavbarContent = () => {
         <ModeDropdown />
 
         {/* Hiển thị thông tin user khi đã đăng nhập - KHÔNG flicker */}
-        {session.status === 'authenticated' && (
+        {data && (
           <div className='hidden md:flex items-center gap-2 px-3 py-1 bg-gray-100 rounded-lg text-sm'>
             <span className='text-green-600'>●</span>
-            <span className='text-gray-700'>{session?.user?.name || session?.user?.email || 'User'}</span>
+            <span className='text-gray-700'>{data.user?.name || data.user?.email || 'User'}</span>
           </div>
         )}
       </div>
@@ -54,21 +49,15 @@ const NavbarContent = () => {
         <LanguageDropdown />
 
         {/* Hiển thị UserDropdown nếu đã đăng nhập, button đăng nhập nếu chưa */}
-        {session.status === 'authenticated' ? (
-          <UserDropdown />
+        {data ? (
+          <UserDropdown session={data} />
         ) : (
-          <Button
+          <button
             onClick={handleOpenLoginModal}
-            sx={{
-              '&.MuiButtonBase-root': {
-                background: 'var(--primary-gradient)',
-                color: 'var(--primary-color-main) !important',
-              }
-
-            }}
+            className='px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors'
           >
             Đăng nhập
-          </Button>
+          </button>
         )}
       </div>
 

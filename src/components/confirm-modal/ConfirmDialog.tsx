@@ -68,8 +68,13 @@ const ConfirmDialog = ({
         {/* Nút Đồng ý sẽ gọi hàm onConfirm và có autoFocus */}
         <Button
           onClick={onConfirm}
-          color='primary'
-          className='px-4 py-2 text-white bg-[var(--primary-gradient)] rounded-lg  focus:outline-none focus:ring-2  transition-all duration-150 font-medium shadow-sm'
+          className='px-4 py-2 text-white font-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-red-200 transition-all duration-150 shadow-sm'
+          sx={{
+            background: 'var(--primary-gradient)',
+            '&:hover': {
+              background: 'var(--primary-gradient-alt)',
+            }
+          }}
           autoFocus>
           {confirmText}
         </Button>

@@ -65,31 +65,32 @@ export default function BalanceCardClient({
             transition={{ duration: 0.3, ease: 'easeInOut' }}
             style={{ overflow: 'hidden', padding: '0 1rem' }}
           >
-            <div className='wallet-card'>
-              <div className='wallet-header'>
-                <Wallet className='wallet-icon' size={20} />
-                <span className='wallet-title'>Ví của bạn</span>
+            <div className="bg-gradient-to-br from-orange-500 to-red-500 text-white p-6 rounded-2xl mt-4">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center space-x-2">
+                  <Wallet className="w-5 h-5" />
+                  <span className="text-orange-100">Ví của bạn</span>
+                </div>
+
               </div>
-              <div className='wallet-balance'>
-                {/* Hiển thị số dư được truyền từ server */}
-                <span className='balance-amount'>{initialBalance.toLocaleString('vi-VN')}</span>
-                <span className='balance-currency'>VNĐ</span>
+              <div className="text-3xl font-bold mb-2">
+0
               </div>
-              <div className='wallet-actions'>
+              <div className="text-orange-100 text-sm">
                 {session.status === 'authenticated' ? (
-                    <button className='btn-primary' onClick={() => setIsInputOpen(true)}>
-                      <Plus size={16} />
-                      Nạp tiền
-                    </button>
+                  <button className='bg-white bg-opacity-20 hover:bg-opacity-30 text-gray-900 px-4 py-2 rounded-lg flex items-center space-x-2 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105' onClick={() => setIsInputOpen(true)}>
+                    <Plus size={16} />
+                    Nạp tiền
+                  </button>
 
                 ):(
-                  <button className='btn-primary' onClick={() => openAuthModal('login')}>
+                  <button className='bg-white bg-opacity-20 hover:bg-opacity-30 text-gray-900 px-4 py-2 rounded-lg flex items-center space-x-2 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105' onClick={() => openAuthModal('login')}>
                     Đăng nhập
                   </button>
                 )}
-
               </div>
             </div>
+
           </motion.div>
         )}
       </AnimatePresence>

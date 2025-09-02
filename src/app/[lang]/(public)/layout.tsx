@@ -17,7 +17,7 @@ import { getMode, getSystemMode } from '@core/utils/serverHelpers'
 import HorizontalLayout from '@layouts/HorizontalLayout'
 import Header from '@components/layout/horizontal/Header'
 
-// CSS riêng cho public layout (không import CSS chung nữa)
+// CSS riêng cho public layout
 import './public-specific.css'
 
 function HorizontalFooter() {

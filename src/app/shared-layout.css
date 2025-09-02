@@ -6,6 +6,9 @@
 @tailwind utilities;
 
 /* ===== CSS VARIABLES ===== */
+/* CSS Variables đã được định nghĩa trong css-variables.css với priority cao nhất */
+/* Thêm backup để đảm bảo hoạt động */
+
 :root {
   /* MUI Variables */
   --border-radius: var(--mui-shape-borderRadius);
@@ -22,15 +25,12 @@
   --backdrop-color: rgb(var(--mui-mainColorChannels-light) / 0.5);
   --mui-mainColorChannels-shadow: var(--mui-mainColorChannels-lightShadow);
   
-  /* Custom Variables - Sử dụng giá trị cứng để tránh timing issues */
+  /* Custom Variables - Backup để đảm bảo hoạt động */
   --primary-hover: #e63946;
   --primary-light: rgba(252, 67, 54, 0.1);
   --primary-color-main: #ffffff;
-  --primary-gradient: linear-gradient(45deg, #FC4336, #F88A4B);
+  --primary-gradient: linear-gradient(45deg, #FC4336, #F88A4B) !important;
   --width-sidebar: 300px;
-
-  
-  /* Fallback values */
   --fallback-primary-gradient: linear-gradient(135deg, #fc4336 0%, #e63946 100%);
 }
 
@@ -189,15 +189,35 @@ ul:not([class]) {
   block-size: 40px;
 }
 
-/* ===== WALLET CARD STYLES ===== */
+/* Wallet Card Styles */
 .wallet-card {
-  --primary-gradient: var(--primary-gradient);
+  background: var(--primary-gradients);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
 }
 
-[class*="wallet-"],
-[class*="primary-"] {
-  --primary-gradient: var(--primary-gradient);
+.wallet-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
 }
+
+.wallet-balance {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--primary-color-main);
+  margin-bottom: 8px;
+}
+
+.wallet-label {
+  font-size: 0.875rem;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
 
 /* ===== FORM COMPONENTS STYLES ===== */
 .form-group {

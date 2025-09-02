@@ -2,7 +2,8 @@
 import 'react-perfect-scrollbar/dist/css/styles.css'
 import 'bootstrap/dist/css/bootstrap.min.css'
 
-// Style Imports
+// Style Imports - CSS Variables phải được import đầu tiên
+import '@/app/css-variables.css'
 import '@/app/globals.css'
 import '@/app/shared-layout.css' // CSS chung cho cả private và public
 import '@/app/root.css'
@@ -12,6 +13,7 @@ import '@assets/iconify-icons/generated-icons.css'
 
 import InitColorSchemeScript from '@mui/material/InitColorSchemeScript'
 
+import { getServerSession } from 'next-auth'
 import { i18n } from '@configs/i18n'
 
 import '@/app/[lang]/(landing-page)/main.css'
@@ -26,9 +28,10 @@ import TanstackProvider from '@/components/TanstackProvider'
 
 import { getSystemMode } from '@core/utils/serverHelpers'
 import TranslationWrapper from '@/hocs/TranslationWrapper'
-import SessionProviderWrapper from '@components/SessionProviderWrapper'
+
 import { ModalContextProvider } from '@/app/contexts/ModalContext'
-import { getServerSession } from 'next-auth'
+
+
 import { authOptions } from '@/libs/auth'
 
 const RootLayout = async (props: ChildrenType & { params: Promise<{ lang: Locale }> }) => {
@@ -48,11 +51,9 @@ const RootLayout = async (props: ChildrenType & { params: Promise<{ lang: Locale
         <body className='flex is-full min-bs-full flex-auto flex-col'>
           <TanstackProvider>
             <InitColorSchemeScript attribute='data' defaultMode={systemMode} />
-
-              <ModalContextProvider>
-                {children}
-              </ModalContextProvider>
-
+            <ModalContextProvider>
+              {children}
+            </ModalContextProvider>
           </TanstackProvider>
         </body>
       </html>

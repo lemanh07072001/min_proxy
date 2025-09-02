@@ -1,0 +1,20 @@
+/* ===== CSS VARIABLES - PRIORITY CAO NHẤT ===== */
+/* File này phải được import đầu tiên để đảm bảo CSS variables không bị ghi đè */
+
+/* Sử dụng CSS specificity cao nhất để đảm bảo không bị ghi đè */
+html:root {
+  /* Custom Variables - Sử dụng giá trị cứng để tránh timing issues */
+  --primary-hover: #e63946 !important;
+  --primary-light: rgba(252, 67, 54, 0.1) !important;
+  --primary-color-main: #ffffff !important;
+  --primary-gradient: linear-gradient(45deg, #FC4336, #F88A4B) !important;
+  --primary-gradient-alt: linear-gradient(135deg, #fc4336 0%, #e63946 100%) !important;
+  --width-sidebar: 300px !important;
+  --fallback-primary-gradient: linear-gradient(135deg, #fc4336 0%, #e63946 100%) !important;
+}
+
+/* Dark mode variables */
+html[data-dark] {
+  --backdrop-color: rgb(23 25 37 / 0.6) !important;
+  --mui-mainColorChannels-shadow: var(--mui-mainColorChannels-darkShadow) !important;
+}

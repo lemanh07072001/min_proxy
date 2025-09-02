@@ -4,6 +4,7 @@ import Button from '@mui/material/Button'
 
 // Style Imports
 import '@/app/globals.css'
+import '@/app/shared-layout.css' // CSS chung cho cả private và public
 import '@/app/root.css'
 import '@/app/[lang]/(landing-page)/main.css'
 
