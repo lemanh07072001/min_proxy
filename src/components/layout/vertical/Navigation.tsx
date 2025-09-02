@@ -24,7 +24,7 @@ import { useSettings } from '@core/hooks/useSettings'
 // Style Imports
 import navigationCustomStyles from '@core/styles/vertical/navigationCustomStyles'
 
-import { getDictionary } from '@/utils/getDictionary'
+import type { getDictionary } from '@/utils/getDictionary'
 
 type Props = {
   dictionary: Awaited<ReturnType<typeof getDictionary>>
