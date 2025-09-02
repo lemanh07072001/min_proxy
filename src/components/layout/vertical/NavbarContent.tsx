@@ -21,6 +21,7 @@ import { useModalContext } from '@/app/contexts/ModalContext'
 import { verticalLayoutClasses } from '@layouts/utils/layoutClasses'
 
 import LanguageDropdown from '@components/layout/shared/LanguageDropdown'
+import Button from '@mui/material/Button'
 
 const NavbarContent = () => {
   // Log session để debug
@@ -52,12 +53,17 @@ const NavbarContent = () => {
         {data ? (
           <UserDropdown session={data} />
         ) : (
-          <button
+          <Button
             onClick={handleOpenLoginModal}
-            className='px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors'
+            className='px-4 py-2 text-sm  text-white rounded-lg h transition-colors'
+            sx={{
+              '&.MuiButtonBase-root' : {
+                background: 'var(--primary-gradient)',
+              }
+            }}
           >
             Đăng nhập
-          </button>
+          </Button>
         )}
       </div>
 

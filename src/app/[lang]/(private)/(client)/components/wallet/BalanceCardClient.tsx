@@ -11,6 +11,9 @@ import RechargeInputDialog from '@/app/[lang]/(private)/(client)/components/wall
 import QrCodeDisplayDialog from '@/app/[lang]/(private)/(client)/components/wallet/QrCodeDisplayDialog'
 import { SessionContext, useSession } from 'next-auth/react'
 import { useModalContext } from '@/app/contexts/ModalContext'
+import axiosInstance from '@/libs/axios'
+import useAxiosAuth from '@/hocs/useAxiosAuth'
+import { useQuery } from '@tanstack/react-query'
 
 // Interface để định nghĩa cấu trúc dữ liệu giao dịch
 interface TransactionData {
@@ -36,6 +39,7 @@ export default function BalanceCardClient({
   const [isInputOpen, setIsInputOpen] = useState(false)
   const [isQrOpen, setIsQrOpen] = useState(false)
 
+  const axiosAuth = useAxiosAuth();
   const session = useSession()
 
   const { openAuthModal } = useModalContext();
@@ -52,7 +56,19 @@ export default function BalanceCardClient({
     setIsQrOpen(true)
   }
 
+  // Hàm để fetch dữ liệu.
+  const fetchUser = async () => {
+    const { data } = await axiosAuth.post('me');
+    return data;
+  };
 
+  const { data, error, isLoading } = useQuery({
+    queryKey: ['userData'], // Đặt tên cho query
+    queryFn: fetchUser,    // Cung cấp hàm fetch
+  });
+
+
+  console.log(data?.chitieu)
 
   return (
     <>
@@ -74,7 +90,11 @@ export default function BalanceCardClient({
 
               </div>
               <div className="text-3xl font-bold mb-2">
-0
+                {isLoading ? (
+                  new Intl.NumberFormat('vi-VN').format(0)
+                ):(
+                  new Intl.NumberFormat('vi-VN').format(data?.chitieu)
+                )} VNĐ
               </div>
               <div className="text-orange-100 text-sm">
                 {session.status === 'authenticated' ? (

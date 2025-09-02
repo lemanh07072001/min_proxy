@@ -47,7 +47,7 @@ export default function RegisterForm() {
 
   const { closeAuthModal } = useModalContext()
 
-  const { mutation, isPending } = useMutation({
+  const { mutate, isPending } = useMutation({
     mutationFn: registerUser,
     onSuccess: data => {
       console.log('Đăng ký thành công:', data)
@@ -76,7 +76,7 @@ export default function RegisterForm() {
 
   const onSubmit = (data: RegisterFormInputs) => {
     console.log('Dữ liệu form:', data)
-    mutation.mutate(data)
+    mutate(data)
   }
 
   return (
@@ -86,7 +86,6 @@ export default function RegisterForm() {
         <label className={`login-form-label ${errors.email && 'text-red-500'}`}>Email</label>
         <input
           type='text'
-          name='email'
           className={`login-form-input ${errors.email && 'border-red-500'}`}
           placeholder='Nhập email'
           {...register('email')}
@@ -99,7 +98,6 @@ export default function RegisterForm() {
         <label className={`login-form-label ${errors.name && 'text-red-500'}`}>Username</label>
         <input
           type='text'
-          name='name'
           className={`login-form-input ${errors.name && 'border-red-500'}`}
           placeholder='Nhập họ tên'
           {...register('name')}
@@ -113,7 +111,6 @@ export default function RegisterForm() {
         <div className='login-password-wrapper'>
           <input
             type={showPassword ? 'text' : 'password'}
-            name='password'
             className={`login-form-input ${errors.password && 'border-red-500'}`}
             placeholder='********'
             {...register('password')}
@@ -133,7 +130,6 @@ export default function RegisterForm() {
         <div className='login-password-wrapper'>
           <input
             type={showPasswordConfirmation ? 'text' : 'password'}
-            name='password_confirmation'
             className={`login-form-input ${errors.password_confirmation && 'border-red-500'}`}
             placeholder='********'
             {...register('password_confirmation')}
