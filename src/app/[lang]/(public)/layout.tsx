@@ -5,7 +5,7 @@ import Button from '@mui/material/Button'
 import type { ChildrenType } from '@core/types'
 
 import '@/app/[lang]/(private)/(client)/root.css'
-import '@/app/[lang]/(private)/(client)/main.css'
+import './main.css'
 
 // Layout Imports
 import LayoutWrapper from '@layouts/LayoutWrapper'
@@ -18,8 +18,6 @@ import Navigation from '@components/layout/vertical/Navigation'
 import Navbar from '@components/layout/vertical/Navbar'
 import VerticalFooter from '@components/layout/vertical/Footer'
 import ScrollToTop from '@core/components/scroll-to-top'
-
-
 
 // Util Imports
 import { getMode, getSystemMode } from '@core/utils/serverHelpers'

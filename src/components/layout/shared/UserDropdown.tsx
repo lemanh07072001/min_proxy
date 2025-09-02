@@ -7,6 +7,7 @@ import type { MouseEvent } from 'react'
 import { useRouter } from 'next/navigation'
 
 import { useSession } from 'next-auth/react'
+import type { Session } from 'next-auth'
 
 // Next Imports
 
@@ -37,14 +38,20 @@ const BadgeContentSpan = styled('span')({
   boxShadow: '0 0 0 2px var(--mui-palette-background-paper)'
 })
 
-const UserDropdown = () => {
+interface UserDropdownProps {
+  session?: Session | null
+}
+
+const UserDropdown = ({ session: propSession }: UserDropdownProps = {}) => {
   // States
   const [open, setOpen] = useState(false)
 
   // Refs
   const anchorRef = useRef<HTMLDivElement>(null)
 
-  const { data: session, status } = useSession()
+  // Fallback to useSession nếu không có session từ props (backward compatibility)
+  const { data: clientSession, status } = useSession()
+  const session = propSession || clientSession
 
   // Hooks
   const router = useRouter()

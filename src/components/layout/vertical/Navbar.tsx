@@ -1,11 +1,19 @@
+// Third-party Imports
+import { getServerSession } from 'next-auth'
+
 // Component Imports
 import LayoutNavbar from '@layouts/components/vertical/Navbar'
 import NavbarContent from './NavbarContent'
 
-const Navbar = () => {
+// Lib Imports
+import { authOptions } from '@/libs/auth'
+
+const Navbar = async () => {
+  const session = await getServerSession(authOptions)
+
   return (
     <LayoutNavbar>
-      <NavbarContent />
+      <NavbarContent session={session} />
     </LayoutNavbar>
   )
 }

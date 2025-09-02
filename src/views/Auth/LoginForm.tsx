@@ -50,9 +50,10 @@ export default function LoginForm() {
       redirect: false
     })
 
-    if (res.status == 200 && res.ok == true) {
+    if (res?.status == 200 && res?.ok == true) {
       toast.success('Đăng nhập thành công.')
-      window.open(`/${locale}/overview`, '_blank')
+      // Reload page để update session ở server-side
+      window.location.reload()
     } else {
       toast.error('Tài khoản hoặc mật khẩu không chính xác.')
     }
