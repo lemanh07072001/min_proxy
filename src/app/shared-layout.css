@@ -25,9 +25,10 @@
   /* Custom Variables - Sử dụng giá trị cứng để tránh timing issues */
   --primary-hover: #e63946;
   --primary-light: rgba(252, 67, 54, 0.1);
-  --primary-color-main: #f88a4b;
+  --primary-color-main: #ffffff;
   --primary-gradient: linear-gradient(45deg, #FC4336, #F88A4B);
   --width-sidebar: 300px;
+
   
   /* Fallback values */
   --fallback-primary-gradient: linear-gradient(135deg, #fc4336 0%, #e63946 100%);

@@ -1,24 +1,23 @@
 'use client'
-import { useState, useEffect } from 'react'
 
+import React, { useState, useEffect } from 'react'
 import Image from 'next/image'
-
 import { motion, useScroll, useTransform } from 'framer-motion'
 
 import logo from '../../../../../public/images/logo/logo-minsoftware-new-small.png'
-import { useResponsive } from '@/app/hooks/useResponsive'
-import AuthModal from '@/components/modals/AuthModal'
 import MenuDesktop from './menus/MenuDesktop'
-import MenuMobile from '@/app/[lang]/(landing-page)/components/menus/MenuMobile'
+import MenuMobile from './menus/MenuMobile'
 import LanguageDropdown from '@components/layout/shared/LanguageDropdown'
 import UserDropdown from '@components/layout/shared/UserDropdown'
+import AuthModal from '@/components/modals/AuthModal'
+import { useModalContext } from '@/app/contexts/ModalContext'
+import { useResponsive } from '@/app/hooks/useResponsive'
 
-export default function MainHeader() {
-  const [isOpen, setIsOpen] = useState<boolean>(false)
+const MainHeader = () => {
   const [isOpenMenu, setIsOpenMenu] = useState<boolean>(false)
-  const [mode, setMode] = useState<string>('login')
   const { scrollY } = useScroll()
   const { isMobile } = useResponsive()
+  const { openAuthModal } = useModalContext()
 
   // 1. ĐÃ XÓA: state `scrolled` và useEffect theo dõi scroll thủ công.
   //    Tất cả hiệu ứng scroll giờ đây đều do Framer Motion xử lý.
@@ -102,15 +101,17 @@ export default function MainHeader() {
 
           <div className={` navbar-collapse ${isOpenMenu ? 'show' : ''}`} id='navbarNav'>
             {isMobile ? (
-              <MenuMobile setIsOpen={setIsOpen} setMode={setMode} onClose={handleCloseMenu} />
+              <MenuMobile onClose={handleCloseMenu} />
             ) : (
-              <MenuDesktop setIsOpen={setIsOpen} setMode={setMode} />
+              <MenuDesktop />
             )}
           </div>
         </div>
       </motion.nav>
 
-      <AuthModal isOpen={isOpen} isMode={mode} setMode={setMode} onClose={() => setIsOpen(false)} />
+      <AuthModal />
     </>
   )
 }
+
+export default MainHeader

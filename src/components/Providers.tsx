@@ -9,6 +9,8 @@ import ThemeProvider from '@components/theme'
 // Util Imports
 import { getMode, getSettingsFromCookie, getSystemMode } from '@core/utils/serverHelpers'
 import { NextAuthProvider } from '@/app/contexts/nextAuthProvider'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/libs/auth'
 
 type Props = ChildrenType & {
   direction: Direction
@@ -23,8 +25,10 @@ const Providers = async (props: Props) => {
   const settingsCookie = await getSettingsFromCookie()
   const systemMode = await getSystemMode()
 
+  const session = await getServerSession(authOptions);
+
   return (
-    <NextAuthProvider basePath={process.env.NEXTAUTH_BASEPATH}>
+    <NextAuthProvider session={session} basePath={process.env.NEXTAUTH_BASEPATH}>
       <VerticalNavProvider>
         <SettingsProvider settingsCookie={settingsCookie} mode={mode}>
           <ThemeProvider direction={direction} systemMode={systemMode}>

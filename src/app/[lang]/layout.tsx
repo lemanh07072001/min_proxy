@@ -27,6 +27,7 @@ import TanstackProvider from '@/components/TanstackProvider'
 import { getSystemMode } from '@core/utils/serverHelpers'
 import TranslationWrapper from '@/hocs/TranslationWrapper'
 import SessionProviderWrapper from '@components/SessionProviderWrapper'
+import { ModalContextProvider } from '@/app/contexts/ModalContext'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/libs/auth'
 
@@ -40,7 +41,6 @@ const RootLayout = async (props: ChildrenType & { params: Promise<{ lang: Locale
 
   const direction = i18n.langDirection[params.lang]
 
-  const session = await getServerSession(authOptions);
 
   return (
     <TranslationWrapper headersList={headersList} lang={params.lang}>
@@ -48,9 +48,10 @@ const RootLayout = async (props: ChildrenType & { params: Promise<{ lang: Locale
         <body className='flex is-full min-bs-full flex-auto flex-col'>
           <TanstackProvider>
             <InitColorSchemeScript attribute='data' defaultMode={systemMode} />
-            <SessionProviderWrapper session={session}>
-              {children}
-            </SessionProviderWrapper>
+
+              <ModalContextProvider>
+                {children}
+              </ModalContextProvider>
 
           </TanstackProvider>
         </body>

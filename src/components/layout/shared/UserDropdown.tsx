@@ -1,12 +1,12 @@
 'use client'
 
 // React Imports
-import { useRef, useState } from 'react'
+import { useContext, useRef, useState } from 'react'
 import type { MouseEvent } from 'react'
 
 import { useRouter } from 'next/navigation'
 
-import { useSession } from 'next-auth/react'
+
 import type { Session } from 'next-auth'
 
 // Next Imports
@@ -25,8 +25,12 @@ import Divider from '@mui/material/Divider'
 import MenuItem from '@mui/material/MenuItem'
 import Button from '@mui/material/Button'
 
+// s
+import { SessionContext } from '@/app/contexts/SessionContext'
+
 // Hook Imports
 import { useSettings } from '@core/hooks/useSettings'
+import { useSession } from 'next-auth/react'
 
 // Styled component for badge content
 const BadgeContentSpan = styled('span')({
@@ -38,11 +42,8 @@ const BadgeContentSpan = styled('span')({
   boxShadow: '0 0 0 2px var(--mui-palette-background-paper)'
 })
 
-interface UserDropdownProps {
-  session?: Session | null
-}
 
-const UserDropdown = ({ session: propSession }: UserDropdownProps = {}) => {
+const UserDropdown = () => {
   // States
   const [open, setOpen] = useState(false)
 
@@ -50,8 +51,9 @@ const UserDropdown = ({ session: propSession }: UserDropdownProps = {}) => {
   const anchorRef = useRef<HTMLDivElement>(null)
 
   // Fallback to useSession nếu không có session từ props (backward compatibility)
-  const { data: clientSession, status } = useSession()
-  const session = propSession || clientSession
+  const session = useSession()
+
+  console.log(session)
 
   // Hooks
   const router = useRouter()
@@ -118,9 +120,9 @@ const UserDropdown = ({ session: propSession }: UserDropdownProps = {}) => {
                     <Avatar alt='John Doe' src='/images/avatars/1.png' />
                     <div className='flex items-start flex-col'>
                       <Typography className='font-medium' color='text.primary'>
-                        John Doe
+                        {session?.data?.user?.name}
                       </Typography>
-                      <Typography variant='caption'>admin@vuexy.com</Typography>
+                      <Typography variant='caption'>{session?.data?.user?.email}</Typography>
                     </div>
                   </div>
                   <Divider className='mlb-1' />

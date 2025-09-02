@@ -8,26 +8,21 @@ import LanguageSelect from '@components/language-selector/LanguageSelect'
 
 import Link from '@components/Link';
 import LanguageDropdown from '@components/layout/shared/LanguageDropdown'
+import { useModalContext } from '@/app/contexts/ModalContext'
 
-type AuthProps = {
-  setIsOpen: (value: boolean) => void
-  setMode: (value: string) => void
-}
-
-export default function MenuDesktop({ setIsOpen, setMode }: AuthProps) {
+export default function MenuDesktop() {
   const pathname = usePathname()
   const params = useParams()
+  const { openAuthModal } = useModalContext()
 
   const { lang: locale } = params
 
   const handleOpenModalLogin = () => {
-    setIsOpen(true)
-    setMode('login')
+    openAuthModal('login')
   }
 
   const handleOpenModalRegister = () => {
-    setIsOpen(true)
-    setMode('register')
+    openAuthModal('register')
   }
 
   return (

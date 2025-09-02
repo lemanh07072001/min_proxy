@@ -10,6 +10,7 @@ import type { Session } from 'next-auth' // Import kiểu Session
 import RechargeInputDialog from '@/app/[lang]/(private)/(client)/components/wallet/RechargeInputDialog'
 import QrCodeDisplayDialog from '@/app/[lang]/(private)/(client)/components/wallet/QrCodeDisplayDialog'
 import { SessionContext, useSession } from 'next-auth/react'
+import { useModalContext } from '@/app/contexts/ModalContext'
 
 // Interface để định nghĩa cấu trúc dữ liệu giao dịch
 interface TransactionData {
@@ -35,6 +36,9 @@ export default function BalanceCardClient({
   const [isInputOpen, setIsInputOpen] = useState(false)
   const [isQrOpen, setIsQrOpen] = useState(false)
 
+  const session = useSession()
+
+  const { openAuthModal } = useModalContext();
 
   const [transactionData, setTransactionData] = useState<TransactionData>({
     qrUrl: null,
@@ -48,7 +52,7 @@ export default function BalanceCardClient({
     setIsQrOpen(true)
   }
 
-  const { data } = useContext(SessionContext);
+
 
   return (
     <>
@@ -72,8 +76,8 @@ export default function BalanceCardClient({
                 <span className='balance-currency'>VNĐ</span>
               </div>
               <div className='wallet-actions'>
-                {!data ? (
-                  <button className='btn-primary'>
+                {!session ? (
+                  <button className='btn-primary' onClick={() => openAuthModal('login')}>
                     Đăng nhập
                   </button>
                 ):(

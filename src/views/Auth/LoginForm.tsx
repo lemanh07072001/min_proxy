@@ -1,6 +1,6 @@
 'use client'
 
-import React, { use, useState } from 'react'
+import React, { useState } from 'react'
 
 import { useParams, useRouter } from 'next/navigation'
 
@@ -15,6 +15,7 @@ import { yupResolver } from '@hookform/resolvers/yup'
 import { toast } from 'react-toastify'
 
 import * as yup from 'yup'
+import { useModalContext } from '@/app/contexts/ModalContext'
 
 type LoginFormInputs = {
   email: string
@@ -32,6 +33,7 @@ export default function LoginForm() {
 
   const router = useRouter()
   const params = useParams()
+  const { closeAuthModal } = useModalContext()
 
   const { lang: locale } = params
 
@@ -52,6 +54,7 @@ export default function LoginForm() {
 
     if (res?.status == 200 && res?.ok == true) {
       toast.success('Đăng nhập thành công.')
+      closeAuthModal()
       // Reload page để update session ở server-side
       window.location.reload()
     } else {

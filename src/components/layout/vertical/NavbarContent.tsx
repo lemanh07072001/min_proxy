@@ -1,7 +1,7 @@
 'use client'
 
 // React Imports
-import { useContext, useState } from 'react'
+import { useContext } from 'react'
 
 import { createPortal } from 'react-dom'
 
@@ -9,12 +9,13 @@ import { createPortal } from 'react-dom'
 import classnames from 'classnames'
 
 // Component Imports
-import { SessionContext } from 'next-auth/react'
+import { SessionContext, useSession } from 'next-auth/react'
 
 import NavToggle from './NavToggle'
 import ModeDropdown from '@components/layout/shared/ModeDropdown'
 import UserDropdown from '@components/layout/shared/UserDropdown'
 import AuthModal from '@/components/modals/AuthModal'
+import { useModalContext } from '@/app/contexts/ModalContext'
 
 // Style Imports
 import '@/app/[lang]/(landing-page)/main.css'
@@ -23,25 +24,15 @@ import '@/app/[lang]/(landing-page)/main.css'
 import { verticalLayoutClasses } from '@layouts/utils/layoutClasses'
 
 import LanguageDropdown from '@components/layout/shared/LanguageDropdown'
-
-
+import Button from '@mui/material/Button'
 
 const NavbarContent = () => {
-  // States for AuthModal
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
-  const [authMode, setAuthMode] = useState<'login' | 'register'>('login')
-
   // Log session để debug
-  const {data} = useContext(SessionContext);
-
+  const session = useSession()
+  const { openAuthModal } = useModalContext();
 
   const handleOpenLoginModal = () => {
-    setAuthMode('login')
-    setIsAuthModalOpen(true)
-  }
-
-  const handleCloseAuthModal = () => {
-    setIsAuthModalOpen(false)
+      openAuthModal('login')
   }
 
   return (
@@ -51,10 +42,10 @@ const NavbarContent = () => {
         <ModeDropdown />
 
         {/* Hiển thị thông tin user khi đã đăng nhập - KHÔNG flicker */}
-        {data && (
+        {session && (
           <div className='hidden md:flex items-center gap-2 px-3 py-1 bg-gray-100 rounded-lg text-sm'>
             <span className='text-green-600'>●</span>
-            <span className='text-gray-700'>{data.user?.name || data.user?.email || 'User'}</span>
+            <span className='text-gray-700'>{session?.user?.name || session?.user?.email || 'User'}</span>
           </div>
         )}
       </div>
@@ -62,27 +53,28 @@ const NavbarContent = () => {
         <LanguageDropdown />
 
         {/* Hiển thị UserDropdown nếu đã đăng nhập, button đăng nhập nếu chưa */}
-        {data ? (
-          <UserDropdown session={data} />
+        {session ? (
+          <UserDropdown />
         ) : (
-          <button
+          <Button
             onClick={handleOpenLoginModal}
-            className='px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors'
+            sx={{
+              '&.MuiButtonBase-root': {
+                background: 'var(--primary-gradient)',
+                color: 'var(--primary-color-main) !important',
+              }
+
+            }}
           >
             Đăng nhập
-          </button>
+          </Button>
         )}
       </div>
 
       {/* AuthModal - Render trong Portal để tránh constraints */}
       {typeof window !== 'undefined' &&
         createPortal(
-          <AuthModal
-            isOpen={isAuthModalOpen}
-            isMode={authMode}
-            onClose={handleCloseAuthModal}
-            setMode={(mode: string) => setAuthMode(mode as 'login' | 'register')}
-          />,
+          <AuthModal />,
           document.body
         )}
     </div>

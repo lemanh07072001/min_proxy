@@ -2,24 +2,20 @@
 
 import { X, Eye, EyeOff } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useModalContext } from '@/app/contexts/ModalContext'
 
 import LoginForm from '@views/Auth/LoginForm'
 import RegisterForm from '@views/Auth/RegisterForm'
 
-interface AuthModalProps {
-  isOpen: boolean
-  isMode: string
-  onClose: () => void
-  setMode: (mode: string) => void
-}
+const AuthModal: React.FC = () => {
+  const { isAuthModalOpen, authModalMode, closeAuthModal, setAuthModalMode } = useModalContext()
 
-const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, isMode }) => {
   return (
     <AnimatePresence>
-      {isOpen && (
+      {isAuthModalOpen && (
         <motion.div
           className='login-modal-overlay'
-          onClick={onClose}
+          onClick={closeAuthModal}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -33,9 +29,10 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, isMode }) => {
             transition={{ duration: 0.25, ease: 'easeOut' }}
           >
             {/* Close Button */}
-            <button className='login-modal-close' onClick={onClose}>
+            <button className='login-modal-close' onClick={closeAuthModal}>
               <X size={24} color='#666' />
             </button>
+            
             {/* Logo and Header */}
             <div className='login-modal-header'>
               <div className='login-modal-logo'>
@@ -54,16 +51,48 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, isMode }) => {
                 </div>
               </div>
               <h1 className='login-modal-title'>
-                {isMode === 'login'
+                {authModalMode === 'login'
                   ? 'Chào mừng bạn quay lại'
                   : `Chào mừng đến với ${process.env.NEXT_PUBLIC_APP_NAME}`}
               </h1>
               <p className='login-modal-subtitle'>
-                {isMode === 'login' ? 'Vui lòng điền thông tin đăng nhập' : 'Vui lòng điền thông tin đăng ký'}
+                {authModalMode === 'login' ? 'Vui lòng điền thông tin đăng nhập' : 'Vui lòng điền thông tin đăng ký'}
               </p>
             </div>
+            
             {/* Form */}
-            {isMode === 'login' ? <LoginForm /> : <RegisterForm onClose={onClose} />}
+            {authModalMode === 'login' ? (
+              <LoginForm />
+            ) : (
+              <RegisterForm />
+            )}
+            
+            {/* Switch Mode Buttons */}
+            <div className='login-modal-switch'>
+              {authModalMode === 'login' ? (
+                <div>
+                  <span>Chưa có tài khoản? </span>
+                  <button 
+                    type='button' 
+                    className='login-modal-switch-btn'
+                    onClick={() => setAuthModalMode('register')}
+                  >
+                    Đăng ký ngay
+                  </button>
+                </div>
+              ) : (
+                <div>
+                  <span>Đã có tài khoản? </span>
+                  <button 
+                    type='button' 
+                    className='login-modal-switch-btn'
+                    onClick={() => setAuthModalMode('login')}
+                  >
+                    Đăng nhập ngay
+                  </button>
+                </div>
+              )}
+            </div>
           </motion.div>
         </motion.div>
       )}

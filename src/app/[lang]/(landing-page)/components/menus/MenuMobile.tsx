@@ -5,22 +5,23 @@ import { useParams, usePathname } from 'next/navigation'
 import MenuLandingPage from '@/app/data/MenuLandingPage'
 import Link from '@components/Link'
 import logo from '../../../../../../public/images/logo/logo-minsoftware-new-small.png'
+import { useModalContext } from '@/app/contexts/ModalContext'
 
 interface MenuMobileProps {
-  setIsOpen?: (isOpen: boolean) => void
-  setMode?: (mode: string) => void
   onClose?: () => void
 }
 
-export default function MenuMobile({ setIsOpen, setMode, onClose }: MenuMobileProps) {
+export default function MenuMobile({ onClose }: MenuMobileProps) {
+  const { openAuthModal } = useModalContext()
+
   const handleLogin = () => {
-    if (setMode) setMode('login')
-    if (setIsOpen) setIsOpen(true)
+    openAuthModal('login')
+    if (onClose) onClose()
   }
 
   const handleRegister = () => {
-    if (setMode) setMode('register')
-    if (setIsOpen) setIsOpen(true)
+    openAuthModal('register')
+    if (onClose) onClose()
   }
 
   const pathname = usePathname()

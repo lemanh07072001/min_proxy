@@ -13,16 +13,13 @@ import { Eye, EyeOff } from 'lucide-react'
 import { toast } from 'react-toastify'
 
 import axiosInstance from '@/libs/axios'
+import { useModalContext } from '@/app/contexts/ModalContext'
 
 type RegisterFormInputs = {
   name: string
   email: string
   password: string
   password_confirmation: string
-}
-
-interface RegisterFormProps {
-  onClose: () => void
 }
 
 const schema = yup
@@ -43,10 +40,12 @@ const registerUser = async (data: RegisterFormInputs) => {
   return response.data
 }
 
-export default function RegisterForm({ onClose }: RegisterFormProps) {
+export default function RegisterForm() {
   const [showPassword, setShowPassword] = useState(false)
   const [showPasswordConfirmation, setPasswordConfirmation] = useState(false)
   const [rememberMe, setRememberMe] = useState(false)
+
+  const { closeAuthModal } = useModalContext()
 
   const { mutation, isPending } = useMutation({
     mutationFn: registerUser,
@@ -57,7 +56,7 @@ export default function RegisterForm({ onClose }: RegisterFormProps) {
 
       reset()
 
-      onClose()
+      closeAuthModal()
     },
     onError: error => {
       console.error('Lỗi đăng ký:', error)
