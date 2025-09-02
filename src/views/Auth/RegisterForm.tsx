@@ -152,11 +152,7 @@ export default function RegisterForm({ onClose }: RegisterFormProps) {
         )}
       </div>
 
-      <button
-        type='submit'
-        className='login-submit-btn'
-        disabled={isPending} // Vô hiệu hóa nút khi đang loading
-      >
+      <button type='submit' className='login-submit-btn' disabled={isPending}>
         {isPending ? 'Đang xử lý...' : 'Đăng ký'}
       </button>
     </form>

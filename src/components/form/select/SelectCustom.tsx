@@ -1,64 +1,47 @@
-import React from "react";
-
+import React from 'react'
 import "./styles.css";
-import "../main.css"
 
-// Giả sử bạn có một file CSS riêng cho component này
-// import "./styles.css";
-
-// --- 1. Định nghĩa interface cho object classNames ---
-interface ClassNameMap {
-  container?: string;
-  label?: string;
-  icon?: string;
-  select?: string;
+interface SelectCustomProps {
+  label?: string
+  placeholder?: string
+  required?: boolean
+  error?: string
+  className?: string
+  children: React.ReactNode
+  [key: string]: any
 }
 
-interface Option {
-  label: string;
-  value: string;
-}
-
-// --- 2. Định nghĩa interface props cho CustomSelect ---
-interface CustomSelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
-  label: string;
-  icon?: React.ReactNode;
-  options: Option[]; // options là bắt buộc cho select
-  classNames?: ClassNameMap;
-}
-
-const CustomSelect: React.FC<CustomSelectProps> = ({
-                                                     label,
-                                                     icon,
-                                                     options = [],
-                                                     classNames = {},
-                                                     ...rest
-                                                   }) => {
-  // --- 3. Kết hợp class an toàn cho tất cả các phần tử ---
-  const containerClasses = ['custom-field', classNames.container].filter(Boolean).join(' ');
-  const labelClasses = ['custom-field-label', classNames.label].filter(Boolean).join(' ');
-  const iconClasses = ['custom-field-icon', classNames.icon].filter(Boolean).join(' ');
-  const selectClasses = ['custom-field-select', classNames.select, rest.className].filter(Boolean).join(' ');
-
-  // Xóa className khỏi rest để tránh bị áp dụng hai lần
-  delete rest.className;
-
+const SelectCustom: React.FC<SelectCustomProps> = ({
+  label,
+  placeholder,
+  required = false,
+  error,
+  className = '',
+  children,
+  ...props
+}) => {
   return (
-    <div className={containerClasses}>
-      <label className={labelClasses}>
-        {icon && <span className={iconClasses}>{icon}</span>}
-        {label}
-      </label>
-
-      <select className={selectClasses} {...rest}>
-        {options.map((opt, idx) => (
-          <option key={idx} value={opt.value}>
-            {opt.label}
+    <div className="form-group">
+      {label && (
+        <label className="form-label">
+          {label}
+          {required && <span className="required">*</span>}
+        </label>
+      )}
+      <select
+        className={`form-select ${error ? 'error' : ''} ${className}`}
+        {...props}
+      >
+        {placeholder && (
+          <option value="" disabled>
+            {placeholder}
           </option>
-        ))}
+        )}
+        {children}
       </select>
+      {error && <span className="error-message">{error}</span>}
     </div>
-  );
-};
+  )
+}
 
-export default CustomSelect;
+export default SelectCustom

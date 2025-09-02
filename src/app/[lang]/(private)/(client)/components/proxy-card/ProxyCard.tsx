@@ -221,7 +221,14 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, logo, color, price, fea
           name='quantity'
           control={control}
           render={({ field }) => (
-            <QuantityControl min={1} max={100} value={1} label='SỐ LƯỢNG' icon={<Users size={14} />} {...field} />
+            <QuantityControl 
+              min={1} 
+              max={100} 
+              label='SỐ LƯỢNG' 
+              icon={<Users size={14} />} 
+              value={field.value || 1}
+              onChange={field.onChange}
+            />
           )}
         />
 

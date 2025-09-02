@@ -1,0 +1,273 @@
+/* ===== PUBLIC LAYOUT SPECIFIC CSS ===== */
+/* Chỉ chứa các styles đặc thù cho public layout */
+
+/* ===== PUBLIC COMPONENTS STYLES ===== */
+/* Public Navigation Styles */
+.public-nav {
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.6);
+}
+
+/* Public Sidebar Styles */
+.public-sidebar {
+  background: linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%);
+  border-right: 1px solid rgba(226, 232, 240, 0.4);
+}
+
+/* Public Content Area */
+.public-content {
+  background: #f8fafc;
+  min-height: calc(100vh - 64px);
+  padding: 24px;
+}
+
+/* Public Form Styles */
+.public-form {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(226, 232, 240, 0.4);
+}
+
+.public-form .form-group {
+  margin-bottom: 24px;
+}
+
+.public-form label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.public-form input,
+.public-form select,
+.public-form textarea {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid rgba(226, 232, 240, 0.6);
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.public-form input:focus,
+.public-form select:focus,
+.public-form textarea:focus {
+  outline: none;
+  border-color: var(--primary-color-main);
+  box-shadow: 0 0 0 3px rgba(252, 67, 54, 0.1);
+}
+
+/* Public Button Styles */
+.public-btn {
+  background: var(--primary-gradient);
+  color: #ffffff;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.public-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(252, 67, 54, 0.3);
+}
+
+.public-btn-secondary {
+  background: #ffffff;
+  color: var(--primary-color-main);
+  border: 2px solid var(--primary-color-main);
+}
+
+.public-btn-secondary:hover {
+  background: var(--primary-color-main);
+  color: #ffffff;
+}
+
+/* Public Table Styles */
+.public-table {
+  width: 100%;
+  background: #ffffff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.public-table th {
+  background: #f8fafc;
+  padding: 16px;
+  text-align: left;
+  font-weight: 600;
+  color: #374151;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.4);
+}
+
+.public-table td {
+  padding: 16px;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.3);
+}
+
+.public-table tr:hover {
+  background: #f8fafc;
+}
+
+/* Public Card Styles */
+.public-card {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 24px;
+  border: 1px solid rgba(226, 232, 240, 0.4);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: all 0.3s ease;
+}
+
+.public-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+/* Public Modal Styles */
+.public-modal {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+}
+
+.public-modal-header {
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.4);
+}
+
+.public-modal-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+/* Public Hero Section */
+.public-hero {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #ffffff;
+  padding: 80px 24px;
+  text-align: center;
+}
+
+.public-hero h1 {
+  font-size: 3rem;
+  font-weight: 700;
+  margin-bottom: 24px;
+}
+
+.public-hero p {
+  font-size: 1.25rem;
+  opacity: 0.9;
+  max-width: 600px;
+  margin: 0 auto 32px;
+}
+
+/* Public Features Section */
+.public-features {
+  padding: 80px 24px;
+  background: #f8fafc;
+}
+
+.public-features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 32px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.public-feature-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 32px;
+  text-align: center;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  transition: all 0.3s ease;
+}
+
+.public-feature-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+}
+
+.public-feature-icon {
+  width: 64px;
+  height: 64px;
+  background: var(--primary-gradient);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 24px;
+  color: #ffffff;
+  font-size: 1.5rem;
+}
+
+/* Public Footer */
+.public-footer {
+  background: #1e293b;
+  color: #ffffff;
+  padding: 60px 24px 40px;
+  text-align: center;
+}
+
+.public-footer-content {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.public-footer-links {
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+  margin-bottom: 32px;
+}
+
+.public-footer-links a {
+  color: #cbd5e1;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.public-footer-links a:hover {
+  color: #ffffff;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .public-features-grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  
+  .public-content {
+    padding: 16px;
+  }
+  
+  .public-form {
+    padding: 24px;
+  }
+  
+  .public-hero h1 {
+    font-size: 2rem;
+  }
+  
+  .public-hero p {
+    font-size: 1.125rem;
+  }
+  
+  .public-footer-links {
+    flex-direction: column;
+    gap: 16px;
+  }
+}

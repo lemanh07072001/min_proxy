@@ -1,5 +1,14 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
+:root {
+  --primary-color: var(--mui-palette-customCssVars-colorMain);
+  --primary-hover: #e63946;
+  --primary-light: rgba(252, 67, 54, 0.1);
+  --primary-gradient: var(--mui-palette-customCssVars-bgButtonPrimary);
+  --width-sidebar: 300px;
+}
+
+
 * {
   margin: 0;
   padding: 0;

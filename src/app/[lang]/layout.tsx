@@ -4,6 +4,7 @@ import 'bootstrap/dist/css/bootstrap.min.css'
 
 // Style Imports
 import '@/app/globals.css'
+import '@/app/shared-layout.css' // CSS chung cho cả private và public
 import '@/app/root.css'
 
 // Generated Icon CSS Imports
@@ -25,6 +26,9 @@ import TanstackProvider from '@/components/TanstackProvider'
 
 import { getSystemMode } from '@core/utils/serverHelpers'
 import TranslationWrapper from '@/hocs/TranslationWrapper'
+import SessionProviderWrapper from '@components/SessionProviderWrapper'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/libs/auth'
 
 const RootLayout = async (props: ChildrenType & { params: Promise<{ lang: Locale }> }) => {
   const { children } = props
@@ -36,13 +40,18 @@ const RootLayout = async (props: ChildrenType & { params: Promise<{ lang: Locale
 
   const direction = i18n.langDirection[params.lang]
 
+  const session = await getServerSession(authOptions);
+
   return (
     <TranslationWrapper headersList={headersList} lang={params.lang}>
       <html id='__next' lang={params.lang} dir={direction} suppressHydrationWarning>
         <body className='flex is-full min-bs-full flex-auto flex-col'>
           <TanstackProvider>
             <InitColorSchemeScript attribute='data' defaultMode={systemMode} />
-            {children}
+            <SessionProviderWrapper session={session}>
+              {children}
+            </SessionProviderWrapper>
+
           </TanstackProvider>
         </body>
       </html>

@@ -1,101 +1,84 @@
-import React, { useState } from "react";
 import "./styles.css";
-import "../main.css"
 
 interface QuantityControlProps {
-  label?: string;
-  icon?: React.ReactNode;
-  min?: number;
-  max?: number;
-  value?: number;
-  onChange?: (val: number) => void;
+  min?: number
+  max?: number
+  value?: number
+  onChange?: (value: number) => void
+  label?: string
+  icon?: React.ReactNode
+  className?: string
 }
 
 const QuantityControl: React.FC<QuantityControlProps> = ({
-                                                           label,
-                                                           icon,
-                                                           min = 1,
-                                                           max = 99,
-                                                           value = 1,
-                                                           onChange,
-                                                         }) => {
-  const [qty, setQty] = useState(value);
+  min = 1,
+  max = 100,
+  value = 1,
+  onChange,
+  label,
+  icon,
+  className = ''
+}) => {
+  // Đảm bảo value luôn nằm trong khoảng min-max
+  const safeValue = Math.max(min, Math.min(max, value || min))
 
-  const handleChange = (newVal: number) => {
-    if (newVal < min || newVal > max) return;
-    setQty(newVal);
-    onChange?.(newVal);
-  };
+  const handleIncrease = () => {
+    if (safeValue < max) {
+      const newValue = safeValue + 1
+      onChange?.(newValue)
+    }
+  }
+
+  const handleDecrease = () => {
+    if (safeValue > min) {
+      const newValue = safeValue - 1
+      onChange?.(newValue)
+    }
+  }
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = parseInt(e.target.value) || min
+    if (newValue >= min && newValue <= max) {
+      onChange?.(newValue)
+    }
+  }
 
   return (
-    <div className="quantity-wrapper">
+    <div className={`quantity-control ${className}`}>
       {label && (
         <label className="quantity-label">
           {icon && <span className="quantity-icon">{icon}</span>}
           {label}
         </label>
       )}
-
-      <div className="quantity-controls">
-        {/* Giảm */}
+      <div className="quantity-input-group">
         <button
           type="button"
-          className="qty-btn"
-          onClick={() => handleChange(qty - 1)}
-          disabled={qty <= min}
+          className="quantity-btn quantity-btn-decrease"
+          onClick={handleDecrease}
+          disabled={safeValue <= min}
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="lucide lucide-minus"
-          >
-            <path d="M5 12h14"></path>
-          </svg>
+          -
         </button>
-
-        {/* Input */}
         <input
           type="number"
-          className="qty-display"
+          className="quantity-input"
+          value={safeValue}
+          onChange={handleInputChange}
           min={min}
           max={max}
-          value={qty}
-          onChange={(e) => handleChange(Number(e.target.value))}
         />
-
-        {/* Tăng */}
         <button
           type="button"
-          className="qty-btn"
-          onClick={() => handleChange(qty + 1)}
-          disabled={qty >= max}
+          className="quantity-btn quantity-btn-increase"
+          onClick={handleIncrease}
+          disabled={safeValue >= max}
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="lucide lucide-plus"
-          >
-            <path d="M5 12h14"></path>
-            <path d="M12 5v14"></path>
-          </svg>
+          +
         </button>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default QuantityControl;
+export default QuantityControl

@@ -1,47 +1,42 @@
-import React from "react";
-
+import React from 'react'
 import "./styles.css"
-import "../main.css"
 
-interface ClassNameMap {
-  container?: string;
-  label?: string;
-  icon?: string; // Thêm class cho icon
-  textarea?: string;
+interface TextArenaCustomProps {
+  label?: string
+  placeholder?: string
+  required?: boolean
+  error?: string
+  className?: string
+  rows?: number
+  [key: string]: any
 }
 
-interface CustomTextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
-  label: string;
-  icon?: React.ReactNode; // Thêm prop icon
-  classNames?: ClassNameMap;
-}
-
-const CustomTextarea: React.FC<CustomTextareaProps> = ({
-                                                         label,
-                                                         icon, // Destructure icon
-                                                         classNames = {},
-
-                                                         className,
-                                                         ...rest
-                                                       }) => {
-
-  const containerClasses = `custom-field ${classNames.container || ''}`.trim();
-  const labelClasses = `custom-field-label ${classNames.label || ''}`.trim();
-  const iconClasses = `custom-field-icon ${classNames.icon || ''}`.trim(); // Class cho icon
-  const textareaClasses = `form-textarea-check  ${classNames.textarea || ''} ${className || ''}`.trim();
-
+const TextArenaCustom: React.FC<TextArenaCustomProps> = ({
+  label,
+  placeholder,
+  required = false,
+  error,
+  className = '',
+  rows = 4,
+  ...props
+}) => {
   return (
-    <div className={containerClasses}>
-      <label className={labelClasses}>
-        {/* Render icon nếu có */}
-        {icon && <span className={iconClasses}>{icon}</span>}
-        {label}
-      </label>
-
-      {/* Áp dụng các lớp CSS đã được kết hợp */}
-      <textarea className={textareaClasses} {...rest} />
+    <div className="form-group">
+      {label && (
+        <label className="form-label">
+          {label}
+          {required && <span className="required">*</span>}
+        </label>
+      )}
+      <textarea
+        className={`form-textarea ${error ? 'error' : ''} ${className}`}
+        placeholder={placeholder}
+        rows={rows}
+        {...props}
+      />
+      {error && <span className="error-message">{error}</span>}
     </div>
-  );
-};
+  )
+}
 
-export default CustomTextarea;
+export default TextArenaCustom

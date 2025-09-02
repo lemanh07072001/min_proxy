@@ -9,11 +9,11 @@ import NavbarContent from './NavbarContent'
 import { authOptions } from '@/libs/auth'
 
 const Navbar = async () => {
-  const session = await getServerSession(authOptions)
+
 
   return (
     <LayoutNavbar>
-      <NavbarContent session={session} />
+      <NavbarContent />
     </LayoutNavbar>
   )
 }

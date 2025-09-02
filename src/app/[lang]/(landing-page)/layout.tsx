@@ -5,7 +5,6 @@ import Button from '@mui/material/Button'
 // Style Imports
 import '@/app/globals.css'
 import '@/app/root.css'
-import '@/app/[lang]/(private)/(client)/root.css'
 import '@/app/[lang]/(landing-page)/main.css'
 
 // Generated Icon CSS Imports

@@ -17,21 +17,20 @@ interface BalanceCardProps {
   isInitialLoad: boolean
 }
 
-export default async function BalanceCard({ isWalletVisible, isInitialLoad }: BalanceCardProps) {
+export default  function BalanceCard({ isWalletVisible, isInitialLoad }: BalanceCardProps) {
   // Lấy dữ liệu trên server
-  const session = await getServerSession(authOptions)
+
 
   // Bạn cũng nên lấy số dư ban đầu ở đây
-  const initialBalance = session?.user?.id ? await getUserBalance(session.user.id) : 0
+  const initialBalance =  0
 
-  console.log('Server Component fetched session for:', session?.user?.name)
 
   // Render Client Component và truyền dữ liệu đã lấy được xuống làm props
   return (
     <BalanceCardClient
       isWalletVisible={isWalletVisible}
       isInitialLoad={isInitialLoad}
-      session={session}
+
       initialBalance={initialBalance}
     />
   )

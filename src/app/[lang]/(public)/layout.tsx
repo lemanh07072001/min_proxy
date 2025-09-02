@@ -1,11 +1,5 @@
-// MUI Imports
-import Button from '@mui/material/Button'
-
 // Type Imports
 import type { ChildrenType } from '@core/types'
-
-import '@/app/[lang]/(private)/(client)/root.css'
-import './main.css'
 
 // Layout Imports
 import LayoutWrapper from '@layouts/LayoutWrapper'
@@ -14,17 +8,17 @@ import { getDictionary } from '@/utils/getDictionary'
 
 // Component Imports
 import Providers from '@components/Providers'
+import LayoutProvider from '@components/LayoutProvider'
 import Navigation from '@components/layout/vertical/Navigation'
 import Navbar from '@components/layout/vertical/Navbar'
-import VerticalFooter from '@components/layout/vertical/Footer'
-import ScrollToTop from '@core/components/scroll-to-top'
 
 // Util Imports
 import { getMode, getSystemMode } from '@core/utils/serverHelpers'
 import HorizontalLayout from '@layouts/HorizontalLayout'
 import Header from '@components/layout/horizontal/Header'
 
-import { ToastContainer } from 'react-toastify'
+// CSS riêng cho public layout (không import CSS chung nữa)
+import './public-specific.css'
 
 function HorizontalFooter() {
   return null
@@ -35,46 +29,36 @@ const Layout = async (props: ChildrenType) => {
 
   const params = await props.params
 
-  // Vars
-  const direction = 'ltr'
-  const mode = await getMode()
-  const systemMode = await getSystemMode()
-
-  const dictionary = await getDictionary(params.lang)
+  // Vars - Fetch song song để tối ưu performance
+  const [mode, systemMode, dictionary] = await Promise.all([
+    getMode(),
+    getSystemMode(),
+    getDictionary(params.lang)
+  ])
 
   return (
-    <Providers direction={direction}>
-      <LayoutWrapper
-        systemMode={systemMode}
-        verticalLayout={
-          <VerticalLayout navigation={<Navigation dictionary={dictionary} mode={mode} />} navbar={<Navbar />}>
-            {children}
-            <ToastContainer
-              position='top-right'
-              autoClose={2000}
-              hideProgressBar={false}
-              newestOnTop={false}
-              closeOnClick
-              rtl={false}
-              pauseOnFocusLoss
-              draggable
-              pauseOnHover
-              theme='light'
-            />
-          </VerticalLayout>
-        }
-        horizontalLayout={
-          <HorizontalLayout header={<Header dictionary={dictionary} />} footer={<HorizontalFooter />}>
-            {children}
-          </HorizontalLayout>
-        }
-      />
-
-      <ScrollToTop className='mui-fixed'>
-        <Button variant='contained' className='is-10 bs-10 rounded-full p-0 min-is-0 flex items-center justify-center'>
-          <i className='tabler-arrow-up' />
-        </Button>
-      </ScrollToTop>
+    <Providers direction="ltr">
+      <LayoutProvider>
+        <LayoutWrapper
+          systemMode={systemMode}
+          verticalLayout={
+            <VerticalLayout 
+              navigation={<Navigation dictionary={dictionary} mode={mode} />} 
+              navbar={<Navbar />}
+            >
+              {children}
+            </VerticalLayout>
+          }
+          horizontalLayout={
+            <HorizontalLayout 
+              header={<Header dictionary={dictionary} />} 
+              footer={<HorizontalFooter />}
+            >
+              {children}
+            </HorizontalLayout>
+          }
+        />
+      </LayoutProvider>
     </Providers>
   )
 }

@@ -1,15 +1,16 @@
 'use client'
 
 // React Imports
-import { useState } from 'react'
+import { useContext, useState } from 'react'
 
 import { createPortal } from 'react-dom'
 
 // Third-party Imports
 import classnames from 'classnames'
-import type { Session } from 'next-auth'
 
 // Component Imports
+import { SessionContext } from 'next-auth/react'
+
 import NavToggle from './NavToggle'
 import ModeDropdown from '@components/layout/shared/ModeDropdown'
 import UserDropdown from '@components/layout/shared/UserDropdown'
@@ -20,19 +21,19 @@ import '@/app/[lang]/(landing-page)/main.css'
 
 // Util Imports
 import { verticalLayoutClasses } from '@layouts/utils/layoutClasses'
+
 import LanguageDropdown from '@components/layout/shared/LanguageDropdown'
 
-interface NavbarContentProps {
-  session: Session | null
-}
 
-const NavbarContent = ({ session }: NavbarContentProps) => {
+
+const NavbarContent = () => {
   // States for AuthModal
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login')
 
   // Log session để debug
-  console.log('Navbar Session (Server-side):', session)
+  const {data} = useContext(SessionContext);
+
 
   const handleOpenLoginModal = () => {
     setAuthMode('login')
@@ -50,10 +51,10 @@ const NavbarContent = ({ session }: NavbarContentProps) => {
         <ModeDropdown />
 
         {/* Hiển thị thông tin user khi đã đăng nhập - KHÔNG flicker */}
-        {session && (
+        {data && (
           <div className='hidden md:flex items-center gap-2 px-3 py-1 bg-gray-100 rounded-lg text-sm'>
             <span className='text-green-600'>●</span>
-            <span className='text-gray-700'>{session.user?.name || session.user?.email || 'User'}</span>
+            <span className='text-gray-700'>{data.user?.name || data.user?.email || 'User'}</span>
           </div>
         )}
       </div>
@@ -61,8 +62,8 @@ const NavbarContent = ({ session }: NavbarContentProps) => {
         <LanguageDropdown />
 
         {/* Hiển thị UserDropdown nếu đã đăng nhập, button đăng nhập nếu chưa */}
-        {session ? (
-          <UserDropdown session={session} />
+        {data ? (
+          <UserDropdown session={data} />
         ) : (
           <button
             onClick={handleOpenLoginModal}
