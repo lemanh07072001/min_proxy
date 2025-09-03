@@ -16,7 +16,7 @@ import {
 
 import './styles.css'
 
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react'
 
 import MenuItem from '@mui/material/MenuItem'
 
@@ -60,8 +60,13 @@ interface CheckProxyFormProps {
 export default function CheckProxyForm({onItemListChange, onCheckedProxy } : CheckProxyFormProps) {
   const [successProxies, setSuccessProxies] = useState([]);
   const [errorProxies, setErrorProxies] = useState([]);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [currentProgress, setCurrentProgress] = useState({ current: 0, total: 0 });
 
   const [, copy] = useCopy();
+  const queueRef = useRef([]);
+  const activeChecksRef = useRef(0);
+  const maxConcurrentChecks = 20;
 
   const handleCopyProxysError = () => {
     const formattedData = successProxies.join('\n');
@@ -79,7 +84,7 @@ export default function CheckProxyForm({onItemListChange, onCheckedProxy } : Che
   const pendingMutations = useIsMutating({ mutationKey: ['check-proxy'] });
 
   // isLoading sẽ là true nếu có ít nhất 1 mutation đang chạy
-  const isLoading = pendingMutations > 0;
+  const isLoading = pendingMutations > 0 || isProcessing;
 
   const mutation = useMutation({
     mutationKey: ['check-proxy'],
@@ -89,6 +94,7 @@ export default function CheckProxyForm({onItemListChange, onCheckedProxy } : Che
       // Bây giờ, chúng ta gọi callback để báo cho component cha.
       onCheckedProxy(dataFromApi);
       handleProxyChecked(dataFromApi)
+      processNextInQueue();
     },
     onError: (error, variables) => {
       const failedProxyData = {
@@ -99,8 +105,37 @@ export default function CheckProxyForm({onItemListChange, onCheckedProxy } : Che
 
       onCheckedProxy(failedProxyData);
       handleProxyChecked(failedProxyData)
+      processNextInQueue();
     }
   })
+
+  const processNextInQueue = () => {
+    activeChecksRef.current--;
+    
+    if (queueRef.current.length > 0 && activeChecksRef.current < maxConcurrentChecks) {
+      const nextProxy = queueRef.current.shift();
+      if (nextProxy) {
+        activeChecksRef.current++;
+        mutation.mutate(nextProxy);
+      }
+    }
+
+    // Cập nhật progress
+    setCurrentProgress(prev => {
+      const newProgress = {
+        ...prev,
+        current: prev.current + 1
+      };
+      
+      // Kiểm tra nếu đã hoàn thành tất cả
+      if (newProgress.current >= newProgress.total && queueRef.current.length === 0 && activeChecksRef.current === 0) {
+        setIsProcessing(false);
+        return { current: 0, total: 0 };
+      }
+      
+      return newProgress;
+    });
+  };
 
   const {
     control,
@@ -124,6 +159,14 @@ export default function CheckProxyForm({onItemListChange, onCheckedProxy } : Che
     // Tách và lọc các dòng trống
     const filteredLines = list_proxy.split('\n').filter(line => line.trim() !== '')
 
+    // Reset các state và refs trước khi bắt đầu
+    setSuccessProxies([]);
+    setErrorProxies([]);
+    setIsProcessing(true);
+    setCurrentProgress({ current: 0, total: filteredLines.length });
+    queueRef.current = [];
+    activeChecksRef.current = 0;
+
     // Cập nhật state để hiển thị trên UI
     const proxyObjectsArray = filteredLines.map((proxyString, index) => {
       const [host] = proxyString.split(':')
@@ -139,20 +182,26 @@ export default function CheckProxyForm({onItemListChange, onCheckedProxy } : Che
       };
     });
 
-    setSuccessProxies([]);
-    setErrorProxies([]);
-
     // Gọi callback để báo cho component cha
     onItemListChange(proxyObjectsArray)
 
-    filteredLines.forEach(proxy => {
-      mutation.mutate({
-        protocol,
-        format_proxy,
-        list_proxy: proxy
-      })
+    // Tạo queue cho tất cả proxy cần check
+    queueRef.current = filteredLines.map((proxy: string) => ({
+      protocol,
+      format_proxy,
+      list_proxy: proxy
+    }));
 
-    })
+    // Bắt đầu check với số lượng tối đa 5 luồng
+    const initialBatch = Math.min(maxConcurrentChecks, filteredLines.length);
+    
+    for (let i = 0; i < initialBatch; i++) {
+      if (queueRef.current.length > 0) {
+        const proxyData = queueRef.current.shift();
+        activeChecksRef.current++;
+        mutation.mutate(proxyData);
+      }
+    }
   }
 
   const handleProxyChecked = (checkedProxyResult) => {
@@ -342,6 +391,30 @@ export default function CheckProxyForm({onItemListChange, onCheckedProxy } : Che
             Kiểm tra
           </LoadingButton>
 
+          {/* Progress Bar */}
+          {isProcessing && currentProgress.total > 0 && (
+            <div className='form-group-check'>
+              <div style={{ marginBottom: '8px', fontSize: '14px', color: '#4a5568' }}>
+                Tiến trình: {currentProgress.current}/{currentProgress.total} 
+                {/*(Giới hạn: {maxConcurrentChecks} luồng cùng lúc)*/}
+              </div>
+              <div style={{ 
+                width: '100%', 
+                height: '8px', 
+                backgroundColor: '#e2e8f0', 
+                borderRadius: '4px',
+                overflow: 'hidden'
+              }}>
+                <div style={{
+                  width: `${(currentProgress.current / currentProgress.total) * 100}%`,
+                  height: '100%',
+                  backgroundColor: '#22c55e',
+                  transition: 'width 0.3s ease'
+                }} />
+              </div>
+            </div>
+          )}
+
           {/* Proxy đang hoạt động */}
           <div className='form-group-check'>
             <CustomTextField
@@ -366,8 +439,8 @@ export default function CheckProxyForm({onItemListChange, onCheckedProxy } : Che
                   paddingBottom: '5px'
                 },
                 '& .MuiInputBase-root': {
-                  backgroundColor: `${theme.palette.customCssVars.bgSuccess200} !important`,
-                  borderColor: `${theme.palette.customCssVars.borderSuccess200} !important`
+                  backgroundColor: '#dcfce7 !important',
+                  borderColor: '#22c55e !important'
                 }
               }}
             />
@@ -404,8 +477,8 @@ export default function CheckProxyForm({onItemListChange, onCheckedProxy } : Che
                   paddingBottom: '5px'
                 },
                 '& .MuiInputBase-root': {
-                  backgroundColor: `${theme.palette.customCssVars.bgError200} !important`,
-                  borderColor: `${theme.palette.customCssVars.borderError200} !important`
+                  backgroundColor: '#fef2f2 !important',
+                  borderColor: '#ef4444 !important'
                 }
               }}
             />
