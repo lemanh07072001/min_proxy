@@ -227,9 +227,6 @@ export const authOptions: NextAuthOptions = {
           newTokenLength: refreshedToken.access_token?.length
         });
 
-
-
-
         if (refreshedToken.access_token) {
           console.log('✅ Token refreshed successfully');
           console.log('data: '+refreshedToken)

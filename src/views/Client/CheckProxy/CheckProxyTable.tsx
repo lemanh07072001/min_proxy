@@ -9,8 +9,16 @@ import Chip from '@mui/material/Chip'
 
 import Pagination from '@mui/material/Pagination'
 
-
-import { flexRender, getCoreRowModel, getFilteredRowModel, useReactTable } from '@tanstack/react-table'
+import {
+  flexRender,
+  getCoreRowModel,
+  getFacetedRowModel,
+  getFacetedUniqueValues,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  useReactTable
+} from '@tanstack/react-table'
+import { useCopy } from '@/app/hooks/useCopy'
 
 interface ProxyData {
   proxy: string;
@@ -28,8 +36,14 @@ interface CheckProxyTableProps {
 
 export default function CheckProxyTable({ data, checkedProxy } : CheckProxyTableProps) {
   const [rowSelection, setRowSelection] = useState({}) // State để lưu các hàng được chọn
+  const [columnFilters, setColumnFilters] = useState([]);
 
-  console.log(checkedProxy)
+  const [pagination, setPagination] = useState({
+    pageIndex: 0,
+    pageSize: 10,
+  });
+
+  const [isCopied, copy] = useCopy();
 
   const columns = useMemo(
     () => [
@@ -59,10 +73,11 @@ export default function CheckProxyTable({ data, checkedProxy } : CheckProxyTable
         accessorKey: 'proxy',
         header: 'Proxy',
         cell: ({ row } :any) => {
+          console.log(row.original)
           return (
             <>
               <div className='proxy-text'>{row.original.proxy}</div>
-              <button className='copy-icon-btn'>
+              <button className='copy-icon-btn' onClick={()=>copy(row.original.proxy)}>
                 <Copy size={14} />
               </button>
             </>
@@ -175,13 +190,69 @@ export default function CheckProxyTable({ data, checkedProxy } : CheckProxyTable
     data,
     columns,
     state: {
-      rowSelection
+      rowSelection,
+      columnFilters,
+      pagination,
     },
     enableRowSelection: true, // Bật tính năng chọn hàng
+    onColumnFiltersChange: setColumnFilters,
+    onPaginationChange: setPagination,
     onRowSelectionChange: setRowSelection, // Cập nhật state khi có thay đổi
     getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel() // Tùy chọn: cần thiết nếu có bộ lọc
+    getFilteredRowModel: getFilteredRowModel(), // Tùy chọn: cần thiết nếu có bộ lọc
+    getPaginationRowModel: getPaginationRowModel(),
+    getFacetedRowModel: getFacetedRowModel(),
+    getFacetedUniqueValues: getFacetedUniqueValues(),
+
   })
+
+  const hanldeExport = () => {
+    const selectedRowsModel = table.getSelectedRowModel();
+
+    const selectedData = selectedRowsModel.rows.map(row => row.original);
+
+    if (selectedData.length === 0) {
+      alert('Vui lòng chọn ít nhất một hàng để xuất.');
+      return;
+    }
+
+    const formattedArray = selectedData.map(row => row.proxy);
+
+    const content = formattedArray.join('\n');
+
+    // --- Tạo tên file theo định dạng ngày-tháng-năm-3số-proxy ---
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+
+    // Tạo 3 số ngẫu nhiên
+    const randomNumber = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+
+    const filename = `${day}_${month}_${year}_${randomNumber}_proxy.txt`;
+
+
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+
+    a.click();
+
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  // Tính toán các giá trị để hiển thị
+  const { pageIndex, pageSize } = table.getState().pagination;
+  const totalRows = table.getFilteredRowModel().rows.length;
+  const startRow = pageIndex * pageSize + 1;
+  const endRow = Math.min(startRow + pageSize - 1, totalRows);
+
+  // Lấy số lượng hàng đã chọn
+  const selectedCount = table.getSelectedRowModel().rows.length;
 
   return (
     <>
@@ -190,18 +261,21 @@ export default function CheckProxyTable({ data, checkedProxy } : CheckProxyTable
           <div className='results-header'>
             <div className='results-title'>
               <CheckCircle size={20} className='text-green-500' />
-              <span>Kết quả kiểm tra Proxy (1)</span>
+              <span>Kết quả kiểm tra Proxy ({totalRows})</span>
             </div>
-            <div className='results-actions'>
-              <button className='action-btn-check'>
-                <Download size={16} />
-                Export
-              </button>
-              <button className='action-btn-check'>
-                <RefreshCw size={16} />
-                Refresh
-              </button>
-            </div>
+            {selectedCount > 0 && (
+              <div className='results-actions'>
+                <button className='action-btn-check' onClick={hanldeExport}>
+                  <Download size={16} />
+                  Export
+                </button>
+                {/*<button className='action-btn-check'>*/}
+                {/*  <RefreshCw size={16} />*/}
+                {/*  Refresh*/}
+                {/*</button>*/}
+              </div>
+            )}
+
           </div>
 
           {/* Results Table */}
@@ -242,10 +316,15 @@ export default function CheckProxyTable({ data, checkedProxy } : CheckProxyTable
                     <div className='page-size-select'>
                       <span className='text-sm text-gray'>Kích cỡ trang linh</span>
                       <div className='page-size-select-wrapper'>
-                        <select className='page-size-select'>
+                        <select
+                          value={table.getState().pagination.pageSize}
+                          onChange={e => {
+                            table.setPageSize(Number(e.target.value));
+                          }}
+                          className='page-size-select'>
+                          <option value='10'>10</option>
                           <option value='50'>50</option>
                           <option value='100'>100</option>
-                          <option value='200'>200</option>
                         </select>
                         <div className='select-arrow'>
                           <svg className='h-4 w-4' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'>
@@ -254,11 +333,27 @@ export default function CheckProxyTable({ data, checkedProxy } : CheckProxyTable
                         </div>
                       </div>
                     </div>
-                    <span className='text-sm text-gray'>1 - 1 của 1 dòng hàng</span>
+                    {/* --- Hiển thị số hàng trên trang hiện tại --- */}
+                    <div>
+                      {totalRows > 0 ? (
+                        <span>
+                      {startRow} - {endRow} của {totalRows} hàng
+                    </span>
+                      ) : (
+                        <span>Không có dữ liệu</span>
+                      )}
+                    </div>
                   </div>
 
                   <div className='pagination-buttons'>
-                    <Pagination count={3} shape='rounded' variant='outlined' color='primary' />
+                    <Pagination count={table.getPageCount()}
+                                shape='rounded'
+                                variant='outlined'
+                                color='primary'
+                                page={table.getState().pagination.pageIndex + 1}
+                                onChange={(event, page) => {
+                                  table.setPageIndex(page - 1);
+                                }}/>
                   </div>
                 </div>
               </div>

@@ -37,6 +37,7 @@ import { yupResolver } from '@hookform/resolvers/yup'
 import CustomTextField from '@core/components/mui/TextField'
 import CustomIconButton from '@core/components/mui/IconButton'
 import { LoadingButton } from '@mui/lab'
+import { useCopy } from '@/app/hooks/useCopy'
 
 // Tạo schema validation bằng Yup
 const schema = yup.object().shape({
@@ -59,6 +60,18 @@ interface CheckProxyFormProps {
 export default function CheckProxyForm({onItemListChange, onCheckedProxy } : CheckProxyFormProps) {
   const [successProxies, setSuccessProxies] = useState([]);
   const [errorProxies, setErrorProxies] = useState([]);
+
+  const [, copy] = useCopy();
+
+  const handleCopyProxysError = () => {
+    const formattedData = successProxies.join('\n');
+    copy(formattedData,'Đã sao chép danh sách proxy bị lỗi!')
+  }
+
+  const handleCopyProxysSuccess = () => {
+    const formattedData = errorProxies.join('\n');
+    copy(formattedData,'Đã sao chép danh sách proxy thành công!')
+  }
 
   const theme = useTheme()
 
@@ -358,7 +371,11 @@ export default function CheckProxyForm({onItemListChange, onCheckedProxy } : Che
                 }
               }}
             />
-            <button  type="button" className='copy-btn'>
+            <button
+              type="button"
+              className='copy-btn'
+              onClick={handleCopyProxysSuccess}
+            >
               <Copy size={14} />
             </button>
           </div>
@@ -392,7 +409,14 @@ export default function CheckProxyForm({onItemListChange, onCheckedProxy } : Che
                 }
               }}
             />
-            <CustomIconButton type="button" aria-label='capture screenshot' color='success' variant='contained' className='copy-btn'>
+            <CustomIconButton
+              type="button"
+              aria-label='capture screenshot'
+              color='success'
+              variant='contained'
+              className='copy-btn'
+              onClick={handleCopyProxysError}
+            >
               <Copy size={14} />
             </CustomIconButton>
           </div>
