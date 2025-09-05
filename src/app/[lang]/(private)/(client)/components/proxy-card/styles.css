@@ -3,7 +3,7 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 20px;
-  margin-bottom: 32px;
+  margin-block-start: 32px;
 }
 
 .proxy-card-column {
@@ -25,29 +25,26 @@
 .proxy-card-column.viettel-theme::before {
   content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
+  inset-block-start: 0;
+  inset-inline: 0;
+  block-size: 4px;
   background: linear-gradient(90deg, #e53e3e, #ff6b6b);
 }
 
 .proxy-card-column.vnpt-theme::before {
   content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
+  inset-block-start: 0;
+  inset-inline: 0;
+  block-size: 4px;
   background: linear-gradient(90deg, #3182ce, #4299e1);
 }
 
 .proxy-card-column.fpt-theme::before {
   content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
+  inset-block-start: 0;
+  inset-inline: 0;
+  block-size: 4px;
   background: linear-gradient(90deg, #d69e2e, #f6e05e);
 }

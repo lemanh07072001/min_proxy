@@ -98,7 +98,7 @@ const SwitchFeatureRow = ({ feature, control, planId }) => (
           <Switch
             id={`${planId}-${field.name}`}
             color='error'
-            checked={field.value}
+            checked={field.value || false}
             onChange={e => field.onChange(e.target.checked)}
           />
         </div>
@@ -158,7 +158,8 @@ const PlanCard = ({ plan }) => {
     formState: { errors }
   } = useForm({
     defaultValues: {
-      quantity: 1
+      quantity: 1,
+      time:1
     },
     mode: 'onChange'
   })
@@ -167,7 +168,7 @@ const PlanCard = ({ plan }) => {
 
   const calculateTotalFormat = () => {
     const basePrice = parseInt(plan.price, 10) || 0
-    const timeValue = parseInt() || 1
+    const timeValue =  parseInt(watchedFields.time, 10) || 1
     const quantityValue = parseInt(watchedFields.quantity, 10) || 1
 
     return (basePrice * timeValue * quantityValue).toLocaleString('vi-VN')
@@ -175,7 +176,7 @@ const PlanCard = ({ plan }) => {
 
   const calculateTotal = () => {
     const basePrice = parseInt(plan.price, 10) || 0
-    const timeValue = parseInt() || 1
+    const timeValue =  parseInt(watchedFields.time, 10) || 1
     const quantityValue = parseInt(watchedFields.quantity, 10) || 1
 
     return basePrice * timeValue * quantityValue
@@ -188,7 +189,6 @@ const PlanCard = ({ plan }) => {
       serviceTypeId: plan.id,
       ...data,
       total,
-      time: 1
     }
 
     try {

@@ -9,16 +9,20 @@ interface StaticProxyPageProps {
 export default function StaticProxyPage({ data }: StaticProxyPageProps) {
   return (
     <>
-      {data.map((provider: any, index: any) => (
-        <ProxyCard
-          key={index}
-          provider={provider.provider}
-          logo={provider.logo}
-          color={provider.color}
-          price={provider.price}
-          features={provider.features}
-        />
-      ))}
+      {data.map((provider: any, index: any) => {
+        console.log(provider)
+        return (
+          <ProxyCard
+            key={index}
+            provider={provider}
+            logo={provider.logo}
+            color={provider.color}
+            price={provider.price}
+            features={provider.features}
+            {...provider}
+          />
+        )
+      })}
     </>
   )
 }

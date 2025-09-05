@@ -42,8 +42,11 @@ const ProtocolSelector: React.FC<ProtocolSelectorProps> = ({
     return protocol;
   });
 
+  // Đảm bảo có ít nhất một protocol mặc định
+  const defaultProtocol = processedProtocols[0] || { id: 'HTTP', name: 'HTTP' };
+  
   // Xác định giá trị hiện tại và hàm xử lý thay đổi
-  const currentValue = selectedProtocol || value || processedProtocols[0]?.id;
+  const currentValue = selectedProtocol || value || defaultProtocol.id;
   const handleChange = onProtocolChange || onChange || (() => {});
 
   return (

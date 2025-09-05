@@ -19,7 +19,7 @@ export default async function RotatingProxy() {
       timeout: 10000 // Timeout 10 giây
     })
 
-    proxyPlans = response.data
+    proxyPlans = response.data.data
   } catch (error) {
     console.log(error)
   }
@@ -32,7 +32,8 @@ export default async function RotatingProxy() {
       { label: 'Thời gian đổi IP tối thiểu', value: '60 giây / lần', status: 'success' },
       { label: 'Giữ IP / Xoay IP', value: '', status: 'success' },
       { label: 'Vị trí', value: 'Ngẫu nhiên', status: 'success' },
-      { label: 'Số lượng', status: 'input', inputType: 'number', field: 'quantity' }
+      { label: 'Số lượng', status: 'input', inputType: 'number', field: 'quantity' },
+      { label: 'Ngày sử dụng', status: 'input', inputType: 'number', field: 'time' }
     ]
   }
 
@@ -44,6 +45,7 @@ export default async function RotatingProxy() {
     partner: plan.partner,
     features: proxyTemplate.features.map(f => ({ ...f }))
   }))
+
 
   return (
     <div className='proxy-xoay-page'>

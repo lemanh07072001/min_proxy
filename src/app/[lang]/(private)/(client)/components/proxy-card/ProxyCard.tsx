@@ -12,7 +12,7 @@ import * as yup from 'yup'
 
 import { yupResolver } from '@hookform/resolvers/yup'
 
-import { MapPin, Clock, Users, Globe, ShoppingCart } from 'lucide-react'
+import { MapPin, Clock, Users, Globe, ShoppingCart, Loader, User } from 'lucide-react'
 import Chip from '@mui/material/Chip'
 
 import MenuItem from '@mui/material/MenuItem'
@@ -24,6 +24,12 @@ import CustomTextField from '@core/components/mui/TextField'
 import QuantityControl from '@components/form/input-quantity/QuantityControl'
 import ProtocolSelector from '@components/form/protocol-selector/ProtocolSelector'
 import Link from '@/components/Link'
+import useRandomString from '@/hocs/useRandomString'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useSession } from 'next-auth/react'
+import axios from 'axios'
+import { toast } from 'react-toastify'
+import { useModalContext } from '@/app/contexts/ModalContext'
 
 interface ProxyCardProps {
   provider: string
@@ -54,9 +60,53 @@ const proxySchema = yup
   })
   .required()
 
+// --- CUSTOM HOOK FOR API CALL ---
+const useBuyProxy = () => {
+  const queryClient = useQueryClient()
+  const session = useSession()
+
+  const mutation = useMutation({
+    mutationFn: orderData => {
+      const token = session.data.access_token
+
+      const api = axios.create({
+        baseURL: '/api',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      })
+
+      return api.post('/proxy-static', orderData)
+    },
+    onSuccess: data => {
+      console.log(data)
+      // Xử lý khi request thành công
+      if (data.data.success == false) {
+        toast.error('Lỗi hệ thông xin vui lòng liên hệ Admin.')
+      } else {
+        toast.success('Mua proxy thành công.')
+      }
+
+      // Bạn có thể vô hiệu hóa cache hoặc cập nhật dữ liệu khác ở đây
+      queryClient.invalidateQueries({ queryKey: ['proxyData'] })
+    },
+    onError: error => {
+      // Xử lý khi request thất bại
+      console.error('Lỗi khi mua proxy:', error.response?.data || error.message)
+    }
+  })
+
+  return mutation
+}
+
 const ProxyCard: React.FC<ProxyCardProps> = ({ provider, logo, color, price, features }) => {
   const params = useParams()
+  const { mutate, isPending, isError, isSuccess, error } = useBuyProxy()
+  const session = useSession()
+  const { openAuthModal } = useModalContext()
   const { lang: locale } = params
+  const randomString = useRandomString(6)
 
   // Định nghĩa danh sách protocols
   const protocols = [
@@ -87,7 +137,7 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, logo, color, price, fea
   const watchedDays = watch('days')
 
   const calculateTotal = () => {
-    const basePrice = parseInt(price.replace(/[^\d]/g, ''), 10) || 0
+    const basePrice = parseInt(price, 10) || 0
     const quantity = parseInt(watchedQuantity, 10) || 1
 
     const days = parseInt(watchedDays, 10) || 1
@@ -96,7 +146,7 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, logo, color, price, fea
   }
 
   const calculateTotalFormat = () => {
-    const basePrice = parseInt(price.replace(/[^\d]/g, ''), 10) || 0
+    const basePrice = parseInt(price, 10) || 0
     const quantity = parseInt(watchedQuantity, 10) || 1
 
     const days = parseInt(watchedDays, 10) || 1
@@ -128,12 +178,24 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, logo, color, price, fea
 
     const itemData = {
       ...data,
-      provider,
-      pricePerDay: price,
+      serviceTypeId: provider.id,
+      price: price,
+      username: data.username === 'random' ? randomString() : data.username,
+      password: data.password === 'random' ? randomString() : data.password,
       total
     }
 
-    console.log('Adding to cart:', itemData)
+    console.log(itemData)
+
+    try {
+      mutate(itemData)
+    } catch (error) {
+      if (error.response) {
+        console.error('Lỗi từ server:', error.response.data)
+      } else {
+        console.error('Lỗi khác:', error.message)
+      }
+    }
   }
 
   return (
@@ -142,12 +204,14 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, logo, color, price, fea
       <div className='card-header-column'>
         <div className='provider-section'>
           <div className='provider-logo-column'>
-            <Image src={logo} width={80} height={20} alt='Picture of the author' />
+            {logo ? (
+              <Image src={logo} width={80} height={20} alt="Logo" />
+            ) : null}
           </div>
           <div className='provider-info-column'>
-            <h3 className='provider-title-column'>{provider}</h3>
+            <h3 className='provider-title-column'>{provider.title}</h3>
             <div className='feature-tags'>
-              {features.map((feature, index) => (
+              {features?.map((feature, index) => (
                 <Chip key={index} label={feature.title} color={feature.class} variant='tonal' size='small' />
               ))}
             </div>
@@ -162,35 +226,41 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, logo, color, price, fea
       {/* Form controls trong layout cột */}
       <div className='form-grid'>
         {/* Location */}
-        <CustomTextField
-          select='true'
+        <Controller
           name='location'
-          fullWidth
-          id='locale'
-          label={
-            <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-              <MapPin size={16} />
-              LOCATION
-            </span>
-          }
-          sx={{
-            // Nhắm đến thẻ label của component này
-            '& .MuiInputLabel-root': {
-              color: '#64748b', // Đổi màu label thành màu cam
-              fontWeight: '600', // In đậm chữ
-              fontSize: '11px', // Thay đổi kích thước font
-              paddingBottom: '5px'
-            }
-          }}
-        >
-          {dataLocation.map((item, index) => {
-            return (
-              <MenuItem key={index} value={item.value}>
-                {item.label}
-              </MenuItem>
-            )
-          })}
-        </CustomTextField>
+          control={control}
+          render={({ field }) => (
+            <CustomTextField
+              select
+              fullWidth
+              id='locale'
+              label={
+                <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                  <MapPin size={16} />
+                  LOCATION
+                </span>
+              }
+              {...field}
+              sx={{
+                // Nhắm đến thẻ label của component này
+                '& .MuiInputLabel-root': {
+                  color: '#64748b', // Đổi màu label thành màu cam
+                  fontWeight: '600', // In đậm chữ
+                  fontSize: '11px', // Thay đổi kích thước font
+                  paddingBottom: '5px'
+                }
+              }}
+            >
+              {dataLocation.map((item, index) => {
+                return (
+                  <MenuItem key={index} value={item.value}>
+                    {item.label}
+                  </MenuItem>
+                )
+              })}
+            </CustomTextField>
+          )}
+        />
 
         {/* Thời gian */}
         <Controller
@@ -315,9 +385,23 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, logo, color, price, fea
           </div>
         </div>
         <div className='col-8 col-lg-9'>
-          <button type='submit' className='buy-button'>
-            <ShoppingCart size={18} /> Mua ngay
-          </button>
+          {session.status === 'authenticated' ? (
+            <button type='submit' className='buy-button' disabled={isPending}>
+              {isPending ? (
+                <>
+                  <Loader size={18} className='mr-2 animate-pulse' /> Đang xử lý...
+                </>
+              ) : (
+                <>
+                  <ShoppingCart size={18} className='mr-2' /> Mua Proxy
+                </>
+              )}
+            </button>
+          ) : (
+            <button type='button' className='buy-button' onClick={() => openAuthModal('login')}>
+              <User size={18} className='mr-2' /> Đăng nhập
+            </button>
+          )}
         </div>
       </div>
     </form>
