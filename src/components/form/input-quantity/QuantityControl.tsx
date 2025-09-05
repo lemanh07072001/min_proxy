@@ -44,17 +44,17 @@ const QuantityControl: React.FC<QuantityControlProps> = ({
   }
 
   return (
-    <div className={`quantity-control ${className}`}>
+    <div className={`quantity-wrapper ${className}`}>
       {label && (
         <label className="quantity-label">
           {icon && <span className="quantity-icon">{icon}</span>}
           {label}
         </label>
       )}
-      <div className="quantity-input-group">
+      <div className="quantity-controls">
         <button
           type="button"
-          className="quantity-btn quantity-btn-decrease"
+          className="qty-btn"
           onClick={handleDecrease}
           disabled={safeValue <= min}
         >
@@ -62,7 +62,7 @@ const QuantityControl: React.FC<QuantityControlProps> = ({
         </button>
         <input
           type="number"
-          className="quantity-input"
+          className="qty-display"
           value={safeValue}
           onChange={handleInputChange}
           min={min}
@@ -70,7 +70,7 @@ const QuantityControl: React.FC<QuantityControlProps> = ({
         />
         <button
           type="button"
-          className="quantity-btn quantity-btn-increase"
+          className="qty-btn"
           onClick={handleIncrease}
           disabled={safeValue >= max}
         >
@@ -82,3 +82,4 @@ const QuantityControl: React.FC<QuantityControlProps> = ({
 }
 
 export default QuantityControl
+
