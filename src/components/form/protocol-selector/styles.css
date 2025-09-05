@@ -1,10 +1,10 @@
-.protocol-selector {
+.protocol-selector-group {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.protocol-label {
+.protocol-selector-label {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -16,65 +16,42 @@
   margin-block-end: 4px;
 }
 
-.protocol-label .required {
-  color: #ef4444;
-}
-
-.protocol-options {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.protocol-option {
+.protocol-selector-icon {
   display: flex;
   align-items: center;
+  color: #6b7280;
+}
+
+.protocol-selector {
+  display: flex;
   gap: 8px;
-  padding: 8px 12px;
+}
+
+.protocol-btn {
+  padding-block: 6px;
+  padding-inline: 14px;
+  font-size: 14px;
   border: 1px solid #e2e8f0;
   border-radius: 6px;
   background: #f9fafb;
   cursor: pointer;
-  transition: all 0.2s ease;
-  min-width: 120px;
+  transition:
+          background 0.2s,
+          border-color 0.2s;
 }
 
-.protocol-option:hover {
-  background: #f1f5f9;
-  border-color: #cbd5e1;
+.protocol-btn:hover {
+  background: #e5e7eb;
 }
 
-.protocol-option.selected {
+.protocol-btn.active {
   background: white;
-  border-color: var(--primary-color, #3b82f6);
+  color: var(--primary-color);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-.protocol-radio {
-  margin: 0;
-  cursor: pointer;
-}
-
-.protocol-info {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.protocol-name {
-  font-size: 14px;
-  font-weight: 500;
-  color: #374151;
-}
-
-.protocol-description {
-  font-size: 12px;
-  color: #6b7280;
-}
-
-.error-message {
-  font-size: 12px;
-  color: #ef4444;
-  margin-top: 4px;
+.protocol-btn:hover:not(.active) {
+  background: #f1f5f9;
+  color: #475569;
 }
 
