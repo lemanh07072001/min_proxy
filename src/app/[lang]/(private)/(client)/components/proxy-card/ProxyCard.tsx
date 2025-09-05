@@ -315,10 +315,9 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, logo, color, price, fea
           </div>
         </div>
         <div className='col-8 col-lg-9'>
-          <Link target='_blank' href={`/${locale}/overview`} className='buy-button'>
-            <ShoppingCart size={18} />
-            Mua ngay
-          </Link>
+          <button type='submit' className='buy-button'>
+            <ShoppingCart size={18} /> Mua ngay
+          </button>
         </div>
       </div>
     </form>

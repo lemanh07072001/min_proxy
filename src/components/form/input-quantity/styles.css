@@ -29,12 +29,13 @@
   border-radius: 6px;
   overflow: hidden;
   inline-size: fit-content;
+  width: 100%;
 }
 
 .qty-btn {
   background: #f9fafb;
   border: none;
-  padding-block: 11px;
+  padding-block: 7px;
   padding-inline: 13px;
   cursor: pointer;
   display: flex;
@@ -59,4 +60,5 @@
   outline: none;
   font-size: 14px;
   padding: 6px;
+  flex: 1;
 }
