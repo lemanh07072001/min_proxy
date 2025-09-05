@@ -58,6 +58,12 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, logo, color, price, fea
   const params = useParams()
   const { lang: locale } = params
 
+  // Định nghĩa danh sách protocols
+  const protocols = [
+    { id: 'HTTP', name: 'HTTP', description: 'HTTP Protocol' },
+    { id: 'SOCKS5', name: 'SOCKS5', description: 'SOCKS5 Protocol' }
+  ]
+
   const {
     register,
     control,
@@ -159,7 +165,6 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, logo, color, price, fea
         <CustomTextField
           select='true'
           name='location'
-          defaultValue='random'
           fullWidth
           id='locale'
           label={
@@ -194,7 +199,6 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, logo, color, price, fea
           render={({ field }) => (
             <CustomTextField
               type='number'
-              defaultValue={1}
               min='1'
               label={
                 <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -221,11 +225,11 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, logo, color, price, fea
           name='quantity'
           control={control}
           render={({ field }) => (
-            <QuantityControl 
-              min={1} 
-              max={100} 
-              label='SỐ LƯỢNG' 
-              icon={<Users size={14} />} 
+            <QuantityControl
+              min={1}
+              max={100}
+              label='SỐ LƯỢNG'
+              icon={<Users size={14} />}
               value={field.value || 1}
               onChange={field.onChange}
             />
@@ -233,7 +237,20 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, logo, color, price, fea
         />
 
         {/* Giao thức */}
-        <Controller name='protocol' control={control} render={({ field }) => <ProtocolSelector {...field} />} />
+        <Controller
+          name='protocol'
+          control={control}
+          render={({ field }) => (
+            <ProtocolSelector
+              protocols={protocols}
+              selectedProtocol={field.value}
+              onProtocolChange={field.onChange}
+              label='GIAO THỨC'
+              required={true}
+              error={errors.protocol?.message}
+            />
+          )}
+        />
       </div>
 
       {/* Auth section */}

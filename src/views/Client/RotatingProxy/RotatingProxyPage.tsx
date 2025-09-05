@@ -5,8 +5,18 @@ import React from 'react'
 import { useForm, Controller, useWatch } from 'react-hook-form'
 import * as yup from 'yup'
 import { yupResolver } from '@hookform/resolvers/yup'
-import { CheckCircle, ShoppingCart } from 'lucide-react'
+import { CheckCircle, ShoppingCart, User, Loader } from 'lucide-react'
 import Switch from '@mui/material/Switch'
+
+import { useSession } from 'next-auth/react'
+
+import axios from 'axios'
+
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+
+import { toast } from 'react-toastify'
+
+import { useModalContext } from '@/app/contexts/ModalContext'
 
 import CustomTextField from '@core/components/mui/TextField'
 
@@ -20,19 +30,7 @@ const proxyPlanSchema = yup.object({
     .required('Vui lòng nhập số lượng')
     .integer('Số lượng phải là số nguyên')
     .min(1, 'Tối thiểu là 1')
-    .max(100, 'Tối đa là 100'),
-  username: yup.string().required('Vui lòng nhập username'),
-  password: yup.string().required('Vui lòng nhập password'),
-  autoRotate: yup.boolean(),
-  rotationTime: yup
-    .number()
-    .typeError('Vui lòng nhập số')
-    .min(1, 'Tối thiểu 1 phút')
-    .when('autoRotate', {
-      is: true,
-      then: schema => schema.required('Vui lòng nhập thời gian xoay'),
-      otherwise: schema => schema.notRequired()
-    })
+    .max(100, 'Tối đa là 100')
 })
 
 // Component này render một dòng feature tĩnh (chỉ hiển thị thông tin)
@@ -49,7 +47,7 @@ const StaticFeatureRow = ({ feature }) => (
 )
 
 // Component này render một dòng feature có input
-const InputFeatureRow = ({ feature, control, errors, planId, isDisabled = false}) => (
+const InputFeatureRow = ({ feature, control, errors, planId, isDisabled = false }) => (
   <Controller
     name={feature.field}
     control={control}
@@ -109,57 +107,99 @@ const SwitchFeatureRow = ({ feature, control, planId }) => (
   />
 )
 
+// --- CUSTOM HOOK FOR API CALL ---
+const useBuyProxy = () => {
+  const queryClient = useQueryClient()
+  const session = useSession()
+
+  const mutation = useMutation({
+    mutationFn: orderData => {
+      const token = session.data.access_token
+
+      const api = axios.create({
+        baseURL: '/api',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      })
+
+      return api.post('/buy-proxy', orderData)
+    },
+    onSuccess: data => {
+      // Xử lý khi request thành công
+      if (data.data.success == false) {
+        toast.error('Lỗi hệ thông xin vui lòng liên hệ Admin.')
+      } else {
+        toast.success(data.data.message)
+      }
+
+      // Bạn có thể vô hiệu hóa cache hoặc cập nhật dữ liệu khác ở đây
+      queryClient.invalidateQueries({ queryKey: ['proxyData'] })
+    },
+    onError: error => {
+      // Xử lý khi request thất bại
+      console.error('Lỗi khi mua proxy:', error.response?.data || error.message)
+    }
+  })
+
+  return mutation
+}
+
 // Component chính cho mỗi thẻ plan, giờ đây gọn gàng hơn.
 const PlanCard = ({ plan }) => {
-  const dynamicSchema = proxyPlanSchema.shape({
-    [plan.timeUnit.field]: yup
-      .number()
-      .typeError('Vui lòng nhập số')
-      .required(`Vui lòng nhập số ${plan.timeUnit.label}`)
-      .integer()
-      .min(1, `Tối thiểu là 1`)
-  })
+  const { mutate, isPending, isError, isSuccess, error } = useBuyProxy()
+  const { openAuthModal } = useModalContext()
+  const session = useSession()
 
   const {
     control,
     handleSubmit,
     formState: { errors }
   } = useForm({
-    resolver: yupResolver(dynamicSchema),
     defaultValues: {
-      [plan.timeUnit.field]: 1,
-      quantity: 1,
-      username: 'random',
-      password: 'random',
-      autoRotate: false,
-      rotationTime: 1
+      quantity: 1
     },
     mode: 'onChange'
   })
 
   const watchedFields = useWatch({ control })
 
-  const calculateTotal = () => {
-    const basePrice = parseInt(plan.price.replace(/,/g, ''), 10) || 0
-    const timeValue = parseInt(watchedFields[plan.timeUnit.field], 10) || 1
+  const calculateTotalFormat = () => {
+    const basePrice = parseInt(plan.price, 10) || 0
+    const timeValue = parseInt() || 1
     const quantityValue = parseInt(watchedFields.quantity, 10) || 1
 
     return (basePrice * timeValue * quantityValue).toLocaleString('vi-VN')
   }
 
-  const onSubmit = (data: any) => {
+  const calculateTotal = () => {
+    const basePrice = parseInt(plan.price, 10) || 0
+    const timeValue = parseInt() || 1
+    const quantityValue = parseInt(watchedFields.quantity, 10) || 1
+
+    return basePrice * timeValue * quantityValue
+  }
+
+  const onSubmit = async (data: any) => {
     const total = calculateTotal()
 
     const orderData = {
-      planId: plan.id,
-      planTitle: plan.title,
+      serviceTypeId: plan.id,
       ...data,
-      total
+      total,
+      time: 1
     }
 
-    console.log('Submitting Order:', orderData)
-
-    alert(`Đã thêm "${plan.title}" vào giỏ hàng với tổng tiền ${total}đ`)
+    try {
+      mutate(orderData)
+    } catch (error) {
+      if (error.response) {
+        console.error('Lỗi từ server:', error.response.data)
+      } else {
+        console.error('Lỗi khác:', error.message)
+      }
+    }
   }
 
   return (
@@ -174,9 +214,17 @@ const PlanCard = ({ plan }) => {
             case 'success':
               return <StaticFeatureRow key={index} feature={feature} />
             case 'input':
-              const isRotationTimeInput = feature.field === 'rotationTime';
+              const isRotationTimeInput = feature.field === 'rotationTime'
+
               return (
-                <InputFeatureRow key={index} feature={feature} control={control} errors={errors} planId={plan.id} isDisabled={isRotationTimeInput && !watchedFields.autoRotate}/>
+                <InputFeatureRow
+                  key={index}
+                  feature={feature}
+                  control={control}
+                  errors={errors}
+                  planId={plan.id}
+                  isDisabled={isRotationTimeInput && !watchedFields.autoRotate}
+                />
               )
             case 'checkbox':
               return <SwitchFeatureRow key={index} feature={feature} control={control} planId={plan.id} />
@@ -185,14 +233,29 @@ const PlanCard = ({ plan }) => {
           }
         })}
       </div>
+
       <div className='plan-footer'>
         <div className='plan-price'>
           <span className='price-label'>Thành tiền:</span>
-          <span className='price-amount'>{calculateTotal()}đ</span>
+          <span className='price-amount'>{calculateTotalFormat()}đ</span>
         </div>
-        <button type='submit' className='buy-button'>
-          <ShoppingCart size={18} className='mr-2' /> Mua hàng
-        </button>
+        {session.status === 'authenticated' ? (
+          <button type='submit' className='buy-button' disabled={isPending}>
+            {isPending ? (
+              <>
+                <Loader size={18} className='mr-2 animate-pulse' /> Đang xử lý...
+              </>
+            ) : (
+              <>
+                <ShoppingCart size={18} className='mr-2' /> Mua Proxy
+              </>
+            )}
+          </button>
+        ) : (
+          <button type='button' className='buy-button' onClick={() => openAuthModal('login')}>
+            <User size={18} className='mr-2' /> Đăng nhập
+          </button>
+        )}
       </div>
     </form>
   )

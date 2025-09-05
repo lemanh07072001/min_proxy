@@ -2,12 +2,12 @@ import OrderProxyPage from '@/views/Client/OrderProxy/OrderProxyPage'
 
 import './styles.css'
 import { Globe } from 'lucide-react'
-import { Metadata } from 'next'
+import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: `${process.env.NEXT_PUBLIC_APP_NAME} | Đơn hàng proxy`,
-  description: 'Mô tả ngắn gọn về trang web.',
-};
+  description: 'Mô tả ngắn gọn về trang web.'
+}
 
 export default function OrderProxy() {
   const proxyOrders = [
