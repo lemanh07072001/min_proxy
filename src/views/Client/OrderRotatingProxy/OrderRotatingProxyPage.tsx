@@ -4,8 +4,7 @@ import { useMemo, useState } from 'react'
 
 import { headers } from 'next/headers'
 
-
-import { TriangleAlert, Copy, CircleQuestionMark, BadgeCheck, BadgeMinus, Download } from 'lucide-react'
+import { TriangleAlert, Copy, CircleQuestionMark, BadgeCheck, BadgeMinus, Download, Clock3, Clock } from 'lucide-react'
 
 import Button from '@mui/material/Button'
 
@@ -13,7 +12,11 @@ import {
   useReactTable,
   getCoreRowModel,
   flexRender,
-  getFilteredRowModel // Thêm để lọc hàng đã chọn
+  getFilteredRowModel,
+  getSortedRowModel,
+  getPaginationRowModel,
+  getFacetedRowModel,
+  getFacetedUniqueValues // Thêm để lọc hàng đã chọn
 } from '@tanstack/react-table'
 
 import Chip from '@mui/material/Chip'
@@ -22,26 +25,28 @@ import './styles.css'
 import Pagination from '@mui/material/Pagination'
 
 import CustomIconButton from '@core/components/mui/IconButton'
+import { useCopy } from '@/app/hooks/useCopy'
+import { formatDateTimeLocal } from '@/utils/formatDate'
 
 export default function OrderRotatingProxyPage({ data }) {
-  const [showPasswords, setShowPasswords] = useState<{ [key: string]: boolean }>({})
-  const [currentPage, setCurrentPage] = useState(1)
-  const [pageSize, setPageSize] = useState(50)
-  const [searchTerm, setSearchTerm] = useState('')
+  const [columnFilters, setColumnFilters] = useState([]);
   const [rowSelection, setRowSelection] = useState({}) // State để lưu các hàng được chọn
+  const [sorting, setSorting] = useState([]);
+
+  const [pagination, setPagination] = useState({
+    pageIndex: 0,
+    pageSize: 10,
+  });
 
   const dataOrder = useMemo(() => data, [data])
 
-  const copyToClipboard = (text: string) => {
-    toast.success('Copy thành công.')
-    navigator.clipboard.writeText(text)
-  }
+  const [, copy] = useCopy();
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'active':
+      case 'ACTIVE':
         return <Chip label='Đang hoạt động' size='small' icon={<BadgeCheck />} color='success' />
-      case 'expired':
+      case 'INACTIVE':
         return <Chip label='Hết hạn' size='small' icon={<TriangleAlert />} color='error' />
       case 'suspended':
         return <Chip label='Tạm dừng' size='small' icon={<BadgeMinus />} color='warning' />
@@ -50,14 +55,6 @@ export default function OrderRotatingProxyPage({ data }) {
     }
   }
 
-  // const filteredOrders = data.filter(
-  //   order =>
-  //     order.proxy.toLowerCase().includes(searchTerm.toLowerCase()) ||
-  //     order.provider.toLowerCase().includes(searchTerm.toLowerCase()) ||
-  //     order.orderId.includes(searchTerm)
-  // )
-
-  const totalPages = Math.ceil(dataOrder.length / pageSize)
 
   const columns = useMemo(
     () => [
@@ -87,18 +84,19 @@ export default function OrderRotatingProxyPage({ data }) {
         accessorKey: 'provider',
         header: 'Nhà mạng',
         cell: ({ row }) => {
-          return <span className='text-red'>viettel</span>
+          const location = row.original.proxys.location;
+          return <span className='text-red'>{location}</span>
         }
       },
       {
         accessorKey: 'proxy',
         header: 'Proxy',
         cell: ({ row }) => {
-
+          const http = row.original.proxys.http;
           return (
             <div className='proxy-cell'>
-              <span className='proxy-label'>{row.original.proxy}</span>
-              <button className='icon-button'>
+              <span className='proxy-label'>{http}</span>
+              <button className='icon-button' onClick={()=>copy(http)}>
                 <Copy size={14} />
               </button>
             </div>
@@ -107,15 +105,44 @@ export default function OrderRotatingProxyPage({ data }) {
       },
       {
         accessorKey: 'protocol',
-        header: 'Loại'
+        header: 'Loại',
+        cell: ({ row }) => {
+          const keys = Object.keys(row.original.proxys);
+
+          return (
+            <div className="font-bold">
+              {keys[0].toUpperCase()}
+            </div>
+          )
+        }
       },
       {
-        accessorKey: 'note',
-        header: 'Note'
+        accessorKey: 'buyDate',
+        header: 'Ngày mua',
+        cell: ({ row }) => {
+          return (
+            <>
+              <div className="d-flex align-items-center  gap-1 ">
+                <Clock3  size={14} />
+                <div style={{marginTop:'2px'}}>{formatDateTimeLocal(row.original.buy_at)}</div>
+              </div>
+            </>
+          )
+        }
       },
       {
         accessorKey: 'expiryDate',
-        header: 'Ngày hết hạn'
+        header: 'Ngày hết hạn',
+        cell: ({ row }) => {
+          return (
+            <>
+              <div className="d-flex align-items-center  gap-1 ">
+                <Clock size={14} />
+                <div style={{marginTop:'2px'}}>{formatDateTimeLocal(row.original.expired_at)}</div>
+              </div>
+            </>
+          )
+        }
       },
       {
         accessorKey: 'status',
@@ -132,13 +159,29 @@ export default function OrderRotatingProxyPage({ data }) {
     data,
     columns,
     state: {
-      rowSelection
+      rowSelection,
+      pagination,
+      columnFilters,
+      sorting,
     },
     enableRowSelection: true, // Bật tính năng chọn hàng
     onRowSelectionChange: setRowSelection, // Cập nhật state khi có thay đổi
+    onPaginationChange: setPagination,
+    onColumnFiltersChange: setColumnFilters,
+    onSortingChange: setSorting,
+
     getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel() // Tùy chọn: cần thiết nếu có bộ lọc
+    getFilteredRowModel: getFilteredRowModel(), // Tùy chọn: cần thiết nếu có bộ lọc
+    getSortedRowModel: getSortedRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    getFacetedRowModel: getFacetedRowModel(),
+    getFacetedUniqueValues: getFacetedUniqueValues(),
   })
+
+  const { pageIndex, pageSize } = table.getState().pagination;
+  const totalRows = table.getFilteredRowModel().rows.length;
+  const startRow = pageIndex * pageSize + 1;
+  const endRow = Math.min(startRow + pageSize - 1, totalRows);
 
   return (
     <>
@@ -195,10 +238,15 @@ export default function OrderRotatingProxyPage({ data }) {
                   <div className='page-size-select'>
                     <span className='text-sm text-gray'>Kích cỡ trang linh</span>
                     <div className='page-size-select-wrapper'>
-                      <select className='page-size-select'>
+                      <select
+                        value={table.getState().pagination.pageSize}
+                        onChange={e => {
+                          table.setPageSize(Number(e.target.value));
+                        }}
+                        className='page-size-select'>
+                        <option value='10'>10</option>
                         <option value='50'>50</option>
                         <option value='100'>100</option>
-                        <option value='200'>200</option>
                       </select>
                       <div className='select-arrow'>
                         <svg className='h-4 w-4' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'>
@@ -207,11 +255,27 @@ export default function OrderRotatingProxyPage({ data }) {
                       </div>
                     </div>
                   </div>
-                  <span className='text-sm text-gray'>1 - 1 của 1 dòng hàng</span>
+                  {/* --- Hiển thị số hàng trên trang hiện tại --- */}
+                  <div>
+                    {totalRows > 0 ? (
+                      <span>
+                      {startRow} - {endRow} của {totalRows} hàng
+                    </span>
+                    ) : (
+                      <span>Không có dữ liệu</span>
+                    )}
+                  </div>
                 </div>
 
                 <div className='pagination-buttons'>
-                  <Pagination count={3} shape='rounded' variant='outlined' color='primary' />
+                  <Pagination count={table.getPageCount()}
+                              shape='rounded'
+                              variant='outlined'
+                              color='primary'
+                              page={table.getState().pagination.pageIndex + 1}
+                              onChange={(event, page) => {
+                                table.setPageIndex(page - 1);
+                              }}/>
                 </div>
               </div>
             </div>

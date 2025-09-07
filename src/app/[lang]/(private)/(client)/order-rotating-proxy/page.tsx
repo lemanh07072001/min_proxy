@@ -4,60 +4,43 @@ import './styles.css'
 
 import { Globe } from 'lucide-react'
 import { Metadata } from 'next'
+import axios from 'axios'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/libs/auth'
 
 export const metadata: Metadata = {
   title: `${process.env.NEXT_PUBLIC_APP_NAME} | Đơn hàng proxy xoay`,
   description: 'Mô tả ngắn gọn về trang web.',
 };
 
-export default function OrderRotatingProxy() {
-  const proxyOrders = [
-    {
-      id: 1,
-      orderId: '30851',
-      provider: 'viettel',
-      proxy: '171.246.183.233:35403:ava634:oqg3mjczruu0ng==',
-      ip: '171.246.183.233',
-      port: '35403',
-      username: 'ava634',
-      password: 'oqg3mjczruu0ng==',
-      protocol: 'HTTP',
-      status: 'actives',
-      expiryDate: '19-08-2025 09:39:44',
-      remainingDays: 0,
-      note: ''
-    },
-    {
-      id: 2,
-      orderId: '30852',
-      provider: 'fpt',
-      proxy: '192.168.1.100:8080:user123:pass456',
-      ip: '192.168.1.100',
-      port: '8080',
-      username: 'user123',
-      password: 'pass456',
-      protocol: 'HTTP',
-      status: 'active',
-      expiryDate: '20-08-2025 10:15:30',
-      remainingDays: 1,
-      note: 'Test proxy'
-    },
-    {
-      id: 3,
-      orderId: '30853',
-      provider: 'vnpt',
-      proxy: '172.16.0.50:3128:vnpt_user:vnpt_pass',
-      ip: '172.16.0.50',
-      port: '3128',
-      username: 'vnpt_user',
-      password: 'vnpt_pass',
-      protocol: 'SOCKS5',
-      status: 'expired',
-      expiryDate: '15-08-2025 14:22:15',
-      remainingDays: -3,
-      note: 'Expired proxy'
-    }
-  ]
+async function getProxyOrders(token: string) {
+  try {
+    const api = axios.create({
+      baseURL: process.env.NEXT_PUBLIC_APP_URL,
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    })
+
+    const res = await api.post('/api/get-order-proxy-rotating')
+
+    return res.data?.data
+  } catch (err) {
+    console.error('Error fetching proxy orders:', err)
+
+    return []
+  }
+}
+
+export default async function OrderRotatingProxy() {
+  const session = await getServerSession(authOptions)
+
+  const token = session?.access_token || '' // access_token do bạn set khi login next-auth
+  const proxyOrders = await getProxyOrders(token)
+
+  console.log(proxyOrders)
+
 
   return (
     <div className='main-page'>

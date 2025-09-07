@@ -68,7 +68,7 @@ export default function BalanceCardClient({
   const { data, error, isLoading } = useQuery({
     queryKey: ['userData'], // Đặt tên cho query
     queryFn: fetchUser, // Cung cấp hàm fetch
-    // enabled: !!session?.data?.access_token ,
+    enabled: !!session?.data?.access_token ,
   })
 
   console.log('da',data)
