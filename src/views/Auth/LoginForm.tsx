@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 
-import { useParams, useRouter } from 'next/navigation'
+import { useParams, usePathname, useRouter } from 'next/navigation'
 
 import { signIn } from 'next-auth/react'
 
@@ -33,6 +33,7 @@ export default function LoginForm() {
 
   const router = useRouter()
   const params = useParams()
+  const pathname = usePathname()
   const { closeAuthModal } = useModalContext()
 
   const { lang: locale } = params
@@ -56,7 +57,7 @@ export default function LoginForm() {
       toast.success('Đăng nhập thành công.')
       closeAuthModal()
       // Reload page để update session ở server-side
-      window.location.reload()
+      router.push(pathname)
     } else {
       toast.error('Tài khoản hoặc mật khẩu không chính xác.')
     }

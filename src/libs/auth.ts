@@ -30,14 +30,13 @@ declare module 'next-auth/jwt' {
   }
 }
 
-// Refresh token từ Laravel
+// Laravel JWT refresh (dùng access token cũ)
 async function refreshAccessToken(token: JWT) {
   try {
-    const url = `${process.env.NEXT_PUBLIC_API_URL}/refresh`
     const res = await axiosInstance.post(
-      url,
-      { refresh_token: token.refreshToken },
-      { headers: { Accept: 'application/json' } }
+      '/refresh',
+      {}, // Laravel JWT không cần refresh_token riêng biệt
+      { headers: { Authorization: `Bearer ${token.access_token}`, Accept: 'application/json' } }
     )
     const data = res.data
 
@@ -45,7 +44,6 @@ async function refreshAccessToken(token: JWT) {
       ...token,
       access_token: data.access_token,
       accessTokenExpires: Date.now() + (data.expires_in || 3600) * 1000,
-      refreshToken: data.refresh_token,
       error: undefined
     }
   } catch (err: any) {
@@ -56,7 +54,7 @@ async function refreshAccessToken(token: JWT) {
 
 // Reset token helper
 function resetToken(token: JWT) {
-  return { ...token, access_token: undefined, accessTokenExpires: undefined, refreshToken: undefined, error: 'TokenReset' }
+  return { ...token, access_token: undefined, accessTokenExpires: undefined, error: 'TokenReset' }
 }
 
 export const authOptions: NextAuthOptions = {
@@ -84,7 +82,6 @@ export const authOptions: NextAuthOptions = {
             name: data.user.name,
             access_token: data.access_token,
             accessTokenExpires: Date.now() + (data.expires_in || 3600) * 1000,
-            refreshToken: data.refresh_token,
             userData: data.user
           }
         } catch (err) {
@@ -105,18 +102,28 @@ export const authOptions: NextAuthOptions = {
 
   callbacks: {
     async jwt({ token, user }) {
-      // Login lần đầu
-      if (user) return { ...token, ...user }
+      // Lần đầu login
+      if (user) {
+        return {
+          ...token,
+          access_token: user.access_token,
+          accessTokenExpires: user.accessTokenExpires,
+          refreshToken: user.refreshToken,
+          userData: user.userData
+        }
+      }
+
+      console.log('Token expires at:', token.accessTokenExpires);
 
       // Token hết hạn → refresh
       if (token.accessTokenExpires && Date.now() >= token.accessTokenExpires) {
-        const refreshed = await refreshAccessToken(token)
-        if (refreshed.access_token) return refreshed
-        return resetToken(token) // Refresh fail → reset token
+        const refreshed = await refreshAccessToken(token);
+        if (refreshed.access_token) return refreshed;
+        return resetToken(token);
       }
 
       // Token còn hiệu lực
-      return token
+      return token;
     },
 
     async session({ session, token }) {
@@ -130,7 +137,7 @@ export const authOptions: NextAuthOptions = {
   events: {
     async signOut({ token }) {
       console.log('🧹 Reset token on sign out')
-      resetToken(token)
+
     }
   }
 }

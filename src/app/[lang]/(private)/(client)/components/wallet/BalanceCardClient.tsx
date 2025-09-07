@@ -60,15 +60,17 @@ export default function BalanceCardClient({
 
   // Hàm để fetch dữ liệu.
   const fetchUser = async () => {
-    const { data } = await axiosAuth.post('me')
+    const { data } = await axiosAuth.post('/me')
 
     return data
   }
 
   const { data, error, isLoading } = useQuery({
     queryKey: ['userData'], // Đặt tên cho query
-    queryFn: fetchUser // Cung cấp hàm fetch
+    queryFn: fetchUser, // Cung cấp hàm fetch
+    enabled: !!session?.data?.access_token ,
   })
+
 
   return (
     <>

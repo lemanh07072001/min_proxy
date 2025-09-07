@@ -9,6 +9,7 @@ const useAxiosAuth = () => {
     (session as any)?.access_token
   );
 
+
   // Ref để tránh call nhiều lần signOut
   const isSigningOut = useRef(false);
 
@@ -36,6 +37,17 @@ const useAxiosAuth = () => {
         const status = error.response?.status;
 
         if (status === 401 && !isSigningOut.current) {
+          const tokenError = (session as any)?.error;
+
+
+          console.log(tokenError)
+          if (tokenError === "RefreshAccessTokenError" || tokenError === "TokenReset") {
+            // Token đã không thể refresh, phải logout
+            isSigningOut.current = true;
+            await signOut({ redirect: true });
+            return Promise.reject(error);
+          }
+
           try {
             // Cố gắng refresh session
             const refreshed = await updateSession();

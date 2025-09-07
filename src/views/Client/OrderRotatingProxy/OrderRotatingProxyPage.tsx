@@ -94,7 +94,6 @@ export default function OrderRotatingProxyPage({ data }) {
         accessorKey: 'proxy',
         header: 'Proxy',
         cell: ({ row }) => {
-          console.log(row)
 
           return (
             <div className='proxy-cell'>
