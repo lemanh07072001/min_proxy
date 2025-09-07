@@ -12,7 +12,10 @@ import {
   Calendar,
   Key,
   Clock,
-  Clock3
+  Clock3,
+  ArrowDownUp,
+  ArrowDownWideNarrow,
+  ArrowUpNarrowWide
 } from 'lucide-react'
 
 import Button from '@mui/material/Button'
@@ -21,7 +24,7 @@ import {
   useReactTable,
   getCoreRowModel,
   flexRender,
-  getFilteredRowModel, getPaginationRowModel, getFacetedRowModel, getFacetedUniqueValues // Thêm để lọc hàng đã chọn
+  getFilteredRowModel, getPaginationRowModel, getFacetedRowModel, getFacetedUniqueValues, getSortedRowModel // Thêm để lọc hàng đã chọn
 } from '@tanstack/react-table'
 
 import Chip from '@mui/material/Chip'
@@ -38,6 +41,7 @@ import { useCopy } from '@/app/hooks/useCopy'
 export default function OrderProxyPage({ data }) {
   const [columnFilters, setColumnFilters] = useState([]);
   const [rowSelection, setRowSelection] = useState({}) // State để lưu các hàng được chọn
+  const [sorting, setSorting] = useState([]);
 
   const [pagination, setPagination] = useState({
     pageIndex: 0,
@@ -173,14 +177,17 @@ export default function OrderProxyPage({ data }) {
       rowSelection,
       pagination,
       columnFilters,
+      sorting,
     },
     enableRowSelection: true, // Bật tính năng chọn hàng
     onRowSelectionChange: setRowSelection, // Cập nhật state khi có thay đổi
     onPaginationChange: setPagination,
     onColumnFiltersChange: setColumnFilters,
+    onSortingChange: setSorting,
+
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(), // Tùy chọn: cần thiết nếu có bộ lọc
-
+    getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
@@ -234,8 +241,16 @@ export default function OrderProxyPage({ data }) {
                   {table.getHeaderGroups().map(headerGroup => (
                     <tr key={headerGroup.id}>
                       {headerGroup.headers.map(header => (
-                        <th className='table-header th' key={header.id}>
+                        <th className='table-header th' style={{cursor:'pointer'}} key={header.id} onClick={header.column.getToggleSortingHandler()}>
                           {flexRender(header.column.columnDef.header, header.getContext())}
+
+                          {
+                            header.column.getCanSort() ? (
+                              header.column.getIsSorted() === 'asc' ? <ArrowUpNarrowWide className="ms-1" size={14}/> :
+                                header.column.getIsSorted() === 'desc' ? <ArrowDownWideNarrow className="ms-1" size={14}/> :
+                                  <ArrowDownUp size={14} className="ms-1"/>// Icon mặc định
+                            ) : null
+                          }
                         </th>
                       ))}
                     </tr>

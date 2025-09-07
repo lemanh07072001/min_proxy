@@ -71,7 +71,7 @@ export default function BalanceCardClient({
     enabled: !!session?.data?.access_token ,
   })
 
-
+  console.log('da',data?.sodu)
   return (
     <>
       <AnimatePresence>
@@ -93,7 +93,7 @@ export default function BalanceCardClient({
               <div className='text-3xl font-bold mb-2'>
                 {isLoading
                   ? new Intl.NumberFormat('vi-VN').format(0)
-                  : new Intl.NumberFormat('vi-VN').format(data?.sodu)}{' '}
+                  : new Intl.NumberFormat('vi-VN').format(data?.sodu ?? 0)}{' '}
                 VNĐ
               </div>
               <div className='text-orange-100 text-sm'>
