@@ -21,7 +21,7 @@ import {
   useReactTable,
   getCoreRowModel,
   flexRender,
-  getFilteredRowModel // Thêm để lọc hàng đã chọn
+  getFilteredRowModel, getPaginationRowModel, getFacetedRowModel, getFacetedUniqueValues // Thêm để lọc hàng đã chọn
 } from '@tanstack/react-table'
 
 import Chip from '@mui/material/Chip'
@@ -36,10 +36,13 @@ import { useCopy } from '@/app/hooks/useCopy'
 
 
 export default function OrderProxyPage({ data }) {
-  const [currentPage, setCurrentPage] = useState(1)
-  const [pageSize, setPageSize] = useState(50)
-  const [searchTerm, setSearchTerm] = useState('')
+  const [columnFilters, setColumnFilters] = useState([]);
   const [rowSelection, setRowSelection] = useState({}) // State để lưu các hàng được chọn
+
+  const [pagination, setPagination] = useState({
+    pageIndex: 0,
+    pageSize: 10,
+  });
 
   const [, copy] = useCopy();
 
@@ -57,8 +60,6 @@ export default function OrderProxyPage({ data }) {
         return <Chip label='Không xác định' size='small' icon={<CircleQuestionMark />} color='secondary' />
     }
   }
-
-  const totalPages = Math.ceil(dataOrder.length / pageSize)
 
   const columns = useMemo(
     () => [
@@ -169,13 +170,27 @@ export default function OrderProxyPage({ data }) {
     data,
     columns,
     state: {
-      rowSelection
+      rowSelection,
+      pagination,
+      columnFilters,
     },
     enableRowSelection: true, // Bật tính năng chọn hàng
     onRowSelectionChange: setRowSelection, // Cập nhật state khi có thay đổi
+    onPaginationChange: setPagination,
+    onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel() // Tùy chọn: cần thiết nếu có bộ lọc
+    getFilteredRowModel: getFilteredRowModel(), // Tùy chọn: cần thiết nếu có bộ lọc
+
+    getPaginationRowModel: getPaginationRowModel(),
+    getFacetedRowModel: getFacetedRowModel(),
+    getFacetedUniqueValues: getFacetedUniqueValues(),
   })
+
+  const { pageIndex, pageSize } = table.getState().pagination;
+  const totalRows = table.getFilteredRowModel().rows.length;
+  const startRow = pageIndex * pageSize + 1;
+  const endRow = Math.min(startRow + pageSize - 1, totalRows);
+
 
   return (
     <>
@@ -247,10 +262,15 @@ export default function OrderProxyPage({ data }) {
                   <div className='page-size-select'>
                     <span className='text-sm text-gray'>Kích cỡ trang linh</span>
                     <div className='page-size-select-wrapper'>
-                      <select className='page-size-select'>
+                      <select
+                        value={table.getState().pagination.pageSize}
+                        onChange={e => {
+                          table.setPageSize(Number(e.target.value));
+                        }}
+                        className='page-size-select'>
+                        <option value='10'>10</option>
                         <option value='50'>50</option>
                         <option value='100'>100</option>
-                        <option value='200'>200</option>
                       </select>
                       <div className='select-arrow'>
                         <svg className='h-4 w-4' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'>
@@ -259,11 +279,27 @@ export default function OrderProxyPage({ data }) {
                       </div>
                     </div>
                   </div>
-                  <span className='text-sm text-gray'>1 - 1 của 1 dòng hàng</span>
+                  {/* --- Hiển thị số hàng trên trang hiện tại --- */}
+                  <div>
+                    {totalRows > 0 ? (
+                      <span>
+                      {startRow} - {endRow} của {totalRows} hàng
+                    </span>
+                    ) : (
+                      <span>Không có dữ liệu</span>
+                    )}
+                  </div>
                 </div>
 
                 <div className='pagination-buttons'>
-                  <Pagination count={3} shape='rounded' variant='outlined' color='primary' />
+                  <Pagination count={table.getPageCount()}
+                              shape='rounded'
+                              variant='outlined'
+                              color='primary'
+                              page={table.getState().pagination.pageIndex + 1}
+                              onChange={(event, page) => {
+                                table.setPageIndex(page - 1);
+                              }}/>
                 </div>
               </div>
             </div>
