@@ -50,7 +50,7 @@ export default function OrderProxyPage({ data }) {
 
   const [, copy] = useCopy();
 
-  const dataOrder = useMemo(() => data, [data])
+  const dataOrder = useMemo(() => data || [], [data])
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -93,23 +93,28 @@ export default function OrderProxyPage({ data }) {
         accessorKey: 'provider',
         header: 'Nhà mạng',
         cell: ({ row }) => {
-          return <span className='text-red'>{row.original.proxys.loaiproxy}</span>
+          const proxys = row.original.proxys || {}; // fallback nếu null
+          const loaiproxy = proxys.loaiproxy || '-'; // fallback nếu không tồn tại
+          return <span className='text-red'>{loaiproxy}</span>
         }
       },
       {
         accessorKey: 'proxy',
         header: 'Proxy',
         cell: ({ row }) => {
-          const proxyValues = Object.entries(row.original.proxys)
-            .filter(([key]) => key !== 'loaiproxy') // bỏ key không cần
+          const proxys = row.original.proxys || {};
+          const proxyValues = Object.entries(proxys)
+            .filter(([key]) => key !== 'loaiproxy')
             .map(([_, value]) => value);
 
           return (
             <div className='proxy-cell'>
-              <span className='proxy-label'>{proxyValues[0]}</span>
-              <button className='icon-button' onClick={()=>copy(proxyValues[0])}>
-                <Copy size={14} />
-              </button>
+              <span className='proxy-label'>{proxyValues[0] || '-'}</span>
+              {proxyValues[0] && (
+                <button className='icon-button' onClick={()=>copy(proxyValues[0])}>
+                  <Copy size={14} />
+                </button>
+              )}
             </div>
           )
         }
@@ -118,14 +123,10 @@ export default function OrderProxyPage({ data }) {
         accessorKey: 'protocol',
         header: 'Loại',
         cell: ({ row }) => {
-          const protocol =
-            Object.keys(row.original.proxys).find(key => key === 'HTTPS') ||
-            Object.keys(row.original.proxys)[0]; // fallback
-          return (
-            <div className="font-bold">
-              {protocol}
-            </div>
-          )
+          const proxys = row.original.proxys || {}; // nếu null hoặc undefined, fallback thành {}
+          const keys = Object.keys(proxys);
+
+          return <div className="font-bold">{keys[0]?.toUpperCase() || '-'}</div>;
         }
       },
       {
@@ -171,7 +172,7 @@ export default function OrderProxyPage({ data }) {
   )
 
   const table = useReactTable({
-    data,
+    data: dataOrder,
     columns,
     state: {
       rowSelection,
