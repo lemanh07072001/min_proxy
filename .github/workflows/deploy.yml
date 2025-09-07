@@ -1,42 +1,32 @@
-# Tên của quy trình
 name: Build and Deploy to Server
 
-# Kích hoạt khi có code được push lên nhánh "main"
 on:
   push:
     branches: [ "main" ]
 
-# Các công việc cần làmv
 jobs:
   build-and-deploy:
-    # Chạy trên máy ảo Ubuntu của GitHub
     runs-on: ubuntu-latest
 
-    steps: # Tuần tự các bước
-      # 1. Lấy mã nguồn từ repo về máy ảo
+    steps:
       - name: Checkout Source Code
         uses: actions/checkout@v4
 
-      # 2. Cài đặt môi trường Node.js
       - name: Setup Node.js Environment
         uses: actions/setup-node@v4
         with:
-          node-version: '18' # Đổi phiên bản Node.js nếu cần
-          cache: 'npm' # Bật cache để tăng tốc độ cài đặt
+          node-version: '18'
+          cache: 'npm'
 
-      # 3. Cài đặt các thư viện
       - name: Install Dependencies
         run: npm ci
 
-      # 4. Build dự án (bước tốn tài nguyên nhất)
       - name: Build Project
         run: npm run build
 
-      # 5. Dọn dẹp các file không cần thiết trước khi gửi
       - name: Clean up node_modules for production
         run: npm prune --production
 
-      # 6. Gửi các file đã build và cần thiết lên server
       - name: Deploy to Server via rsync
         uses: easingthemes/ssh-deploy@main
         with:
@@ -44,10 +34,9 @@ jobs:
           REMOTE_HOST: ${{ secrets.SERVER_HOST }}
           REMOTE_USER: ${{ secrets.SERVER_USERNAME }}
           TARGET: ${{ secrets.TARGET_DIR }}
-          # Chỉ gửi những thư mục/file này, giúp tăng tốc độ
-          EXCLUDE: "/.git/, /.github/"
+          # Không ghi đè file .env trên server
+          EXCLUDE: "/.git/, /.github/, .env"
 
-      # 7. Chạy lệnh trên server để khởi động lại ứng dụng
       - name: Restart Application on Server
         uses: appleboy/ssh-action@master
         with:
@@ -57,4 +46,4 @@ jobs:
           script: |
             cd ${{ secrets.TARGET_DIR }}
             echo "Restarting the application with PM2..."
-            pm2 restart next-app # THAY TÊN ỨNG DỤNG PM2 CỦA BẠN VÀO ĐÂY
+            pm2 restart next-app || pm2 start npm --name "next-app" -- run start

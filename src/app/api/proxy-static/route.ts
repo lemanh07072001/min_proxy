@@ -18,6 +18,8 @@ export async function POST(request: Request) {
       }
     })
 
+    console.log(response.data)
+
     // ✅ Nhánh thành công: Bạn đã return đúng
     return NextResponse.json(response.data)
   } catch (error: any) {
