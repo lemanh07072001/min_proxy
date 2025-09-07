@@ -46,7 +46,6 @@ export default async function RotatingProxy() {
     features: proxyTemplate.features.map(f => ({ ...f }))
   }))
 
-
   return (
     <div className='proxy-xoay-page'>
       <div className='page-header'>
