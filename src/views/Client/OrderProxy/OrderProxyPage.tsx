@@ -2,10 +2,6 @@
 
 import { useMemo, useState } from 'react'
 
-import { headers } from 'next/headers'
-
-import { toast } from 'react-toastify'
-
 import {
   TriangleAlert,
   Copy,
@@ -14,7 +10,9 @@ import {
   BadgeCheck,
   BadgeMinus,
   Calendar,
-  Key
+  Key,
+  Clock,
+  Clock3
 } from 'lucide-react'
 
 import Button from '@mui/material/Button'
@@ -32,45 +30,26 @@ import './styles.css'
 import Pagination from '@mui/material/Pagination'
 
 import CustomIconButton from '@core/components/mui/IconButton'
+import { formatDateTimeLocal } from '@/utils/formatDate'
+import { useCopy } from '@/app/hooks/useCopy'
+
+
 
 export default function OrderProxyPage({ data }) {
-  const [showPasswords, setShowPasswords] = useState<{ [key: string]: boolean }>({})
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(50)
   const [searchTerm, setSearchTerm] = useState('')
   const [rowSelection, setRowSelection] = useState({}) // State để lưu các hàng được chọn
 
+  const [, copy] = useCopy();
+
   const dataOrder = useMemo(() => data, [data])
-
-  const togglePasswordVisibility = (proxyId: string) => {
-    setShowPasswords(prev => ({
-      ...prev,
-      [proxyId]: !prev[proxyId]
-    }))
-  }
-
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text)
-  }
-
-  const getProviderColor = (provider: string) => {
-    switch (provider.toLowerCase()) {
-      case 'viettel':
-        return 'text-red-600 bg-red-50'
-      case 'fpt':
-        return 'text-orange-600 bg-orange-50'
-      case 'vnpt':
-        return 'text-blue-600 bg-blue-50'
-      default:
-        return 'text-gray-600 bg-gray-50'
-    }
-  }
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'active':
+      case 'ACTIVE':
         return <Chip label='Đang hoạt động' size='small' icon={<BadgeCheck />} color='success' />
-      case 'expired':
+      case 'INACTIVE':
         return <Chip label='Hết hạn' size='small' icon={<TriangleAlert />} color='error' />
       case 'suspended':
         return <Chip label='Tạm dừng' size='small' icon={<BadgeMinus />} color='warning' />
@@ -109,19 +88,21 @@ export default function OrderProxyPage({ data }) {
         accessorKey: 'provider',
         header: 'Nhà mạng',
         cell: ({ row }) => {
-          return <span className='text-red'>viettel</span>
+          return <span className='text-red'>{row.original.proxys.loaiproxy}</span>
         }
       },
       {
         accessorKey: 'proxy',
         header: 'Proxy',
         cell: ({ row }) => {
-          console.log(row)
+          const proxyValues = Object.entries(row.original.proxys)
+            .filter(([key]) => key !== 'loaiproxy') // bỏ key không cần
+            .map(([_, value]) => value);
 
           return (
             <div className='proxy-cell'>
-              <span className='proxy-label'>{row.original.proxy}</span>
-              <button className='icon-button'>
+              <span className='proxy-label'>{proxyValues[0]}</span>
+              <button className='icon-button' onClick={()=>copy(proxyValues[0])}>
                 <Copy size={14} />
               </button>
             </div>
@@ -129,20 +110,46 @@ export default function OrderProxyPage({ data }) {
         }
       },
       {
-        accessorKey: 'ip',
-        header: 'Ip cũ'
-      },
-      {
         accessorKey: 'protocol',
-        header: 'Loại'
+        header: 'Loại',
+        cell: ({ row }) => {
+          const protocol =
+            Object.keys(row.original.proxys).find(key => key === 'HTTPS') ||
+            Object.keys(row.original.proxys)[0]; // fallback
+          return (
+            <div className="font-bold">
+              {protocol}
+            </div>
+          )
+        }
       },
       {
-        accessorKey: 'note',
-        header: 'Note'
+        accessorKey: 'buyDate',
+        header: 'Ngày mua',
+        cell: ({ row }) => {
+          return (
+            <>
+              <div className="d-flex align-items-center  gap-1 ">
+                <Clock3  size={14} />
+                <div style={{marginTop:'2px'}}>{formatDateTimeLocal(row.original.buy_at)}</div>
+              </div>
+            </>
+          )
+        }
       },
       {
         accessorKey: 'expiryDate',
-        header: 'Ngày hết hạn'
+        header: 'Ngày hết hạn',
+        cell: ({ row }) => {
+          return (
+            <>
+              <div className="d-flex align-items-center  gap-1 ">
+                <Clock size={14} />
+                <div style={{marginTop:'2px'}}>{formatDateTimeLocal(row.original.expired_at)}</div>
+              </div>
+            </>
+          )
+        }
       },
       {
         accessorKey: 'status',
@@ -152,8 +159,7 @@ export default function OrderProxyPage({ data }) {
         }
       },
       {
-        accessorKey: 'remainingDays',
-        header: 'Ngày'
+        header: 'Action'
       }
     ],
     []

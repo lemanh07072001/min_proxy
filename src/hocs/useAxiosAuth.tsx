@@ -1,81 +1,57 @@
-// hooks/useAxiosAuth.js
-
+// hooks/useAxiosAuth.ts
 import { useSession, signOut } from "next-auth/react";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import axiosInstance from "@/libs/axios";
 
 const useAxiosAuth = () => {
   const { data: session, update: updateSession } = useSession();
+  const [accessToken, setAccessToken] = useState<string | undefined>(
+    (session as any)?.access_token
+  );
 
-  // Tạo một ref để theo dõi trạng thái đăng xuất
+  // Ref để tránh call nhiều lần signOut
   const isSigningOut = useRef(false);
 
   useEffect(() => {
-    const requestIntercept = axiosInstance.interceptors.request.use(
-      (config) => {
-        // Lấy accessToken từ session
-        const accessToken = (session as any)?.access_token;
+    // Cập nhật token khi session thay đổi
+    setAccessToken((session as any)?.access_token);
+  }, [session]);
 
+  useEffect(() => {
+    // Interceptor request: thêm token mới vào header
+    const requestInterceptor = axiosInstance.interceptors.request.use(
+      (config) => {
         if (accessToken) {
           config.headers["Authorization"] = `Bearer ${accessToken}`;
-          console.log('Request interceptor: Token added to headers', {
-            url: config.url,
-            hasToken: !!accessToken,
-            tokenLength: accessToken?.length
-          });
-        } else {
-          console.log('Request interceptor: No token available', {
-            url: config.url,
-            hasSession: !!session
-          });
         }
-        
         return config;
       },
       (error) => Promise.reject(error)
     );
 
-    const responseIntercept = axiosInstance.interceptors.response.use(
+    // Interceptor response: xử lý 401
+    const responseInterceptor = axiosInstance.interceptors.response.use(
       (response) => response,
       async (error) => {
-        console.log('Response interceptor: Error occurred', {
-          status: error.response?.status,
-          url: error.config?.url,
-          message: error.message
-        });
+        const status = error.response?.status;
 
-        // Nếu lỗi không phải 401, bỏ qua
-        if (error.response?.status !== 401) {
-          return Promise.reject(error);
-        }
-
-        // Kiểm tra nếu có lỗi token
-        if ((session as any)?.error && !isSigningOut.current) {
-          const tokenError = (session as any)?.error;
-          
-          if (tokenError === "RefreshAccessTokenError" || tokenError === "TokenExpired") {
-            // Đặt cờ để ngăn các lỗi 401 khác gọi signOut() một lần nữa
-            isSigningOut.current = true;
-
-            if (tokenError === "TokenExpired") {
-              console.log("Token expired, Laravel backend không hỗ trợ refresh, signing out...");
-            } else {
-              console.log("Refresh token failed, signing out...");
-            }
-            
-            await signOut({ redirect: true });
-            return Promise.reject(error);
-          }
-        }
-
-        // Nếu không có lỗi token nghiêm trọng, thử refresh session
-        if (!isSigningOut.current) {
+        if (status === 401 && !isSigningOut.current) {
           try {
-            console.log("Attempting to refresh session...");
-            await updateSession();
-            console.log("Session refreshed successfully");
-          } catch (refreshError) {
-            console.error("Failed to refresh session:", refreshError);
+            // Cố gắng refresh session
+            const refreshed = await updateSession();
+            const newToken = (refreshed as any)?.access_token;
+
+            if (newToken) {
+              setAccessToken(newToken);
+              // Retry request với token mới
+              error.config.headers["Authorization"] = `Bearer ${newToken}`;
+              return axiosInstance(error.config);
+            } else {
+              isSigningOut.current = true;
+              await signOut({ redirect: true });
+            }
+          } catch (err) {
+            console.error("Failed to refresh session:", err);
             if (!isSigningOut.current) {
               isSigningOut.current = true;
               await signOut({ redirect: true });
@@ -88,10 +64,10 @@ const useAxiosAuth = () => {
     );
 
     return () => {
-      axiosInstance.interceptors.request.eject(requestIntercept);
-      axiosInstance.interceptors.response.eject(responseIntercept);
+      axiosInstance.interceptors.request.eject(requestInterceptor);
+      axiosInstance.interceptors.response.eject(responseInterceptor);
     };
-  }, [session, updateSession]);
+  }, [accessToken, updateSession]);
 
   return axiosInstance;
 };

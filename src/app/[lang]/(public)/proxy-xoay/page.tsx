@@ -20,6 +20,7 @@ export default async function RotatingProxy() {
     })
 
     proxyPlans = response.data.data
+
   } catch (error) {
     console.log(error)
   }

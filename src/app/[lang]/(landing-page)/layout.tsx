@@ -42,7 +42,7 @@ const Layout = async (props: ChildrenType & { params: Promise<{ lang: Locale }> 
   const mode = await getMode()
   const systemMode = await getSystemMode()
 
-  const dictionary = await getDictionary(params.lang)
+  // const dictionary = await getDictionary(params.lang)
 
   return (
     <>
