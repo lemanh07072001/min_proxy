@@ -20,6 +20,8 @@ export default async function StaticProxy() {
 
     proxyPlans = response.data.data
 
+    console.log('proxyPlans', proxyPlans)
+
   } catch (error) {
     console.log(error)
   }
