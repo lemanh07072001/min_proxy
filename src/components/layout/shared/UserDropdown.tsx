@@ -1,18 +1,17 @@
 'use client'
 
 // React Imports
-import { useContext, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import type { MouseEvent } from 'react'
 
 import { useRouter } from 'next/navigation'
 
+import { maskEmail } from '@/utils/maskEmail'
 
-import type { Session } from 'next-auth'
 
 // Next Imports
 
 // MUI Imports
-import { styled } from '@mui/material/styles'
 import Badge from '@mui/material/Badge'
 import Avatar from '@mui/material/Avatar'
 import Popper from '@mui/material/Popper'
@@ -25,24 +24,14 @@ import Divider from '@mui/material/Divider'
 import MenuItem from '@mui/material/MenuItem'
 import Button from '@mui/material/Button'
 
-// s
-import { SessionContext } from '@/app/contexts/SessionContext'
-
 // Hook Imports
 import { useSettings } from '@core/hooks/useSettings'
+
 import { signOut, useSession } from 'next-auth/react'
-import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material'
+
 import ConfirmDialog from '@components/confirm-modal/ConfirmDialog'
 
-// Styled component for badge content
-const BadgeContentSpan = styled('span')({
-  width: 8,
-  height: 8,
-  borderRadius: '50%',
-  cursor: 'pointer',
-  backgroundColor: 'var(--mui-palette-success-main)',
-  boxShadow: '0 0 0 2px var(--mui-palette-background-paper)'
-})
+import Box from '@mui/material/Box'
 
 
 const UserDropdown = () => {
@@ -87,84 +76,94 @@ const UserDropdown = () => {
 
   return (
     <>
-      <Badge
-        ref={anchorRef}
-        overlap='circular'
-        badgeContent={<BadgeContentSpan onClick={handleDropdownOpen} />}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-        className='mis-2'
-      >
-        <Avatar
+      <Box sx={{cursor:'pointer'}} onClick={handleDropdownOpen}>
+        <Badge
           ref={anchorRef}
-          alt='John Doe'
-          src='/images/avatars/1.png'
-          onClick={handleDropdownOpen}
-          className='cursor-pointer bs-[38px] is-[38px]'
-        />
-      </Badge>
-      <Popper
-        open={open}
-        transition
-        disablePortal
-        placement='bottom-end'
-        anchorEl={anchorRef.current}
-        className='min-is-[240px] !mbs-3 z-[1]'
-      >
-        {({ TransitionProps, placement }) => (
-          <Fade
-            {...TransitionProps}
-            style={{
-              transformOrigin: placement === 'bottom-end' ? 'right top' : 'left top'
-            }}
-          >
-            <Paper className={settings.skin === 'bordered' ? 'border shadow-none' : 'shadow-lg'}>
-              <ClickAwayListener onClickAway={e => handleDropdownClose(e as MouseEvent | TouchEvent)}>
-                <MenuList>
-                  <div className='flex items-center plb-2 pli-6 gap-2' tabIndex={-1}>
-                    <Avatar alt='John Doe' src='/images/avatars/1.png' />
-                    <div className='flex items-start flex-col'>
-                      <Typography className='font-medium' color='text.primary'>
-                        {session?.data?.user?.name}
-                      </Typography>
-                      <Typography variant='caption'>{session?.data?.user?.email}</Typography>
+          overlap='circular'
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+          className='mis-2'
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <Avatar
+              ref={anchorRef}
+              alt='John Doe'
+              src='/images/avatars/1.png'
+              className='cursor-pointer bs-[30px] is-[30px]'
+            />
+            <Typography sx={{
+              fontWeight: '500',
+              display: {
+                xs: 'none',
+                lg: 'block',
+              }
+            }}>{maskEmail(session?.data?.user?.email)}</Typography>
+          </Box>
+
+        </Badge>
+        <Popper
+          open={open}
+          transition
+          disablePortal
+          placement='bottom-end'
+          anchorEl={anchorRef.current}
+          className='min-is-[240px] !mbs-3 z-[1]'
+        >
+          {({ TransitionProps, placement }) => (
+            <Fade
+              {...TransitionProps}
+              style={{
+                transformOrigin: placement === 'bottom-end' ? 'right top' : 'left top'
+              }}
+            >
+              <Paper className={settings.skin === 'bordered' ? 'border shadow-none' : 'shadow-lg'}>
+                <ClickAwayListener onClickAway={e => handleDropdownClose(e as MouseEvent | TouchEvent)}>
+                  <MenuList>
+                    <div className='flex items-center plb-2 pli-6 gap-2' tabIndex={-1}>
+                      <Avatar alt='John Doe' src='/images/avatars/1.png' />
+                      <div className='flex items-start flex-col'>
+                        <Typography className='font-medium' color='text.primary'>
+                          {session?.data?.user?.name}
+                        </Typography>
+                        <Typography variant='caption'>{session?.data?.user?.email}</Typography>
+                      </div>
                     </div>
-                  </div>
-                  <Divider className='mlb-1' />
-                  <MenuItem className='mli-2 gap-3' onClick={e => handleDropdownClose(e)}>
-                    <i className='tabler-user' />
-                    <Typography color='text.primary'>My Profile</Typography>
-                  </MenuItem>
-                  <MenuItem className='mli-2 gap-3' onClick={e => handleDropdownClose(e)}>
-                    <i className='tabler-settings' />
-                    <Typography color='text.primary'>Settings</Typography>
-                  </MenuItem>
-                  <MenuItem className='mli-2 gap-3' onClick={e => handleDropdownClose(e)}>
-                    <i className='tabler-currency-dollar' />
-                    <Typography color='text.primary'>Pricing</Typography>
-                  </MenuItem>
-                  <MenuItem className='mli-2 gap-3' onClick={e => handleDropdownClose(e)}>
-                    <i className='tabler-help-circle' />
-                    <Typography color='text.primary'>FAQ</Typography>
-                  </MenuItem>
-                  <div className='flex items-center plb-2 pli-3'>
-                    <Button
-                      fullWidth
-                      variant='contained'
-                      color='error'
-                      size='small'
-                      endIcon={<i className='tabler-logout' />}
-                      onClick={() => setOpenConfirm(true)}
-                      sx={{ '& .MuiButton-endIcon': { marginInlineStart: 1.5 } }}
-                    >
-                      Logout
-                    </Button>
-                  </div>
-                </MenuList>
-              </ClickAwayListener>
-            </Paper>
-          </Fade>
-        )}
-      </Popper>
+                    <Divider className='mlb-1' />
+                    <MenuItem className='mli-2 gap-3' onClick={e => handleDropdownClose(e)}>
+                      <i className='tabler-user' />
+                      <Typography color='text.primary'>My Profile</Typography>
+                    </MenuItem>
+                    <MenuItem className='mli-2 gap-3' onClick={e => handleDropdownClose(e)}>
+                      <i className='tabler-settings' />
+                      <Typography color='text.primary'>Settings</Typography>
+                    </MenuItem>
+                    <MenuItem className='mli-2 gap-3' onClick={e => handleDropdownClose(e)}>
+                      <i className='tabler-currency-dollar' />
+                      <Typography color='text.primary'>Pricing</Typography>
+                    </MenuItem>
+                    <MenuItem className='mli-2 gap-3' onClick={e => handleDropdownClose(e)}>
+                      <i className='tabler-help-circle' />
+                      <Typography color='text.primary'>FAQ</Typography>
+                    </MenuItem>
+                    <div className='flex items-center plb-2 pli-3'>
+                      <Button
+                        fullWidth
+                        variant='contained'
+                        color='error'
+                        size='small'
+                        endIcon={<i className='tabler-logout' />}
+                        onClick={() => setOpenConfirm(true)}
+                        sx={{ '& .MuiButton-endIcon': { marginInlineStart: 1.5 } }}
+                      >
+                        Logout
+                      </Button>
+                    </div>
+                  </MenuList>
+                </ClickAwayListener>
+              </Paper>
+            </Fade>
+          )}
+        </Popper>
+      </Box>
 
       <ConfirmDialog
         open={openConfirm}
