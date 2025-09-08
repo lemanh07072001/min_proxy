@@ -1,8 +1,8 @@
 import { Globe } from 'lucide-react'
+
 import TransactionHistoryPage from '@views/Client/ TransactionHistory/TransactionHistoryPage'
 
-
-export default function TransactionHistory(){
+export default function TransactionHistory() {
   const transactionHistory = [
     {
       id: 'tc37d0617-24ca-46cb-871b-7919a43255af',
@@ -32,22 +32,7 @@ export default function TransactionHistory(){
 
   return (
     <div className='main-page'>
-      {/* Page Header */}
-      <div className='page-header-orders'>
-        <div className='header-content'>
-          <div className='header-left'>
-            <div className='page-icon'>
-              <Globe size={32} />
-            </div>
-            <div>
-              <h1>Lịch sử giao dịch</h1>
-              <p className='page-subtitle'>Quản lý và theo dõi các proxy đã mua</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <TransactionHistoryPage data={transactionHistory}/>
+      <TransactionHistoryPage data={transactionHistory} />
     </div>
   )
 }

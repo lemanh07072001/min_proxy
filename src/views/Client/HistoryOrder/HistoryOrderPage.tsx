@@ -2,12 +2,7 @@
 
 import { useMemo, useState } from 'react'
 
-import {
-  TriangleAlert,
-  CircleQuestionMark,
-  BadgeCheck,
-  BadgeMinus,
-} from 'lucide-react'
+import { TriangleAlert, CircleQuestionMark, BadgeCheck, BadgeMinus, List } from 'lucide-react'
 
 import {
   useReactTable,
@@ -155,60 +150,68 @@ export default function HistoryOrderPage({ data }) {
 
         {/* Proxy Table */}
         <div className='table-container'>
-          <div className='table-container'>
-            {/* Table */}
-            <div className='table-wrapper'>
-              <table className='data-table'>
-                <thead className='table-header'>
-                  {table.getHeaderGroups().map(headerGroup => (
-                    <tr key={headerGroup.id}>
-                      {headerGroup.headers.map(header => (
-                        <th className='table-header th' key={header.id}>
-                          {flexRender(header.column.columnDef.header, header.getContext())}
-                        </th>
-                      ))}
-                    </tr>
-                  ))}
-                </thead>
-                <tbody>
-                  {table.getRowModel().rows.map(row => (
-                    <tr className='table-row' key={row.id}>
-                      {row.getVisibleCells().map(cell => (
-                        <td className='table-cell' key={cell.id}>
-                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+          <div className='table-toolbar'>
+            <div className='header-left'>
+              <div className='page-icon'>
+                <List size={17} />
+              </div>
+              <div>
+                <h5 className='mb-0 font-semibold'>Lịch sử mua hàng</h5>
+              </div>
             </div>
+          </div>
+          {/* Table */}
+          <div className='table-wrapper'>
+            <table className='data-table'>
+              <thead className='table-header'>
+                {table.getHeaderGroups().map(headerGroup => (
+                  <tr key={headerGroup.id}>
+                    {headerGroup.headers.map(header => (
+                      <th className='table-header th' key={header.id}>
+                        {flexRender(header.column.columnDef.header, header.getContext())}
+                      </th>
+                    ))}
+                  </tr>
+                ))}
+              </thead>
+              <tbody>
+                {table.getRowModel().rows.map(row => (
+                  <tr className='table-row' key={row.id}>
+                    {row.getVisibleCells().map(cell => (
+                      <td className='table-cell' key={cell.id}>
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
 
-            {/* Pagination */}
-            <div className='pagination-container'>
-              <div className='pagination-wrapper'>
-                <div className='pagination-info'>
-                  <div className='page-size-select'>
-                    <span className='text-sm text-gray'>Kích cỡ trang linh</span>
-                    <div className='page-size-select-wrapper'>
-                      <select className='page-size-select'>
-                        <option value='50'>50</option>
-                        <option value='100'>100</option>
-                        <option value='200'>200</option>
-                      </select>
-                      <div className='select-arrow'>
-                        <svg className='h-4 w-4' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'>
-                          <path d='M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z' />
-                        </svg>
-                      </div>
+          {/* Pagination */}
+          <div className='pagination-container'>
+            <div className='pagination-wrapper'>
+              <div className='pagination-info'>
+                <div className='page-size-select'>
+                  <span className='text-sm text-gray'>Kích cỡ trang linh</span>
+                  <div className='page-size-select-wrapper'>
+                    <select className='page-size-select'>
+                      <option value='50'>50</option>
+                      <option value='100'>100</option>
+                      <option value='200'>200</option>
+                    </select>
+                    <div className='select-arrow'>
+                      <svg className='h-4 w-4' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'>
+                        <path d='M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z' />
+                      </svg>
                     </div>
                   </div>
-                  <span className='text-sm text-gray'>1 - 1 của 1 dòng hàng</span>
                 </div>
+                <span className='text-sm text-gray'>1 - 1 của 1 dòng hàng</span>
+              </div>
 
-                <div className='pagination-buttons'>
-                  <Pagination count={3} shape='rounded' variant='outlined' color='primary' />
-                </div>
+              <div className='pagination-buttons'>
+                <Pagination count={3} shape='rounded' variant='outlined' color='primary' />
               </div>
             </div>
           </div>

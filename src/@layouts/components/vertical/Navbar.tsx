@@ -72,10 +72,9 @@ const Navbar = (props: Props) => {
         style={{
           margin: 0,
           width: '100%',
-          borderTopRightRadius: 0,
-          borderTopLeftRadius: 0
+          borderRadius: 0,
 
-          // boxShadow: 'none'
+          boxShadow: 'none'
         }}
         className={classnames(verticalLayoutClasses.navbar, 'flex bs-full')}
       >

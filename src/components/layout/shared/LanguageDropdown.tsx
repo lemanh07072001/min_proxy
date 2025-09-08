@@ -57,7 +57,7 @@ const languageData: LanguageDataType[] = [
   },
   {
     langCode: 'vi',
-    langName: 'Vietnamese',
+    langName: 'Tiếng việt',
     flag: flagVi
   }
 ]
@@ -84,6 +84,8 @@ const LanguageDropdown = () => {
 
   const currentLanguage = languageData.find(locale => locale.langCode === lang)
 
+  console.log(currentLanguage.langName)
+
   return (
     <>
       <IconButton
@@ -96,16 +98,19 @@ const LanguageDropdown = () => {
           }
         }}
       >
-        <div className='flex items-center gap-1'>
+        <div className='flex items-center gap-2'>
           {/* Phần hiển thị cờ hoặc icon ngôn ngữ */}
           {currentLanguage ? (
-            <Image
-              src={currentLanguage.flag}
-              alt={currentLanguage.langName}
-              width={22}
-              height={22}
-              className='rounded-full'
-            />
+            <>
+              <Image
+                src={currentLanguage.flag}
+                alt={currentLanguage.langName}
+                width={22}
+                height={22}
+                className='rounded-full'
+              />
+              <span className='text-sm font-semibold'>{currentLanguage.langName}</span>
+            </>
           ) : (
             <i className='tabler-language' />
           )}

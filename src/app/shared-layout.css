@@ -158,6 +158,10 @@ ul:not([class]) {
 .ts-vertical-layout-header {
   padding: 0 !important;
 }
+
+.ts-vertical-nav-container {
+  box-shadow: none !important;
+}
 /* ===== HEADER STYLES ===== */
 .modern-header {
   background: rgba(255, 255, 255, 0.95);

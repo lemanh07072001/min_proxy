@@ -40,8 +40,6 @@ export default async function OrderProxy() {
   const token = session?.access_token || '' // access_token do bạn set khi login next-auth
   const proxyOrders = await getProxyOrders(token)
 
-  console.log(proxyOrders)
-
   return (
     <div className='main-page'>
       <OrderProxyPage data={proxyOrders} />
