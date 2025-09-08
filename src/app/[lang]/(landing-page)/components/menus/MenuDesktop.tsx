@@ -9,11 +9,15 @@ import LanguageSelect from '@components/language-selector/LanguageSelect'
 import Link from '@components/Link';
 import LanguageDropdown from '@components/layout/shared/LanguageDropdown'
 import { useModalContext } from '@/app/contexts/ModalContext'
+import { useContext } from 'react'
+import { SessionContext } from 'next-auth/react'
+import UserDropdown from '@components/layout/shared/UserDropdown'
 
 export default function MenuDesktop() {
   const pathname = usePathname()
   const params = useParams()
   const { openAuthModal } = useModalContext()
+  const {data} = useContext(SessionContext);
 
   const { lang: locale } = params
 
@@ -51,14 +55,19 @@ export default function MenuDesktop() {
         <LanguageDropdown />
       </div>
 
-      <div className='d-flex align-items-center gap-2'>
-        <button className='btn btn-gradient-primary me-2' onClick={handleOpenModalRegister}>
-          Đăng ký
-        </button>
-        <button className='btn btn-gradient-primary' onClick={handleOpenModalLogin}>
-          Đăng nhập
-        </button>
-      </div>
+      {data ? (
+        <UserDropdown session={data} />
+      ):(
+        <div className='d-flex align-items-center gap-2'>
+          <button className='btn btn-gradient-primary me-2' onClick={handleOpenModalRegister}>
+            Đăng ký
+          </button>
+          <button className='btn btn-gradient-primary' onClick={handleOpenModalLogin}>
+            Đăng nhập
+          </button>
+        </div>
+      )}
+
     </>
   )
 }
