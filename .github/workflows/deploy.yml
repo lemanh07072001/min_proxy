@@ -71,6 +71,15 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
+      # Tạo file .env tại môi trường build
+      - name: Create .env file
+        run: |
+          echo "NEXT_PUBLIC_API_URL=https://api.minhan.online/api" >> .env
+          echo "NEXT_PUBLIC_APP_URL=https://web.minhan.online" >> .env
+          echo "NEXT_PUBLIC_APP_NAME=Min Proxy" >> .env
+          echo "API_URL=https://api.minhan.online/api" >> .env
+          echo "NEXTAUTH_SECRET=${{ secrets.NEXTAUTH_SECRET }}" >> .env
+
       - name: Build Project
         run: npm run build
 
@@ -84,19 +93,8 @@ jobs:
           REMOTE_HOST: ${{ secrets.SERVER_HOST }}
           REMOTE_USER: ${{ secrets.SERVER_USERNAME }}
           TARGET: ${{ secrets.TARGET_DIR }}
-          # Không ghi đè file .env trên server
+          # Không copy đè file .env của server
           EXCLUDE: '/.git/, /.github/, .env'
-
-      - name: Update .env file on server
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USERNAME }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            cd ${{ secrets.TARGET_DIR }}
-            # Cập nhật biến môi trường cho URL API
-            echo "NEXT_PUBLIC_API_URL=https://api.minhan.online" >> .env
 
       - name: Restart Application on Server
         uses: appleboy/ssh-action@master
