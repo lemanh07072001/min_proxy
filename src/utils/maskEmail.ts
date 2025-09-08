@@ -1,4 +1,4 @@
-function maskEmail(email?: string | null): string {
+export function maskEmail(email?: string | null): string {
   if (!email || !email.includes('@')) return '' // hoặc return email nguyên gốc
 
   const [localPart, domain] = email.split('@')
