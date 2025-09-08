@@ -19,6 +19,8 @@ import {
   useReactTable
 } from '@tanstack/react-table'
 import { useCopy } from '@/app/hooks/useCopy'
+import { FormControlLabel } from '@mui/material'
+import Checkbox from '@mui/material/Checkbox'
 
 interface ProxyData {
   proxy: string;
@@ -48,26 +50,36 @@ export default function CheckProxyTable({ data, checkedProxy } : CheckProxyTable
   const columns = useMemo(
     () => [
       {
-        id: 'select', // ID của cột checkbox
-        header: ({ table } : any) => (
-          <input
-            type='checkbox'
-            checked={table.getIsAllRowsSelected()}
-            onChange={table.getToggleAllRowsSelectedHandler()}
-          />
+        id: 'select',
+        header: ({ table }) => (
+          <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={table.getIsAllRowsSelected()}
+                  indeterminate={table.getIsSomeRowsSelected()}
+                  onChange={table.getToggleAllRowsSelectedHandler()}
+                />
+              }
+              label="" // bỏ label để không chiếm chỗ
+            />
+          </div>
         ),
-        cell: ({ row }: any) => (
-          <input
-            type='checkbox'
-            checked={row.getIsSelected()}
-            disabled={!row.getCanSelect()}
-            onChange={row.getToggleSelectedHandler()}
-          />
-        )
-      },
-      {
-        accessorKey: 'id',
-        header: 'ID'
+        cell: ({ row }) => (
+          <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={row.getIsSelected()}
+                  disabled={!row.getCanSelect()}
+                  onChange={row.getToggleSelectedHandler()}
+                />
+              }
+              label=""
+            />
+          </div>
+        ),
+        size: 40,
       },
       {
         accessorKey: 'proxy',

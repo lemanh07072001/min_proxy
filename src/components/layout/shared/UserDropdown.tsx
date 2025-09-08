@@ -96,7 +96,7 @@ const UserDropdown = () => {
                 xs: 'none',
                 lg: 'block',
               }
-            }}>{maskEmail(session?.data?.user?.email)}</Typography>
+            }}>{session?.data?.user?.email ? maskEmail(session?.data?.user?.email) : "No email"}</Typography>
           </Box>
 
         </Badge>

@@ -37,6 +37,8 @@ import Pagination from '@mui/material/Pagination'
 import CustomIconButton from '@core/components/mui/IconButton'
 import { useCopy } from '@/app/hooks/useCopy'
 import { formatDateTimeLocal } from '@/utils/formatDate'
+import { FormControlLabel } from '@mui/material'
+import Checkbox from '@mui/material/Checkbox'
 
 export default function OrderRotatingProxyPage({ data }) {
   const [columnFilters, setColumnFilters] = useState([])
@@ -68,22 +70,36 @@ export default function OrderRotatingProxyPage({ data }) {
   const columns = useMemo(
     () => [
       {
-        id: 'select', // ID của cột checkbox
+        id: 'select',
         header: ({ table }) => (
-          <input
-            type='checkbox'
-            checked={table.getIsAllRowsSelected()}
-            onChange={table.getToggleAllRowsSelectedHandler()}
-          />
+          <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={table.getIsAllRowsSelected()}
+                  indeterminate={table.getIsSomeRowsSelected()}
+                  onChange={table.getToggleAllRowsSelectedHandler()}
+                />
+              }
+              label="" // bỏ label để không chiếm chỗ
+            />
+          </div>
         ),
         cell: ({ row }) => (
-          <input
-            type='checkbox'
-            checked={row.getIsSelected()}
-            disabled={!row.getCanSelect()}
-            onChange={row.getToggleSelectedHandler()}
-          />
-        )
+          <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={row.getIsSelected()}
+                  disabled={!row.getCanSelect()}
+                  onChange={row.getToggleSelectedHandler()}
+                />
+              }
+              label=""
+            />
+          </div>
+        ),
+        size: 40,
       },
       {
         accessorKey: 'id',

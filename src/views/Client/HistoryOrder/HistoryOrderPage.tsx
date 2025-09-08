@@ -14,6 +14,8 @@ import {
 import Chip from '@mui/material/Chip'
 
 import Pagination from '@mui/material/Pagination'
+import { FormControlLabel } from '@mui/material'
+import Checkbox from '@mui/material/Checkbox'
 
 export default function HistoryOrderPage({ data }) {
   const [showPasswords, setShowPasswords] = useState<{ [key: string]: boolean }>({})
@@ -65,24 +67,38 @@ export default function HistoryOrderPage({ data }) {
 
   const columns = useMemo(
     () => [
-      {
-        id: 'select', // ID của cột checkbox
-        header: ({ table }) => (
-          <input
-            type='checkbox'
-            checked={table.getIsAllRowsSelected()}
-            onChange={table.getToggleAllRowsSelectedHandler()}
-          />
-        ),
-        cell: ({ row }) => (
-          <input
-            type='checkbox'
-            checked={row.getIsSelected()}
-            disabled={!row.getCanSelect()}
-            onChange={row.getToggleSelectedHandler()}
-          />
-        )
-      },
+      // {
+      //   id: 'select',
+      //   header: ({ table }) => (
+      //     <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+      //       <FormControlLabel
+      //         control={
+      //           <Checkbox
+      //             checked={table.getIsAllRowsSelected()}
+      //             indeterminate={table.getIsSomeRowsSelected()}
+      //             onChange={table.getToggleAllRowsSelectedHandler()}
+      //           />
+      //         }
+      //         label="" // bỏ label để không chiếm chỗ
+      //       />
+      //     </div>
+      //   ),
+      //   cell: ({ row }) => (
+      //     <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+      //       <FormControlLabel
+      //         control={
+      //           <Checkbox
+      //             checked={row.getIsSelected()}
+      //             disabled={!row.getCanSelect()}
+      //             onChange={row.getToggleSelectedHandler()}
+      //           />
+      //         }
+      //         label=""
+      //       />
+      //     </div>
+      //   ),
+      //   size: 40,
+      // },
       {
         accessorKey: 'orderId',
         header: 'ID'
