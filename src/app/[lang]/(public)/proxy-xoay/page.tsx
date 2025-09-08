@@ -49,12 +49,7 @@ export default async function RotatingProxy() {
 
   return (
     <div className='proxy-xoay-page'>
-      <div className='page-header'>
-        <div className='header-content'>
-          <h1 className='page-title'>Proxy Dân Cư</h1>
-          <p className='page-subtitle'>Chọn gói proxy phù hợp với nhu cầu của bạn</p>
-        </div>
-      </div>
+
       <div className='plans-container'>
         <RotatingProxyPage data={mergedPlans} />
       </div>
