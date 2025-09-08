@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useContext } from 'react'
 import Image from 'next/image'
 import { motion, useScroll, useTransform } from 'framer-motion'
 
@@ -12,12 +12,20 @@ import UserDropdown from '@components/layout/shared/UserDropdown'
 import AuthModal from '@/components/modals/AuthModal'
 import { useModalContext } from '@/app/contexts/ModalContext'
 import { useResponsive } from '@/app/hooks/useResponsive'
+import Box from '@mui/material/Box'
+import { SessionContext } from 'next-auth/react'
+import Button from '@mui/material/Button'
+import Avatar from '@mui/material/Avatar'
+import CustomAvatar from '@core/components/mui/Avatar'
+import CustomIconButton from '@core/components/mui/IconButton'
+import { User } from 'lucide-react'
 
 const MainHeader = () => {
   const [isOpenMenu, setIsOpenMenu] = useState<boolean>(false)
   const { scrollY } = useScroll()
   const { isMobile } = useResponsive()
   const { openAuthModal } = useModalContext()
+  const {data} = useContext(SessionContext);
 
   // 1. ĐÃ XÓA: state `scrolled` và useEffect theo dõi scroll thủ công.
   //    Tất cả hiệu ứng scroll giờ đây đều do Framer Motion xử lý.
@@ -65,6 +73,14 @@ const MainHeader = () => {
     setIsOpenMenu(!isOpenMenu)
   }
 
+  const handleOpenModalLogin = () => {
+    openAuthModal('login')
+  }
+
+  const handleOpenModalRegister = () => {
+    openAuthModal('register')
+  }
+
   return (
     <>
       <motion.nav
@@ -93,10 +109,18 @@ const MainHeader = () => {
               <span className='navbar-toggler-icon'></span>
             </button>
 
-            <div>
+            <Box sx={{
+              display: 'flex',
+              alignItems: 'center',
+            }}>
               <LanguageDropdown />
-              <UserDropdown />
-            </div>
+              {data ? (<UserDropdown />) : (
+                <CustomIconButton aria-label='capture screenshot' color='primary' size='small' onClick={handleOpenModalLogin}>
+                 <User />
+                </CustomIconButton>
+              )}
+
+            </Box>
           </div>
 
           <div className={` navbar-collapse ${isOpenMenu ? 'show' : ''}`} id='navbarNav'>

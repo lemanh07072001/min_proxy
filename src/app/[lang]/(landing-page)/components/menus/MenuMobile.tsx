@@ -14,16 +14,6 @@ interface MenuMobileProps {
 export default function MenuMobile({ onClose }: MenuMobileProps) {
   const { openAuthModal } = useModalContext()
 
-  const handleLogin = () => {
-    openAuthModal('login')
-    if (onClose) onClose()
-  }
-
-  const handleRegister = () => {
-    openAuthModal('register')
-    if (onClose) onClose()
-  }
-
   const pathname = usePathname()
   const params = useParams()
 

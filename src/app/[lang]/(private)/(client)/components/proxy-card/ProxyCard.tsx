@@ -80,8 +80,7 @@ const useBuyProxy = () => {
       return api.post('/proxy-static', orderData)
     },
     onSuccess: data => {
-      console.log(data)
-      // Xử lý khi request thành công
+
       if (data.data.success == false) {
         toast.error('Lỗi hệ thông xin vui lòng liên hệ Admin.')
       } else {
@@ -184,8 +183,6 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, logo, color, price, fea
       password: data.password === 'random' ? randomString() : data.password,
       total
     }
-
-    console.log(itemData)
 
     try {
       mutate(itemData)

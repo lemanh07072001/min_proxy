@@ -384,6 +384,10 @@
   .price-section {
     text-align: center;
     margin-block-end: 1.5rem;
+    display: flex;
+    width: 100%;
+    align-items: center;
+    gap: 7px;
   }
 
   .price-amount {

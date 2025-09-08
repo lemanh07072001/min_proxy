@@ -51,23 +51,22 @@ export default function MenuDesktop() {
         })}
       </ul>
 
-      <div className="me-2">
+      <div className='flex items-center gap-2'>
         <LanguageDropdown />
+
+        {data ? (
+          <UserDropdown session={data} />
+        ):(
+          <div className='d-flex align-items-center gap-2'>
+            <button className='btn btn-gradient-primary me-2' onClick={handleOpenModalRegister}>
+              Đăng ký
+            </button>
+            <button className='btn btn-gradient-primary' onClick={handleOpenModalLogin}>
+              Đăng nhập
+            </button>
+          </div>
+        )}
       </div>
-
-      {data ? (
-        <UserDropdown session={data} />
-      ):(
-        <div className='d-flex align-items-center gap-2'>
-          <button className='btn btn-gradient-primary me-2' onClick={handleOpenModalRegister}>
-            Đăng ký
-          </button>
-          <button className='btn btn-gradient-primary' onClick={handleOpenModalLogin}>
-            Đăng nhập
-          </button>
-        </div>
-      )}
-
     </>
   )
 }
