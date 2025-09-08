@@ -4,7 +4,7 @@ import React from 'react'
 
 import Image from 'next/image'
 
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 
 import '@/app/[lang]/(private)/(client)/components/proxy-card/styles.css'
 
@@ -64,6 +64,7 @@ const proxySchema = yup
 const useBuyProxy = () => {
   const queryClient = useQueryClient()
   const session = useSession()
+  const router = useRouter()
 
   const mutation = useMutation({
     mutationFn: orderData => {
@@ -83,6 +84,7 @@ const useBuyProxy = () => {
 
       if (data.data.success == false) {
         toast.error('Lỗi hệ thông xin vui lòng liên hệ Admin.')
+        router.push('/order-proxy')
       } else {
         toast.success('Mua proxy thành công.')
       }
