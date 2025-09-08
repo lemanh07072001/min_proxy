@@ -29,18 +29,18 @@ import { useCopy } from '@/app/hooks/useCopy'
 import { formatDateTimeLocal } from '@/utils/formatDate'
 
 export default function OrderRotatingProxyPage({ data }) {
-  const [columnFilters, setColumnFilters] = useState([]);
+  const [columnFilters, setColumnFilters] = useState([])
   const [rowSelection, setRowSelection] = useState({}) // State để lưu các hàng được chọn
-  const [sorting, setSorting] = useState([]);
+  const [sorting, setSorting] = useState([])
 
   const [pagination, setPagination] = useState({
     pageIndex: 0,
-    pageSize: 10,
-  });
+    pageSize: 10
+  })
 
   const dataOrder = useMemo(() => data, [data])
 
-  const [, copy] = useCopy();
+  const [, copy] = useCopy()
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -54,7 +54,6 @@ export default function OrderRotatingProxyPage({ data }) {
         return <Chip label='Không xác định' size='small' icon={<CircleQuestionMark />} color='secondary' />
     }
   }
-
 
   const columns = useMemo(
     () => [
@@ -81,39 +80,30 @@ export default function OrderRotatingProxyPage({ data }) {
         header: 'ID'
       },
       {
-        accessorKey: 'provider',
-        header: 'Nhà mạng',
+        accessorKey: 'api_key',
+        header: 'Api key',
         cell: ({ row }) => {
-          const location = row.original.proxys.location;
-          return <span className='text-red'>{location}</span>
-        }
-      },
-      {
-        accessorKey: 'proxy',
-        header: 'Proxy',
-        cell: ({ row }) => {
-          const http = row.original.proxys.http;
-          return (
-            <div className='proxy-cell'>
-              <span className='proxy-label'>{http}</span>
-              <button className='icon-button' onClick={()=>copy(http)}>
-                <Copy size={14} />
-              </button>
-            </div>
-          )
+          const api_key = row.original.api_key || '-'
+
+          return <span className='text-red'>{api_key}</span>
         }
       },
       {
         accessorKey: 'protocol',
         header: 'Loại',
         cell: ({ row }) => {
-          const keys = Object.keys(row.original.proxys);
+          const keys = row.original.plan_type || '-'
 
-          return (
-            <div className="font-bold">
-              {keys[0].toUpperCase()}
-            </div>
-          )
+          return <div className='font-bold'>{keys}</div>
+        }
+      },
+      {
+        accessorKey: 'ip_version',
+        header: 'Ip Version',
+        cell: ({ row }) => {
+          const ip_version = row.original.type_service.ip_version || '-'
+
+          return <div className='font-bold'>{ip_version}</div>
         }
       },
       {
@@ -122,9 +112,9 @@ export default function OrderRotatingProxyPage({ data }) {
         cell: ({ row }) => {
           return (
             <>
-              <div className="d-flex align-items-center  gap-1 ">
-                <Clock3  size={14} />
-                <div style={{marginTop:'2px'}}>{formatDateTimeLocal(row.original.buy_at)}</div>
+              <div className='d-flex align-items-center  gap-1 '>
+                <Clock3 size={14} />
+                <div style={{ marginTop: '2px' }}>{formatDateTimeLocal(row.original.buy_at)}</div>
               </div>
             </>
           )
@@ -136,9 +126,9 @@ export default function OrderRotatingProxyPage({ data }) {
         cell: ({ row }) => {
           return (
             <>
-              <div className="d-flex align-items-center  gap-1 ">
+              <div className='d-flex align-items-center  gap-1 '>
                 <Clock size={14} />
-                <div style={{marginTop:'2px'}}>{formatDateTimeLocal(row.original.expired_at)}</div>
+                <div style={{ marginTop: '2px' }}>{formatDateTimeLocal(row.original.expired_at)}</div>
               </div>
             </>
           )
@@ -156,13 +146,13 @@ export default function OrderRotatingProxyPage({ data }) {
   )
 
   const table = useReactTable({
-    data,
+    data: dataOrder,
     columns,
     state: {
       rowSelection,
       pagination,
       columnFilters,
-      sorting,
+      sorting
     },
     enableRowSelection: true, // Bật tính năng chọn hàng
     onRowSelectionChange: setRowSelection, // Cập nhật state khi có thay đổi
@@ -175,13 +165,13 @@ export default function OrderRotatingProxyPage({ data }) {
     getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getFacetedRowModel: getFacetedRowModel(),
-    getFacetedUniqueValues: getFacetedUniqueValues(),
+    getFacetedUniqueValues: getFacetedUniqueValues()
   })
 
-  const { pageIndex, pageSize } = table.getState().pagination;
-  const totalRows = table.getFilteredRowModel().rows.length;
-  const startRow = pageIndex * pageSize + 1;
-  const endRow = Math.min(startRow + pageSize - 1, totalRows);
+  const { pageIndex, pageSize } = table.getState().pagination
+  const totalRows = table.getFilteredRowModel().rows.length
+  const startRow = pageIndex * pageSize + 1
+  const endRow = Math.min(startRow + pageSize - 1, totalRows)
 
   return (
     <>
@@ -241,9 +231,10 @@ export default function OrderRotatingProxyPage({ data }) {
                       <select
                         value={table.getState().pagination.pageSize}
                         onChange={e => {
-                          table.setPageSize(Number(e.target.value));
+                          table.setPageSize(Number(e.target.value))
                         }}
-                        className='page-size-select'>
+                        className='page-size-select'
+                      >
                         <option value='10'>10</option>
                         <option value='50'>50</option>
                         <option value='100'>100</option>
@@ -259,8 +250,8 @@ export default function OrderRotatingProxyPage({ data }) {
                   <div>
                     {totalRows > 0 ? (
                       <span>
-                      {startRow} - {endRow} của {totalRows} hàng
-                    </span>
+                        {startRow} - {endRow} của {totalRows} hàng
+                      </span>
                     ) : (
                       <span>Không có dữ liệu</span>
                     )}
@@ -268,14 +259,16 @@ export default function OrderRotatingProxyPage({ data }) {
                 </div>
 
                 <div className='pagination-buttons'>
-                  <Pagination count={table.getPageCount()}
-                              shape='rounded'
-                              variant='outlined'
-                              color='primary'
-                              page={table.getState().pagination.pageIndex + 1}
-                              onChange={(event, page) => {
-                                table.setPageIndex(page - 1);
-                              }}/>
+                  <Pagination
+                    count={table.getPageCount()}
+                    shape='rounded'
+                    variant='outlined'
+                    color='primary'
+                    page={table.getState().pagination.pageIndex + 1}
+                    onChange={(event, page) => {
+                      table.setPageIndex(page - 1)
+                    }}
+                  />
                 </div>
               </div>
             </div>
