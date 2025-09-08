@@ -155,6 +155,9 @@ ul:not([class]) {
   min-inline-size: 0;
 }
 
+.ts-vertical-layout-header {
+  padding: 0 !important;
+}
 /* ===== HEADER STYLES ===== */
 .modern-header {
   background: rgba(255, 255, 255, 0.95);
