@@ -100,7 +100,7 @@ export default function OrderRotatingProxyPage({ data }) {
       {
         header: 'Ip Version',
         cell: ({ row }) => {
-          const ip_version = row.original.type_service.ip_version || '-'
+          const ip_version = row.original.type_service?.ip_version ?? '-'
 
           return <div className='font-bold'>{ip_version}</div>
         }
