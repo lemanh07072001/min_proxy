@@ -84,8 +84,6 @@ const LanguageDropdown = () => {
 
   const currentLanguage = languageData.find(locale => locale.langCode === lang)
 
-  console.log(currentLanguage.langName)
-
   return (
     <>
       <IconButton
@@ -109,7 +107,7 @@ const LanguageDropdown = () => {
                 height={22}
                 className='rounded-full'
               />
-              <span className='text-sm font-semibold'>{currentLanguage.langName}</span>
+              <span className='text-sm font-semibold d-none d-lg-block'>{currentLanguage.langName}</span>
             </>
           ) : (
             <i className='tabler-language' />
