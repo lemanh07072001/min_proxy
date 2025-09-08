@@ -62,14 +62,14 @@ export default function MenuMobile({ onClose }: MenuMobileProps) {
         })}
       </ul>
 
-      <div className='d-flex align-items-center gap-2 flex-column flex-lg-row'>
-        <button className='btn btn-gradient-primary me-lg-2 ' onClick={handleRegister}>
-          Đăng ký
-        </button>
-        <button className='btn btn-gradient-primary' onClick={handleLogin}>
-          Đăng nhập
-        </button>
-      </div>
+      {/*<div className='d-flex align-items-center gap-2 flex-column flex-lg-row'>*/}
+      {/*  <button className='btn btn-gradient-primary me-lg-2 ' onClick={handleRegister}>*/}
+      {/*    Đăng ký*/}
+      {/*  </button>*/}
+      {/*  <button className='btn btn-gradient-primary' onClick={handleLogin}>*/}
+      {/*    Đăng nhập*/}
+      {/*  </button>*/}
+      {/*</div>*/}
     </div>
   )
 }

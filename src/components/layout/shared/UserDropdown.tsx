@@ -88,7 +88,7 @@ const UserDropdown = () => {
               ref={anchorRef}
               alt='John Doe'
               src='/images/avatars/1.png'
-              className='cursor-pointer bs-[30px] is-[30px]'
+              className='cursor-pointer bs-[24px] is-[24px]'
             />
             <Typography sx={{
               fontWeight: '500',
