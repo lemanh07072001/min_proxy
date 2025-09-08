@@ -98,7 +98,6 @@ export default function OrderRotatingProxyPage({ data }) {
         }
       },
       {
-        accessorKey: 'ip_version',
         header: 'Ip Version',
         cell: ({ row }) => {
           const ip_version = row.original.type_service.ip_version || '-'
