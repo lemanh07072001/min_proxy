@@ -129,7 +129,7 @@ const useBuyProxy = () => {
     onSuccess: data => {
       // Xử lý khi request thành công
       if (data.data.success == false) {
-        toast.error('Lỗi hệ thông xin vui lòng liên hệ Admin.')
+        toast.error('Lỗi hệ thông xin vui lòng liên hệ Admin.  ')
       } else {
         toast.success(data.data.message)
       }
@@ -159,7 +159,7 @@ const PlanCard = ({ plan }) => {
   } = useForm({
     defaultValues: {
       quantity: 1,
-      time:1
+      time: 1
     },
     mode: 'onChange'
   })
@@ -168,7 +168,7 @@ const PlanCard = ({ plan }) => {
 
   const calculateTotalFormat = () => {
     const basePrice = parseInt(plan.price, 10) || 0
-    const timeValue =  parseInt(watchedFields.time, 10) || 1
+    const timeValue = parseInt(watchedFields.time, 10) || 1
     const quantityValue = parseInt(watchedFields.quantity, 10) || 1
 
     return (basePrice * timeValue * quantityValue).toLocaleString('vi-VN')
@@ -176,7 +176,7 @@ const PlanCard = ({ plan }) => {
 
   const calculateTotal = () => {
     const basePrice = parseInt(plan.price, 10) || 0
-    const timeValue =  parseInt(watchedFields.time, 10) || 1
+    const timeValue = parseInt(watchedFields.time, 10) || 1
     const quantityValue = parseInt(watchedFields.quantity, 10) || 1
 
     return basePrice * timeValue * quantityValue
@@ -188,7 +188,7 @@ const PlanCard = ({ plan }) => {
     const orderData = {
       serviceTypeId: plan.id,
       ...data,
-      total,
+      total
     }
 
     try {
