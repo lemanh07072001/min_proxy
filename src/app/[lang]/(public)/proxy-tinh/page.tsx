@@ -21,7 +21,6 @@ export default async function StaticProxy() {
     proxyPlans = response.data.data
 
     console.log('proxyPlans', proxyPlans)
-
   } catch (error) {
     console.log(error)
   }
@@ -48,7 +47,6 @@ export default async function StaticProxy() {
     partner: plan.partner,
     features: proxyProviders.features.map(f => ({ ...f }))
   }))
-
 
   return (
     <div className='main-content-modern'>

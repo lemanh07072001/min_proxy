@@ -1,15 +1,14 @@
 /* --- CÀI ĐẶT NỀN TẢNG --- */
-html, body {
-  height: 100%;
+html,
+body {
+  block-size: 100%;
   margin: 0;
   font-family: sans-serif; /* Thêm font chữ cho dễ đọc */
 }
 
-
-
-  /* --- CONTAINER CHÍNH CỦA ỨNG DỤNG --- */
+/* --- CONTAINER CHÍNH CỦA ỨNG DỤNG --- */
 .app-container {
-  min-height: 100vh; /* Giữ nguyên: đảm bảo chiều cao tối thiểu là toàn màn hình */
+  min-block-size: 100vh; /* Giữ nguyên: đảm bảo chiều cao tối thiểu là toàn màn hình */
   background-color: #f9fafb;
   padding: 1rem;
   /* THÊM MỚI: Biến app-container thành flexbox dạng cột */
@@ -28,11 +27,9 @@ html, body {
 }
 
 .main-page {
-
   display: flex;
   flex-direction: column;
-  height: 100%;
-
+  block-size: 100%;
 }
 
 .check-proxy-grid {
@@ -72,7 +69,7 @@ html, body {
 }
 
 .data-table {
-  width: 100%; /* Đổi inline-size thành width cho tương thích tốt hơn */
+  inline-size: 100%; /* Đổi inline-size thành width cho tương thích tốt hơn */
   border-collapse: collapse; /* Thêm để đường viền đẹp hơn */
 }
 
@@ -81,8 +78,8 @@ html, body {
   display: flex;
   padding: 16px; /* Tăng padding một chút */
   gap: 10px;
-  justify-content: flex-end; /* Đổi thành flex-end */
-  border-bottom: 1px solid #e5e7eb; /* Thêm đường kẻ phân cách */
+  justify-content: space-between; /* Đổi thành flex-end */
+  border-block-end: 1px solid #e5e7eb; /* Thêm đường kẻ phân cách */
   /* THÊM MỚI: Ngăn toolbar co lại */
   flex-shrink: 0;
 }
@@ -90,13 +87,14 @@ html, body {
 .table-header {
   background-color: #f9fafb; /* Đổi màu một chút */
   position: sticky; /* THÊM MỚI: Giữ header của bảng khi cuộn */
-  top: 0;
+  inset-block-start: 0;
   z-index: 10;
 }
 
 .table-header th {
-  padding: 12px 16px;
-  text-align: left; /* Đổi thành left */
+  padding-block: 12px;
+  padding-inline: 16px;
+  text-align: start; /* Đổi thành left */
   font-size: 0.875rem;
   font-weight: 600; /* Tăng độ đậm */
   color: #4b5563;
@@ -105,11 +103,11 @@ html, body {
 }
 
 .table-row {
-  border-bottom: 1px solid #e5e7eb; /* Đổi border-block-end */
+  border-block-end: 1px solid #e5e7eb; /* Đổi border-block-end */
   transition: background-color 150ms ease-in-out;
 }
 .table-row:last-child {
-  border-bottom: none; /* Bỏ border cho dòng cuối */
+  border-block-end: none; /* Bỏ border cho dòng cuối */
 }
 
 .table-row:hover {
@@ -117,7 +115,8 @@ html, body {
 }
 
 .table-cell {
-  padding: 12px 16px;
+  padding-block: 12px;
+  padding-inline: 16px;
   font-size: 0.875rem;
   color: #111827;
   vertical-align: middle; /* Căn giữa theo chiều dọc */
@@ -137,7 +136,8 @@ html, body {
 .proxy-label {
   background-color: #fee2e2;
   color: #991b1b;
-  padding: 0.25rem 0.5rem;
+  padding-block: 0.25rem;
+  padding-inline: 0.5rem;
   border-radius: 0.25rem;
   font-size: 0.75rem;
   font-family: monospace;
@@ -153,7 +153,9 @@ html, body {
   align-items: center;
   justify-content: center;
   color: #9ca3af;
-  transition: color 150ms, background-color 150ms;
+  transition:
+    color 150ms,
+    background-color 150ms;
 }
 
 .icon-button:hover {
@@ -164,8 +166,9 @@ html, body {
 /* --- Pagination --- */
 .pagination-container {
   background-color: #fff;
-  border-top: 1px solid #e5e7eb;
-  padding: 12px 16px;
+  border-block-start: 1px solid #e5e7eb;
+  padding-block: 12px;
+  padding-inline: 16px;
   /* THÊM MỚI: Ngăn pagination co lại */
   flex-shrink: 0;
 }
@@ -202,10 +205,13 @@ html, body {
   background-color: #fff;
   border: 1px solid #d1d5db;
   border-radius: 0.375rem; /* Tăng bo tròn */
-  padding: 0.5rem 2.5rem 0.5rem 0.75rem;
+  padding-block: 0.5rem;
+  padding-inline: 0.75rem 2.5rem;
   font-size: 0.875rem;
   outline: none;
-  transition: border-color 150ms, box-shadow 150ms;
+  transition:
+    border-color 150ms,
+    box-shadow 150ms;
 }
 
 .page-size-select select:focus {
@@ -216,12 +222,12 @@ html, body {
 .select-arrow {
   pointer-events: none;
   position: absolute;
-  top: 0;
-  bottom: 0;
-  right: 0;
+  inset-block: 0;
+  inset-inline-end: 0;
   display: flex;
   align-items: center;
-  padding: 0 0.5rem;
+  padding-block: 0;
+  padding-inline: 0.5rem;
   color: #6b7280;
 }
 

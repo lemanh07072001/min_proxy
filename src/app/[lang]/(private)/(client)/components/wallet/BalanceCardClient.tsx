@@ -68,10 +68,9 @@ export default function BalanceCardClient({
   const { data, error, isLoading } = useQuery({
     queryKey: ['userData'],
     queryFn: fetchUser,
-    enabled: !!session?.data?.access_token ,
+    enabled: !!session?.data?.access_token
   })
 
-  console.log('da',data)
   return (
     <>
       <AnimatePresence>
@@ -90,11 +89,10 @@ export default function BalanceCardClient({
                   <span className='text-orange-100'>Ví của bạn</span>
                 </div>
               </div>
-              <div className='text-3xl font-bold mb-2'>
+              <div className='text-2xl font-bold mb-2'>
                 {isLoading
-                  ? new Intl.NumberFormat('vi-VN').format(0)
-                  : new Intl.NumberFormat('vi-VN').format(data?.sodu ?? 0)}{' '}
-                VNĐ
+                  ? new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(0)
+                  : new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(data?.sodu ?? 0)}
               </div>
               <div className='text-orange-100 text-sm'>
                 {session.status === 'authenticated' ? (

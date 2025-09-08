@@ -4,7 +4,17 @@ import { useMemo, useState } from 'react'
 
 import { headers } from 'next/headers'
 
-import { TriangleAlert, Copy, CircleQuestionMark, BadgeCheck, BadgeMinus, Download, Clock3, Clock } from 'lucide-react'
+import {
+  TriangleAlert,
+  Copy,
+  CircleQuestionMark,
+  BadgeCheck,
+  BadgeMinus,
+  Download,
+  Clock3,
+  Clock,
+  List
+} from 'lucide-react'
 
 import Button from '@mui/material/Button'
 
@@ -180,15 +190,25 @@ export default function OrderRotatingProxyPage({ data }) {
         {/* Proxy Table */}
         <div className='table-container'>
           <div className='table-toolbar'>
-            {/* Download */}
-            <Button variant='outlined' startIcon={<Download size={16} />}>
-              Download
-            </Button>
+            <div className='header-left'>
+              <div className='page-icon'>
+                <List size={17} />
+              </div>
+              <div>
+                <h5 className='mb-0 font-semibold'>Danh sách proxy xoay</h5>
+              </div>
+            </div>
+            <div>
+              {/* Download */}
+              <Button variant='outlined' startIcon={<Download size={16} />}>
+                Download
+              </Button>
 
-            {/* Copy all */}
-            <CustomIconButton aria-label='capture screenshot' variant='outlined'>
-              <Copy size={16} />
-            </CustomIconButton>
+              {/* Copy all */}
+              <CustomIconButton aria-label='capture screenshot' variant='outlined'>
+                <Copy size={16} />
+              </CustomIconButton>
+            </div>
           </div>
 
           <div className='table-container'>

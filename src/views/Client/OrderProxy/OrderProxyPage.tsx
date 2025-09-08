@@ -15,7 +15,8 @@ import {
   Clock3,
   ArrowDownUp,
   ArrowDownWideNarrow,
-  ArrowUpNarrowWide
+  ArrowUpNarrowWide,
+  List
 } from 'lucide-react'
 
 import Button from '@mui/material/Button'
@@ -24,7 +25,11 @@ import {
   useReactTable,
   getCoreRowModel,
   flexRender,
-  getFilteredRowModel, getPaginationRowModel, getFacetedRowModel, getFacetedUniqueValues, getSortedRowModel // Thêm để lọc hàng đã chọn
+  getFilteredRowModel,
+  getPaginationRowModel,
+  getFacetedRowModel,
+  getFacetedUniqueValues,
+  getSortedRowModel // Thêm để lọc hàng đã chọn
 } from '@tanstack/react-table'
 
 import Chip from '@mui/material/Chip'
@@ -36,19 +41,17 @@ import CustomIconButton from '@core/components/mui/IconButton'
 import { formatDateTimeLocal } from '@/utils/formatDate'
 import { useCopy } from '@/app/hooks/useCopy'
 
-
-
 export default function OrderProxyPage({ data }) {
-  const [columnFilters, setColumnFilters] = useState([]);
+  const [columnFilters, setColumnFilters] = useState([])
   const [rowSelection, setRowSelection] = useState({}) // State để lưu các hàng được chọn
-  const [sorting, setSorting] = useState([]);
+  const [sorting, setSorting] = useState([])
 
   const [pagination, setPagination] = useState({
     pageIndex: 0,
-    pageSize: 10,
-  });
+    pageSize: 10
+  })
 
-  const [, copy] = useCopy();
+  const [, copy] = useCopy()
 
   const dataOrder = useMemo(() => data || [], [data])
 
@@ -93,8 +96,9 @@ export default function OrderProxyPage({ data }) {
         accessorKey: 'provider',
         header: 'Nhà mạng',
         cell: ({ row }) => {
-          const proxys = row.original.proxys || {}; // fallback nếu null
-          const loaiproxy = proxys.loaiproxy || '-'; // fallback nếu không tồn tại
+          const proxys = row.original.proxys || {} // fallback nếu null
+          const loaiproxy = proxys.loaiproxy || '-' // fallback nếu không tồn tại
+
           return <span className='text-red'>{loaiproxy}</span>
         }
       },
@@ -102,16 +106,17 @@ export default function OrderProxyPage({ data }) {
         accessorKey: 'proxy',
         header: 'Proxy',
         cell: ({ row }) => {
-          const proxys = row.original.proxys || {};
+          const proxys = row.original.proxys || {}
+
           const proxyValues = Object.entries(proxys)
             .filter(([key]) => key !== 'loaiproxy')
-            .map(([_, value]) => value);
+            .map(([_, value]) => value)
 
           return (
             <div className='proxy-cell'>
               <span className='proxy-label'>{proxyValues[0] || '-'}</span>
               {proxyValues[0] && (
-                <button className='icon-button' onClick={()=>copy(proxyValues[0])}>
+                <button className='icon-button' onClick={() => copy(proxyValues[0])}>
                   <Copy size={14} />
                 </button>
               )}
@@ -123,10 +128,10 @@ export default function OrderProxyPage({ data }) {
         accessorKey: 'protocol',
         header: 'Loại',
         cell: ({ row }) => {
-          const proxys = row.original.proxys || {}; // nếu null hoặc undefined, fallback thành {}
-          const keys = Object.keys(proxys);
+          const proxys = row.original.proxys || {} // nếu null hoặc undefined, fallback thành {}
+          const keys = Object.keys(proxys)
 
-          return <div className="font-bold">{keys[0]?.toUpperCase() || '-'}</div>;
+          return <div className='font-bold'>{keys[0]?.toUpperCase() || '-'}</div>
         }
       },
       {
@@ -135,9 +140,9 @@ export default function OrderProxyPage({ data }) {
         cell: ({ row }) => {
           return (
             <>
-              <div className="d-flex align-items-center  gap-1 ">
-                <Clock3  size={14} />
-                <div style={{marginTop:'2px'}}>{formatDateTimeLocal(row.original.buy_at)}</div>
+              <div className='d-flex align-items-center  gap-1 '>
+                <Clock3 size={14} />
+                <div style={{ marginTop: '2px' }}>{formatDateTimeLocal(row.original.buy_at)}</div>
               </div>
             </>
           )
@@ -149,9 +154,9 @@ export default function OrderProxyPage({ data }) {
         cell: ({ row }) => {
           return (
             <>
-              <div className="d-flex align-items-center  gap-1 ">
+              <div className='d-flex align-items-center  gap-1 '>
                 <Clock size={14} />
-                <div style={{marginTop:'2px'}}>{formatDateTimeLocal(row.original.expired_at)}</div>
+                <div style={{ marginTop: '2px' }}>{formatDateTimeLocal(row.original.expired_at)}</div>
               </div>
             </>
           )
@@ -178,7 +183,7 @@ export default function OrderProxyPage({ data }) {
       rowSelection,
       pagination,
       columnFilters,
-      sorting,
+      sorting
     },
     enableRowSelection: true, // Bật tính năng chọn hàng
     onRowSelectionChange: setRowSelection, // Cập nhật state khi có thay đổi
@@ -191,14 +196,13 @@ export default function OrderProxyPage({ data }) {
     getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getFacetedRowModel: getFacetedRowModel(),
-    getFacetedUniqueValues: getFacetedUniqueValues(),
+    getFacetedUniqueValues: getFacetedUniqueValues()
   })
 
-  const { pageIndex, pageSize } = table.getState().pagination;
-  const totalRows = table.getFilteredRowModel().rows.length;
-  const startRow = pageIndex * pageSize + 1;
-  const endRow = Math.min(startRow + pageSize - 1, totalRows);
-
+  const { pageIndex, pageSize } = table.getState().pagination
+  const totalRows = table.getFilteredRowModel().rows.length
+  const startRow = pageIndex * pageSize + 1
+  const endRow = Math.min(startRow + pageSize - 1, totalRows)
 
   return (
     <>
@@ -208,30 +212,40 @@ export default function OrderProxyPage({ data }) {
         {/* Proxy Table */}
         <div className='table-container'>
           <div className='table-toolbar'>
-            {/* Đổi password */}
-            <Button variant='outlined' startIcon={<RotateCcwKey size={16} />}>
-              Đổi password
-            </Button>
+            <div className='header-left'>
+              <div className='page-icon'>
+                <List size={17} />
+              </div>
+              <div>
+                <h5 className='mb-0 font-semibold'>Danh sách proxy</h5>
+              </div>
+            </div>
+            <div className='d-flex gap-2'>
+              {/* Đổi password */}
+              <Button variant='outlined' startIcon={<RotateCcwKey size={16} />}>
+                Đổi password
+              </Button>
 
-            {/* Gia hạn */}
-            <Button variant='outlined' startIcon={<Calendar size={16} />}>
-              Gia hạn
-            </Button>
+              {/* Gia hạn */}
+              <Button variant='outlined' startIcon={<Calendar size={16} />}>
+                Gia hạn
+              </Button>
 
-            {/* Đổi bảo mật */}
-            <Button variant='outlined' startIcon={<Key size={16} />}>
-              Đổi bảo mật
-            </Button>
+              {/* Đổi bảo mật */}
+              <Button variant='outlined' startIcon={<Key size={16} />}>
+                Đổi bảo mật
+              </Button>
 
-            {/* Đổi proxy */}
-            <Button variant='contained' color='error' disabled>
-              Đổi proxy
-            </Button>
+              {/* Đổi proxy */}
+              <Button variant='contained' color='error' disabled>
+                Đổi proxy
+              </Button>
 
-            {/* Copy all */}
-            <CustomIconButton aria-label='capture screenshot' variant='outlined'>
-              <Copy size={16} />
-            </CustomIconButton>
+              {/* Copy all */}
+              <CustomIconButton aria-label='capture screenshot' variant='outlined'>
+                <Copy size={16} />
+              </CustomIconButton>
+            </div>
           </div>
 
           <div className='table-container'>
@@ -242,16 +256,23 @@ export default function OrderProxyPage({ data }) {
                   {table.getHeaderGroups().map(headerGroup => (
                     <tr key={headerGroup.id}>
                       {headerGroup.headers.map(header => (
-                        <th className='table-header th' style={{cursor:'pointer'}} key={header.id} onClick={header.column.getToggleSortingHandler()}>
+                        <th
+                          className='table-header th'
+                          style={{ cursor: 'pointer' }}
+                          key={header.id}
+                          onClick={header.column.getToggleSortingHandler()}
+                        >
                           {flexRender(header.column.columnDef.header, header.getContext())}
 
-                          {
-                            header.column.getCanSort() ? (
-                              header.column.getIsSorted() === 'asc' ? <ArrowUpNarrowWide className="ms-1" size={14}/> :
-                                header.column.getIsSorted() === 'desc' ? <ArrowDownWideNarrow className="ms-1" size={14}/> :
-                                  <ArrowDownUp size={14} className="ms-1"/>// Icon mặc định
-                            ) : null
-                          }
+                          {header.column.getCanSort() ? (
+                            header.column.getIsSorted() === 'asc' ? (
+                              <ArrowUpNarrowWide className='ms-1' size={14} />
+                            ) : header.column.getIsSorted() === 'desc' ? (
+                              <ArrowDownWideNarrow className='ms-1' size={14} />
+                            ) : (
+                              <ArrowDownUp size={14} className='ms-1' />
+                            ) // Icon mặc định
+                          ) : null}
                         </th>
                       ))}
                     </tr>
@@ -281,9 +302,10 @@ export default function OrderProxyPage({ data }) {
                       <select
                         value={table.getState().pagination.pageSize}
                         onChange={e => {
-                          table.setPageSize(Number(e.target.value));
+                          table.setPageSize(Number(e.target.value))
                         }}
-                        className='page-size-select'>
+                        className='page-size-select'
+                      >
                         <option value='10'>10</option>
                         <option value='50'>50</option>
                         <option value='100'>100</option>
@@ -299,8 +321,8 @@ export default function OrderProxyPage({ data }) {
                   <div>
                     {totalRows > 0 ? (
                       <span>
-                      {startRow} - {endRow} của {totalRows} hàng
-                    </span>
+                        {startRow} - {endRow} của {totalRows} hàng
+                      </span>
                     ) : (
                       <span>Không có dữ liệu</span>
                     )}
@@ -308,14 +330,16 @@ export default function OrderProxyPage({ data }) {
                 </div>
 
                 <div className='pagination-buttons'>
-                  <Pagination count={table.getPageCount()}
-                              shape='rounded'
-                              variant='outlined'
-                              color='primary'
-                              page={table.getState().pagination.pageIndex + 1}
-                              onChange={(event, page) => {
-                                table.setPageIndex(page - 1);
-                              }}/>
+                  <Pagination
+                    count={table.getPageCount()}
+                    shape='rounded'
+                    variant='outlined'
+                    color='primary'
+                    page={table.getState().pagination.pageIndex + 1}
+                    onChange={(event, page) => {
+                      table.setPageIndex(page - 1)
+                    }}
+                  />
                 </div>
               </div>
             </div>

@@ -6,7 +6,8 @@ import type { Metadata } from 'next'
 import { useSession } from 'next-auth/react'
 import axios from 'axios'
 import { getServerSession } from 'next-auth'
-import { authOptions } from "@/libs/auth";
+
+import { authOptions } from '@/libs/auth'
 
 export const metadata: Metadata = {
   title: `${process.env.NEXT_PUBLIC_APP_NAME} | Đơn hàng proxy`,
@@ -41,23 +42,8 @@ export default async function OrderProxy() {
 
   console.log(proxyOrders)
 
-
   return (
     <div className='main-page'>
-      {/* Page Header */}
-      <div className='page-header-orders'>
-        <div className='header-content'>
-          <div className='header-left'>
-            <div className='page-icon'>
-              <Globe size={32} />
-            </div>
-            <div>
-              <h1>Danh sách proxy</h1>
-              <p className='page-subtitle'>Quản lý và theo dõi các proxy đã mua</p>
-            </div>
-          </div>
-        </div>
-      </div>
       <OrderProxyPage data={proxyOrders} />
     </div>
   )

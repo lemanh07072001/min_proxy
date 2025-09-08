@@ -3,15 +3,16 @@ import OrderRotatingProxyPage from '@/views/Client/OrderRotatingProxy/OrderRotat
 import './styles.css'
 
 import { Globe } from 'lucide-react'
-import { Metadata } from 'next'
+import type { Metadata } from 'next'
 import axios from 'axios'
 import { getServerSession } from 'next-auth'
+
 import { authOptions } from '@/libs/auth'
 
 export const metadata: Metadata = {
   title: `${process.env.NEXT_PUBLIC_APP_NAME} | Đơn hàng proxy xoay`,
-  description: 'Mô tả ngắn gọn về trang web.',
-};
+  description: 'Mô tả ngắn gọn về trang web.'
+}
 
 async function getProxyOrders(token: string) {
   try {
@@ -39,25 +40,8 @@ export default async function OrderRotatingProxy() {
   const token = session?.access_token || '' // access_token do bạn set khi login next-auth
   const proxyOrders = await getProxyOrders(token)
 
-  console.log(proxyOrders)
-
-
   return (
     <div className='main-page'>
-      {/* Page Header */}
-      <div className='page-header-orders'>
-        <div className='header-content'>
-          <div className='header-left'>
-            <div className='page-icon'>
-              <Globe size={32} />
-            </div>
-            <div>
-              <h1>Danh sách proxy</h1>
-              <p className='page-subtitle'>Quản lý và theo dõi các proxy đã mua</p>
-            </div>
-          </div>
-        </div>
-      </div>
       <OrderRotatingProxyPage data={proxyOrders} />
     </div>
   )
