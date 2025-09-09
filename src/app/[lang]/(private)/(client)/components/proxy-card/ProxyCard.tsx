@@ -98,6 +98,8 @@ const useBuyProxy = () => {
       queryClient.invalidateQueries({ queryKey: ['proxyData'] })
     },
     onError: error => {
+      toast.error('Lỗi hệ thông xin vui lòng liên hệ Admin.')
+
       // Xử lý khi request thất bại
       console.error('Lỗi khi mua proxy:', error.response?.data || error.message)
     }
@@ -182,6 +184,21 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, logo, color, price, fea
     }
   }
 
+  function convertDuration(days: string) {
+    switch (days) {
+      case '1':
+        return 'ngày'
+      case '7':
+        return 'tuần'
+      case '30':
+        return 'tháng'
+      case '365':
+        return 'năm'
+      default:
+        return `${days} ngày`
+    }
+  }
+
   return (
     <form onSubmit={handleSubmit(onSubmit)} className={`proxy-card-column ${color}`}>
       {/* Header với logo và giá */}
@@ -201,7 +218,7 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, logo, color, price, fea
         </div>
         <div className='price-section'>
           <div className='price-amount'>{calculateTotalFormat()}đ</div>
-          <div className='price-unit'>/ngày</div>
+          <div className='price-unit'>/{convertDuration(provider.time_type)}</div>
         </div>
       </div>
 
