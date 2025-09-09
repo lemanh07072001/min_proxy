@@ -124,7 +124,7 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, logo, color, price, fea
   } = useForm({
     resolver: yupResolver(proxySchema),
     defaultValues: {
-      location: 'random',
+      version: 'v4',
       days: 1,
       quantity: 1,
       protocol: 'HTTP',
@@ -155,22 +155,14 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, logo, color, price, fea
     return (basePrice * quantity * days).toLocaleString('vi-VN')
   }
 
-  const dataLocation = [
+  const version = [
     {
-      value: 'random',
-      label: 'random'
+      value: 'v4',
+      label: 'V4'
     },
     {
-      value: 'hanoi',
-      label: 'Hà Nội'
-    },
-    {
-      value: 'da-nang',
-      label: 'Đà Nẵng'
-    },
-    {
-      value: 'hcm',
-      label: 'TP.HCM'
+      value: 'v6',
+      label: 'V6'
     }
   ]
 
@@ -224,19 +216,19 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, logo, color, price, fea
 
       {/* Form controls trong layout cột */}
       <div className='form-grid'>
-        {/* Location */}
+        {/* version */}
         <Controller
-          name='location'
+          name='version'
           control={control}
           render={({ field }) => (
             <CustomTextField
               select
               fullWidth
-              id='locale'
+              id='version'
               label={
                 <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
                   <MapPin size={16} />
-                  LOCATION
+                  Version
                 </span>
               }
               {...field}
@@ -250,7 +242,7 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, logo, color, price, fea
                 }
               }}
             >
-              {dataLocation.map((item, index) => {
+              {version.map((item, index) => {
                 return (
                   <MenuItem key={index} value={item.value}>
                     {item.label}
