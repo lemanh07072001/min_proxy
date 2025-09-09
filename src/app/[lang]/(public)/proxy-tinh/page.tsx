@@ -19,8 +19,6 @@ export default async function StaticProxy() {
     })
 
     proxyPlans = response.data.data
-
-    console.log('proxyPlans', proxyPlans)
   } catch (error) {
     console.log(error)
   }
@@ -45,12 +43,12 @@ export default async function StaticProxy() {
     image: plan?.image ?? '',
     api_body: plan.api_body,
     partner: plan.partner,
+    ip_version: plan.ip_version,
     features: proxyProviders.features.map(f => ({ ...f }))
   }))
 
   return (
     <div className='main-content-modern'>
-
       {/* Proxy Cards */}
       <div className='proxy-grid'>
         <StaticProxyPage data={mergedPlans} />

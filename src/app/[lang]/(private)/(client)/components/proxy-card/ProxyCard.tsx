@@ -19,16 +19,23 @@ import MenuItem from '@mui/material/MenuItem'
 
 import { Controller, useForm } from 'react-hook-form'
 
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+
+import { useSession } from 'next-auth/react'
+
+import axios from 'axios'
+
+import { toast } from 'react-toastify'
+
 import CustomTextField from '@core/components/mui/TextField'
 
 import QuantityControl from '@components/form/input-quantity/QuantityControl'
 import ProtocolSelector from '@components/form/protocol-selector/ProtocolSelector'
 import Link from '@/components/Link'
 import useRandomString from '@/hocs/useRandomString'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { useSession } from 'next-auth/react'
-import axios from 'axios'
-import { toast } from 'react-toastify'
+
+import protocols from '@/utils/protocolProxy'
+
 import { useModalContext } from '@/app/contexts/ModalContext'
 
 interface ProxyCardProps {
@@ -41,7 +48,6 @@ interface ProxyCardProps {
 
 const proxySchema = yup
   .object({
-    location: yup.string().required(),
     days: yup
       .number()
       .typeError('Vui lòng nhập số') // Thông báo lỗi khi nhập không phải số
@@ -81,7 +87,6 @@ const useBuyProxy = () => {
       return api.post('/proxy-static', orderData)
     },
     onSuccess: data => {
-
       if (data.data.success == false) {
         toast.error('Lỗi hệ thông xin vui lòng liên hệ Admin.')
         router.push('/order-proxy')
@@ -110,10 +115,6 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, logo, color, price, fea
   const randomString = useRandomString(6)
 
   // Định nghĩa danh sách protocols
-  const protocols = [
-    { id: 'HTTP', name: 'HTTP', description: 'HTTP Protocol' },
-    { id: 'SOCKS5', name: 'SOCKS5', description: 'SOCKS5 Protocol' }
-  ]
 
   const {
     register,
@@ -124,7 +125,6 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, logo, color, price, fea
   } = useForm({
     resolver: yupResolver(proxySchema),
     defaultValues: {
-      version: 'v4',
       days: 1,
       quantity: 1,
       protocol: 'HTTP',
@@ -143,6 +143,8 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, logo, color, price, fea
 
     const days = parseInt(watchedDays, 10) || 1
 
+    if (quantity < 1 || days < 1) return 0
+
     return basePrice * quantity * days
   }
 
@@ -152,19 +154,10 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, logo, color, price, fea
 
     const days = parseInt(watchedDays, 10) || 1
 
+    if (quantity < 1 || days < 1) return 0
+
     return (basePrice * quantity * days).toLocaleString('vi-VN')
   }
-
-  const version = [
-    {
-      value: 'v4',
-      label: 'V4'
-    },
-    {
-      value: 'v6',
-      label: 'V6'
-    }
-  ]
 
   const onSubmit = data => {
     const total = calculateTotal()
@@ -195,9 +188,7 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, logo, color, price, fea
       <div className='card-header-column'>
         <div className='provider-section'>
           <div className='provider-logo-column'>
-            {logo ? (
-              <Image src={logo} width={80} height={20} alt="Logo" />
-            ) : null}
+            {logo ? <Image src={logo} width={80} height={20} alt='Logo' /> : null}
           </div>
           <div className='provider-info-column'>
             <h3 className='provider-title-column'>{provider.title}</h3>
@@ -217,40 +208,26 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, logo, color, price, fea
       {/* Form controls trong layout cột */}
       <div className='form-grid'>
         {/* version */}
-        <Controller
-          name='version'
-          control={control}
-          render={({ field }) => (
-            <CustomTextField
-              select
-              fullWidth
-              id='version'
-              label={
-                <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                  <MapPin size={16} />
-                  Version
-                </span>
-              }
-              {...field}
-              sx={{
-                // Nhắm đến thẻ label của component này
-                '& .MuiInputLabel-root': {
-                  color: '#64748b', // Đổi màu label thành màu cam
-                  fontWeight: '600', // In đậm chữ
-                  fontSize: '11px', // Thay đổi kích thước font
-                  paddingBottom: '5px'
-                }
-              }}
-            >
-              {version.map((item, index) => {
-                return (
-                  <MenuItem key={index} value={item.value}>
-                    {item.label}
-                  </MenuItem>
-                )
-              })}
-            </CustomTextField>
-          )}
+        <CustomTextField
+          fullWidth
+          InputProps={{ readOnly: true }}
+          id='version'
+          label={
+            <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+              <MapPin size={16} />
+              Version
+            </span>
+          }
+          value={provider.ip_version}
+          sx={{
+            // Nhắm đến thẻ label của component này
+            '& .MuiInputLabel-root': {
+              color: '#64748b', // Đổi màu label thành màu cam
+              fontWeight: '600', // In đậm chữ
+              fontSize: '11px', // Thay đổi kích thước font
+              paddingBottom: '5px'
+            }
+          }}
         />
 
         {/* Thời gian */}
@@ -260,16 +237,17 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, logo, color, price, fea
           render={({ field }) => (
             <CustomTextField
               type='number'
-              min='1'
+              inputProps={{ min: 1 }}
               label={
                 <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   <Clock size={16} />
                   THỜI GIAN
                 </span>
               }
+              error={!!errors.days}
+              helperText={errors.days?.message}
               {...field}
               sx={{
-                // Nhắm đến thẻ label của component này
                 '& .MuiInputLabel-root': {
                   color: '#64748b', // Đổi màu label thành màu cam
                   fontWeight: '600', // In đậm chữ
@@ -350,7 +328,6 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, logo, color, price, fea
                 type='text'
                 label={<span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>Password</span>}
                 sx={{
-                  // Nhắm đến thẻ label của component này
                   '& .MuiInputLabel-root': {
                     color: '#64748b', // Đổi màu label thành màu cam
                     fontWeight: '600', // In đậm chữ

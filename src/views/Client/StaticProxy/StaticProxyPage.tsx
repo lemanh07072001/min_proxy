@@ -10,7 +10,6 @@ export default function StaticProxyPage({ data }: StaticProxyPageProps) {
   return (
     <>
       {data.map((provider: any, index: any) => {
-        console.log(provider)
         return (
           <ProxyCard
             key={index}

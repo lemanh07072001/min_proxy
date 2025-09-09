@@ -30,7 +30,14 @@ const proxyPlanSchema = yup.object({
     .required('Vui lòng nhập số lượng')
     .integer('Số lượng phải là số nguyên')
     .min(1, 'Tối thiểu là 1')
-    .max(100, 'Tối đa là 100')
+    .max(100, 'Tối đa là 100'),
+  time: yup
+    .number()
+    .typeError('Vui lòng nhập thời gian')
+    .required('Vui lòng nhập thời gian')
+    .integer('Thời gian phải là số nguyên')
+    .min(1, 'Tối thiểu là 1 ngày')
+    .max(365, 'Tối đa là 365 ngày')
 })
 
 // Component này render một dòng feature tĩnh (chỉ hiển thị thông tin)
@@ -47,7 +54,7 @@ const StaticFeatureRow = ({ feature }) => (
 )
 
 // Component này render một dòng feature có input
-const InputFeatureRow = ({ feature, control, errors, planId, isDisabled = false }) => (
+const InputFeatureRow = ({ feature, control, errors, planId, isDisabled = false, min = 1, max = 100 }) => (
   <Controller
     name={feature.field}
     control={control}
@@ -68,10 +75,11 @@ const InputFeatureRow = ({ feature, control, errors, planId, isDisabled = false 
               size='small'
               id={`${planId}-${field.name}`}
               type={feature.inputType || 'text'}
-              {...(feature.inputType === 'number' && { min: 1, max: 100 })}
-              className={`${errors[feature.field] ? 'border-red-500' : ''}`}
+              inputProps={feature.inputType === 'number' ? { min: feature.min ?? 1, max: feature.max ?? 100 } : {}}
               {...field}
               disabled={isDisabled}
+              error={!!errors[feature.field]}
+              helperText={errors[feature.field]?.message}
             />
           </div>
         </div>
@@ -161,7 +169,8 @@ const PlanCard = ({ plan }) => {
       quantity: 1,
       time: 1
     },
-    mode: 'onChange'
+    mode: 'onChange',
+    resolver: yupResolver(proxyPlanSchema)
   })
 
   const watchedFields = useWatch({ control })
@@ -171,6 +180,8 @@ const PlanCard = ({ plan }) => {
     const timeValue = parseInt(watchedFields.time, 10) || 1
     const quantityValue = parseInt(watchedFields.quantity, 10) || 1
 
+    if (quantityValue < 1 || timeValue < 1) return 0
+
     return (basePrice * timeValue * quantityValue).toLocaleString('vi-VN')
   }
 
@@ -178,6 +189,8 @@ const PlanCard = ({ plan }) => {
     const basePrice = parseInt(plan.price, 10) || 0
     const timeValue = parseInt(watchedFields.time, 10) || 1
     const quantityValue = parseInt(watchedFields.quantity, 10) || 1
+
+    if (quantityValue < 1 || timeValue < 1) return 0
 
     return basePrice * timeValue * quantityValue
   }
@@ -223,6 +236,8 @@ const PlanCard = ({ plan }) => {
                   control={control}
                   errors={errors}
                   planId={plan.id}
+                  min={plan.min}
+                  max={plan.max}
                   isDisabled={isRotationTimeInput && !watchedFields.autoRotate}
                 />
               )

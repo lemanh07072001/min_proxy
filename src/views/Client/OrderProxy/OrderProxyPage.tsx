@@ -2,6 +2,17 @@
 
 import { useMemo, useState } from 'react'
 
+import Box from '@mui/material/Box'
+import Table from '@mui/material/Table'
+import TableBody from '@mui/material/TableBody'
+import TableCell from '@mui/material/TableCell'
+import TableContainer from '@mui/material/TableContainer'
+import TableHead from '@mui/material/TableHead'
+import TableRow from '@mui/material/TableRow'
+import TablePagination from '@mui/material/TablePagination'
+import InputBase from '@mui/material/InputBase'
+import Paper from '@mui/material/Paper'
+
 import {
   TriangleAlert,
   Copy,
@@ -37,16 +48,21 @@ import Chip from '@mui/material/Chip'
 import './styles.css'
 import Pagination from '@mui/material/Pagination'
 
+import Checkbox from '@mui/material/Checkbox'
+
+import { FormControlLabel } from '@mui/material'
+
 import CustomIconButton from '@core/components/mui/IconButton'
 import { formatDateTimeLocal } from '@/utils/formatDate'
 import { useCopy } from '@/app/hooks/useCopy'
-import Checkbox from '@mui/material/Checkbox'
-import { FormControlLabel } from '@mui/material'
+
+import { ChangePassword } from './ChangePassword'
 
 export default function OrderProxyPage({ data }) {
   const [columnFilters, setColumnFilters] = useState([])
   const [rowSelection, setRowSelection] = useState({}) // State để lưu các hàng được chọn
   const [sorting, setSorting] = useState([])
+  const [changePassword, setChangePassword] = useState(false)
 
   const [pagination, setPagination] = useState({
     pageIndex: 0,
@@ -84,7 +100,7 @@ export default function OrderProxyPage({ data }) {
                   onChange={table.getToggleAllRowsSelectedHandler()}
                 />
               }
-              label="" // bỏ label để không chiếm chỗ
+              label='' // bỏ label để không chiếm chỗ
             />
           </div>
         ),
@@ -98,11 +114,11 @@ export default function OrderProxyPage({ data }) {
                   onChange={row.getToggleSelectedHandler()}
                 />
               }
-              label=""
+              label=''
             />
           </div>
         ),
-        size: 40,
+        size: 40
       },
       {
         accessorKey: 'id',
@@ -220,6 +236,14 @@ export default function OrderProxyPage({ data }) {
   const startRow = pageIndex * pageSize + 1
   const endRow = Math.min(startRow + pageSize - 1, totalRows)
 
+  const handleChangePassword = () => {
+    setChangePassword(true)
+  }
+
+  const handleCloseChangePassword = () => {
+    setChangePassword(false)
+  }
+
   return (
     <>
       <div className='orders-content'>
@@ -238,7 +262,7 @@ export default function OrderProxyPage({ data }) {
             </div>
             <div className='d-flex gap-2'>
               {/* Đổi password */}
-              <Button variant='outlined' startIcon={<RotateCcwKey size={16} />}>
+              <Button onClick={handleChangePassword} variant='outlined' startIcon={<RotateCcwKey size={16} />}>
                 Đổi password
               </Button>
 
@@ -272,23 +296,8 @@ export default function OrderProxyPage({ data }) {
                   {table.getHeaderGroups().map(headerGroup => (
                     <tr key={headerGroup.id}>
                       {headerGroup.headers.map(header => (
-                        <th
-                          className='table-header th'
-                          style={{ cursor: 'pointer' }}
-                          key={header.id}
-                          onClick={header.column.getToggleSortingHandler()}
-                        >
+                        <th className='table-header th' key={header.id}>
                           {flexRender(header.column.columnDef.header, header.getContext())}
-
-                          {header.column.getCanSort() ? (
-                            header.column.getIsSorted() === 'asc' ? (
-                              <ArrowUpNarrowWide className='ms-1' size={14} />
-                            ) : header.column.getIsSorted() === 'desc' ? (
-                              <ArrowDownWideNarrow className='ms-1' size={14} />
-                            ) : (
-                              <ArrowDownUp size={14} className='ms-1' />
-                            ) // Icon mặc định
-                          ) : null}
                         </th>
                       ))}
                     </tr>
@@ -362,6 +371,9 @@ export default function OrderProxyPage({ data }) {
           </div>
         </div>
       </div>
+
+      {/* Modal Change Password Proxy */}
+      <ChangePassword open={changePassword} onClose={handleCloseChangePassword} />
     </>
   )
 }

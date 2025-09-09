@@ -6,9 +6,6 @@ import type { MouseEvent } from 'react'
 
 import { useRouter } from 'next/navigation'
 
-import { maskEmail } from '@/utils/maskEmail'
-
-
 // Next Imports
 
 // MUI Imports
@@ -25,19 +22,20 @@ import MenuItem from '@mui/material/MenuItem'
 import Button from '@mui/material/Button'
 
 // Hook Imports
-import { useSettings } from '@core/hooks/useSettings'
-
 import { signOut, useSession } from 'next-auth/react'
-
-import ConfirmDialog from '@components/confirm-modal/ConfirmDialog'
 
 import Box from '@mui/material/Box'
 
+import { useSettings } from '@core/hooks/useSettings'
+
+import ConfirmDialog from '@components/confirm-modal/ConfirmDialog'
+
+import { maskEmail } from '@/utils/maskEmail'
 
 const UserDropdown = () => {
   // States
   const [open, setOpen] = useState(false)
-  const [openConfirm, setOpenConfirm] = useState(false);
+  const [openConfirm, setOpenConfirm] = useState(false)
 
   // Refs
   const anchorRef = useRef<HTMLDivElement>(null)
@@ -66,17 +64,17 @@ const UserDropdown = () => {
     setOpen(false)
   }
 
-  const handleConfirmLogout =  () => {
-    console.log('Hành động XÓA đã được xác nhận!');
+  const handleConfirmLogout = () => {
+    console.log('Hành động XÓA đã được xác nhận!')
 
-    signOut({ redirect: false });
+    signOut({ redirect: false })
 
-    setOpenConfirm(false);
-  };
+    setOpenConfirm(false)
+  }
 
   return (
     <>
-      <Box sx={{cursor:'pointer'}} onClick={handleDropdownOpen}>
+      <Box sx={{ cursor: 'pointer' }} onClick={handleDropdownOpen}>
         <Badge
           ref={anchorRef}
           overlap='circular'
@@ -90,17 +88,18 @@ const UserDropdown = () => {
               src='/images/avatars/1.png'
               className='cursor-pointer bs-[24px] is-[24px]'
             />
-            <Typography sx={{
-              fontWeight: '500',
-              display: {
-                xs: 'none',
-                lg: 'block',
-              }
-            }}>{session?.data?.user?.email
-              ? maskEmail(session?.data?.user?.email)
-              : "NoData"}</Typography>
+            <Typography
+              sx={{
+                fontWeight: '500',
+                display: {
+                  xs: 'none',
+                  lg: 'block'
+                }
+              }}
+            >
+              {session?.data?.user?.email ? maskEmail(session?.data?.user?.email) : 'NoData'}
+            </Typography>
           </Box>
-
         </Badge>
         <Popper
           open={open}
@@ -171,9 +170,9 @@ const UserDropdown = () => {
         open={openConfirm}
         onClose={() => setOpenConfirm(false)}
         onConfirm={handleConfirmLogout}
-        title="Xác nhận đăng xuất" // <-- THAY ĐỔI Ở ĐÂY
-        confirmText="Đăng xuất"
-        cancelText="Hủy bỏ"
+        title='Xác nhận đăng xuất' // <-- THAY ĐỔI Ở ĐÂY
+        confirmText='Đăng xuất'
+        cancelText='Hủy bỏ'
       >
         Bạn có chắc chắn muốn kết thúc phiên làm việc và đăng xuất khỏi tài khoản này không?
       </ConfirmDialog>
