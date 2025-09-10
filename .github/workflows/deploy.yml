@@ -1,108 +1,38 @@
-# name: Build and Deploy to Server
-
-# on:
-#   push:
-#     branches: [ "main" ]
-
-# jobs:
-#   build-and-deploy:
-#     runs-on: ubuntu-latest
-
-#     steps:
-#       - name: Checkout Source Code
-#         uses: actions/checkout@v4
-
-#       - name: Setup Node.js Environment
-#         uses: actions/setup-node@v4
-#         with:
-#           node-version: '18'
-#           cache: 'npm'
-
-#       - name: Install Dependencies
-#         run: npm ci
-
-#       - name: Build Project
-#         run: npm run build
-
-#       - name: Clean up node_modules for production
-#         run: npm prune --production
-
-#       - name: Deploy to Server via rsync
-#         uses: easingthemes/ssh-deploy@main
-#         with:
-#           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-#           REMOTE_HOST: ${{ secrets.SERVER_HOST }}
-#           REMOTE_USER: ${{ secrets.SERVER_USERNAME }}
-#           TARGET: ${{ secrets.TARGET_DIR }}
-#           # Không ghi đè file .env trên server
-#           EXCLUDE: "/.git/, /.github/, .env"
-
-#       - name: Restart Application on Server
-#         uses: appleboy/ssh-action@master
-#         with:
-#           host: ${{ secrets.SERVER_HOST }}
-#           username: ${{ secrets.SERVER_USERNAME }}
-#           key: ${{ secrets.SSH_PRIVATE_KEY }}
-#           script: |
-#             cd ${{ secrets.TARGET_DIR }}
-#             echo "Restarting the application with PM2..."
-#             pm2 restart next-app || pm2 start npm --name "next-app" -- run start
-
-name: Build and Deploy to Server
+name: Deploy Next.js to VPS
 
 on:
   push:
-    branches: ['main']
+    branches:
+      - main # hoặc branch bạn muốn deploy
 
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Source Code
-        uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-      - name: Setup Node.js Environment
-        uses: actions/setup-node@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
         with:
-          node-version: '18'
-          cache: 'npm'
+          node-version: 18
 
-      - name: Install Dependencies
-        run: npm ci
+      - name: Install dependencies
+        run: npm install
 
-      # Tạo file .env tại môi trường build
-      - name: Create .env file
-        run: |
-          echo "NEXT_PUBLIC_API_URL=https://api.minhan.online/api" >> .env
-          echo "NEXT_PUBLIC_APP_URL=https://web.minhan.online" >> .env
-          echo "NEXT_PUBLIC_APP_NAME=Min Proxy" >> .env
-          echo "API_URL=https://api.minhan.online/api" >> .env
-          echo "NEXTAUTH_SECRET=${{ secrets.NEXTAUTH_SECRET }}" >> .env
-
-      - name: Build Project
+      - name: Build Next.js
         run: npm run build
 
-      - name: Clean up node_modules for production
-        run: npm prune --production
-
-      - name: Deploy to Server via rsync
-        uses: easingthemes/ssh-deploy@main
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@v0.1.10
         with:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          REMOTE_HOST: ${{ secrets.SERVER_HOST }}
-          REMOTE_USER: ${{ secrets.SERVER_USERNAME }}
-          TARGET: ${{ secrets.TARGET_DIR }}
-          # Không copy đè file .env của server
-          EXCLUDE: '/.git/, /.github/, .env'
-
-      - name: Restart Application on Server
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USERNAME }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
           script: |
-            cd ${{ secrets.TARGET_DIR }}
-            echo "Restarting the application with PM2..."
-            pm2 restart next-app || pm2 start npm --name "next-app" -- run start
+            cd /var/www/min_proxy
+            git pull origin main
+            npm install --production
+            npm run build
+            pm2 restart mktproxy || pm2 start npm --name "mktproxy" -- start

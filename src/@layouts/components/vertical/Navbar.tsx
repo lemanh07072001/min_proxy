@@ -73,7 +73,8 @@ const Navbar = (props: Props) => {
           margin: 0,
           width: '100%',
           borderRadius: 0,
-
+          paddingLeft: '24px',
+          paddingRight: '24px',
           boxShadow: 'none'
         }}
         className={classnames(verticalLayoutClasses.navbar, 'flex bs-full')}

@@ -79,6 +79,10 @@ ul:not([class]) {
   padding-inline-start: 40px;
 }
 
+.ts-vertical-layout-content {
+  padding-block-start: 35px;
+}
+
 /* ===== PERFECT SCROLLBAR STYLES ===== */
 /* Fix popout/submenu closing issue */
 [data-floating-ui-safe-polygon] .scrollbar-container {
