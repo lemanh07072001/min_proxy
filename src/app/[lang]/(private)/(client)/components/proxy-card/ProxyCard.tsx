@@ -31,12 +31,14 @@ import CustomTextField from '@core/components/mui/TextField'
 
 import QuantityControl from '@components/form/input-quantity/QuantityControl'
 import ProtocolSelector from '@components/form/protocol-selector/ProtocolSelector'
-import Link from '@/components/Link'
+
 import useRandomString from '@/hocs/useRandomString'
 
 import protocols from '@/utils/protocolProxy'
 
 import { useModalContext } from '@/app/contexts/ModalContext'
+
+import { DURATION_MAP } from '@/utils/empty'
 
 interface ProxyCardProps {
   provider: string
@@ -44,27 +46,33 @@ interface ProxyCardProps {
   color: string
   price: string
   features: string[]
+  timeOptions?: Array<{ value: number; label: string }>
 }
 
-const proxySchema = yup
-  .object({
-    days: yup
-      .number()
-      .typeError('Vui lòng nhập số') // Thông báo lỗi khi nhập không phải số
-      .required('Vui lòng nhập số ngày')
-      .integer('Số ngày phải là số nguyên')
-      .min(1, 'Tối thiểu 1 ngày'),
-    quantity: yup
-      .number()
-      .typeError('Vui lòng nhập số')
-      .required('Vui lòng nhập số lượng')
-      .integer('Số lượng phải là số nguyên')
-      .min(1, 'Tối thiểu 1 proxy'),
-    protocol: yup.string().required(),
-    username: yup.string().min(4, 'Tối thiểu 4 ký tự'),
-    password: yup.string().min(4, 'Tối thiểu 4 ký tự')
-  })
-  .required()
+const createProxySchema = isSelectMode =>
+  yup
+    .object({
+      days: yup.mixed().when([], {
+        is: () => isSelectMode,
+
+        // ✅ SỬA Ở ĐÂY: Bọc schema trong một hàm () => ...
+        then: () => yup.string().required('Vui lòng chọn thời gian'),
+
+        // ✅ VÀ Ở ĐÂY
+        otherwise: () =>
+          yup.number().typeError('Vui lòng nhập số ngày').required('Vui lòng nhập số ngày').min(1, 'Tối thiểu 1 ngày')
+      }),
+      quantity: yup
+        .number()
+        .typeError('Vui lòng nhập số')
+        .required('Vui lòng nhập số lượng')
+        .integer('Số lượng phải là số nguyên')
+        .min(1, 'Tối thiểu 1 proxy'),
+      protocol: yup.string().required(),
+      username: yup.string().min(4, 'Tối thiểu 4 ký tự'),
+      password: yup.string().min(4, 'Tối thiểu 4 ký tự')
+    })
+    .required()
 
 // --- CUSTOM HOOK FOR API CALL ---
 const useBuyProxy = () => {
@@ -108,18 +116,21 @@ const useBuyProxy = () => {
   return mutation
 }
 
-const ProxyCard: React.FC<ProxyCardProps> = ({ provider, logo, color, price, features }) => {
+const ProxyCard: React.FC<ProxyCardProps> = ({ provider, logo, color, price, features, timeOptions = [] }) => {
   const params = useParams()
-  const { mutate, isPending, isError, isSuccess, error } = useBuyProxy()
+  const { mutate, isPending } = useBuyProxy()
   const session = useSession()
   const { openAuthModal } = useModalContext()
   const { lang: locale } = params
   const randomString = useRandomString(6)
 
-  // Định nghĩa danh sách protocols
+  // Xác định chế độ select
+  const isSelectMode = provider.show_time == 1
+
+  // Tạo schema dựa trên chế độ
+  const proxySchema = createProxySchema(isSelectMode)
 
   const {
-    register,
     control,
     handleSubmit,
     watch,
@@ -127,7 +138,7 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, logo, color, price, fea
   } = useForm({
     resolver: yupResolver(proxySchema),
     defaultValues: {
-      days: 1,
+      days: isSelectMode ? (provider.date_mapping?.[0]?.key ?? '') : 1,
       quantity: 1,
       protocol: 'HTTP',
       username: 'random',
@@ -143,22 +154,23 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, logo, color, price, fea
     const basePrice = parseInt(price, 10) || 0
     const quantity = parseInt(watchedQuantity, 10) || 1
 
-    const days = parseInt(watchedDays, 10) || 1
+    let daysInNumber = 0
 
-    if (quantity < 1 || days < 1) return 0
+    if (isSelectMode) {
+      // Nếu là select, tra cứu trong DURATION_MAP
+      daysInNumber = DURATION_MAP[watchedDays] || 0
+    } else {
+      // Nếu là input, chuyển đổi trực tiếp
+      daysInNumber = parseInt(watchedDays, 10) || 0
+    }
 
-    return basePrice * quantity * days
+    if (quantity < 1 || daysInNumber < 1) return 0
+
+    return basePrice * quantity * daysInNumber
   }
 
   const calculateTotalFormat = () => {
-    const basePrice = parseInt(price, 10) || 0
-    const quantity = parseInt(watchedQuantity, 10) || 1
-
-    const days = parseInt(watchedDays, 10) || 1
-
-    if (quantity < 1 || days < 1) return 0
-
-    return (basePrice * quantity * days).toLocaleString('vi-VN')
+    return calculateTotal().toLocaleString('vi-VN')
   }
 
   const onSubmit = data => {
@@ -184,181 +196,200 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, logo, color, price, fea
     }
   }
 
-  function convertDuration(days: string) {
+  function convertDuration(days: number) {
     switch (days) {
-      case '1':
+      case 1:
         return 'ngày'
-      case '7':
+      case 7:
         return 'tuần'
-      case '30':
+      case 30:
         return 'tháng'
-      case '365':
+      case 365:
         return 'năm'
       default:
         return `${days} ngày`
     }
   }
 
+  console.log(provider.allow_user)
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className={`proxy-card-column ${color}`}>
-      {/* Header với logo và giá */}
-      <div className='card-header-column'>
-        <div className='provider-section'>
-          <div className='provider-logo-column'>
-            {logo ? <Image src={logo} width={80} height={20} alt='Logo' /> : null}
-          </div>
-          <div className='provider-info-column'>
-            <h3 className='provider-title-column'>{provider.title}</h3>
-            <div className='feature-tags'>
-              {features?.map((feature, index) => (
-                <Chip key={index} label={feature.title} color={feature.class} variant='tonal' size='small' />
-              ))}
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      className={`proxy-card-column ${color}`}
+      style={{ display: 'flex', flexDirection: 'column', height: '100%' }}
+    >
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+        {/* Header với logo và giá */}
+        <div className='card-header-column'>
+          <div className='provider-section'>
+            {/* <div className='provider-logo-column'>
+              {logo ? <Image src={logo} width={80} height={20} alt='Logo' /> : null}
+            </div> */}
+            <div className='provider-info-column'>
+              <h3 className='provider-title-column'>{provider.title}</h3>
+              <div className='feature-tags'>
+                {features?.map((feature, index) => (
+                  <Chip key={index} label={feature.title} color={feature.class} variant='tonal' size='small' />
+                ))}
+              </div>
             </div>
           </div>
+          <div className='price-section'>
+            <div className='price-amount'>{provider.price.toLocaleString('vi-VN')}đ</div>
+            <div className='price-unit'>/{convertDuration(provider.time_type)}</div>
+          </div>
         </div>
-        <div className='price-section'>
-          <div className='price-amount'>{calculateTotalFormat()}đ</div>
-          <div className='price-unit'>/{convertDuration(provider.time_type)}</div>
-        </div>
-      </div>
 
-      {/* Form controls trong layout cột */}
-      <div className='form-grid'>
-        {/* version */}
-        <CustomTextField
-          fullWidth
-          InputProps={{ readOnly: true }}
-          id='version'
-          label={
-            <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-              <MapPin size={16} />
-              Version
-            </span>
-          }
-          value={provider.ip_version}
-          sx={{
-            // Nhắm đến thẻ label của component này
-            '& .MuiInputLabel-root': {
-              color: '#64748b', // Đổi màu label thành màu cam
-              fontWeight: '600', // In đậm chữ
-              fontSize: '11px', // Thay đổi kích thước font
-              paddingBottom: '5px'
+        {/* Form controls trong layout cột */}
+        <div className='form-grid'>
+          {/* version */}
+          <CustomTextField
+            fullWidth
+            InputProps={{ readOnly: true }}
+            id='version'
+            label={
+              <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                <MapPin size={16} />
+                Version
+              </span>
             }
-          }}
-        />
-
-        {/* Thời gian */}
-        <Controller
-          name='days'
-          control={control}
-          render={({ field }) => (
-            <CustomTextField
-              type='number'
-              inputProps={{ min: 1 }}
-              label={
-                <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <Clock size={16} />
-                  THỜI GIAN
-                </span>
+            value={provider.ip_version}
+            sx={{
+              // Nhắm đến thẻ label của component này
+              '& .MuiInputLabel-root': {
+                color: '#64748b', // Đổi màu label thành màu cam
+                fontWeight: '600', // In đậm chữ
+                fontSize: '11px', // Thay đổi kích thước font
+                paddingBottom: '5px'
               }
-              error={!!errors.days}
-              helperText={errors.days?.message}
-              {...field}
-              sx={{
-                '& .MuiInputLabel-root': {
-                  color: '#64748b', // Đổi màu label thành màu cam
-                  fontWeight: '600', // In đậm chữ
-                  fontSize: '11px', // Thay đổi kích thước font
-                  paddingBottom: '5px'
-                }
-              }}
-            />
-          )}
-        />
+            }}
+          />
 
-        {/*Số lượng*/}
-        <Controller
-          name='quantity'
-          control={control}
-          render={({ field }) => (
-            <QuantityControl
-              min={1}
-              max={100}
-              label='SỐ LƯỢNG'
-              icon={<Users size={14} />}
-              value={field.value || 1}
-              onChange={field.onChange}
-            />
-          )}
-        />
-
-        {/* Giao thức */}
-        <Controller
-          name='protocol'
-          control={control}
-          render={({ field }) => (
-            <ProtocolSelector
-              protocols={protocols}
-              selectedProtocol={field.value}
-              onProtocolChange={field.onChange}
-              label='GIAO THỨC'
-              required={true}
-              error={errors.protocol?.message}
-            />
-          )}
-        />
-      </div>
-
-      {/* Auth section */}
-      <div className='auth-section-column'>
-        <div className='auth-row'>
+          {/* Thời gian */}
           <Controller
-            name='username'
+            name='days'
             control={control}
             render={({ field }) => (
               <CustomTextField
-                type='text'
+                type={isSelectMode ? 'select' : 'number'}
+                inputProps={!isSelectMode ? { min: 1 } : undefined}
+                select={isSelectMode}
+                label={
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <Clock size={16} />
+                    THỜI GIAN
+                  </span>
+                }
+                error={!!errors.days}
+                helperText={errors.days?.message}
                 {...field}
-                label={<span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>Username</span>}
                 sx={{
-                  // Nhắm đến thẻ label của component này
                   '& .MuiInputLabel-root': {
                     color: '#64748b', // Đổi màu label thành màu cam
                     fontWeight: '600', // In đậm chữ
                     fontSize: '11px', // Thay đổi kích thước font
                     paddingBottom: '5px'
-                  },
-                  '&.MuiFilledInput-input': {
-                    background: '#ffffff !important'
                   }
                 }}
+              >
+                {isSelectMode &&
+                  Array.isArray(provider.date_mapping) &&
+                  provider.date_mapping.map(option => (
+                    <MenuItem key={option.key} value={option.key}>
+                      {option.label}
+                    </MenuItem>
+                  ))}
+              </CustomTextField>
+            )}
+          />
+
+          {/*Số lượng*/}
+          <Controller
+            name='quantity'
+            control={control}
+            render={({ field }) => (
+              <QuantityControl
+                min={1}
+                max={100}
+                label='SỐ LƯỢNG'
+                icon={<Users size={14} />}
+                value={field.value || 1}
+                onChange={field.onChange}
               />
             )}
           />
 
+          {/* Giao thức */}
           <Controller
-            name='password'
+            name='protocol'
             control={control}
             render={({ field }) => (
-              <CustomTextField
-                {...field}
-                type='text'
-                label={<span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>Password</span>}
-                sx={{
-                  '& .MuiInputLabel-root': {
-                    color: '#64748b', // Đổi màu label thành màu cam
-                    fontWeight: '600', // In đậm chữ
-                    fontSize: '11px', // Thay đổi kích thước font
-                    paddingBottom: '5px'
-                  },
-                  '&.MuiFilledInput-input': {
-                    background: '#ffffff !important'
-                  }
-                }}
+              <ProtocolSelector
+                protocols={protocols}
+                selectedProtocol={field.value}
+                onProtocolChange={field.onChange}
+                label='GIAO THỨC'
+                required={true}
+                error={errors.protocol?.message}
               />
             )}
           />
         </div>
+
+        {/* Auth section */}
+        {provider.allow_user == 0 ? (
+          <div className='auth-section-column'>
+            <div className='auth-row'>
+              <Controller
+                name='username'
+                control={control}
+                render={({ field }) => (
+                  <CustomTextField
+                    type='text'
+                    {...field}
+                    label={<span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>Username</span>}
+                    sx={{
+                      // Nhắm đến thẻ label của component này
+                      '& .MuiInputLabel-root': {
+                        color: '#64748b', // Đổi màu label thành màu cam
+                        fontWeight: '600', // In đậm chữ
+                        fontSize: '11px', // Thay đổi kích thước font
+                        paddingBottom: '5px'
+                      },
+                      '&.MuiFilledInput-input': {
+                        background: '#ffffff !important'
+                      }
+                    }}
+                  />
+                )}
+              />
+
+              <Controller
+                name='password'
+                control={control}
+                render={({ field }) => (
+                  <CustomTextField
+                    {...field}
+                    type='text'
+                    label={<span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>Password</span>}
+                    sx={{
+                      '& .MuiInputLabel-root': {
+                        color: '#64748b', // Đổi màu label thành màu cam
+                        fontWeight: '600', // In đậm chữ
+                        fontSize: '11px', // Thay đổi kích thước font
+                        paddingBottom: '5px'
+                      },
+                      '&.MuiFilledInput-input': {
+                        background: '#ffffff !important'
+                      }
+                    }}
+                  />
+                )}
+              />
+            </div>
+          </div>
+        ) : null}
       </div>
 
       {/* Footer với tổng tiền và nút mua */}
