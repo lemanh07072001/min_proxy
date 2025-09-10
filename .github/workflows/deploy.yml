@@ -3,7 +3,7 @@ name: Deploy Next.js to VPS
 on:
   push:
     branches:
-      - main_proxy # hoặc branch bạn muốn deploy
+      - main # hoặc branch bạn muốn deploy
 
 jobs:
   deploy:
