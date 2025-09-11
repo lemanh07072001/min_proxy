@@ -170,7 +170,9 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, logo, color, price, fea
 
     if (quantity < 1 || daysInNumber < 1) return 0
 
-    return basePrice * quantity * daysInNumber
+    return basePrice * quantity
+
+    // return basePrice * quantity * daysInNumber
   }
 
   const calculateTotalFormat = () => {
