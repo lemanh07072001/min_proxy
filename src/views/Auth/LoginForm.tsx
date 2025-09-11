@@ -6,7 +6,7 @@ import { useParams, usePathname, useRouter } from 'next/navigation'
 
 import { signIn } from 'next-auth/react'
 
-import { Eye, EyeOff } from 'lucide-react'
+import { Eye, EyeOff, Loader } from 'lucide-react'
 
 import { useForm } from 'react-hook-form'
 
@@ -15,6 +15,7 @@ import { yupResolver } from '@hookform/resolvers/yup'
 import { toast } from 'react-toastify'
 
 import * as yup from 'yup'
+
 import { useModalContext } from '@/app/contexts/ModalContext'
 
 type LoginFormInputs = {
@@ -30,6 +31,7 @@ const schema = yup.object({
 export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false)
   const [rememberMe, setRememberMe] = useState(false)
+  const [loading, setLoading] = useState(false)
 
   const router = useRouter()
   const params = useParams()
@@ -47,6 +49,8 @@ export default function LoginForm() {
   })
 
   const onSubmit = async (data: LoginFormInputs) => {
+    setLoading(true)
+
     const res = await signIn('credentials', {
       email: data.email,
       password: data.password,
@@ -54,11 +58,14 @@ export default function LoginForm() {
     })
 
     if (res?.status == 200 && res?.ok == true) {
+      setLoading(false)
       toast.success('Đăng nhập thành công.')
       closeAuthModal()
+
       // Reload page để update session ở server-side
       router.push(pathname)
     } else {
+      setLoading(false)
       toast.error('Tài khoản hoặc mật khẩu không chính xác.')
     }
   }
@@ -112,9 +119,15 @@ export default function LoginForm() {
         </a>
       </div>
 
-      <button type='submit' className='login-submit-btn'>
-        Đăng nhập
-      </button>
+      {loading ? (
+        <button type='button' disabled={loading} className='login-submit-btn'>
+          <Loader className='rotate' /> Loading...
+        </button>
+      ) : (
+        <button type='submit' className='login-submit-btn'>
+          Đăng nhập
+        </button>
+      )}
     </form>
   )
 }

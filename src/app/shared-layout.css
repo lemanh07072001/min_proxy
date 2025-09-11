@@ -89,6 +89,19 @@ ul:not([class]) {
   font-size: 14px;
 }
 
+.rotate {
+  animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
 /* ===== PERFECT SCROLLBAR STYLES ===== */
 /* Fix popout/submenu closing issue */
 [data-floating-ui-safe-polygon] .scrollbar-container {
