@@ -4,6 +4,7 @@ import GoogleProvider from 'next-auth/providers/google'
 import type { NextAuthOptions } from 'next-auth'
 import type { JWT } from 'next-auth/jwt'
 import axiosInstance from '@/libs/axios'
+import axios from 'axios'
 
 // Extend types for custom properties
 declare module 'next-auth' {
@@ -32,14 +33,27 @@ declare module 'next-auth/jwt' {
 
 // Laravel JWT refresh (dùng access token cũ)
 async function refreshAccessToken(token: JWT) {
+  // --- BẮT ĐẦU DEBUG ---
+  console.log("===================================");
+  console.log("ATTEMPTING TO REFRESH TOKEN AT:", new Date().toISOString());
+  console.log("API Endpoint:", `${process.env.NEXT_PUBLIC_API_URL}/refresh`);
+  console.log("Token received by refresh function:", token);
+  console.log("Access Token String being sent:", token.access_token);
+  console.log("Token expires at (timestamp):", token.accessTokenExpires);
+  console.log("Current time (timestamp):", Date.now());
+  console.log("===================================");
+  // --- KẾT THÚC DEBUG ---
+
   try {
-    const res = await axiosInstance.post(
-      '/refresh',
-      {}, // Laravel JWT không cần refresh_token riêng biệt
-      { headers: { Authorization: `Bearer ${token.access_token}`, Accept: 'application/json' } }
-    )
+    const res = await axios.post(
+      `${process.env.API_URL}/refresh`,
+      {},
+      { headers: { Authorization: `Bearer ${token.access_token}` } }
+    );
     const data = res.data
 
+    
+    
     return {
       ...token,
       access_token: data.access_token,
@@ -64,7 +78,7 @@ export const authOptions: NextAuthOptions = {
       credentials: {},
       async authorize(credentials) {
         const { email, password } = credentials as { email: string; password: string }
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+        const apiUrl = process.env.API_URL || 'http://localhost:8000'
 
         try {
           const res = await fetch(`${apiUrl}/login`, {
@@ -101,38 +115,49 @@ export const authOptions: NextAuthOptions = {
   pages: { signIn: '/login' },
 
   callbacks: {
-    async jwt({ token, user }) {
-      // Lần đầu login
-      if (user) {
+    async jwt({ token, user, account }) {
+      // ---- Lần đăng nhập đầu tiên ----
+      if (user && account) {
         return {
-          ...token,
           access_token: user.access_token,
           accessTokenExpires: user.accessTokenExpires,
-          refreshToken: user.refreshToken,
-          userData: user.userData
-        }
+          userData: user.userData,
+          
+          // Lấy các giá trị cần thiết mà NextAuth cần từ user
+          name: user.userData?.name,
+          email: user.userData?.email,
+          // `sub` (subject) thường là user id, rất quan trọng cho NextAuth
+          sub: user.userData?.id, 
+        };
       }
-
-      console.log('Token expires at:', token.accessTokenExpires);
-
-      // Token hết hạn → refresh
-      if (token.accessTokenExpires && Date.now() >= token.accessTokenExpires) {
-        const refreshed = await refreshAccessToken(token);
-        if (refreshed.access_token) return refreshed;
-        return resetToken(token);
+  
+      if (!token.access_token) {
+          return token;
       }
-
-      // Token còn hiệu lực
+  
+      // Thời gian đệm an toàn
+      const safetyBuffer = 20 * 1000;
+  
+      // Kiểm tra và refresh token
+      if (token.accessTokenExpires && Date.now() >= (token.accessTokenExpires - safetyBuffer)) {
+        console.log("Token is expiring, attempting to refresh...");
+        return refreshAccessToken(token); // Gọi hàm refresh của bạn
+      }
+  
+      // Token còn hiệu lực, trả về như cũ
       return token;
     },
-
+  
     async session({ session, token }) {
-      session.user = token.userData || session.user
-      session.access_token = token.access_token
-      session.error = token.error
-      return session
+      // Gán dữ liệu từ token "sạch" của chúng ta vào session để client sử dụng
+      session.user = token.userData || session.user;
+      session.access_token = token.access_token;
+      session.error = token.error;
+      
+      return session;
     }
   },
+  
 
   events: {
     async signOut({ token }) {
