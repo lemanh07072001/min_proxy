@@ -53,11 +53,8 @@ jobs:
             cd ${{ secrets.TARGET_DIR }}
             echo "Restarting the application with PM2..."
 
-            # Xóa các process errored cũ (nếu có)
-            pm2 delete mktproxy || true
-
             # Cài pm2 nếu chưa có
             command -v pm2 >/dev/null 2>&1 || npm install -g pm2
 
             # Restart hoặc start ứng dụng
-            pm2 start npm --name "mktproxy" -- run start
+             pm2 restart mktproxy || pm2 start npm --name "mktproxy" -- run start
