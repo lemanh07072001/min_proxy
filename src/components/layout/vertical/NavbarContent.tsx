@@ -73,18 +73,19 @@ const NavbarContent = ( ) => {
         )}
       </div>
       <div className='flex items-center gap-2'>
-        <Button variant='outlined'
-                onClick={() => setIsInputOpen(true)}
-                sx={{
-                  padding: '5px 10px',
-                  fontSize: '0.875rem',
-                  display: 'flex',
-                  gap: '10px',
-                }}
+        {data ? (<Button variant='outlined'
+                         onClick={() => setIsInputOpen(true)}
+                         sx={{
+                           padding: '5px 10px',
+                           fontSize: '0.875rem',
+                           display: 'flex',
+                           gap: '10px',
+                         }}
         >
           <Plus size={16} />
           Nạp tiền
-        </Button>
+        </Button>):null}
+
 
         <LanguageDropdown />
 

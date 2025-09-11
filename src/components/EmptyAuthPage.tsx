@@ -60,7 +60,7 @@ const EmptyAuthPage = ({ lang }: EmptyAuthPageProps) => {
         <button
           onClick={() => router.push(`/${lang}`)}
           style={{
-            background: '#3b82f6',
+            background: 'var(--primary-gradient)',
             color: 'white',
             border: 'none',
             padding: '12px 24px',
@@ -71,27 +71,12 @@ const EmptyAuthPage = ({ lang }: EmptyAuthPageProps) => {
             transition: 'all 0.3s ease',
             boxShadow: '0 4px 15px rgba(59, 130, 246, 0.3)'
           }}
-          onMouseOver={(e) => {
-            e.currentTarget.style.background = '#2563eb'
-            e.currentTarget.style.transform = 'translateY(-2px)'
-            e.currentTarget.style.boxShadow = '0 6px 20px rgba(59, 130, 246, 0.4)'
-          }}
-          onMouseOut={(e) => {
-            e.currentTarget.style.background = '#3b82f6'
-            e.currentTarget.style.transform = 'translateY(0)'
-            e.currentTarget.style.boxShadow = '0 4px 15px rgba(59, 130, 246, 0.3)'
-          }}
+
         >
           Đến trang đăng nhập
         </button>
 
-        <div style={{
-          marginTop: '2rem',
-          fontSize: '0.875rem',
-          opacity: 0.6
-        }}>
-          URL hiện tại: {pathname}
-        </div>
+
       </div>
     </div>
   )

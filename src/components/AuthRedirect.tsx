@@ -1,14 +1,41 @@
 'use client'
 
-// Type Imports
-import type { Locale } from '@configs/i18n'
+import { useSession } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
+import { useEffect } from 'react'
 
-// Component Imports
+import type { Locale } from '@configs/i18n'
 import EmptyAuthPage from './EmptyAuthPage'
 
-const AuthRedirect = ({ lang }: { lang: Locale }) => {
-  // Thay vì redirect, hiển thị EmptyAuthPage ngay tại route hiện tại
-  return <EmptyAuthPage lang={lang} />
+const AuthRedirect = ({
+                        lang,
+                        children
+                      }: {
+  lang: Locale
+  children: React.ReactNode
+}) => {
+  const { data: session, status } = useSession()
+  const router = useRouter()
+
+  useEffect(() => {
+    // Nếu đã có session thì chuyển hướng (có thể đổi URL tuỳ nhu cầu)
+    if (status === 'authenticated') {
+      router.push('/overview') // hoặc route bạn muốn
+    }
+  }, [status, router])
+
+  // Khi chưa xác định trạng thái, có thể hiển thị loading hoặc rỗng
+  if (status === 'loading') {
+    return null
+  }
+
+  // Nếu chưa login => hiện EmptyAuthPage
+  if (!session) {
+    return <EmptyAuthPage lang={lang} />
+  }
+
+  // Nếu đã login nhưng bạn muốn render children ngay khi redirect xong
+  return <>{children}</>
 }
 
 export default AuthRedirect
