@@ -1,18 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-
-import Box from '@mui/material/Box'
-import Table from '@mui/material/Table'
-import TableBody from '@mui/material/TableBody'
-import TableCell from '@mui/material/TableCell'
-import TableContainer from '@mui/material/TableContainer'
-import TableHead from '@mui/material/TableHead'
-import TableRow from '@mui/material/TableRow'
-import TablePagination from '@mui/material/TablePagination'
-import InputBase from '@mui/material/InputBase'
-import Paper from '@mui/material/Paper'
-
+import Image from 'next/image'
 import {
   TriangleAlert,
   Copy,
@@ -24,9 +13,6 @@ import {
   Key,
   Clock,
   Clock3,
-  ArrowDownUp,
-  ArrowDownWideNarrow,
-  ArrowUpNarrowWide,
   List
 } from 'lucide-react'
 
@@ -58,7 +44,12 @@ import { useCopy } from '@/app/hooks/useCopy'
 
 import { ChangePassword } from './ChangePassword'
 
-export default function OrderProxyPage({ data }) {
+import { useQuery } from '@tanstack/react-query'
+
+import useAxiosAuth from '@/hocs/useAxiosAuth'
+
+
+export default function OrderProxyPage() {
   const [columnFilters, setColumnFilters] = useState([])
   const [rowSelection, setRowSelection] = useState({}) // State để lưu các hàng được chọn
   const [sorting, setSorting] = useState([])
@@ -69,9 +60,20 @@ export default function OrderProxyPage({ data }) {
     pageSize: 10
   })
 
+  const axiosAuth = useAxiosAuth()
   const [, copy] = useCopy()
 
-  const dataOrder = useMemo(() => data || [], [data])
+  const {
+    data: userData = [],
+    isLoading,
+  } = useQuery({
+    queryKey: ['orderProxyStatic'],
+    queryFn: async () => {
+      const res = await axiosAuth.get('/get-order-proxy-static')
+      return res.data.data
+    }
+  })
+
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -209,7 +211,7 @@ export default function OrderProxyPage({ data }) {
   )
 
   const table = useReactTable({
-    data: dataOrder,
+    data: userData,
     columns,
     state: {
       rowSelection,
@@ -304,15 +306,39 @@ export default function OrderProxyPage({ data }) {
                   ))}
                 </thead>
                 <tbody>
-                  {table.getRowModel().rows.map(row => (
-                    <tr className='table-row' key={row.id}>
-                      {row.getVisibleCells().map(cell => (
-                        <td className='table-cell' key={cell.id}>
-                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                        </td>
-                      ))}
+                  {isLoading ? (
+                    <tr>
+                      <td colSpan={columns.length} className='py-10 text-center'>
+                        <div className='loader-wrapper'>
+                          <div className='loader'>
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                          </div>
+                          <p className='loading-text'>Đang tải dữ liệu...</p>
+                        </div>
+                      </td>
                     </tr>
-                  ))}
+                  ) : table.getRowModel().rows.length === 0 ? (
+                    <tr>
+                      <td colSpan={columns.length} className='py-10 text-center'>
+                        <div className='flex flex-col items-center justify-center'>
+                          <Image src='/images/no-data.svg' alt='No data' width={160} height={160} />
+                          <p className='mt-4 text-gray-500'>Không có dữ liệu</p>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : (
+                    table.getRowModel().rows.map(row => (
+                      <tr className='table-row' key={row.id}>
+                        {row.getVisibleCells().map(cell => (
+                          <td className='table-cell' key={cell.id}>
+                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                          </td>
+                        ))}
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>

@@ -52,7 +52,7 @@ async function refreshAccessToken(token: JWT) {
     );
     const data = res.data
 
-    
+    console.log(data)
     
     return {
       ...token,
