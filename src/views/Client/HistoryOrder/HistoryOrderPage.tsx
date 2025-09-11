@@ -52,12 +52,12 @@ export default function HistoryOrderPage() {
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'active':
-        return <Chip label='Đang hoạt động' size='small' icon={<BadgeCheck />} color='success' />
+      case 'pending':
+        return <Chip label='Chờ xử lý' size='small' icon={<BadgeCheck />} color='warning' />
+      case 'completed':
+        return <Chip label='Hoàn thành' size='small' icon={<TriangleAlert />} color='success' />
       case 'expired':
-        return <Chip label='Hết hạn' size='small' icon={<TriangleAlert />} color='error' />
-      case 'suspended':
-        return <Chip label='Tạm dừng' size='small' icon={<BadgeMinus />} color='warning' />
+        return <Chip label='Hết hạn' size='small' icon={<BadgeMinus />} color='error' />
       default:
         return <Chip label='Không xác định' size='small' icon={<CircleQuestionMark />} color='secondary' />
     }
@@ -66,33 +66,25 @@ export default function HistoryOrderPage() {
   const columns = useMemo(
     () => [
       {
-        accessorKey: 'orderId',
+        accessorKey: 'order_code',
         header: 'ID'
       },
       {
-        accessorKey: 'provider',
-        header: 'Nhà mạng',
-        cell: ({ row }) => {
-          return <span className='text-red'>viettel</span>
-        }
-      },
-      {
-        accessorKey: 'account',
+        accessorKey: 'user.email',
         header: 'Tài khoản'
       },
       {
-        accessorKey: 'amount',
         header: 'Số tiền',
         cell: ({ row }) => (
           <div>
-            <div className='font-bold'>{row.original.amount}</div>
-            <span className='font-sm'>Số tiền: {row.original.amount} VND</span>
+            <div className='font-bold'>{new Intl.NumberFormat('vi-VN').format(row.original.total_amount) + ' đ'}</div>
+            <span className='font-sm'>Số tiền: {new Intl.NumberFormat('vi-VN').format(row.original.price_per_unit) + ' đ'} VND</span>
           </div>
         )
       },
       {
-        accessorKey: 'mst',
-        header: 'MST'
+        accessorKey: 'quantity',
+        header: 'Số lượng'
       },
       {
         accessorKey: 'status',
@@ -102,13 +94,13 @@ export default function HistoryOrderPage() {
         }
       },
       {
-        accessorKey: 'content',
-        header: 'Note'
+        accessorKey: 'buy_at',
+        header: 'Ngày mua'
       },
       {
-        accessorKey: 'date',
-        header: 'Ngày'
-      }
+        accessorKey: 'expired_at',
+        header: 'Ngày hết hạn'
+      },
     ],
     []
   )
