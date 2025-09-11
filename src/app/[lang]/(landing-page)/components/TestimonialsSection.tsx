@@ -8,33 +8,30 @@ const TestimonialsSection = () => {
   const testimonials = [
     {
       id: 1,
-      name: 'Lê Thanh Bình',
+      name: 'Nguyễn Thanh Bình',
       role: 'Kinh doanh proxy full time',
       avatar:
         'https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop&crop=face',
       rating: 5,
-      content:
-        'Tôi là đại lý từ những ngày đầu Home Proxy ra mắt và rất bất ngờ với sự chuyên nghiệp trong cách vận hành và hỗ trợ. Tôi có website riêng được tùy chỉnh theo ý mình, chính sách rõ ràng, chăm sóc kỹ lưỡng. Đây là nền tảng đáng tin cậy và nghiêm túc trong mảng proxy.'
+      content: `Tôi là đại lý từ những ngày đầu ${process.env.NEXT_PUBLIC_APP_NAME} ra mắt và rất bất ngờ với sự chuyên nghiệp trong cách vận hành và hỗ trợ. Tôi có website riêng được tùy chỉnh theo ý mình, chính sách rõ ràng, chăm sóc kỹ lưỡng. Đây là nền tảng đáng tin cậy và nghiêm túc trong mảng proxy.`
     },
     {
       id: 2,
-      name: 'Minh Tuấn.',
+      name: 'Nguyễn Hoa',
       role: 'Đại lý kinh doanh proxy tại TP.HCM',
       avatar:
         'https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop&crop=face',
       rating: 5,
-      content:
-        'Ban đầu tôi rất ngại bán hàng qua web vì sợ phức tạp và chi phí cao. Nhưng từ khi tham gia chương trình đại lý web riêng của Home Proxy, tôi được hỗ trợ tận tình, miễn phí web riêng và tăng hẳn 3 triệu trải nghiệm. Giờ tôi bán proxy ổn định hàng tháng, khởi đầu nhẹ nhàng đồng thú.'
+      content: `Ban đầu tôi rất ngại bán hàng qua web vì sợ phức tạp và chi phí cao. Nhưng từ khi tham gia chương trình đại lý web riêng của ${process.env.NEXT_PUBLIC_APP_NAME}, tôi được hỗ trợ tận tình, miễn phí web riêng và tăng hẳn 3 triệu trải nghiệm. Giờ tôi bán proxy ổn định hàng tháng, khởi đầu nhẹ nhàng đồng thú.`
     },
     {
       id: 3,
-      name: 'Nguyễn Quốc Huy',
-      role: 'Đối tác web riêng Home Proxy',
+      name: 'Vũ Huy',
+      role: `Đối tác web riêng ${process.env.NEXT_PUBLIC_APP_NAME}`,
       avatar:
         'https://images.pexels.com/photos/1681010/pexels-photo-1681010.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop&crop=face',
       rating: 5,
-      content:
-        'Tôi hài lòng khi tìm đại lý Home Proxy vì cảm giác được đồng hành thật sự. Không chỉ lấy sản phẩm bán lại, tôi được hỗ trợ thiết kế web riêng chuyên nghiệp, xây dựng thương hiệu có nhận rõ ràng, tạo sự tin tưởng với khách hàng và luôn được Home Proxy hỗ trợ khi cần.'
+      content: `Tôi hài lòng khi tìm đại lý ${process.env.NEXT_PUBLIC_APP_NAME} vì cảm giác được đồng hành thật sự. Không chỉ lấy sản phẩm bán lại, tôi được hỗ trợ thiết kế web riêng chuyên nghiệp, xây dựng thương hiệu có nhận rõ ràng, tạo sự tin tưởng với khách hàng và luôn được ${process.env.NEXT_PUBLIC_APP_NAME} hỗ trợ khi cần.`
     },
     {
       id: 4,
@@ -43,8 +40,7 @@ const TestimonialsSection = () => {
       avatar:
         'https://images.pexels.com/photos/1043471/pexels-photo-1043471.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop&crop=face',
       rating: 5,
-      content:
-        'Sau nhiều năm sử dụng proxy từ nhiều nhà cung cấp khác nhau, tôi thấy Home Proxy có chất lượng ổn định nhất. IP sạch, tốc độ nhanh, ít bị block. Đặc biệt là team support rất nhiệt tình, giải quyết vấn đề nhanh chóng 24/7.'
+      content: `Sau nhiều năm sử dụng proxy từ nhiều nhà cung cấp khác nhau, tôi thấy ${process.env.NEXT_PUBLIC_APP_NAME} có chất lượng ổn định nhất. IP sạch, tốc độ nhanh, ít bị block. Đặc biệt là team support rất nhiệt tình, giải quyết vấn đề nhanh chóng 24/7.`
     },
     {
       id: 5,
@@ -53,8 +49,7 @@ const TestimonialsSection = () => {
       avatar:
         'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop&crop=face',
       rating: 5,
-      content:
-        'Home Proxy đã giúp công ty chúng tôi tiết kiệm rất nhiều chi phí và thời gian. Hệ thống proxy ổn định, dễ sử dụng, và quan trọng nhất là có đội ngũ kỹ thuật hỗ trợ chuyên nghiệp. Chúng tôi rất hài lòng với dịch vụ này.'
+      content: `${process.env.NEXT_PUBLIC_APP_NAME} đã giúp công ty chúng tôi tiết kiệm rất nhiều chi phí và thời gian. Hệ thống proxy ổn định, dễ sử dụng, và quan trọng nhất là có đội ngũ kỹ thuật hỗ trợ chuyên nghiệp. Chúng tôi rất hài lòng với dịch vụ này.`
     }
   ]
 

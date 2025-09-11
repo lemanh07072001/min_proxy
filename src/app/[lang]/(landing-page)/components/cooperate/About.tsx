@@ -35,8 +35,7 @@ const About = () => {
                     <Users className='w-8 h-8 text-red-600' />
                   </div>
                 </div>
-                <div className='text-4xl font-bold text-red-600'>HOME</div>
-                <div className='text-4xl font-bold text-gray-800'>PROXY</div>
+                <div className='text-4xl font-bold text-red-600'>{process.env.NEXT_PUBLIC_APP_NAME}</div>
               </div>
             </div>
 

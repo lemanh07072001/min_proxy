@@ -37,8 +37,8 @@ const Hero = () => {
 
           {/* Subtitle */}
           <p className='text-xl md:text-2xl text-gray-300 mb-8 max-w-3xl mx-auto leading-relaxed'>
-            Home Proxy luôn đặt quyền lợi của đại lý làm ưu tiên hàng đầu, cam kết mang đến sự hỗ trợ thiết thực và tối
-            ưu nhất
+            {process.env.NEXT_PUBLIC_APP_NAME} luôn đặt quyền lợi của đại lý làm ưu tiên hàng đầu, cam kết mang đến sự
+            hỗ trợ thiết thực và tối ưu nhất
           </p>
 
           {/* Features */}

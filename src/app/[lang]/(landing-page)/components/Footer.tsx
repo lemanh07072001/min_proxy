@@ -131,7 +131,9 @@ const Footer = () => {
                   <a href='#'>Service Agreement</a>
                   <a href='#'>Refund Policy</a>
                 </div>
-                <div className='copyright'>© 2025 HOME PROXY COMPANY LIMITED. All Rights Reserved</div>
+                <div className='copyright'>
+                  © 2025 {process.env.NEXT_PUBLIC_APP_NAME} COMPANY LIMITED. All Rights Reserved
+                </div>
               </div>
             </div>
           </div>

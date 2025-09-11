@@ -14,28 +14,13 @@ import {
 import Chip from '@mui/material/Chip'
 
 import Pagination from '@mui/material/Pagination'
-import { FormControlLabel } from '@mui/material'
-import Checkbox from '@mui/material/Checkbox'
 
 export default function HistoryOrderPage({ data }) {
-  const [showPasswords, setShowPasswords] = useState<{ [key: string]: boolean }>({})
-  const [currentPage, setCurrentPage] = useState(1)
-  const [pageSize, setPageSize] = useState(50)
-  const [searchTerm, setSearchTerm] = useState('')
   const [rowSelection, setRowSelection] = useState({}) // State để lưu các hàng được chọn
 
   const dataOrder = useMemo(() => data, [data])
 
-  const togglePasswordVisibility = (proxyId: string) => {
-    setShowPasswords(prev => ({
-      ...prev,
-      [proxyId]: !prev[proxyId]
-    }))
-  }
-
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text)
-  }
+  console.log(dataOrder)
 
   const getProviderColor = (provider: string) => {
     switch (provider.toLowerCase()) {
@@ -63,42 +48,8 @@ export default function HistoryOrderPage({ data }) {
     }
   }
 
-  const totalPages = Math.ceil(dataOrder.length / pageSize)
-
   const columns = useMemo(
     () => [
-      // {
-      //   id: 'select',
-      //   header: ({ table }) => (
-      //     <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-      //       <FormControlLabel
-      //         control={
-      //           <Checkbox
-      //             checked={table.getIsAllRowsSelected()}
-      //             indeterminate={table.getIsSomeRowsSelected()}
-      //             onChange={table.getToggleAllRowsSelectedHandler()}
-      //           />
-      //         }
-      //         label="" // bỏ label để không chiếm chỗ
-      //       />
-      //     </div>
-      //   ),
-      //   cell: ({ row }) => (
-      //     <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-      //       <FormControlLabel
-      //         control={
-      //           <Checkbox
-      //             checked={row.getIsSelected()}
-      //             disabled={!row.getCanSelect()}
-      //             onChange={row.getToggleSelectedHandler()}
-      //           />
-      //         }
-      //         label=""
-      //       />
-      //     </div>
-      //   ),
-      //   size: 40,
-      // },
       {
         accessorKey: 'orderId',
         header: 'ID'

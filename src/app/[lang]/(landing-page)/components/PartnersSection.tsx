@@ -76,7 +76,8 @@ const PartnersSection = () => {
             <span className='title-highlight'>Đối tác</span> của chúng tôi
           </h2>
           <p className='partners-subtitle'>
-            Chọn chỗ gì mà không hợp tác cùng Home Proxy - Một trong những nhà cung cấp proxy uy tín và giá rẻ.
+            Chọn chỗ gì mà không hợp tác cùng {process.env.NEXT_PUBLIC_APP_NAME} - Một trong những nhà cung cấp proxy uy
+            tín và giá rẻ.
           </p>
         </div>
 

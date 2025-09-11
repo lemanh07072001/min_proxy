@@ -24,7 +24,7 @@ export default function MenuMobile({ onClose }: MenuMobileProps) {
       <div className='mobile-header'>
         <div className='mobile-logo'>
           <Image src={logo} alt='Minsoftware Logo' width={40} height={40} />
-          <span>MIN PROXY</span>
+          <span>{process.env.NEXT_PUBLIC_APP_NAME}</span>
         </div>
         {/* Close Button */}
         <button className='btn-close-menu' onClick={onClose} aria-label='Đóng menu'>

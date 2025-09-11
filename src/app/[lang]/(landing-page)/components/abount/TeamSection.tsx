@@ -88,18 +88,19 @@ const TeamSection = () => {
           <div className='space-y-8'>
             <div>
               <p className='text-orange-500 font-semibold text-lg mb-4'>Đội ngũ</p>
-              <h2 className='text-3xl md:text-4xl font-bold text-gray-900 mb-6'>Min Proxy</h2>
+              <h2 className='text-3xl md:text-4xl font-bold text-gray-900 mb-6'>{process.env.NEXT_PUBLIC_APP_NAME}</h2>
               <p className='text-gray-600 text-lg leading-relaxed mb-8'>
-                Đội ngũ Min Proxy gồm những chuyên gia công nghệ giàu kinh nghiệm, tận tâm và nhiệt huyết. Chúng tôi cam
-                kết mang đến dịch vụ proxy chất lượng cao và hỗ trợ khách hàng tận tình 24/7.
+                Đội ngũ {process.env.NEXT_PUBLIC_APP_NAME} gồm những chuyên gia công nghệ giàu kinh nghiệm, tận tâm và
+                nhiệt huyết. Chúng tôi cam kết mang đến dịch vụ proxy chất lượng cao và hỗ trợ khách hàng tận tình 24/7.
               </p>
             </div>
 
             <div className='space-y-6'>
               <h3 className='text-xl font-bold text-gray-900'>Đội ngũ chuyên nghiệp - Kinh nghiệm 5+ năm</h3>
               <p className='text-gray-600 leading-relaxed'>
-                Đội ngũ Min Proxy được tuyển chọn kỹ lưỡng từ những chuyên gia hàng đầu trong lĩnh vực mạng và bảo mật.
-                Với kinh nghiệm trung bình 5+ năm, chúng tôi hiểu rõ nhu cầu và thách thức của khách hàng.
+                Đội ngũ {process.env.NEXT_PUBLIC_APP_NAME} được tuyển chọn kỹ lưỡng từ những chuyên gia hàng đầu trong
+                lĩnh vực mạng và bảo mật. Với kinh nghiệm trung bình 5+ năm, chúng tôi hiểu rõ nhu cầu và thách thức của
+                khách hàng.
               </p>
               <p className='text-gray-600 leading-relaxed'>
                 Chúng tôi không chỉ cung cấp dịch vụ mà còn đồng hành cùng khách hàng trong suốt quá trình sử dụng. Đội
