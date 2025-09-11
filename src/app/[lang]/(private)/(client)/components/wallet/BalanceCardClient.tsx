@@ -43,18 +43,7 @@ export default function BalanceCardClient({
               <div className='text-2xl font-bold mb-2'>
                 {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(user?.sodu ?? 0)}
               </div>
-              <div className='text-orange-100 text-sm'>
-                {session.status === 'authenticated' ? (
-                  null
-                ) : (
-                  <button
-                    className='bg-white bg-opacity-20 hover:bg-opacity-30 text-gray-900 px-4 py-2 rounded-lg flex items-center space-x-2 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105'
-                    onClick={() => openAuthModal('login')}
-                  >
-                    Đăng nhập
-                  </button>
-                )}
-              </div>
+
             </div>
           </motion.div>
         )}
