@@ -1,8 +1,18 @@
 'use client'
 
 import React, { useState, useEffect, useContext } from 'react'
+
 import Image from 'next/image'
+
 import { motion, useScroll, useTransform } from 'framer-motion'
+
+import Box from '@mui/material/Box'
+
+import { SessionContext } from 'next-auth/react'
+
+import { User } from 'lucide-react'
+
+import VuexyLogo from '@core/svg/Logo'
 
 import logo from '../../../../../public/images/logo/logo-minsoftware-new-small.png'
 import MenuDesktop from './menus/MenuDesktop'
@@ -12,20 +22,16 @@ import UserDropdown from '@components/layout/shared/UserDropdown'
 import AuthModal from '@/components/modals/AuthModal'
 import { useModalContext } from '@/app/contexts/ModalContext'
 import { useResponsive } from '@/app/hooks/useResponsive'
-import Box from '@mui/material/Box'
-import { SessionContext } from 'next-auth/react'
-import Button from '@mui/material/Button'
-import Avatar from '@mui/material/Avatar'
+
 import CustomAvatar from '@core/components/mui/Avatar'
 import CustomIconButton from '@core/components/mui/IconButton'
-import { User } from 'lucide-react'
 
 const MainHeader = () => {
   const [isOpenMenu, setIsOpenMenu] = useState<boolean>(false)
   const { scrollY } = useScroll()
   const { isMobile } = useResponsive()
   const { openAuthModal } = useModalContext()
-  const {data} = useContext(SessionContext);
+  const { data } = useContext(SessionContext)
 
   // 1. ĐÃ XÓA: state `scrolled` và useEffect theo dõi scroll thủ công.
   //    Tất cả hiệu ứng scroll giờ đây đều do Framer Motion xử lý.
@@ -95,7 +101,7 @@ const MainHeader = () => {
         <div className='container-lg'>
           {/* Logo */}
           <a className='navbar-brand navbar-brand-custom d-flex align-items-center logo' href='#'>
-            <Image src={logo} alt='Minsoftware Logo' width={50} height={50} />
+            <VuexyLogo className='text-2xl text-primary' />
           </a>
 
           <div className='header-mobile'>
@@ -109,26 +115,30 @@ const MainHeader = () => {
               <span className='navbar-toggler-icon'></span>
             </button>
 
-            <Box sx={{
-              display: 'flex',
-              alignItems: 'center',
-            }}>
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center'
+              }}
+            >
               <LanguageDropdown />
-              {data ? (<UserDropdown />) : (
-                <CustomIconButton aria-label='capture screenshot' color='primary' size='small' onClick={handleOpenModalLogin}>
-                 <User />
+              {data ? (
+                <UserDropdown />
+              ) : (
+                <CustomIconButton
+                  aria-label='capture screenshot'
+                  color='primary'
+                  size='small'
+                  onClick={handleOpenModalLogin}
+                >
+                  <User />
                 </CustomIconButton>
               )}
-
             </Box>
           </div>
 
           <div className={` navbar-collapse ${isOpenMenu ? 'show' : ''}`} id='navbarNav'>
-            {isMobile ? (
-              <MenuMobile onClose={handleCloseMenu} />
-            ) : (
-              <MenuDesktop />
-            )}
+            {isMobile ? <MenuMobile onClose={handleCloseMenu} /> : <MenuDesktop />}
           </div>
         </div>
       </motion.nav>

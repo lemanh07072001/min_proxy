@@ -57,7 +57,8 @@ const menuSectionContentStyles: CSSProperties = {
   position: 'relative',
   paddingBlock: '0.75rem',
   paddingInline: '1.25rem',
-  overflow: 'hidden'
+  overflow: 'hidden',
+  marginTop: '0px'
 }
 
 const MenuSection: ForwardRefRenderFunction<HTMLLIElement, MenuSectionProps> = (props, ref) => {

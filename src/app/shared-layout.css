@@ -83,6 +83,12 @@ ul:not([class]) {
   padding-block-start: 35px;
 }
 
+.ts-menu-button {
+  font-weight: 500;
+  color: #495262;
+  font-size: 14px;
+}
+
 /* ===== PERFECT SCROLLBAR STYLES ===== */
 /* Fix popout/submenu closing issue */
 [data-floating-ui-safe-polygon] .scrollbar-container {
@@ -188,9 +194,8 @@ ul:not([class]) {
   margin-inline-start: 16px;
 }
 .ts-vertical-layout-content {
-  padding-top: 33px;
-  padding-left: 16px;
-  padding-right: 16px;
+  padding-block-start: 33px;
+  padding-inline: 16px;
 }
 
 .sidebar-toggle:hover {

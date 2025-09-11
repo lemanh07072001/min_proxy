@@ -37,7 +37,7 @@ import StyledVerticalNavExpandIcon from '@menu/styles/vertical/StyledVerticalNav
 // Style Imports
 import menuItemStyles from '@core/styles/vertical/menuItemStyles'
 import menuSectionStyles from '@core/styles/vertical/menuSectionStyles'
-import { getDictionary } from '@/utils/getDictionary'
+import type { getDictionary } from '@/utils/getDictionary'
 import BalanceCard from '@/app/[lang]/(private)/(client)/components/wallet/BalanceCard'
 
 type RenderExpandIconProps = {
@@ -187,11 +187,22 @@ const VerticalMenu = ({ scrollMenu, dictionary }: Props) => {
         menuSectionStyles={menuSectionStyles(verticalNavOptions, theme)}
       >
         <MenuSection label='Trang chủ' rootStyles={menuSectionHeaderStyles}>
-          <MenuItem icon={<ChartColumn />} rootStyles={getMenuItemStyles('overview')} href={`/${locale}/overview`}>
+          <MenuItem
+            icon={<ChartColumn size={20} strokeWidth={1.5} />}
+            rootStyles={getMenuItemStyles('overview')}
+            href={`/${locale}/overview`}
+          >
             {dictionary['navigation'].overview}
           </MenuItem>
+        </MenuSection>
 
-          <SubMenu label={dictionary['navigation'].proxy} icon={<Globe />} rootStyles={subMenuStyles} defaultOpen={isProxySubMenuActive}>
+        <MenuSection label='Dịch vụ' rootStyles={menuSectionHeaderStyles}>
+          <SubMenu
+            label={dictionary['navigation'].proxy}
+            icon={<Globe size={20} strokeWidth={1.5} />}
+            rootStyles={subMenuStyles}
+            defaultOpen={isProxySubMenuActive}
+          >
             <MenuItem rootStyles={getMenuItemStyles('proxy-tinh')} href={`/${locale}/proxy-tinh`}>
               {dictionary['navigation'].staticProxy}
             </MenuItem>
@@ -202,46 +213,50 @@ const VerticalMenu = ({ scrollMenu, dictionary }: Props) => {
 
           {/* Các MenuItem khác giữ nguyên */}
           <MenuItem
-            icon={<ShoppingBag />}
+            icon={<ShoppingBag size={20} strokeWidth={1.5} />}
             rootStyles={getMenuItemStyles('check-proxy')}
             href={`/${locale}/check-proxy`}
           >
             {dictionary['navigation'].checkProxy}
           </MenuItem>
           <MenuItem
-            icon={<ReceiptText />}
+            icon={<ReceiptText size={20} strokeWidth={1.5} />}
             rootStyles={getMenuItemStyles('order-proxy')}
             href={`/${locale}/order-proxy`}
           >
             {dictionary['navigation'].proxyOrders}
           </MenuItem>
           <MenuItem
-            icon={<PackagePlus />}
+            icon={<PackagePlus size={20} strokeWidth={1.5} />}
             rootStyles={getMenuItemStyles('order-rotating-proxy')}
             href={`/${locale}/order-rotating-proxy`}
           >
             {dictionary['navigation'].rotatingProxyOrders}
           </MenuItem>
           <MenuItem
-            icon={<History />}
+            icon={<History size={20} strokeWidth={1.5} />}
             rootStyles={getMenuItemStyles('history-order')}
             href={`/${locale}/history-order`}
           >
             {dictionary['navigation'].purchaseHistory}
           </MenuItem>
           <MenuItem
-            icon={<FileText />}
+            icon={<FileText size={20} strokeWidth={1.5} />}
             rootStyles={getMenuItemStyles('transaction-history')}
-            href={`/${locale}/transaction-history`}>
+            href={`/${locale}/transaction-history`}
+          >
             {dictionary['navigation'].transactionHistory}
           </MenuItem>
-          <MenuItem icon={<History />} rootStyles={baseMenuItemStyles}>
+          <MenuItem icon={<History size={20} strokeWidth={1.5} />} rootStyles={baseMenuItemStyles}>
             {dictionary['navigation'].proxyChangeHistory}
           </MenuItem>
-          <MenuItem icon={<User />} rootStyles={baseMenuItemStyles}>
+        </MenuSection>
+
+        <MenuSection label='Liên hệ' rootStyles={menuSectionHeaderStyles}>
+          <MenuItem icon={<User size={20} strokeWidth={1.5} />} rootStyles={baseMenuItemStyles}>
             {dictionary['navigation'].guide}
           </MenuItem>
-          <MenuItem icon={<MessageCircleQuestionMark />} rootStyles={baseMenuItemStyles}>
+          <MenuItem icon={<MessageCircleQuestionMark size={20} strokeWidth={1.5} />} rootStyles={baseMenuItemStyles}>
             {dictionary['navigation'].support}
           </MenuItem>
         </MenuSection>
