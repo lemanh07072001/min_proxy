@@ -14,13 +14,28 @@ import {
 import Chip from '@mui/material/Chip'
 
 import Pagination from '@mui/material/Pagination'
+import { useQuery } from '@tanstack/react-query'
+import useAxiosAuth from '@/hocs/useAxiosAuth'
+import { useCopy } from '@/app/hooks/useCopy'
+import Image from 'next/image'
 
-export default function HistoryOrderPage({ data }) {
+export default function HistoryOrderPage() {
   const [rowSelection, setRowSelection] = useState({}) // State để lưu các hàng được chọn
 
-  const dataOrder = useMemo(() => data, [data])
+  const axiosAuth = useAxiosAuth()
+  const [, copy] = useCopy()
 
-  console.log(dataOrder)
+
+  const {
+    data: dataOrders = [],
+    isLoading,
+  } = useQuery({
+    queryKey: ['orderProxyStatic'],
+    queryFn: async () => {
+      const res = await axiosAuth.get('/get-order')
+      return res.data.data
+    }
+  })
 
   const getProviderColor = (provider: string) => {
     switch (provider.toLowerCase()) {
@@ -99,7 +114,7 @@ export default function HistoryOrderPage({ data }) {
   )
 
   const table = useReactTable({
-    data,
+    data: dataOrders,
     columns,
     state: {
       rowSelection
@@ -131,18 +146,41 @@ export default function HistoryOrderPage({ data }) {
           <div className='table-wrapper'>
             <table className='data-table'>
               <thead className='table-header'>
-                {table.getHeaderGroups().map(headerGroup => (
-                  <tr key={headerGroup.id}>
-                    {headerGroup.headers.map(header => (
-                      <th className='table-header th' key={header.id}>
-                        {flexRender(header.column.columnDef.header, header.getContext())}
-                      </th>
-                    ))}
-                  </tr>
-                ))}
+              {table.getHeaderGroups().map(headerGroup => (
+                <tr key={headerGroup.id}>
+                  {headerGroup.headers.map(header => (
+                    <th className='table-header th' key={header.id}>
+                      {flexRender(header.column.columnDef.header, header.getContext())}
+                    </th>
+                  ))}
+                </tr>
+              ))}
               </thead>
               <tbody>
-                {table.getRowModel().rows.map(row => (
+              {isLoading ? (
+                <tr>
+                  <td colSpan={columns.length} className='py-10 text-center'>
+                    <div className='loader-wrapper'>
+                      <div className='loader'>
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                      </div>
+                      <p className='loading-text'>Đang tải dữ liệu...</p>
+                    </div>
+                  </td>
+                </tr>
+              ) : table.getRowModel().rows.length === 0 ? (
+                <tr>
+                  <td colSpan={columns.length} className='py-10 text-center'>
+                    <div className='flex flex-col items-center justify-center'>
+                      <Image src='/images/no-data.png' alt='No data' width={160} height={160} />
+                      <p className='mt-4 text-gray-500'>Không có dữ liệu</p>
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                table.getRowModel().rows.map(row => (
                   <tr className='table-row' key={row.id}>
                     {row.getVisibleCells().map(cell => (
                       <td className='table-cell' key={cell.id}>
@@ -150,7 +188,8 @@ export default function HistoryOrderPage({ data }) {
                       </td>
                     ))}
                   </tr>
-                ))}
+                ))
+              )}
               </tbody>
             </table>
           </div>
