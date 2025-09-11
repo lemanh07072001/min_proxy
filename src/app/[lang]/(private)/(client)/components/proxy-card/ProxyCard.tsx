@@ -107,10 +107,9 @@ const useBuyProxy = () => {
       queryClient.invalidateQueries({ queryKey: ['proxyData'] })
     },
     onError: error => {
-      toast.error('Lỗi hệ thông xin vui lòng liên hệ Admin.')
+      toast.error(error.response?.data.message || 'Lỗi không xác định')
 
-      // Xử lý khi request thất bại
-      console.error('Lỗi khi mua proxy:', error.response?.data || error.message)
+      console.error('Lỗi khi mua proxy:', error.response?.data.messqge || error.message)
     }
   })
 
