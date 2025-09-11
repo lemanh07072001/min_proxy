@@ -274,7 +274,7 @@ export default function OrderRotatingProxyPage() {
                   <tr>
                     <td colSpan={columns.length} className='py-10 text-center'>
                       <div className='flex flex-col items-center justify-center'>
-                        <Image src='/images/no-data.svg' alt='No data' width={160} height={160} />
+                        <Image src='/images/no-data.png' alt='No data' width={160} height={160} />
                         <p className='mt-4 text-gray-500'>Không có dữ liệu</p>
                       </div>
                     </td>
