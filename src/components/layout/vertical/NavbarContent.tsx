@@ -1,7 +1,7 @@
 'use client'
 
 // React Imports
-import { useContext } from 'react'
+import { useContext, useState } from 'react'
 
 import { createPortal } from 'react-dom'
 
@@ -22,11 +22,37 @@ import { verticalLayoutClasses } from '@layouts/utils/layoutClasses'
 
 import LanguageDropdown from '@components/layout/shared/LanguageDropdown'
 import Button from '@mui/material/Button'
+import RechargeInputDialog from '@/app/[lang]/(private)/(client)/components/wallet/RechargeInputDialog'
+import QrCodeDisplayDialog from '@/app/[lang]/(private)/(client)/components/wallet/QrCodeDisplayDialog'
+import { useQuery } from '@tanstack/react-query'
+import { Plus } from 'lucide-react'
 
-const NavbarContent = () => {
+// Interface để định nghĩa cấu trúc dữ liệu giao dịch
+interface TransactionData {
+  qrUrl: string | null
+  amount: string
+  rechargeAmount: string
+}
+
+
+const NavbarContent = ( ) => {
   // Log session để debug
   const {data} = useContext(SessionContext);
   const { openAuthModal } = useModalContext();
+  const [isInputOpen, setIsInputOpen] = useState(false)
+  const [isQrOpen, setIsQrOpen] = useState(false)
+
+  const [transactionData, setTransactionData] = useState<TransactionData>({
+    qrUrl: null,
+    amount: '',
+    rechargeAmount: ''
+  })
+
+  const handleGenerateQr = (data: { qrUrl: string; amount: string; rechargeAmount: string }) => {
+    setTransactionData(data)
+    setIsInputOpen(false)
+    setIsQrOpen(true)
+  }
 
   const handleOpenLoginModal = () => {
     openAuthModal('login')
@@ -47,6 +73,19 @@ const NavbarContent = () => {
         )}
       </div>
       <div className='flex items-center gap-2'>
+        <Button variant='outlined'
+                onClick={() => setIsInputOpen(true)}
+                sx={{
+                  padding: '5px 10px',
+                  fontSize: '0.875rem',
+                  display: 'flex',
+                  gap: '10px',
+                }}
+        >
+          <Plus size={16} />
+          Nạp tiền
+        </Button>
+
         <LanguageDropdown />
 
         {/* Hiển thị UserDropdown nếu đã đăng nhập, button đăng nhập nếu chưa */}
@@ -73,7 +112,22 @@ const NavbarContent = () => {
           <AuthModal />,
           document.body
         )}
+
+      <RechargeInputDialog
+        isOpen={isInputOpen}
+        handleClose={() => setIsInputOpen(false)}
+        onGenerateQr={handleGenerateQr}
+      />
+
+      <QrCodeDisplayDialog
+        isOpen={isQrOpen}
+        handleClose={() => setIsQrOpen(false)}
+        qrDataUrl={transactionData.qrUrl}
+        amount={transactionData.amount}
+        rechargeAmount={transactionData.rechargeAmount}
+      />
     </div>
+
   )
 }
 

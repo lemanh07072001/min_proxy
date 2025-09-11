@@ -219,3 +219,4 @@ Sử dụng component `TokenResetTest` để test các chức năng:
 3. **Token Expiration**: Thiết lập thời gian hết hạn hợp lý
 4. **Refresh Token**: Sử dụng refresh token để bảo mật cao hơn
 5. **Logout Invalidation**: Đảm bảo token bị invalidate khi logout
+

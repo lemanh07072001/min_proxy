@@ -59,11 +59,7 @@ html {
 }
 
 body {
-  font-family:
-    'Inter',
-    -apple-system,
-    BlinkMacSystemFont,
-    sans-serif;
+
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
   color: #2d3748;
   line-height: 1.6;
@@ -87,6 +83,20 @@ ul:not([class]) {
   font-weight: 500;
   color: #495262;
   font-size: 14px;
+}
+
+.ts-menu-section-label {
+  font-size: 13px !important;
+  color: #8f9aa3 !important;
+  font-weight: 500 !important;
+}
+
+.ts-menu-root {
+  margin-top: 15px;
+}
+
+.Toastify__toast-container {
+  z-index: 100000 !important; /* giá trị bạn muốn, ví dụ cao hơn 5500 */
 }
 
 .rotate {

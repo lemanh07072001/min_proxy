@@ -11,15 +11,12 @@ import '@/app/[lang]/(landing-page)/main.css'
 // Generated Icon CSS Imports
 import '@assets/iconify-icons/generated-icons.css'
 
-import { ToastContainer } from 'react-toastify'
-
 import type { Locale } from '@configs/i18n'
 import LayoutWrapper from '@layouts/LayoutWrapper'
 
 import type { ChildrenType } from '@core/types'
 import Header from '@/app/[lang]/(landing-page)/components/Header'
 import { getMode, getSystemMode } from '@core/utils/serverHelpers'
-import { getDictionary } from '@/utils/getDictionary'
 import VerticalLayout from '@layouts/VerticalLayout'
 
 import Providers from '@components/Providers'
@@ -52,19 +49,7 @@ const Layout = async (props: ChildrenType & { params: Promise<{ lang: Locale }> 
           verticalLayout={
             <VerticalLayout landingPage={true} navbar={<Header />} footer={<Footer />}>
               {children}
-              <ToastContainer
-                position='top-right'
-                autoClose={2000}
-                hideProgressBar={false}
-                newestOnTop={false}
-                closeOnClick
-                rtl={false}
-                pauseOnFocusLoss
-                draggable
-                pauseOnHover
-                theme='light'
-                aria-label={undefined}
-              />
+
             </VerticalLayout>
           }
           horizontalLayout={

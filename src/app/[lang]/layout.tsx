@@ -11,9 +11,11 @@ import '@/app/root.css'
 // Generated Icon CSS Imports
 import '@assets/iconify-icons/generated-icons.css'
 
+import { Figtree } from "next/font/google"
 import InitColorSchemeScript from '@mui/material/InitColorSchemeScript'
 
 import { getServerSession } from 'next-auth'
+
 import { i18n } from '@configs/i18n'
 
 import '@/app/[lang]/(landing-page)/main.css'
@@ -33,6 +35,15 @@ import { ModalContextProvider } from '@/app/contexts/ModalContext'
 
 
 import { authOptions } from '@/libs/auth'
+import { UserProvider } from '@/app/contexts/UserContext'
+
+const figtree = Figtree({
+  subsets: ["latin"],
+  variable: "--font-figtree",
+  display: "swap",
+})
+
+export const revalidate = 0; //
 
 const RootLayout = async (props: ChildrenType & { params: Promise<{ lang: Locale }> }) => {
   const { children } = props
@@ -44,15 +55,31 @@ const RootLayout = async (props: ChildrenType & { params: Promise<{ lang: Locale
 
   const direction = i18n.langDirection[params.lang]
 
+  const session = await getServerSession(authOptions)
+
+  // ✅ Gọi API /me trên server
+  let user = null
+  if(session){
+    if (session?.access_token) {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/me`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${session.access_token}` },
+        cache: 'no-store',
+      })
+      if (res.ok) user = await res.json()
+    }
+  }
 
   return (
     <TranslationWrapper headersList={headersList} lang={params.lang}>
-      <html id='__next' lang={params.lang} dir={direction} suppressHydrationWarning>
+      <html id='__next' lang={params.lang} dir={direction} className={figtree.variable} suppressHydrationWarning>
         <body className='flex is-full min-bs-full flex-auto flex-col'>
           <TanstackProvider>
             <InitColorSchemeScript attribute='data' defaultMode={systemMode} />
             <ModalContextProvider>
+              <UserProvider value={user}>
               {children}
+              </UserProvider>
             </ModalContextProvider>
           </TanstackProvider>
         </body>

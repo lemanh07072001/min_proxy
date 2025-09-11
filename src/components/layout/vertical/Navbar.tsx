@@ -5,15 +5,13 @@ import { getServerSession } from 'next-auth'
 import LayoutNavbar from '@layouts/components/vertical/Navbar'
 import NavbarContent from './NavbarContent'
 
-// Lib Imports
-import { authOptions } from '@/libs/auth'
 
 const Navbar = async () => {
 
-
   return (
     <LayoutNavbar>
-      <NavbarContent />
+      {/* Truyền dữ liệu user xuống Client Component nếu cần */}
+      <NavbarContent  />
     </LayoutNavbar>
   )
 }

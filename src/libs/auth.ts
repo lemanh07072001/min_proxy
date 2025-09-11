@@ -117,7 +117,7 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user, account }) {
       // ---- Lần đăng nhập đầu tiên ----
-      if (user && account) {
+      if ( account) {
         return {
           access_token: user.access_token,
           accessTokenExpires: user.accessTokenExpires,
