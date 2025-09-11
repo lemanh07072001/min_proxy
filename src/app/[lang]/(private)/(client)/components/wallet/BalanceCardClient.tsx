@@ -58,8 +58,6 @@ export default function BalanceCardClient({
     setIsQrOpen(true)
   }
 
-  console.log(process.env.NEXT_PUBLIC_API_URL)
-
   // Hàm để fetch dữ liệu.
   const fetchUser = async () => {
     const { data } = await axiosAuth.post('/me')
