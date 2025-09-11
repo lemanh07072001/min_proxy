@@ -144,7 +144,9 @@ export default function HistoryOrderPage() {
           </div>
           {/* Table */}
           <div className='table-wrapper'>
-            <table className='data-table'>
+            <table className='data-table'
+                   style={isLoading || dataOrders.length === 0 ? { height: '100%' } : {}}
+            >
               <thead className='table-header'>
               {table.getHeaderGroups().map(headerGroup => (
                 <tr key={headerGroup.id}>
