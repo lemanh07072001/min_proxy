@@ -106,20 +106,6 @@
 /*  align-items: flex-end;*/
 /*}*/
 
-.price-amount {
-  font-size: 28px;
-  font-weight: 700;
-  color: #e53e3e;
-  line-height: 1;
-}
-
-.price-unit {
-  font-size: 11px;
-  color: #94a3b8;
-  font-weight: 500;
-  margin-block-start: 2px;
-}
-
 /* Form grid layout */
 .form-grid {
   display: grid;

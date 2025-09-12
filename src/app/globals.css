@@ -42,6 +42,30 @@ body {
     transform: rotate(360deg);
   }
 }
+
+.price-amount {
+  font-size: 20px;
+  font-weight: 700;
+  color: #e53e3e;
+  line-height: 1;
+}
+
+.price-unit {
+  font-size: 11px;
+  color: #94a3b8;
+  font-weight: 500;
+  margin-block-start: 2px;
+}
+
+.price-label {
+  font-size: 11px;
+  color: #94a3b8;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+}
 /* --- CONTAINER CHÍNH CỦA ỨNG DỤNG --- */
 .app-container {
   min-block-size: 100vh; /* Giữ nguyên: đảm bảo chiều cao tối thiểu là toàn màn hình */
