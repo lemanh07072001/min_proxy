@@ -92,6 +92,11 @@ export default function OrderRotatingProxyPage() {
         header: ({ table }) => (
           <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
             <FormControlLabel
+              sx={{
+                '&.MuiFormControlLabel-root' : {
+                  margin: 0,
+                }
+              }}
               control={
                 <Checkbox
                   checked={table.getIsAllRowsSelected()}
@@ -106,6 +111,11 @@ export default function OrderRotatingProxyPage() {
         cell: ({ row }) => (
           <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
             <FormControlLabel
+              sx={{
+                '&.MuiFormControlLabel-root' : {
+                  margin: 0,
+                }
+              }}
               control={
                 <Checkbox
                   checked={row.getIsSelected()}
@@ -116,11 +126,13 @@ export default function OrderRotatingProxyPage() {
               label=''
             />
           </div>
-        )
+        ),
+        size: 60
       },
       {
         accessorKey: 'id',
-        header: 'ID'
+        header: 'ID',
+        size: 60
       },
       {
         accessorKey: 'api_key',
@@ -129,7 +141,8 @@ export default function OrderRotatingProxyPage() {
           const api_key = row.original.api_key || '-'
 
           return <span className='text-red'>{api_key}</span>
-        }
+        },
+        size: 300
       },
       {
         accessorKey: 'protocol',
@@ -138,7 +151,8 @@ export default function OrderRotatingProxyPage() {
           const keys = row.original.plan_type || '-'
 
           return <div className='font-bold'>{keys}</div>
-        }
+        },
+        size: 100
       },
       {
         header: 'Ip Version',
@@ -146,7 +160,8 @@ export default function OrderRotatingProxyPage() {
           const ip_version = row.original.type_service?.ip_version ?? '-'
 
           return <div className='font-bold'>{ip_version}</div>
-        }
+        },
+        size: 100
       },
       {
         accessorKey: 'buyDate',
@@ -160,7 +175,8 @@ export default function OrderRotatingProxyPage() {
               </div>
             </>
           )
-        }
+        },
+        size: 200
       },
       {
         accessorKey: 'expiryDate',
@@ -174,14 +190,16 @@ export default function OrderRotatingProxyPage() {
               </div>
             </>
           )
-        }
+        },
+        size: 200
       },
       {
         accessorKey: 'status',
         header: 'Trạng thái',
         cell: ({ row }) => {
           return getStatusBadge(row.original.status)
-        }
+        },
+        size: 150
       }
     ],
     []

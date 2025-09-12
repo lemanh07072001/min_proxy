@@ -15,7 +15,7 @@ import Button from '@mui/material/Button'
 
 import { useQuery } from '@tanstack/react-query'
 
-import { Plus } from 'lucide-react'
+import { Plus, Wallet } from 'lucide-react'
 
 import NavToggle from './NavToggle'
 import ModeDropdown from '@components/layout/shared/ModeDropdown'
@@ -80,13 +80,13 @@ const NavbarContent = () => {
             variant='outlined'
             onClick={() => setIsInputOpen(true)}
             sx={{
-              padding: '5px 10px',
+              padding: '7px 10px',
               fontSize: '0.875rem',
               display: 'flex',
               gap: '10px'
             }}
           >
-            <Plus size={16} />
+            <Wallet  size={16} />
             Nạp tiền
           </Button>
         ) : null}

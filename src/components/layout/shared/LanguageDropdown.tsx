@@ -92,7 +92,7 @@ const LanguageDropdown = () => {
         ref={anchorRef}
         onClick={handleToggle}
         sx={{
-          borderRadius: '5px',
+          borderRadius: '8px',
           border: '1px solid #F88A4B',
           padding: '6px 12px',
           '&:hover': {

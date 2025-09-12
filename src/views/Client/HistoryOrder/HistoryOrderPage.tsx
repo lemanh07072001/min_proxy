@@ -67,12 +67,12 @@ export default function HistoryOrderPage() {
       {
         accessorKey: 'order_code',
         header: 'ID',
-        size: 120
+        size: 170
       },
       {
         accessorKey: 'user.email',
         header: 'Tài khoản',
-        size: 100
+        size: 200
       },
       {
         header: 'Số tiền',
@@ -89,7 +89,7 @@ export default function HistoryOrderPage() {
       {
         accessorKey: 'quantity',
         header: 'Số lượng',
-        size: 80
+        size: 100
       },
       {
         accessorKey: 'status',
@@ -97,21 +97,19 @@ export default function HistoryOrderPage() {
         cell: ({ row }) => {
           return getStatusBadge(row.original.status)
         },
-        size: 70
+        size: 150
       },
       {
         accessorKey: 'buy_at',
         header: 'Ngày mua',
-        size: 150
+        size: 200
       },
       {
         accessorKey: 'expired_at',
         header: 'Ngày hết hạn',
-        size: 150
+        size: 200
       },
-      {
-        header: 'Action'
-      }
+
     ],
     []
   )

@@ -95,6 +95,11 @@ export default function OrderProxyPage() {
         header: ({ table }) => (
           <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
             <FormControlLabel
+              sx={{
+                '&.MuiFormControlLabel-root' : {
+                  margin: 0,
+                }
+              }}
               control={
                 <Checkbox
                   checked={table.getIsAllRowsSelected()}
@@ -109,6 +114,11 @@ export default function OrderProxyPage() {
         cell: ({ row }) => (
           <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
             <FormControlLabel
+              sx={{
+                '&.MuiFormControlLabel-root' : {
+                  margin: 0,
+                }
+              }}
               control={
                 <Checkbox
                   checked={row.getIsSelected()}
@@ -120,11 +130,12 @@ export default function OrderProxyPage() {
             />
           </div>
         ),
-        size: 40
+        size: 60
       },
       {
         accessorKey: 'id',
-        header: 'ID'
+        header: 'ID',
+        size: 60
       },
       {
         accessorKey: 'provider',
@@ -132,9 +143,9 @@ export default function OrderProxyPage() {
         cell: ({ row }) => {
           const proxys = row.original.proxys || {} // fallback nếu null
           const loaiproxy = proxys.loaiproxy || '-' // fallback nếu không tồn tại
-
           return <span className='text-red'>{loaiproxy}</span>
-        }
+        },
+        size: 140
       },
       {
         accessorKey: 'proxy',
@@ -145,7 +156,6 @@ export default function OrderProxyPage() {
           const proxyValues = Object.entries(proxys)
             .filter(([key]) => key !== 'loaiproxy')
             .map(([_, value]) => value)
-
           return (
             <div className='proxy-cell'>
               <span className='proxy-label'>{proxyValues[0] || '-'}</span>
@@ -156,7 +166,8 @@ export default function OrderProxyPage() {
               )}
             </div>
           )
-        }
+        },
+        size: 350
       },
       {
         accessorKey: 'protocol',
@@ -166,7 +177,8 @@ export default function OrderProxyPage() {
           const keys = Object.keys(proxys)
 
           return <div className='font-bold'>{keys[0]?.toUpperCase() || '-'}</div>
-        }
+        },
+        size: 80
       },
       {
         accessorKey: 'buyDate',
@@ -180,7 +192,8 @@ export default function OrderProxyPage() {
               </div>
             </>
           )
-        }
+        },
+        size: 200
       },
       {
         accessorKey: 'expiryDate',
@@ -194,18 +207,18 @@ export default function OrderProxyPage() {
               </div>
             </>
           )
-        }
+        },
+        size: 200
       },
       {
         accessorKey: 'status',
         header: 'Trạng thái',
         cell: ({ row }) => {
           return getStatusBadge(row.original.status)
-        }
-      },
-      {
-        header: 'Action'
+        },
+        size: 150
       }
+
     ],
     []
   )
@@ -298,7 +311,7 @@ export default function OrderProxyPage() {
                   {table.getHeaderGroups().map(headerGroup => (
                     <tr key={headerGroup.id}>
                       {headerGroup.headers.map(header => (
-                        <th className='table-header th' key={header.id}>
+                        <th style={{ width: header.getSize() }} className='table-header th' key={header.id}>
                           {flexRender(header.column.columnDef.header, header.getContext())}
                         </th>
                       ))}

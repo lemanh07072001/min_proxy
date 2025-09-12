@@ -58,10 +58,10 @@ export default function MenuDesktop() {
           <UserDropdown session={data} />
         ):(
           <div className='d-flex align-items-center gap-2'>
-            <button className='btn btn-gradient-primary me-2' onClick={handleOpenModalRegister}>
+            <button className='btn btn-gradient-primary me-2' style={{padding:'5px 20px'}} onClick={handleOpenModalRegister}>
               Đăng ký
             </button>
-            <button className='btn btn-gradient-primary' onClick={handleOpenModalLogin}>
+            <button className='btn btn-gradient-primary' style={{padding:'5px 20px'}} onClick={handleOpenModalLogin}>
               Đăng nhập
             </button>
           </div>
