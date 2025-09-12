@@ -3,7 +3,6 @@ import CredentialProvider from 'next-auth/providers/credentials'
 import GoogleProvider from 'next-auth/providers/google'
 import type { NextAuthOptions } from 'next-auth'
 import type { JWT } from 'next-auth/jwt'
-import axiosInstance from '@/libs/axios'
 import axios from 'axios'
 
 // Extend types for custom properties
@@ -31,44 +30,37 @@ declare module 'next-auth/jwt' {
   }
 }
 
-// Laravel JWT refresh (dùng access token cũ)
+// Laravel JWT refresh
 async function refreshAccessToken(token: JWT) {
-  // --- BẮT ĐẦU DEBUG ---
-  console.log("===================================");
-  console.log("ATTEMPTING TO REFRESH TOKEN AT:", new Date().toISOString());
-  console.log("API Endpoint:", `${process.env.NEXT_PUBLIC_API_URL}/refresh`);
-  console.log("Token received by refresh function:", token);
-  console.log("Access Token String being sent:", token.access_token);
-  console.log("Token expires at (timestamp):", token.accessTokenExpires);
-  console.log("Current time (timestamp):", Date.now());
-  console.log("===================================");
-  // --- KẾT THÚC DEBUG ---
+  console.log('🔄 [refreshAccessToken] START', new Date().toISOString())
+  console.log('🔄 Current token before refresh:', token)
 
   try {
     const res = await axios.post(
       `${process.env.API_URL}/refresh`,
       {},
       { headers: { Authorization: `Bearer ${token.access_token}` } }
-    );
+    )
+
     const data = res.data
 
-    console.log(data)
-    
-    return {
+    console.log('✅ [refreshAccessToken] API response:', data)
+
+    const updatedToken: JWT = {
       ...token,
       access_token: data.access_token,
       accessTokenExpires: Date.now() + (data.expires_in || 3600) * 1000,
       error: undefined
     }
+
+    console.log('✅ [refreshAccessToken] Updated token:', updatedToken)
+
+    return updatedToken
   } catch (err: any) {
-    console.error('❌ Refresh token failed:', err.message || err)
+    console.error('❌ [refreshAccessToken] Error:', err.message || err)
+
     return { ...token, access_token: undefined, error: 'RefreshAccessTokenError' }
   }
-}
-
-// Reset token helper
-function resetToken(token: JWT) {
-  return { ...token, access_token: undefined, accessTokenExpires: undefined, error: 'TokenReset' }
 }
 
 export const authOptions: NextAuthOptions = {
@@ -77,6 +69,7 @@ export const authOptions: NextAuthOptions = {
       name: 'Credentials',
       credentials: {},
       async authorize(credentials) {
+        console.log('🔑 [authorize] Attempting login', new Date().toISOString())
         const { email, password } = credentials as { email: string; password: string }
         const apiUrl = process.env.API_URL || 'http://localhost:8000'
 
@@ -88,6 +81,8 @@ export const authOptions: NextAuthOptions = {
           })
 
           const data = await res.json()
+
+          console.log('🔑 [authorize] Response:', data)
           if (res.status !== 200 || !data.user) return null
 
           return {
@@ -99,12 +94,12 @@ export const authOptions: NextAuthOptions = {
             userData: data.user
           }
         } catch (err) {
-          console.error('Login error:', err)
+          console.error('❌ [authorize] Login error:', err)
+
           return null
         }
       }
     }),
-
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID as string,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET as string
@@ -116,53 +111,56 @@ export const authOptions: NextAuthOptions = {
 
   callbacks: {
     async jwt({ token, user, account }) {
-      // ---- Lần đăng nhập đầu tiên ----
-      if ( account) {
+      console.log('⚡ [jwt] callback START', new Date().toISOString())
+
+      if (user && account) {
+        console.log('✅ [jwt] First login, attaching token info')
+
         return {
+          ...token,
           access_token: user.access_token,
           accessTokenExpires: user.accessTokenExpires,
+          refreshToken: user.refreshToken,
           userData: user.userData,
-          
-          // Lấy các giá trị cần thiết mà NextAuth cần từ user
           name: user.userData?.name,
           email: user.userData?.email,
-          // `sub` (subject) thường là user id, rất quan trọng cho NextAuth
-          sub: user.userData?.id, 
-        };
+          sub: user.userData?.id
+        }
       }
-  
+
       if (!token.access_token) {
-          return token;
+        console.log('⚠️ [jwt] No access_token present, returning current token')
+
+        return token
       }
-  
-      // Thời gian đệm an toàn
-      const safetyBuffer = 20 * 1000;
-  
-      // Kiểm tra và refresh token
-      if (token.accessTokenExpires && Date.now() >= (token.accessTokenExpires - safetyBuffer)) {
-        console.log("Token is expiring, attempting to refresh...");
-        return refreshAccessToken(token); // Gọi hàm refresh của bạn
+
+      const safetyBuffer = 60 * 1000
+
+      if (token.accessTokenExpires && Date.now() >= token.accessTokenExpires - safetyBuffer) {
+        console.log('🔄 [jwt] Token expiring, refreshing now...')
+
+        return await refreshAccessToken(token)
       }
-  
-      // Token còn hiệu lực, trả về như cũ
-      return token;
+
+      console.log('✅ [jwt] Token still valid, returning current token')
+
+      return token
     },
-  
+
     async session({ session, token }) {
-      // Gán dữ liệu từ token "sạch" của chúng ta vào session để client sử dụng
-      session.user = token.userData || session.user;
-      session.access_token = token.access_token;
-      session.error = token.error;
-      
-      return session;
+      console.log('⚡ [session] callback START', new Date().toISOString())
+      session.user = token.userData || session.user
+      session.access_token = token.access_token as string
+      session.error = token.error
+      console.log('✅ [session] Returning session:', session)
+
+      return session
     }
   },
-  
 
   events: {
-    async signOut({ token }) {
-      console.log('🧹 Reset token on sign out')
-
+    async signOut() {
+      console.log('👋 [events.signOut] User signed out', new Date().toISOString())
     }
   }
 }

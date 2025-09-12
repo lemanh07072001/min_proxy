@@ -1,25 +1,21 @@
-// hooks/useAxiosAuth.ts
 import { useEffect } from 'react'
 
 import { useSession, signOut } from 'next-auth/react'
-
 import type { Session } from 'next-auth'
 
 import axiosInstance from '@/libs/axios'
 
-// Các biến này được đặt bên ngoài hook để chúng hoạt động như một singleton,
-// chia sẻ trạng thái giữa tất cả các lần sử dụng hook.
 let isRefreshing = false
 let failedQueue: {
   resolve: (value?: any) => void
   reject: (reason?: any) => void
 }[] = []
 
-// Hàm để xử lý tất cả các request đang chờ trong hàng đợi
 const processQueue = (error: Error | null, token: string | null = null) => {
+  console.log('📦 [processQueue] Processing queue, token:', token, 'error:', error)
   failedQueue.forEach(prom => {
-    if (error) {
-      prom.reject(error)
+    if (error || !token) {
+      prom.reject(error || new Error('No token'))
     } else {
       prom.resolve(token)
     }
@@ -31,12 +27,13 @@ const useAxiosAuth = () => {
   const { data: session, update: updateSession } = useSession()
 
   useEffect(() => {
-    // Interceptor cho REQUEST - Gắn token vào mỗi request
+    console.log('🔗 [useAxiosAuth] Setting up interceptors', new Date().toISOString())
+
     const requestInterceptor = axiosInstance.interceptors.request.use(
       config => {
-        // Chỉ thêm token nếu chưa có sẵn để tránh ghi đè
-        if (session?.access_token && !config.headers['Authorization']) {
-          config.headers['Authorization'] = `Bearer ${session.access_token}`
+        if (session?.access_token && !config.headers?.Authorization) {
+          config.headers.Authorization = `Bearer ${session.access_token}`
+          console.log('➡️ [request] Added Authorization header')
         }
 
         return config
@@ -44,63 +41,59 @@ const useAxiosAuth = () => {
       error => Promise.reject(error)
     )
 
-    // Interceptor cho RESPONSE - Xử lý lỗi 401
     const responseInterceptor = axiosInstance.interceptors.response.use(
       response => response,
       async error => {
         const originalRequest = error.config
 
-        // Chỉ xử lý khi gặp lỗi 401 và request đó chưa được thử lại
         if (error.response?.status === 401 && !originalRequest._retry) {
+          console.warn('⚠️ [response] 401 detected for', originalRequest.url)
+
           if (isRefreshing) {
-            // Nếu đã có một request khác đang thực hiện refresh token,
-            // ta sẽ đẩy request hiện tại vào hàng đợi.
+            console.log('🔄 [response] Already refreshing, queuing request')
+
             return new Promise((resolve, reject) => {
               failedQueue.push({ resolve, reject })
-            })
-              .then(token => {
-                originalRequest.headers['Authorization'] = 'Bearer ' + token
+            }).then(token => {
+              console.log('✅ [response] Queue retry with new token')
+              if (!token) throw new Error('No token from queue')
+              originalRequest.headers.Authorization = `Bearer ${token}`
 
-                return axiosInstance(originalRequest) // Thử lại request với token mới
-              })
-              .catch(err => {
-                return Promise.reject(err)
-              })
+              return axiosInstance(originalRequest)
+            })
           }
 
-          originalRequest._retry = true // Đánh dấu là đã thử lại để tránh lặp vô hạn
-          isRefreshing = true // "Khóa" lại, chỉ cho một request được refresh
+          originalRequest._retry = true
+          isRefreshing = true
+          console.log('🔄 [response] Starting token refresh…')
 
           try {
-            console.log('Token expired. Attempting to refresh session via updateSession()...')
-            const refreshedSession = (await updateSession()) as Session & { access_token?: string }
+            const refreshedSession = await updateSession()
+
+            console.log('✅ [response] updateSession result:', refreshedSession)
 
             if (!refreshedSession?.access_token) {
-              throw new Error('Failed to refresh token: New session did not contain access_token.')
+              throw new Error('Failed to refresh token: no access_token')
             }
 
             const newToken = refreshedSession.access_token
 
-            axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${newToken}`
+            axiosInstance.defaults.headers.common.Authorization = `Bearer ${newToken}`
 
-            // Refresh thành công, xử lý hàng đợi
-            console.log('Token refreshed successfully. Processing failed queue...')
             processQueue(null, newToken)
-
-            // Thử lại request gốc ban đầu
-            originalRequest.headers['Authorization'] = `Bearer ${newToken}`
+            originalRequest.headers.Authorization = `Bearer ${newToken}`
+            console.log('✅ [response] Retrying original request with new token')
 
             return axiosInstance(originalRequest)
           } catch (refreshError: any) {
-            console.error('Critical error during token refresh:', refreshError)
-
-            // Nếu refresh thất bại, từ chối tất cả request đang chờ và logout
+            console.error('❌ [response] Critical error during token refresh:', refreshError)
             processQueue(refreshError, null)
-            await signOut() // Chuyển hướng về trang login
+            await signOut()
 
             return Promise.reject(refreshError)
           } finally {
-            isRefreshing = false // "Mở khóa" sau khi hoàn tất
+            isRefreshing = false
+            console.log('🔓 [response] Refresh flow completed')
           }
         }
 
@@ -108,12 +101,12 @@ const useAxiosAuth = () => {
       }
     )
 
-    // Gỡ bỏ interceptor khi component không còn được sử dụng
     return () => {
+      console.log('🧹 [useAxiosAuth] Ejecting interceptors')
       axiosInstance.interceptors.request.eject(requestInterceptor)
       axiosInstance.interceptors.response.eject(responseInterceptor)
     }
-  }, [session, updateSession]) // Chạy lại effect khi session thay đổi
+  }, [session, updateSession])
 
   return axiosInstance
 }
