@@ -34,7 +34,7 @@ import ProtocolSelector from '@components/form/protocol-selector/ProtocolSelecto
 
 import useRandomString from '@/hocs/useRandomString'
 
-import protocols from '@/utils/protocolProxy'
+import { protocols } from '@/utils/protocolProxy'
 
 import { useModalContext } from '@/app/contexts/ModalContext'
 

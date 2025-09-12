@@ -11,6 +11,12 @@ import classnames from 'classnames'
 // Component Imports
 import { SessionContext } from 'next-auth/react'
 
+import Button from '@mui/material/Button'
+
+import { useQuery } from '@tanstack/react-query'
+
+import { Plus } from 'lucide-react'
+
 import NavToggle from './NavToggle'
 import ModeDropdown from '@components/layout/shared/ModeDropdown'
 import UserDropdown from '@components/layout/shared/UserDropdown'
@@ -21,11 +27,8 @@ import { useModalContext } from '@/app/contexts/ModalContext'
 import { verticalLayoutClasses } from '@layouts/utils/layoutClasses'
 
 import LanguageDropdown from '@components/layout/shared/LanguageDropdown'
-import Button from '@mui/material/Button'
 import RechargeInputDialog from '@/app/[lang]/(private)/(client)/components/wallet/RechargeInputDialog'
 import QrCodeDisplayDialog from '@/app/[lang]/(private)/(client)/components/wallet/QrCodeDisplayDialog'
-import { useQuery } from '@tanstack/react-query'
-import { Plus } from 'lucide-react'
 
 // Interface để định nghĩa cấu trúc dữ liệu giao dịch
 interface TransactionData {
@@ -34,11 +37,10 @@ interface TransactionData {
   rechargeAmount: string
 }
 
-
-const NavbarContent = ( ) => {
+const NavbarContent = () => {
   // Log session để debug
-  const {data} = useContext(SessionContext);
-  const { openAuthModal } = useModalContext();
+  const { data } = useContext(SessionContext)
+  const { openAuthModal } = useModalContext()
   const [isInputOpen, setIsInputOpen] = useState(false)
   const [isQrOpen, setIsQrOpen] = useState(false)
 
@@ -73,19 +75,21 @@ const NavbarContent = ( ) => {
         )}
       </div>
       <div className='flex items-center gap-2'>
-        {data ? (<Button variant='outlined'
-                         onClick={() => setIsInputOpen(true)}
-                         sx={{
-                           padding: '5px 10px',
-                           fontSize: '0.875rem',
-                           display: 'flex',
-                           gap: '10px',
-                         }}
-        >
-          <Plus size={16} />
-          Nạp tiền
-        </Button>):null}
-
+        {data ? (
+          <Button
+            variant='outlined'
+            onClick={() => setIsInputOpen(true)}
+            sx={{
+              padding: '5px 10px',
+              fontSize: '0.875rem',
+              display: 'flex',
+              gap: '10px'
+            }}
+          >
+            <Plus size={16} />
+            Nạp tiền
+          </Button>
+        ) : null}
 
         <LanguageDropdown />
 
@@ -97,8 +101,8 @@ const NavbarContent = ( ) => {
             onClick={handleOpenLoginModal}
             className='px-4 py-2 text-sm  text-white rounded-lg h transition-colors'
             sx={{
-              '&.MuiButtonBase-root' : {
-                background: 'var(--primary-gradient)',
+              '&.MuiButtonBase-root': {
+                background: 'var(--primary-gradient)'
               }
             }}
           >
@@ -108,11 +112,7 @@ const NavbarContent = ( ) => {
       </div>
 
       {/* AuthModal - Render trong Portal để tránh constraints */}
-      {typeof window !== 'undefined' &&
-        createPortal(
-          <AuthModal />,
-          document.body
-        )}
+      {typeof window !== 'undefined' && createPortal(<AuthModal />, document.body)}
 
       <RechargeInputDialog
         isOpen={isInputOpen}
@@ -128,7 +128,6 @@ const NavbarContent = ( ) => {
         rechargeAmount={transactionData.rechargeAmount}
       />
     </div>
-
   )
 }
 

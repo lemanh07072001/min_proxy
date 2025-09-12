@@ -57,14 +57,13 @@ export default function LoginForm() {
       redirect: false
     })
 
-
-    if ( res?.ok) {
+    if (res?.ok) {
       setLoading(false)
       toast.success('Đăng nhập thành công.')
       closeAuthModal()
 
       // Reload page để update session ở server-side
-      router.push('/overview')
+      router.replace('/overview')
     } else {
       setLoading(false)
       toast.error('Tài khoản hoặc mật khẩu không chính xác.')

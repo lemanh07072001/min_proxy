@@ -2,6 +2,8 @@ import Image from 'next/image'
 
 import { useParams, usePathname } from 'next/navigation'
 
+import VuexyLogo from '@core/svg/Logo'
+
 import MenuLandingPage from '@/app/data/MenuLandingPage'
 import Link from '@components/Link'
 import logo from '../../../../../../public/images/logo/logo-minsoftware-new-small.png'
@@ -23,7 +25,8 @@ export default function MenuMobile({ onClose }: MenuMobileProps) {
     <div className='menu-container'>
       <div className='mobile-header'>
         <div className='mobile-logo'>
-          <Image src={logo} alt='Minsoftware Logo' width={40} height={40} />
+          <VuexyLogo className='text-2xl text-primary' />
+
           <span>{process.env.NEXT_PUBLIC_APP_NAME}</span>
         </div>
         {/* Close Button */}

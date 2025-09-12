@@ -3,9 +3,45 @@ html,
 body {
   block-size: 100%;
   margin: 0;
-
 }
 
+.ts-submenu-root,
+.ts-menuitem-root {
+  padding-inline-start: 20px;
+}
+
+.ts-menu-button {
+  font-weight: 500;
+  color: #495262;
+  font-size: 14px;
+}
+
+.ts-menu-section-label {
+  font-size: 12px !important;
+  color: #8f9aa3 !important;
+  font-weight: 600 !important;
+}
+
+.ts-menu-root {
+  margin-block-start: 15px;
+}
+
+.Toastify__toast-container {
+  z-index: 100000 !important; /* giá trị bạn muốn, ví dụ cao hơn 5500 */
+}
+
+.rotate {
+  animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
 /* --- CONTAINER CHÍNH CỦA ỨNG DỤNG --- */
 .app-container {
   min-block-size: 100vh; /* Giữ nguyên: đảm bảo chiều cao tối thiểu là toàn màn hình */
@@ -69,7 +105,6 @@ body {
 }
 
 .data-table {
-
   inline-size: 100%; /* Đổi inline-size thành width cho tương thích tốt hơn */
   border-collapse: collapse; /* Thêm để đường viền đẹp hơn */
 }

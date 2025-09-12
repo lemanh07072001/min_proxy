@@ -1,6 +1,7 @@
 // Third-party Imports
 // MUI Imports
 import Button from '@mui/material/Button'
+import { ToastContainer } from 'react-toastify'
 
 // Style Imports
 import '@/app/globals.css'
@@ -49,7 +50,18 @@ const Layout = async (props: ChildrenType & { params: Promise<{ lang: Locale }> 
           verticalLayout={
             <VerticalLayout landingPage={true} navbar={<Header />} footer={<Footer />}>
               {children}
-
+              <ToastContainer
+                position='top-right'
+                autoClose={5000}
+                hideProgressBar={false}
+                newestOnTop={false}
+                closeOnClick={false}
+                rtl={false}
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover
+                theme='light'
+              />
             </VerticalLayout>
           }
           horizontalLayout={
