@@ -18,6 +18,8 @@ import MenuList from '@mui/material/MenuList'
 import MenuItem from '@mui/material/MenuItem'
 
 // Type Imports
+import { Box } from '@mui/material'
+
 import type { Locale } from '@configs/i18n'
 
 // Hook Imports
@@ -91,12 +93,21 @@ const LanguageDropdown = () => {
         onClick={handleToggle}
         sx={{
           borderRadius: '5px',
+          border: '1px solid #F88A4B',
+          padding: '6px 12px',
           '&:hover': {
             borderRadius: '5px'
           }
         }}
       >
-        <div className='flex items-center gap-2'>
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            gap: '8px'
+          }}
+        >
           {/* Phần hiển thị cờ hoặc icon ngôn ngữ */}
           {currentLanguage ? (
             <>
@@ -115,7 +126,7 @@ const LanguageDropdown = () => {
 
           {/* Icon mũi tên thay đổi theo state 'open' */}
           <i style={{ fontSize: '16px' }} className={open ? 'tabler-chevron-up' : 'tabler-chevron-down'} />
-        </div>
+        </Box>
       </IconButton>
       <Popper
         open={open}
