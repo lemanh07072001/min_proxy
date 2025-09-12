@@ -6,7 +6,5 @@ export const metadata: Metadata = {
 }
 
 export default function Overview() {
-  console.log('dsadsa', process.env.NEXT_PUBLIC_API_URL)
-
   return <h1>das</h1>
 }

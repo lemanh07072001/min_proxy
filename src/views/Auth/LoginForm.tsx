@@ -64,6 +64,7 @@ export default function LoginForm() {
 
       // Reload page để update session ở server-side
       router.replace('/overview')
+      window.location.reload()
     } else {
       setLoading(false)
       toast.error('Tài khoản hoặc mật khẩu không chính xác.')

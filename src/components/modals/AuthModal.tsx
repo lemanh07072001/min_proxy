@@ -51,11 +51,7 @@ const AuthModal: React.FC = () => {
                   </svg>
                 </div>
               </div>
-              <h1 className='login-modal-title'>
-                {authModalMode === 'login'
-                  ? 'Chào mừng bạn quay lại'
-                  : `Chào mừng đến với ${process.env.NEXT_PUBLIC_APP_NAME}`}
-              </h1>
+              <h1 className='login-modal-title'>Chào mừng bạn quay lại</h1>
               <p className='login-modal-subtitle'>
                 {authModalMode === 'login' ? 'Vui lòng điền thông tin đăng nhập' : 'Vui lòng điền thông tin đăng ký'}
               </p>
@@ -83,7 +79,14 @@ const AuthModal: React.FC = () => {
               ) : (
                 <div>
                   <span>Đã có tài khoản? </span>
-                  <button type='button' className='login-modal-switch-btn' onClick={() => setAuthModalMode('login')}>
+                  <button
+                    type='button'
+                    className='login-modal-switch-btn'
+                    style={{
+                      background: 'transparent'
+                    }}
+                    onClick={() => setAuthModalMode('login')}
+                  >
                     Đăng nhập ngay
                   </button>
                 </div>

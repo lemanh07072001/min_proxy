@@ -64,12 +64,12 @@ const UserDropdown = () => {
     setOpen(false)
   }
 
-  const handleConfirmLogout = () => {
+  const handleConfirmLogout = async () => {
     console.log('Hành động XÓA đã được xác nhận!')
-
-    signOut({ redirect: false })
-
     setOpenConfirm(false)
+    await signOut({ redirect: false })
+    router.replace('/overview')
+    window.location.reload()
   }
 
   return (
