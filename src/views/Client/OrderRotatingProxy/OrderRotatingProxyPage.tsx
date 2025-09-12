@@ -4,6 +4,8 @@ import { useMemo, useState } from 'react'
 
 import { headers } from 'next/headers'
 
+import Image from 'next/image'
+
 import {
   TriangleAlert,
   Copy,
@@ -34,14 +36,17 @@ import Chip from '@mui/material/Chip'
 import './styles.css'
 import Pagination from '@mui/material/Pagination'
 
+import { FormControlLabel } from '@mui/material'
+
+import Checkbox from '@mui/material/Checkbox'
+
+import { useQuery } from '@tanstack/react-query'
+
 import CustomIconButton from '@core/components/mui/IconButton'
 import { useCopy } from '@/app/hooks/useCopy'
 import { formatDateTimeLocal } from '@/utils/formatDate'
-import { FormControlLabel } from '@mui/material'
-import Checkbox from '@mui/material/Checkbox'
-import { useQuery } from '@tanstack/react-query'
+
 import useAxiosAuth from '@/hocs/useAxiosAuth'
-import Image from 'next/image'
 
 export default function OrderRotatingProxyPage() {
   const [columnFilters, setColumnFilters] = useState([])
@@ -57,13 +62,11 @@ export default function OrderRotatingProxyPage() {
 
   const [, copy] = useCopy()
 
-  const {
-    data: dataOrders = [],
-    isLoading,
-  } = useQuery({
+  const { data: dataOrders = [], isLoading } = useQuery({
     queryKey: ['orderProxyRotating'],
     queryFn: async () => {
       const res = await axiosAuth.get('/get-order-proxy-rotating')
+
       return res.data.data
     }
   })
@@ -95,7 +98,7 @@ export default function OrderRotatingProxyPage() {
                   onChange={table.getToggleAllRowsSelectedHandler()}
                 />
               }
-              label="" // bỏ label để không chiếm chỗ
+              label='' // bỏ label để không chiếm chỗ
             />
           </div>
         ),
@@ -109,11 +112,11 @@ export default function OrderRotatingProxyPage() {
                   onChange={row.getToggleSelectedHandler()}
                 />
               }
-              label=""
+              label=''
             />
           </div>
         ),
-        size: 40,
+        size: 40
       },
       {
         accessorKey: 'id',
@@ -244,52 +247,52 @@ export default function OrderRotatingProxyPage() {
           <div className='table-container'>
             {/* Table */}
             <div className='table-wrapper'>
-              <table className='data-table'  style={isLoading || dataOrders.length === 0 ? { height: '100%' } : {}}>
+              <table className='data-table' style={isLoading || dataOrders.length === 0 ? { height: '100%' } : {}}>
                 <thead className='table-header'>
-                {table.getHeaderGroups().map(headerGroup => (
-                  <tr key={headerGroup.id}>
-                    {headerGroup.headers.map(header => (
-                      <th className='table-header th' key={header.id}>
-                        {flexRender(header.column.columnDef.header, header.getContext())}
-                      </th>
-                    ))}
-                  </tr>
-                ))}
-                </thead>
-                <tbody>
-                {isLoading ? (
-                  <tr>
-                    <td colSpan={columns.length} className='py-10 text-center'>
-                      <div className='loader-wrapper'>
-                        <div className='loader'>
-                          <span></span>
-                          <span></span>
-                          <span></span>
-                        </div>
-                        <p className='loading-text'>Đang tải dữ liệu...</p>
-                      </div>
-                    </td>
-                  </tr>
-                ) : table.getRowModel().rows.length === 0 ? (
-                  <tr>
-                    <td colSpan={columns.length} className='py-10 text-center'>
-                      <div className='flex flex-col items-center justify-center'>
-                        <Image src='/images/no-data.png' alt='No data' width={160} height={160} />
-                        <p className='mt-4 text-gray-500'>Không có dữ liệu</p>
-                      </div>
-                    </td>
-                  </tr>
-                ) : (
-                  table.getRowModel().rows.map(row => (
-                    <tr className='table-row' key={row.id}>
-                      {row.getVisibleCells().map(cell => (
-                        <td className='table-cell' key={cell.id}>
-                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                        </td>
+                  {table.getHeaderGroups().map(headerGroup => (
+                    <tr key={headerGroup.id}>
+                      {headerGroup.headers.map(header => (
+                        <th className='table-header th' key={header.id}>
+                          {flexRender(header.column.columnDef.header, header.getContext())}
+                        </th>
                       ))}
                     </tr>
-                  ))
-                )}
+                  ))}
+                </thead>
+                <tbody>
+                  {isLoading ? (
+                    <tr>
+                      <td colSpan={columns.length} className='py-10 text-center'>
+                        <div className='loader-wrapper'>
+                          <div className='loader'>
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                          </div>
+                          <p className='loading-text'>Đang tải dữ liệu...</p>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : table.getRowModel().rows.length === 0 ? (
+                    <tr>
+                      <td colSpan={columns.length} className='py-10 text-center'>
+                        <div className='flex flex-col items-center justify-center'>
+                          <Image src='/images/no-data.png' alt='No data' width={160} height={160} />
+                          <p className='mt-4 text-gray-500'>Không có dữ liệu</p>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : (
+                    table.getRowModel().rows.map(row => (
+                      <tr className='table-row' key={row.id}>
+                        {row.getVisibleCells().map(cell => (
+                          <td className='table-cell' key={cell.id}>
+                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                          </td>
+                        ))}
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>

@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 
 import { useForm, Controller, useWatch } from 'react-hook-form'
 import * as yup from 'yup'
@@ -15,6 +15,8 @@ import axios from 'axios'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 import { toast } from 'react-toastify'
+
+import ConfirmDialog from '@components/confirm-modal/ConfirmDialog'
 
 import { useModalContext } from '@/app/contexts/ModalContext'
 
@@ -158,6 +160,8 @@ const useBuyProxy = () => {
 // Component chính cho mỗi thẻ plan, giờ đây gọn gàng hơn.
 const PlanCard = ({ plan }) => {
   const { mutate, isPending, isError, isSuccess, error } = useBuyProxy()
+  const [openConfirm, setOpenConfirm] = useState(false)
+  const [formData, setFormData] = useState()
   const { openAuthModal } = useModalContext()
   const session = useSession()
 
@@ -205,8 +209,17 @@ const PlanCard = ({ plan }) => {
       total
     }
 
+    setFormData(orderData)
+    setOpenConfirm(true)
+  }
+
+  const handleConfirmBuy = () => {
     try {
-      mutate(orderData)
+      if (formData) {
+        mutate(formData) // Gọi API với dữ liệu đã lưu
+        setOpenConfirm(false) // Đóng dialog
+        setFormData(null) // Xóa dữ liệu đã lưu
+      }
     } catch (error) {
       if (error.response) {
         console.error('Lỗi từ server:', error.response.data)
@@ -217,63 +230,76 @@ const PlanCard = ({ plan }) => {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className={`proxy-plan-card ${plan.color}`}>
-      <div className='plan-header'>
-        <h3 className='plan-title'>{plan.title}</h3>
-      </div>
-      <div className='plan-features'>
-        {plan.features.map((feature, index) => {
-          // Dựa vào `feature.status` để render component con phù hợp
-          switch (feature.status) {
-            case 'success':
-              return <StaticFeatureRow key={index} feature={feature} />
-            case 'input':
-              const isRotationTimeInput = feature.field === 'rotationTime'
-
-              return (
-                <InputFeatureRow
-                  key={index}
-                  feature={feature}
-                  control={control}
-                  errors={errors}
-                  planId={plan.id}
-                  min={plan.min}
-                  max={plan.max}
-                  isDisabled={isRotationTimeInput && !watchedFields.autoRotate}
-                />
-              )
-            case 'checkbox':
-              return <SwitchFeatureRow key={index} feature={feature} control={control} planId={plan.id} />
-            default:
-              return null
-          }
-        })}
-      </div>
-
-      <div className='plan-footer'>
-        <div className='plan-price'>
-          <span className='price-label'>Thành tiền:</span>
-          <span className='price-amount'>{calculateTotalFormat()}đ</span>
+    <>
+      <form onSubmit={handleSubmit(onSubmit)} className={`proxy-plan-card ${plan.color}`}>
+        <div className='plan-header'>
+          <h3 className='plan-title'>{plan.title}</h3>
         </div>
-        {session.status === 'authenticated' ? (
-          <button type='submit' className='buy-button' disabled={isPending}>
-            {isPending ? (
-              <>
-                <Loader size={18} className='mr-2 animate-pulse' /> Đang xử lý...
-              </>
-            ) : (
-              <>
-                <ShoppingCart size={18} className='mr-2' /> Mua Proxy
-              </>
-            )}
-          </button>
-        ) : (
-          <button type='button' className='buy-button' onClick={() => openAuthModal('login')}>
-            <User size={18} className='mr-2' /> Đăng nhập
-          </button>
-        )}
-      </div>
-    </form>
+        <div className='plan-features'>
+          {plan.features.map((feature, index) => {
+            // Dựa vào `feature.status` để render component con phù hợp
+            switch (feature.status) {
+              case 'success':
+                return <StaticFeatureRow key={index} feature={feature} />
+              case 'input':
+                const isRotationTimeInput = feature.field === 'rotationTime'
+
+                return (
+                  <InputFeatureRow
+                    key={index}
+                    feature={feature}
+                    control={control}
+                    errors={errors}
+                    planId={plan.id}
+                    min={plan.min}
+                    max={plan.max}
+                    isDisabled={isRotationTimeInput && !watchedFields.autoRotate}
+                  />
+                )
+              case 'checkbox':
+                return <SwitchFeatureRow key={index} feature={feature} control={control} planId={plan.id} />
+              default:
+                return null
+            }
+          })}
+        </div>
+
+        <div className='plan-footer'>
+          <div className='plan-price'>
+            <span className='price-label'>Thành tiền:</span>
+            <span className='price-amount'>{calculateTotalFormat()}đ</span>
+          </div>
+          {session.status === 'authenticated' ? (
+            <button type='submit' className='buy-button' disabled={isPending}>
+              {isPending ? (
+                <>
+                  <Loader size={18} className='mr-2 animate-pulse' /> Đang xử lý...
+                </>
+              ) : (
+                <>
+                  <ShoppingCart size={18} className='mr-2' /> Mua Proxy
+                </>
+              )}
+            </button>
+          ) : (
+            <button type='button' className='buy-button' onClick={() => openAuthModal('login')}>
+              <User size={18} className='mr-2' /> Đăng nhập
+            </button>
+          )}
+        </div>
+      </form>
+
+      <ConfirmDialog
+        open={openConfirm}
+        onClose={() => setOpenConfirm(false)}
+        onConfirm={handleConfirmBuy}
+        title='Xác nhận mua Proxy'
+        confirmText='Xác nhận'
+        cancelText='Hủy'
+      >
+        Bạn có chắc chắn muốn mua gói proxy này không?
+      </ConfirmDialog>
+    </>
   )
 }
 
