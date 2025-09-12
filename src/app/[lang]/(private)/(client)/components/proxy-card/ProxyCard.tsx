@@ -194,7 +194,21 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, logo, color, price, fea
     setOpenConfirm(true) // Mở dialog xác nhận
   }
 
-  const handleConfirmPurchase = () => {}
+  const handleConfirmPurchase = () => {
+    try {
+      if (formData) {
+        mutate(formData) // Gọi API với dữ liệu đã lưu
+        setOpenConfirm(false) // Đóng dialog
+        setFormData(null) // Xóa dữ liệu đã lưu
+      }
+    } catch (error) {
+      if (error.response) {
+        console.error('Lỗi từ server:', error.response.data)
+      } else {
+        console.error('Lỗi khác:', error.message)
+      }
+    }
+  }
 
   function convertDuration(days: number) {
     switch (days) {

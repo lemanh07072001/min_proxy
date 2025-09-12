@@ -88,6 +88,7 @@ export default function OrderRotatingProxyPage() {
     () => [
       {
         id: 'select',
+        size: 20,
         header: ({ table }) => (
           <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
             <FormControlLabel
@@ -115,8 +116,7 @@ export default function OrderRotatingProxyPage() {
               label=''
             />
           </div>
-        ),
-        size: 40
+        )
       },
       {
         accessorKey: 'id',
@@ -252,7 +252,7 @@ export default function OrderRotatingProxyPage() {
                   {table.getHeaderGroups().map(headerGroup => (
                     <tr key={headerGroup.id}>
                       {headerGroup.headers.map(header => (
-                        <th className='table-header th' key={header.id}>
+                        <th style={{ width: header.getSize() }} className='table-header th' key={header.id}>
                           {flexRender(header.column.columnDef.header, header.getContext())}
                         </th>
                       ))}

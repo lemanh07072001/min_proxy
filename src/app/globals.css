@@ -66,6 +66,21 @@ body {
   display: flex;
   align-items: center;
 }
+
+.table-wrapper {
+  inline-size: 100%;
+  overflow-x: auto; /* Cho phép cuộn ngang */
+  -webkit-overflow-scrolling: touch; /* mượt trên iOS */
+}
+
+.data-table {
+  inline-size: 100%;
+  border-collapse: collapse;
+  min-inline-size: 600px; /* Đặt chiều rộng tối thiểu để tránh bóp méo cột */
+  table-layout: fixed;
+  inline-size: 100%;
+}
+
 /* --- CONTAINER CHÍNH CỦA ỨNG DỤNG --- */
 .app-container {
   min-block-size: 100vh; /* Giữ nguyên: đảm bảo chiều cao tối thiểu là toàn màn hình */

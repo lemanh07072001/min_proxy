@@ -2,6 +2,8 @@
 
 import { useMemo, useState } from 'react'
 
+import Image from 'next/image'
+
 import { TriangleAlert, CircleQuestionMark, BadgeCheck, BadgeMinus, List } from 'lucide-react'
 
 import {
@@ -15,9 +17,9 @@ import Chip from '@mui/material/Chip'
 
 import Pagination from '@mui/material/Pagination'
 import { useQuery } from '@tanstack/react-query'
+
 import useAxiosAuth from '@/hocs/useAxiosAuth'
 import { useCopy } from '@/app/hooks/useCopy'
-import Image from 'next/image'
 
 export default function HistoryOrderPage() {
   const [rowSelection, setRowSelection] = useState({}) // State để lưu các hàng được chọn
@@ -25,14 +27,11 @@ export default function HistoryOrderPage() {
   const axiosAuth = useAxiosAuth()
   const [, copy] = useCopy()
 
-
-  const {
-    data: dataOrders = [],
-    isLoading,
-  } = useQuery({
+  const { data: dataOrders = [], isLoading } = useQuery({
     queryKey: ['orderProxyStatic'],
     queryFn: async () => {
       const res = await axiosAuth.get('/get-order')
+
       return res.data.data
     }
   })
@@ -67,40 +66,52 @@ export default function HistoryOrderPage() {
     () => [
       {
         accessorKey: 'order_code',
-        header: 'ID'
+        header: 'ID',
+        size: 120
       },
       {
         accessorKey: 'user.email',
-        header: 'Tài khoản'
+        header: 'Tài khoản',
+        size: 100
       },
       {
         header: 'Số tiền',
         cell: ({ row }) => (
           <div>
             <div className='font-bold'>{new Intl.NumberFormat('vi-VN').format(row.original.total_amount) + ' đ'}</div>
-            <span className='font-sm'>Số tiền: {new Intl.NumberFormat('vi-VN').format(row.original.price_per_unit) + ' đ'} VND</span>
+            <span className='font-sm'>
+              Số tiền: {new Intl.NumberFormat('vi-VN').format(row.original.price_per_unit) + ' đ'} VND
+            </span>
           </div>
-        )
+        ),
+        size: 150
       },
       {
         accessorKey: 'quantity',
-        header: 'Số lượng'
+        header: 'Số lượng',
+        size: 80
       },
       {
         accessorKey: 'status',
         header: 'Trạng thái',
         cell: ({ row }) => {
           return getStatusBadge(row.original.status)
-        }
+        },
+        size: 70
       },
       {
         accessorKey: 'buy_at',
-        header: 'Ngày mua'
+        header: 'Ngày mua',
+        size: 150
       },
       {
         accessorKey: 'expired_at',
-        header: 'Ngày hết hạn'
+        header: 'Ngày hết hạn',
+        size: 150
       },
+      {
+        header: 'Action'
+      }
     ],
     []
   )
@@ -136,54 +147,52 @@ export default function HistoryOrderPage() {
           </div>
           {/* Table */}
           <div className='table-wrapper'>
-            <table className='data-table'
-                   style={isLoading || dataOrders.length === 0 ? { height: '100%' } : {}}
-            >
+            <table className='data-table' style={isLoading || dataOrders.length === 0 ? { height: '100%' } : {}}>
               <thead className='table-header'>
-              {table.getHeaderGroups().map(headerGroup => (
-                <tr key={headerGroup.id}>
-                  {headerGroup.headers.map(header => (
-                    <th className='table-header th' key={header.id}>
-                      {flexRender(header.column.columnDef.header, header.getContext())}
-                    </th>
-                  ))}
-                </tr>
-              ))}
-              </thead>
-              <tbody>
-              {isLoading ? (
-                <tr>
-                  <td colSpan={columns.length} className='py-10 text-center'>
-                    <div className='loader-wrapper'>
-                      <div className='loader'>
-                        <span></span>
-                        <span></span>
-                        <span></span>
-                      </div>
-                      <p className='loading-text'>Đang tải dữ liệu...</p>
-                    </div>
-                  </td>
-                </tr>
-              ) : table.getRowModel().rows.length === 0 ? (
-                <tr>
-                  <td colSpan={columns.length} className='py-10 text-center'>
-                    <div className='flex flex-col items-center justify-center'>
-                      <Image src='/images/no-data.png' alt='No data' width={160} height={160} />
-                      <p className='mt-4 text-gray-500'>Không có dữ liệu</p>
-                    </div>
-                  </td>
-                </tr>
-              ) : (
-                table.getRowModel().rows.map(row => (
-                  <tr className='table-row' key={row.id}>
-                    {row.getVisibleCells().map(cell => (
-                      <td className='table-cell' key={cell.id}>
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                      </td>
+                {table.getHeaderGroups().map(headerGroup => (
+                  <tr key={headerGroup.id}>
+                    {headerGroup.headers.map(header => (
+                      <th style={{ width: header.getSize() }} className='table-header th' key={header.id}>
+                        {flexRender(header.column.columnDef.header, header.getContext())}
+                      </th>
                     ))}
                   </tr>
-                ))
-              )}
+                ))}
+              </thead>
+              <tbody>
+                {isLoading ? (
+                  <tr>
+                    <td colSpan={columns.length} className='py-10 text-center'>
+                      <div className='loader-wrapper'>
+                        <div className='loader'>
+                          <span></span>
+                          <span></span>
+                          <span></span>
+                        </div>
+                        <p className='loading-text'>Đang tải dữ liệu...</p>
+                      </div>
+                    </td>
+                  </tr>
+                ) : table.getRowModel().rows.length === 0 ? (
+                  <tr>
+                    <td colSpan={columns.length} className='py-10 text-center'>
+                      <div className='flex flex-col items-center justify-center'>
+                        <Image src='/images/no-data.png' alt='No data' width={160} height={160} />
+                        <p className='mt-4 text-gray-500'>Không có dữ liệu</p>
+                      </div>
+                    </td>
+                  </tr>
+                ) : (
+                  table.getRowModel().rows.map(row => (
+                    <tr className='table-row' key={row.id}>
+                      {row.getVisibleCells().map(cell => (
+                        <td className='table-cell' key={cell.id}>
+                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        </td>
+                      ))}
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
