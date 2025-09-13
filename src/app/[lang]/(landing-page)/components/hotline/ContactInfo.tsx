@@ -30,10 +30,10 @@ const ContactInfo = () => {
               <div className='flex-1 min-w-0'>
                 <h3 className='text-lg font-semibold text-gray-900 mb-1'>Hotline</h3>
                 <a
-                  href='tel:0399169675'
+                  href='tel:0987111049'
                   className='text-xl font-bold text-red-500 hover:text-red-600 transition-colors block'
                 >
-                  0399169675
+                  0987111049
                 </a>
                 <p className='text-sm text-gray-500 mt-1'>Gọi ngay để được tư vấn miễn phí</p>
               </div>
@@ -49,10 +49,10 @@ const ContactInfo = () => {
               <div className='flex-1 min-w-0'>
                 <h3 className='text-lg font-semibold text-gray-900 mb-1'>Email</h3>
                 <a
-                  href='mailto:admin@homeproxy.vn'
+                  href='mailto:admin@admin.vn'
                   className='text-lg font-medium text-red-500 hover:text-red-600 transition-colors break-all'
                 >
-                  admin@homeproxy.vn
+                  admin@admin.vn
                 </a>
                 <p className='text-sm text-gray-500 mt-1'>Gửi email để được hỗ trợ chi tiết</p>
               </div>
@@ -91,7 +91,7 @@ const ContactInfo = () => {
                   rel='noopener noreferrer'
                   className='text-lg font-medium text-red-500 hover:text-red-600 transition-colors'
                 >
-                  https://homeproxy.vn
+                  https://mktproxy.vn
                 </a>
                 <p className='text-sm text-gray-500 mt-1'>Truy cập website chính thức</p>
               </div>
@@ -174,7 +174,7 @@ const ContactInfo = () => {
       {/* Additional Features Section */}
       <div className='mt-16 bg-white rounded-2xl p-8 shadow-sm'>
         <div className='text-center mb-8'>
-          <h3 className='text-2xl font-bold text-gray-900 mb-4'>Tại sao chọn HomeProxy?</h3>
+          <h3 className='text-2xl font-bold text-gray-900 mb-4'>Tại sao chọn {process.env.NEXT_PUBLIC_APP_NAME}?</h3>
           <p className='text-gray-600 max-w-2xl mx-auto'>
             Chúng tôi cam kết mang đến dịch vụ tốt nhất với đội ngũ chuyên nghiệp và kinh nghiệm
           </p>
