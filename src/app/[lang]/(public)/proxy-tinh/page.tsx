@@ -23,6 +23,8 @@ export default async function StaticProxy() {
     console.log(error)
   }
 
+  console.log(proxyPlans)
+
   const proxyProviders = {
     features: [
       {
@@ -36,7 +38,7 @@ export default async function StaticProxy() {
     ]
   }
 
-  const mergedPlans = proxyPlans.map(plan => ({
+  const mergedPlans = proxyPlans?.map(plan => ({
     id: plan.id,
     title: plan.name,
     price: parseInt(plan.price),

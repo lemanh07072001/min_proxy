@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 const axiosInstance = axios.create({
-  baseURL: 'https://mktproxy.com/api',
+  baseURL: 'https://api.mktproxy.com/api',
   headers: {
     Accept: 'application/json'
   }
