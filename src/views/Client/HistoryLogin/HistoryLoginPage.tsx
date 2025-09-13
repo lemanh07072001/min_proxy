@@ -28,11 +28,11 @@ export default function HistoryLoginPage() {
   const [, copy] = useCopy()
 
   const { data: dataOrders = [], isLoading } = useQuery({
-    queryKey: ['orderProxyStatic'],
+    queryKey: ['getHistoryLogin'],
     queryFn: async () => {
-      const res = await axiosAuth.get('/get-order')
+      const res = await axiosAuth.get('/get-history-login')
 
-      return res.data.data
+      return res.data ?? []
     }
   })
 
@@ -65,25 +65,19 @@ export default function HistoryLoginPage() {
   const columns = useMemo(
     () => [
       {
-        accessorKey: 'order_code',
+        accessorKey: 'id',
         header: 'ID',
-        size: 170
+        size: 60
       },
       {
-        accessorKey: 'user.email',
-        header: 'Tài khoản',
+        accessorKey: 'content',
+        header: 'Nội dung',
         size: 200
       },
       {
-        header: 'Số tiền',
-        cell: ({ row }) => (
-          <div>
-            <div className='font-bold'>{new Intl.NumberFormat('vi-VN').format(row.original.total_amount) + ' đ'}</div>
-            <span className='font-sm'>
-              Số tiền: {new Intl.NumberFormat('vi-VN').format(row.original.price_per_unit) + ' đ'} VND
-            </span>
-          </div>
-        ),
+        header: 'device',
+        accessorKey: 'device',
+        
         size: 150
       },
       {
