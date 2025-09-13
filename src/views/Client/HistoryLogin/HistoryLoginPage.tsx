@@ -5,16 +5,9 @@ import { useMemo, useState } from 'react'
 import Image from 'next/image'
 
 import {
-  TriangleAlert,
-  CircleQuestionMark,
-  BadgeCheck,
-  BadgeMinus,
+
   List,
   Clock,
-  RotateCcwKey,
-  Calendar,
-  Key,
-  Copy
 } from 'lucide-react'
 
 import {

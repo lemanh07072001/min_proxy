@@ -1,4 +1,8 @@
+
+
 import type { Metadata } from 'next'
+
+import { OverviewPage } from '@views/Client/Overview/OverviewPage'
 
 export const metadata: Metadata = {
   title: `${process.env.NEXT_PUBLIC_APP_NAME} | Trang chủ`,
@@ -6,5 +10,7 @@ export const metadata: Metadata = {
 }
 
 export default function Overview() {
-  return <h1>das</h1>
+
+
+  return <OverviewPage/>
 }

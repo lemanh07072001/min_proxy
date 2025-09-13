@@ -3,8 +3,17 @@ import React from 'react'
 import Image from 'next/image'
 
 import { Shield, Star, CheckCircle, ArrowRight } from 'lucide-react'
+import Link from '@components/Link'
 
-const ProductsSection = () => {
+export default async function ProductsSection({
+                                                params,
+                                              }: {
+  params: { lang: string }
+}) {
+  const locale = params.lang   // ✅ lấy lang
+  console.log(locale)          // log server-side
+
+
   const products = [
     {
       id: 1,
@@ -111,10 +120,10 @@ const ProductsSection = () => {
                   </div>
 
                   {/* CTA Button */}
-                  <button className='buy-button'>
+                  <Link  href={`/${locale}/history-login`} className='buy-button'>
                     <span>Mua ngay</span>
                     <ArrowRight size={18} />
-                  </button>
+                  </Link>
 
                   {/* Guarantee */}
                   <div className='guarantee'>
@@ -143,4 +152,3 @@ const ProductsSection = () => {
   )
 }
 
-export default ProductsSection

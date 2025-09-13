@@ -11,6 +11,7 @@
     "purchaseHistory": "Purchase History",
     "transactionHistory": "Transaction History",
     "proxyChangeHistory": "Proxy Change History",
+    "loginHistory": "Login History",
     "guide": "Guide",
     "support": "Support"
   },

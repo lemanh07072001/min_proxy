@@ -6,12 +6,12 @@ export const metadata: Metadata = {
   title: `Chào mừng đến mới ${process.env.NEXT_PUBLIC_APP_NAME} `,
   description: 'Mô tả ngắn gọn về trang web.'
 }
-export default function Page() {
+export default function Page({ params }: { params: { lang: string } }) {
   return (
     <div>
       <Hero />
 
-      <ProductsSection />
+      <ProductsSection params={params} />
       <PartnersSection />
     </div>
   )
