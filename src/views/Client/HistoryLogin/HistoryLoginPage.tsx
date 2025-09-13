@@ -77,7 +77,6 @@ export default function HistoryLoginPage() {
       {
         header: 'device',
         accessorKey: 'device',
-        
         size: 150
       },
       {
