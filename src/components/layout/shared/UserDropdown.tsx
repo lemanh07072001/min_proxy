@@ -65,7 +65,6 @@ const UserDropdown = () => {
   }
 
   const handleConfirmLogout = async () => {
-    console.log('Hành động XÓA đã được xác nhận!')
     setOpenConfirm(false)
     await signOut({ redirect: false })
     router.replace('/overview')
