@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react'
 
 import Image from 'next/image'
 
-import { TriangleAlert, CircleQuestionMark, BadgeCheck, BadgeMinus, List } from 'lucide-react'
+import { TriangleAlert, CircleQuestionMark, BadgeCheck, BadgeMinus, List, Clock3, Clock } from 'lucide-react'
 
 import {
   useReactTable,
@@ -20,6 +20,7 @@ import { useQuery } from '@tanstack/react-query'
 
 import useAxiosAuth from '@/hocs/useAxiosAuth'
 import { useCopy } from '@/app/hooks/useCopy'
+import { formatDateTimeLocal } from '@/utils/formatDate'
 
 export default function HistoryOrderPage() {
   const [rowSelection, setRowSelection] = useState({}) // State để lưu các hàng được chọn
@@ -67,7 +68,8 @@ export default function HistoryOrderPage() {
       {
         accessorKey: 'order_code',
         header: 'ID',
-        size: 170
+        size: 170,
+
       },
       {
         accessorKey: 'user.email',
@@ -102,12 +104,32 @@ export default function HistoryOrderPage() {
       {
         accessorKey: 'buy_at',
         header: 'Ngày mua',
-        size: 200
+        size: 200,
+        cell: ({ row }) => {
+          return (
+            <>
+              <div className='d-flex align-items-center  gap-1 '>
+                <Clock3 size={14} />
+                <div style={{ marginTop: '2px' }}>{formatDateTimeLocal(row.original.buy_at)}</div>
+              </div>
+            </>
+          )
+        },
       },
       {
         accessorKey: 'expired_at',
         header: 'Ngày hết hạn',
-        size: 200
+        size: 200,
+        cell: ({ row }) => {
+          return (
+            <>
+              <div className='d-flex align-items-center  gap-1 '>
+                <Clock size={14} />
+                <div style={{ marginTop: '2px' }}>{formatDateTimeLocal(row.original.expired_at)}</div>
+              </div>
+            </>
+          )
+        },
       },
 
     ],
