@@ -80,7 +80,7 @@ const Logo = ({ color }: { color?: CSSProperties['color'] }) => {
         transitionDuration={transitionDuration}
         isBreakpointReached={isBreakpointReached}
       >
-        {process.env.APP_NAME}
+        {process.env.NEXT_PUBLIC_APP_NAME}
       </LogoText>
     </div>
   )
