@@ -68,15 +68,17 @@ export const authOptions: NextAuthOptions = {
     CredentialProvider({
       name: 'Credentials',
       credentials: {},
-      async authorize(credentials) {
+      async authorize(credentials,req) {
         console.log('🔑 [authorize] Attempting login', new Date().toISOString())
         const { email, password } = credentials as { email: string; password: string }
         const apiUrl = process.env.API_URL || 'http://localhost:8000'
+        const userAgent = req.headers['user-agent'] || ''
 
         try {
           const res = await fetch(`${apiUrl}/login`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json','User-Agent': userAgent, },
+
             body: JSON.stringify({ email, password })
           })
 
