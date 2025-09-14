@@ -36,7 +36,7 @@ export default function LoginForm() {
   const router = useRouter()
   const params = useParams()
   const pathname = usePathname()
-  const { closeAuthModal } = useModalContext()
+  const { closeAuthModal, setAuthModalMode } = useModalContext()
 
   const { lang: locale } = params
 
@@ -115,7 +115,7 @@ export default function LoginForm() {
           <span className='login-checkbox-custom'></span>
           <span className='login-checkbox-label'>Ghi nhớ đăng nhập</span>
         </label>
-        <a href='#' className='login-forgot-link'>
+        <a href='#' className='login-forgot-link' onClick={() => setAuthModalMode('reset')}>
           Quên mật khẩu
         </a>
       </div>

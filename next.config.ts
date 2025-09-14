@@ -9,6 +9,11 @@ const nextConfig: NextConfig = {
         source: '/',
         destination: '/vi', // Đặt locale mặc định của bạn tại đây
         permanent: false // Sử dụng false để tránh cache vĩnh viễn
+      },
+      {
+        source: '/((?!(?:en|de)\\b)):path',
+        destination: '/en/:path*',
+        permanent: false
       }
     ]
   },

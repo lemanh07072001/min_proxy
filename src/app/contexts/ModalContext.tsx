@@ -4,34 +4,45 @@ import { createContext, useContext, useState, ReactNode } from 'react'
 
 interface ModalContextType {
   isAuthModalOpen: boolean
-  authModalMode: 'login' | 'register'
-  openAuthModal: (mode?: 'login' | 'register') => void
+  authModalMode: 'login' | 'register' | 'reset'
+  resetEmail: string | null
+  resetToken: string | null
+  openAuthModal: (mode?: 'login' | 'register' | 'reset', email?: string, token?: string) => void
   closeAuthModal: () => void
-  setAuthModalMode: (mode: 'login' | 'register') => void
+  setAuthModalMode: (mode: 'login' | 'register' | 'reset') => void
+  setResetData: (email: string, token: string) => void
 }
 
 const ModalContext = createContext<ModalContextType | null>(null)
 
-// Custom hook để sử dụng ModalContext
 export const useModalContext = () => {
   const context = useContext(ModalContext)
-  if (!context) {
-    throw new Error('useModalContext must be used within ModalContextProvider')
-  }
+  if (!context) throw new Error('useModalContext must be used within ModalContextProvider')
   return context
 }
 
-// Provider component
 interface ModalContextProviderProps {
   children: ReactNode
 }
 
 export const ModalContextProvider = ({ children }: ModalContextProviderProps) => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
-  const [authModalMode, setAuthModalMode] = useState<'login' | 'register'>('login')
+  const [authModalMode, setAuthModalMode] = useState<'login' | 'register' | 'reset'>('login')
 
-  const openAuthModal = (mode: 'login' | 'register' = 'login') => {
+  // ✅ Thêm state cho email & token
+  const [resetEmail, setResetEmail] = useState<string | null>(null)
+  const [resetToken, setResetToken] = useState<string | null>(null)
+
+  const openAuthModal = (
+    mode: 'login' | 'register' | 'reset' = 'login',
+    email?: string,
+    token?: string
+  ) => {
     setAuthModalMode(mode)
+    if (mode === 'reset') {
+      if (email) setResetEmail(email)
+      if (token) setResetToken(token)
+    }
     setIsAuthModalOpen(true)
   }
 
@@ -39,21 +50,25 @@ export const ModalContextProvider = ({ children }: ModalContextProviderProps) =>
     setIsAuthModalOpen(false)
   }
 
-  const setMode = (mode: 'login' | 'register') => {
+  const setMode = (mode: 'login' | 'register' | 'reset') => {
     setAuthModalMode(mode)
+  }
+
+  const setResetData = (email: string, token: string) => {
+    setResetEmail(email)
+    setResetToken(token)
   }
 
   const value: ModalContextType = {
     isAuthModalOpen,
     authModalMode,
+    resetEmail,
+    resetToken,
     openAuthModal,
     closeAuthModal,
-    setAuthModalMode: setMode
+    setAuthModalMode: setMode,
+    setResetData
   }
 
-  return (
-    <ModalContext.Provider value={value}>
-      {children}
-    </ModalContext.Provider>
-  )
+  return <ModalContext.Provider value={value}>{children}</ModalContext.Provider>
 }

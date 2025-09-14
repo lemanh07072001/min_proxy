@@ -7,6 +7,7 @@ import { useModalContext } from '@/app/contexts/ModalContext'
 
 import LoginForm from '@views/Auth/LoginForm'
 import RegisterForm from '@views/Auth/RegisterForm'
+import PasswordReset from '@views/Auth/PasswordReset'
 
 const AuthModal: React.FC = () => {
   const { isAuthModalOpen, authModalMode, closeAuthModal, setAuthModalMode } = useModalContext()
@@ -58,7 +59,9 @@ const AuthModal: React.FC = () => {
             </div>
 
             {/* Form */}
-            {authModalMode === 'login' ? <LoginForm /> : <RegisterForm />}
+            {authModalMode === 'login' && <LoginForm />}
+            {authModalMode === 'register' && <RegisterForm />}
+            {authModalMode === 'reset' && <PasswordReset />}
 
             {/* Switch Mode Buttons */}
             <div className='login-modal-switch'>
