@@ -11,8 +11,8 @@ const nextConfig: NextConfig = {
         permanent: false // Sử dụng false để tránh cache vĩnh viễn
       },
       {
-        source: '/((?!(?:en|de)\\b)):path',
-        destination: '/en/:path*',
+        source: '/((?!(?:vi|en)\\b)):path',
+        destination: '/vi/:path*',
         permanent: false
       }
     ]
