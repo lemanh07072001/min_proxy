@@ -6,6 +6,11 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       {
+        source: '/',          // khi truy cập đúng root domain
+        destination: '/vi',   // tự động chuyển sang /vi
+        permanent: false      // 307 tạm thời, đổi thành true nếu muốn 308 vĩnh viễn
+      },
+      {
         source: '/((?!(?:en|vi)\\b)):path',
         destination: '/vi/:path',
         permanent: false
