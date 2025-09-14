@@ -1,12 +1,16 @@
 import { NextResponse } from 'next/server'
+
 import axiosInstance from '@/libs/axios'
 
 export async function POST(request: Request) {
   try {
     const body = await request.json()
+
     const authToken = request.headers.get('Authorization')
 
-    const response = await axiosInstance.post('/buy-proxy-rotating', body, {
+    const laravelApiUrl = '/buy-proxy-rotating'
+
+    const response = await axiosInstance.post(laravelApiUrl, body, {
       headers: {
         Authorization: authToken,
         'Content-Type': 'application/json',
@@ -14,6 +18,7 @@ export async function POST(request: Request) {
       }
     })
 
+    // ✅ Nhánh thành công: Bạn đã return đúng
     return NextResponse.json(response.data)
   } catch (error: any) {
     console.error('[API PROXY ERROR]', error)
