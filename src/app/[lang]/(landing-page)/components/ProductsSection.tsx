@@ -5,13 +5,7 @@ import Image from 'next/image'
 import { Shield, Star, CheckCircle, ArrowRight } from 'lucide-react'
 import Link from '@components/Link'
 
-export default async function ProductsSection({
-                                                params,
-                                              }: {
-  params: { lang: string }
-}) {
-  const locale = params.lang   // ✅ lấy lang
-  console.log(locale)          // log server-side
+export default  function ProductsSection({ lang }: { lang: string }) {
 
 
   const products = [
@@ -120,7 +114,7 @@ export default async function ProductsSection({
                   </div>
 
                   {/* CTA Button */}
-                  <Link  href={`/${locale}/history-login`} className='buy-button'>
+                  <Link  href={`/${lang}/history-login`} className='buy-button'>
                     <span>Mua ngay</span>
                     <ArrowRight size={18} />
                   </Link>

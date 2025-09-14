@@ -36,6 +36,9 @@ import { ModalContextProvider } from '@/app/contexts/ModalContext'
 
 import { authOptions } from '@/libs/auth'
 import { UserProvider } from '@/app/contexts/UserContext'
+import { usePathname } from 'next/navigation'
+import { useEffect, useState } from 'react'
+import ClientLayout from '@components/ClientLayout'
 
 const figtree = Figtree({
   subsets: ["latin"],
@@ -52,6 +55,7 @@ const RootLayout = async (props: ChildrenType & { params: Promise<{ lang: Locale
 
   const headersList = await headers()
   const systemMode = await getSystemMode()
+
 
   const direction = i18n.langDirection[params.lang]
 
@@ -70,6 +74,7 @@ const RootLayout = async (props: ChildrenType & { params: Promise<{ lang: Locale
     }
   }
 
+
   return (
     <TranslationWrapper headersList={headersList} lang={params.lang}>
       <html id='__next' lang={params.lang} dir={direction} className={figtree.variable} suppressHydrationWarning>
@@ -78,7 +83,7 @@ const RootLayout = async (props: ChildrenType & { params: Promise<{ lang: Locale
             <InitColorSchemeScript attribute='data' defaultMode={systemMode} />
             <ModalContextProvider>
               <UserProvider value={user}>
-              {children}
+                {children}
               </UserProvider>
             </ModalContextProvider>
           </TanstackProvider>

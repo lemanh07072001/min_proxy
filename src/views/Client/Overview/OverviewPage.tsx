@@ -2,13 +2,15 @@
 
 import useAxiosAuth from '@/hocs/useAxiosAuth'
 import { useQuery } from '@tanstack/react-query'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { formatDateTimeLocal } from '@/utils/formatDate'
 
 
 export function OverviewPage() {
-  const [proxys , setProxys] = useState([])
+
 
   const axiosAuth = useAxiosAuth()
+
   const { data: dataOverview = [], isLoading } = useQuery({
     queryKey: ['getOverview'],
     queryFn: async () => {
@@ -17,8 +19,16 @@ export function OverviewPage() {
       return res.data ?? []
     }
   })
-  setProxys(dataOverview)
-  console.log(dataOverview)
+
+  const proxys = dataOverview?.proxys ?? []
+
+  if (isLoading) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-white">
+        <div className="animate-spin rounded-full h-16 w-16 border-4 border-gray-300 border-t-orange-500" />
+      </div>
+    )
+  }
 
   return (
    <>
@@ -38,35 +48,54 @@ export function OverviewPage() {
            <p className="text-2xl font-bold text-red-600">{dataOverview?.near_expiry || 0}</p>
          </div>
        </div>
-     </div>
 
-     <div className="bg-card rounded-lg border">
-       <div className="p-6 border-b">
-         <h2 className="text-lg font-semibold">Proxy của bạn</h2>
-       </div>
-       <div className="p-6">
-         <div className="space-y-4">
-           {.map((proxy, index) => (
-             <div key={index} className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
-               <div className="space-y-1">
-                 <p className="font-medium">{proxy.ip}</p>
-                 <p className="text-sm text-muted-foreground">{proxy.location}</p>
+
+       <div className="bg-card rounded-lg border " style={{background:'white'}}>
+         <div className="p-6 border-b">
+           <h2 className="text-lg font-semibold">Proxy của bạn</h2>
+         </div>
+         <div className="p-6 max-h-[400px] overflow-y-auto">
+           <div className="space-y-4">
+             {proxys.map((proxy, index) => (
+               <div key={proxy.id} className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+                 {proxy.plan_type == 'STATIC' ? (
+                   <div className="space-y-1">
+                     {proxy?.proxys &&
+                       Object.entries(proxy.proxys).map(([type, value]) =>
+                         type !== 'loaiproxy' && value ? (
+                           <p key={type} className="font-medium">
+                             {value}
+                           </p>
+                         ) : null
+                       )}
+                     <p className="text-sm text-muted-foreground">
+                       <span>Loại: {proxy?.proxys?.loaiproxy}</span>
+                     </p>
+                   </div>
+                 ):(
+                   <div className="space-y-1">
+                     <p className="font-medium">{proxy?.api_key}</p>
+
+                   </div>
+                 )}
+                 <div className="text-right space-y-1">
+                   <p
+                     className={`text-sm font-medium ${
+                       proxy?.status === "ACTIVE" ? "text-green-600" : "text-red-600"
+                     }`}
+                   >
+                     {proxy?.status}
+                   </p>
+                   <p className="text-sm text-muted-foreground">Hết hạn: {formatDateTimeLocal(proxy?.expired_at)}</p>
+                 </div>
                </div>
-               <div className="text-right space-y-1">
-                 <p
-                   className={`text-sm font-medium ${
-                     proxy.status === "Hoạt động" ? "text-green-600" : "text-red-600"
-                   }`}
-                 >
-                   {proxy.status}
-                 </p>
-                 <p className="text-sm text-muted-foreground">Hết hạn: {proxy.expires}</p>
-               </div>
-             </div>
-           ))}
+             ))}
+           </div>
          </div>
        </div>
      </div>
+
+
    </>
   )
 }

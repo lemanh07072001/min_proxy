@@ -101,7 +101,7 @@ const MainHeader = () => {
         <div className='container-lg'>
           {/* Logo */}
           <a className='navbar-brand navbar-brand-custom d-flex align-items-center logo' href='#'>
-            <VuexyLogo className='text-2xl text-primary' />
+            <Image src='/images/logo/Logo_MKT_Proxy.png' alt='Logo_MKT_Proxy' width={180} height={50}/>
           </a>
 
           <div className='header-mobile'>
