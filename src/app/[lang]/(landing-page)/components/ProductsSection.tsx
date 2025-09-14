@@ -5,8 +5,7 @@ import Image from 'next/image'
 import { Shield, Star, CheckCircle, ArrowRight } from 'lucide-react'
 import Link from '@components/Link'
 
-export default  function ProductsSection({ lang }: { lang: string }) {
-
+export default  function ProductsSection({ params }: { params: string }) {
 
   const products = [
     {
@@ -114,7 +113,7 @@ export default  function ProductsSection({ lang }: { lang: string }) {
                   </div>
 
                   {/* CTA Button */}
-                  <Link  href={`/${lang}/history-login`} className='buy-button'>
+                  <Link  href={`/${params.lang}/proxy-tinh`} className='buy-button'>
                     <span>Mua ngay</span>
                     <ArrowRight size={18} />
                   </Link>

@@ -13,7 +13,7 @@ export default async function  Page({ params }: { params: { lang: string } }) {
     <div>
       <Hero />
 
-      {/*<ProductsSection params={params} />*/}
+      <ProductsSection params={params} />
       <PartnersSection local={lang}/>
     </div>
   )
