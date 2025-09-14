@@ -3,6 +3,7 @@
 import { useModalContext } from '@/app/contexts/ModalContext'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect } from 'react'
+import EmptyAuthPage from '@components/EmptyAuthPage'
 
 
 export function ResetPasswordPage() {
@@ -16,14 +17,14 @@ export function ResetPasswordPage() {
   useEffect(() => {
     if (token && email) {
       // mở modal đổi mật khẩu
-      openAuthModal('reset', email, token)
-      setTimeout(() => router.replace('/overview'), 500) // delay
+      openAuthModal('resetpass', email, token)
+
     }
   }, [token, email, openAuthModal,router])
 
 return(
   <>
-  dsa
+
   </>
 )
 }

@@ -4,14 +4,21 @@ import { createContext, useContext, useState, ReactNode } from 'react'
 
 interface ModalContextType {
   isAuthModalOpen: boolean
-  authModalMode: 'login' | 'register' | 'reset'
+  authModalMode: 'login' | 'register' | 'reset' | 'resetpass'
   resetEmail: string | null
   resetToken: string | null
-  openAuthModal: (mode?: 'login' | 'register' | 'reset', email?: string, token?: string) => void
+  resetPassword: string | null
+  openAuthModal: (
+    mode?: 'login' | 'register' | 'reset' | 'resetpass',
+    email?: string,
+    token?: string
+  ) => void                        // ✅ bỏ password
   closeAuthModal: () => void
-  setAuthModalMode: (mode: 'login' | 'register' | 'reset') => void
+  setAuthModalMode: (mode: 'login' | 'register' | 'reset' | 'resetpass') => void
   setResetData: (email: string, token: string) => void
+  setResetPassword: (password: string) => void
 }
+
 
 const ModalContext = createContext<ModalContextType | null>(null)
 
@@ -34,17 +41,18 @@ export const ModalContextProvider = ({ children }: ModalContextProviderProps) =>
   const [resetToken, setResetToken] = useState<string | null>(null)
 
   const openAuthModal = (
-    mode: 'login' | 'register' | 'reset' = 'login',
+    mode: 'login' | 'register' | 'reset' | 'resetpass' = 'login',
     email?: string,
     token?: string
   ) => {
     setAuthModalMode(mode)
-    if (mode === 'reset') {
+    if (mode === 'reset' || mode === 'resetpass') {
       if (email) setResetEmail(email)
       if (token) setResetToken(token)
     }
     setIsAuthModalOpen(true)
   }
+
 
   const closeAuthModal = () => {
     setIsAuthModalOpen(false)

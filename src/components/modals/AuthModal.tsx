@@ -8,6 +8,8 @@ import { useModalContext } from '@/app/contexts/ModalContext'
 import LoginForm from '@views/Auth/LoginForm'
 import RegisterForm from '@views/Auth/RegisterForm'
 import PasswordReset from '@views/Auth/PasswordReset'
+import ForgotPasswordForm from '@views/Auth/ForgotPasswordForm'
+import ResetPasswordForm from '@views/Auth/ResetPasswordForm'
 
 const AuthModal: React.FC = () => {
   const { isAuthModalOpen, authModalMode, closeAuthModal, setAuthModalMode } = useModalContext()
@@ -52,16 +54,25 @@ const AuthModal: React.FC = () => {
                   </svg>
                 </div>
               </div>
-              <h1 className='login-modal-title'>Chào mừng bạn quay lại</h1>
+              <h1 className='login-modal-title'>
+                {authModalMode === 'login' && 'Chào ừng bạn quay lại'}
+                {authModalMode === 'register' && `Chào mừng bạn đến với ${process.env.NEXT_PUBLIC_APP_NAME}`}
+                {authModalMode === 'reset' && 'Quên mật khẩu'}
+                {authModalMode === 'resetpass' && 'Đổi mật khẩu'}
+              </h1>
               <p className='login-modal-subtitle'>
-                {authModalMode === 'login' ? 'Vui lòng điền thông tin đăng nhập' : 'Vui lòng điền thông tin đăng ký'}
+                {authModalMode === 'login' && 'Vui lòng điền thông tin đăng nhập'}
+                {authModalMode === 'register' && 'Vui lòng điền thông tin đăng ký'}
+                {authModalMode === 'reset' && 'Vui lòng điền email'}
+                {authModalMode === 'resetpass' && 'Vui lòng điền mật khẩu'}
               </p>
             </div>
 
             {/* Form */}
             {authModalMode === 'login' && <LoginForm />}
             {authModalMode === 'register' && <RegisterForm />}
-            {authModalMode === 'reset' && <PasswordReset />}
+            {authModalMode === 'reset' && <ForgotPasswordForm />}
+            {authModalMode === 'resetpass' && <ResetPasswordForm />}
 
             {/* Switch Mode Buttons */}
             <div className='login-modal-switch'>

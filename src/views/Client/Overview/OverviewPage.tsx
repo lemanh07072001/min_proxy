@@ -1,15 +1,41 @@
 'use client'
 
-import useAxiosAuth from '@/hocs/useAxiosAuth'
+import { useEffect } from 'react'
+
+import { useSearchParams } from 'next/navigation'
+
 import { useQuery } from '@tanstack/react-query'
-import { useEffect, useState } from 'react'
+
+import { toast } from 'react-toastify'
+
+import useAxiosAuth from '@/hocs/useAxiosAuth'
+
+
 import { formatDateTimeLocal } from '@/utils/formatDate'
+
+
+
+
+import { useModalContext } from '@/app/contexts/ModalContext'
+
 
 
 export function OverviewPage() {
 
-
+  const {openAuthModal } = useModalContext()
   const axiosAuth = useAxiosAuth()
+
+  // Hiện thông báo khi đổi mật khẩu thành công
+  const searchParams = useSearchParams()
+
+  console.log(searchParams.get('resetSuccess'))
+  useEffect(() => {
+    if (searchParams.get('resetSuccess') === 'true') {
+      console.log('da')
+      toast.success('Đổi mật khẩu thành công!')
+      openAuthModal('login')
+    }
+  }, [searchParams,openAuthModal])
 
   const { data: dataOverview = [], isLoading } = useQuery({
     queryKey: ['getOverview'],
@@ -29,6 +55,8 @@ export function OverviewPage() {
       </div>
     )
   }
+
+
 
   return (
    <>
