@@ -10,12 +10,6 @@ const nextConfig: NextConfig = {
         destination: '/vi', // Đặt locale mặc định của bạn tại đây
         permanent: false // Sử dụng false để tránh cache vĩnh viễn
       },
-      {
-        source: '/:path',
-        destination: '/vi/:path*',
-        permanent: false
-      },
-
     ]
   },
   eslint: {
