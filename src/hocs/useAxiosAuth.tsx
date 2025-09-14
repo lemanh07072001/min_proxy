@@ -37,7 +37,7 @@ const useAxiosAuth = () => {
         }
 
         // ✅ thêm User-Agent nếu đang chạy trên client
-        if (typeof window !== 'undefined' && window.navigator?.userAgent) {
+        if (typeof window !== 'undefined' ) {
           config.headers['User-Agent'] = window.navigator.userAgent
         }
 
