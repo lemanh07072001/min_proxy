@@ -6,10 +6,10 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       {
-        source: '/',
-        destination: '/vi', // Đặt locale mặc định của bạn tại đây
-        permanent: false // Sử dụng false để tránh cache vĩnh viễn
-      },
+        source: '/((?!(?:en|vi)\\b)):path',
+        destination: '/vi/:path',
+        permanent: false
+      }
     ]
   },
   eslint: {
