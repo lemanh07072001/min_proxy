@@ -6,11 +6,10 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       {
-        source: '/:path*',
-        has: [],               // không cần regex phức tạp
+        source: '/:path',
         destination: '/vi/:path*',
         permanent: false
-      }
+      },
     ]
   },
   eslint: {
