@@ -36,10 +36,7 @@ const useAxiosAuth = () => {
           console.log('➡️ [request] Added Authorization header')
         }
 
-        // ✅ thêm User-Agent nếu đang chạy trên client
-        if (typeof window !== 'undefined' ) {
-          config.headers['User-Agent'] = window.navigator.userAgent
-        }
+
 
         return config
       },
