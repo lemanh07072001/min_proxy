@@ -247,13 +247,6 @@ const VerticalMenu = ({ scrollMenu, dictionary }: Props) => {
           >
             {dictionary['navigation'].transactionHistory}
           </MenuItem>
-          <MenuItem
-            icon={<History  size={20} strokeWidth={1.5} />}
-            rootStyles={getMenuItemStyles('history-login')}
-            href={`/${locale}/history-login`}
-          >
-            {dictionary['navigation'].loginHistory}
-          </MenuItem>
         </MenuSection>
 
         <MenuSection label='Liên hệ' rootStyles={menuSectionHeaderStyles}>
