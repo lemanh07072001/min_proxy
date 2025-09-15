@@ -71,14 +71,14 @@ export default function TransactionHistoryPage({ data }: any) {
         cell: ({ row }) => {
           console.log(row.original)
 
-          return <span className='font-sm ms-2'>{row.original.bank_auto.tid}</span>
+          return <span className='font-sm ms-2'>{row.original?.bank_auto?.tid}</span>
         },
         size: 60
       },
       {
         header: 'Lịch sử giao dịch',
         cell: ({ row }) => {
-          if (row.original.bank_auto.transaction_type === 'PLUS') {
+          if (row.original?.bank_auto?.transaction_type === 'PLUS') {
             return (
               <div>
                 <Chip label='Nạp' size='small' color='success' />
@@ -107,7 +107,7 @@ export default function TransactionHistoryPage({ data }: any) {
             currency: 'VND'
           })
 
-          const amount = row.original.bank_auto.amount
+          const amount = row.original?.bank_auto?.amount
           const sotiengoc = row.original.sotientruoc
 
           return (
