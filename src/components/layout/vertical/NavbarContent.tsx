@@ -50,6 +50,8 @@ const NavbarContent = () => {
     rechargeAmount: ''
   })
 
+  console.log(data)
+
   const handleGenerateQr = (data: { qrUrl: string; amount: string; rechargeAmount: string }) => {
     setTransactionData(data)
     setIsInputOpen(false)
@@ -86,7 +88,7 @@ const NavbarContent = () => {
               gap: '10px'
             }}
           >
-            <Wallet  size={16} />
+            <Wallet size={16} />
             Nạp tiền
           </Button>
         ) : null}

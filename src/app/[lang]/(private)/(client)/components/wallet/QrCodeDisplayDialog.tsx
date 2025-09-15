@@ -9,17 +9,13 @@ import { Copy, QrCode } from 'lucide-react'
 
 import Button from '@mui/material/Button'
 
+import { useSession } from 'next-auth/react'
+
 import CustomIconButton from '@core/components/mui/IconButton'
 
 import { useCopy } from '@/app/hooks/useCopy'
 
-// Thông tin ngân hàng có thể được định nghĩa ở đây hoặc truyền từ ngoài vào
-const BANK_INFO = {
-  bankName: 'Vietcombank',
-  accountNumber: '1056968673',
-  accountName: 'LUONG VAN THUY',
-  note: 'ck 0335641332'
-}
+import { getBankNumber } from '@/utils/bankInfo'
 
 const formatCurrency = (value: string) => {
   const numericValue = value.replace(/\D/g, '')
@@ -43,6 +39,12 @@ export default function QrCodeDisplayDialog({
   rechargeAmount
 }: QrCodeDisplayDialogProps) {
   if (!qrDataUrl) return null
+
+  const { data: session } = useSession()
+  const userId = session?.user?.id ?? ''
+
+  // Thông tin ngân hàng có thể được định nghĩa ở đây hoặc truyền từ ngoài vào
+  const BANK_INFO = getBankNumber(userId)
 
   const [, copy] = useCopy()
 
