@@ -2,6 +2,8 @@
 
 import { useMemo, useState } from 'react'
 
+import Image from 'next/image'
+
 import { TriangleAlert, CircleQuestionMark, BadgeCheck, BadgeMinus, List, Clock3 } from 'lucide-react'
 
 import {
@@ -19,16 +21,13 @@ import Chip from '@mui/material/Chip'
 
 import Pagination from '@mui/material/Pagination'
 
-import MenuItem from '@mui/material/MenuItem'
-
 import { useQuery } from '@tanstack/react-query'
 
 import { formatDateTimeLocal } from '@/utils/formatDate'
 
-import CustomTextField from '@core/components/mui/TextField'
 import useAxiosAuth from '@/hocs/useAxiosAuth'
 
-export default function TransactionHistoryPage({ data }: any) {
+export default function TransactionHistoryPage() {
   const [columnFilters, setColumnFilters] = useState([])
   const [rowSelection, setRowSelection] = useState({}) // State để lưu các hàng được chọn
   const [sorting, setSorting] = useState([])
@@ -48,8 +47,6 @@ export default function TransactionHistoryPage({ data }: any) {
       return res.data ?? []
     }
   })
-
-  console.log(dataOrders)
 
   const getStatusBadge = (status: string) => {
     switch (status) {
