@@ -10,19 +10,13 @@ import { toast } from 'react-toastify'
 
 import useAxiosAuth from '@/hocs/useAxiosAuth'
 
-
 import { formatDateTimeLocal } from '@/utils/formatDate'
 
-
-
-
 import { useModalContext } from '@/app/contexts/ModalContext'
-
-
+import HistoryLoginPage from '../HistoryLogin/HistoryLoginPage'
 
 export function OverviewPage() {
-
-  const {openAuthModal } = useModalContext()
+  const { openAuthModal } = useModalContext()
   const axiosAuth = useAxiosAuth()
 
   // Hiện thông báo khi đổi mật khẩu thành công
@@ -35,7 +29,7 @@ export function OverviewPage() {
       toast.success('Đổi mật khẩu thành công!')
       openAuthModal('login')
     }
-  }, [searchParams,openAuthModal])
+  }, [searchParams, openAuthModal])
 
   const { data: dataOverview = [], isLoading } = useQuery({
     queryKey: ['getOverview'],
@@ -50,80 +44,40 @@ export function OverviewPage() {
 
   if (isLoading) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-white">
-        <div className="animate-spin rounded-full h-16 w-16 border-4 border-gray-300 border-t-orange-500" />
+      <div className='fixed inset-0 z-50 flex items-center justify-center bg-white'>
+        <div className='animate-spin rounded-full h-16 w-16 border-4 border-gray-300 border-t-orange-500' />
       </div>
     )
   }
 
-
-
   return (
-   <>
-     <div className="flex-1 p-6 space-y-6">
-       {/* Thông tin tài khoản */}
-       <div className="grid gap-4 md:grid-cols-3">
-         <div className="bg-card rounded-lg p-6 border" style={{background:'white'}}>
-           <h3 className="text-sm font-medium text-muted-foreground">Số dư tài khoản</h3>
-           <p className="text-2xl font-bold text-orange-600"> {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(dataOverview?.total_amount ?? 0)}</p>
-         </div>
-         <div className="bg-card rounded-lg p-6 border" style={{background:'white'}}>
-           <h3 className="text-sm font-medium text-muted-foreground">Proxy đang sử dụng</h3>
-           <p className="text-2xl font-bold">{dataOverview?.total_proxy || 0}</p>
-         </div>
-         <div className="bg-card rounded-lg p-6 border" style={{background:'white'}}>
-           <h3 className="text-sm font-medium text-muted-foreground">Proxy sắp hết hạn</h3>
-           <p className="text-2xl font-bold text-red-600">{dataOverview?.near_expiry || 0}</p>
-         </div>
-       </div>
+    <>
+      <div className='flex-1 p-6 space-y-6'>
+        {/* Thông tin tài khoản */}
+        <div className='grid gap-4 md:grid-cols-3'>
+          <div className='bg-card rounded-lg p-6 border' style={{ background: 'white' }}>
+            <h3 className='text-sm font-medium text-muted-foreground'>Số dư tài khoản</h3>
+            <p className='text-2xl font-bold text-orange-600'>
+              {' '}
+              {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(
+                dataOverview?.total_amount ?? 0
+              )}
+            </p>
+          </div>
+          <div className='bg-card rounded-lg p-6 border' style={{ background: 'white' }}>
+            <h3 className='text-sm font-medium text-muted-foreground'>Proxy đang sử dụng</h3>
+            <p className='text-2xl font-bold'>{dataOverview?.total_proxy || 0}</p>
+          </div>
+          <div className='bg-card rounded-lg p-6 border' style={{ background: 'white' }}>
+            <h3 className='text-sm font-medium text-muted-foreground'>Proxy sắp hết hạn</h3>
+            <p className='text-2xl font-bold text-red-600'>{dataOverview?.near_expiry || 0}</p>
+          </div>
+        </div>
 
-
-       <div className="bg-card rounded-lg border " style={{background:'white'}}>
-         <div className="p-6 border-b">
-           <h2 className="text-lg font-semibold">Proxy của bạn</h2>
-         </div>
-         <div className="p-6 max-h-[400px] overflow-y-auto">
-           <div className="space-y-4">
-             {proxys.map((proxy, index) => (
-               <div key={proxy.id} className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
-                 {proxy.plan_type == 'STATIC' ? (
-                   <div className="space-y-1">
-                     {proxy?.proxys &&
-                       Object.entries(proxy.proxys).map(([type, value]) =>
-                         type !== 'loaiproxy' && value ? (
-                           <p key={type} className="font-medium">
-                             {value}
-                           </p>
-                         ) : null
-                       )}
-                     <p className="text-sm text-muted-foreground">
-                       <span>Loại: {proxy?.proxys?.loaiproxy}</span>
-                     </p>
-                   </div>
-                 ):(
-                   <div className="space-y-1">
-                     <p className="font-medium">{proxy?.api_key}</p>
-
-                   </div>
-                 )}
-                 <div className="text-right space-y-1">
-                   <p
-                     className={`text-sm font-medium ${
-                       proxy?.status === "ACTIVE" ? "text-green-600" : "text-red-600"
-                     }`}
-                   >
-                     {proxy?.status}
-                   </p>
-                   <p className="text-sm text-muted-foreground">Hết hạn: {formatDateTimeLocal(proxy?.expired_at)}</p>
-                 </div>
-               </div>
-             ))}
-           </div>
-         </div>
-       </div>
-     </div>
-
-
-   </>
+        <div className='bg-card rounded-lg border ' style={{ background: 'white' }}>
+          <HistoryLoginPage />
+        </div>
+      </div>
+    </>
   )
 }

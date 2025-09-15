@@ -1,5 +1,3 @@
-
-
 import type { Metadata } from 'next'
 
 import { OverviewPage } from '@views/Client/Overview/OverviewPage'
@@ -10,7 +8,5 @@ export const metadata: Metadata = {
 }
 
 export default function Overview() {
-
-
-  return <OverviewPage/>
+  return <OverviewPage />
 }
