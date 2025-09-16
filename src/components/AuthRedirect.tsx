@@ -4,16 +4,10 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 
-import type { Locale } from '@configs/i18n'
+import type { Locale } from '@/configs/configi18n'
 import EmptyAuthPage from './EmptyAuthPage'
 
-const AuthRedirect = ({
-                        lang,
-                        children
-                      }: {
-  lang: Locale
-  children: React.ReactNode
-}) => {
+const AuthRedirect = ({ lang, children }: { lang: Locale; children: React.ReactNode }) => {
   const { data: session, status } = useSession()
   const router = useRouter()
 

@@ -20,7 +20,7 @@ import MenuItem from '@mui/material/MenuItem'
 // Type Imports
 import { Box } from '@mui/material'
 
-import type { Locale } from '@configs/i18n'
+import type { Locale } from '@/configs/configi18n'
 
 // Hook Imports
 import { useSettings } from '@core/hooks/useSettings'

@@ -11,18 +11,18 @@ import '@/app/root.css'
 // Generated Icon CSS Imports
 import '@assets/iconify-icons/generated-icons.css'
 
-import { Figtree } from "next/font/google"
+import { Figtree } from 'next/font/google'
 import InitColorSchemeScript from '@mui/material/InitColorSchemeScript'
 
 import { getServerSession } from 'next-auth'
 
-import { i18n } from '@configs/i18n'
+import { i18n } from '@/configs/configi18n'
 
 import '@/app/[lang]/(landing-page)/main.css'
 
 import { headers } from 'next/headers'
 
-import type { Locale } from '@configs/i18n'
+import type { Locale } from '@/configs/configi18n'
 
 import type { ChildrenType } from '@core/types'
 
@@ -33,7 +33,6 @@ import TranslationWrapper from '@/hocs/TranslationWrapper'
 
 import { ModalContextProvider } from '@/app/contexts/ModalContext'
 
-
 import { authOptions } from '@/libs/auth'
 import { UserProvider } from '@/app/contexts/UserContext'
 import { usePathname } from 'next/navigation'
@@ -41,12 +40,12 @@ import { useEffect, useState } from 'react'
 import ClientLayout from '@components/ClientLayout'
 
 const figtree = Figtree({
-  subsets: ["latin"],
-  variable: "--font-figtree",
-  display: "swap",
+  subsets: ['latin'],
+  variable: '--font-figtree',
+  display: 'swap'
 })
 
-export const revalidate = 0; //
+export const revalidate = 0 //
 
 const RootLayout = async (props: ChildrenType & { params: Promise<{ lang: Locale }> }) => {
   const { children } = props
@@ -56,24 +55,22 @@ const RootLayout = async (props: ChildrenType & { params: Promise<{ lang: Locale
   const headersList = await headers()
   const systemMode = await getSystemMode()
 
-
   const direction = i18n.langDirection[params.lang]
 
   const session = await getServerSession(authOptions)
 
   // ✅ Gọi API /me trên server
   let user = null
-  if(session){
+  if (session) {
     if (session?.access_token) {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/me`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${session.access_token}` },
-        cache: 'no-store',
+        cache: 'no-store'
       })
       if (res.ok) user = await res.json()
     }
   }
-
 
   return (
     <TranslationWrapper headersList={headersList} lang={params.lang}>
@@ -82,9 +79,7 @@ const RootLayout = async (props: ChildrenType & { params: Promise<{ lang: Locale
           <TanstackProvider>
             <InitColorSchemeScript attribute='data' defaultMode={systemMode} />
             <ModalContextProvider>
-              <UserProvider value={user}>
-                {children}
-              </UserProvider>
+              <UserProvider value={user}>{children}</UserProvider>
             </ModalContextProvider>
           </TanstackProvider>
         </body>

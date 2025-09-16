@@ -6,7 +6,7 @@ import { getServerSession } from 'next-auth'
 
 // Type Imports
 import type { ChildrenType } from '@core/types'
-import type { Locale } from '@configs/i18n'
+import type { Locale } from '@/configs/configi18n'
 
 // Config Imports
 import themeConfig from '@configs/themeConfig'

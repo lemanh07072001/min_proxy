@@ -1,5 +1,5 @@
 // Config Imports
-import { i18n } from '@configs/i18n'
+import { i18n } from '@/configs/configi18n'
 
 // Util Imports
 import { ensurePrefix } from '@/utils/string'

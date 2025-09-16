@@ -12,7 +12,7 @@ import '@/app/[lang]/(landing-page)/main.css'
 // Generated Icon CSS Imports
 import '@assets/iconify-icons/generated-icons.css'
 
-import type { Locale } from '@configs/i18n'
+import type { Locale } from '@/configs/configi18n'
 import LayoutWrapper from '@layouts/LayoutWrapper'
 
 import type { ChildrenType } from '@core/types'
