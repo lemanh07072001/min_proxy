@@ -8,7 +8,7 @@ import { SessionContext } from 'next-auth/react'
 
 import { useTranslation } from 'react-i18next'
 
-import MenuLandingPage from '@/app/data/MenuLandingPage'
+import useMenuLandingPage from '@/app/data/MenuLandingPage'
 
 import LanguageSelect from '@components/language-selector/LanguageSelect'
 
@@ -24,6 +24,7 @@ export default function MenuDesktop() {
   const { openAuthModal } = useModalContext()
   const { data } = useContext(SessionContext)
   const { t } = useTranslation()
+  const MenuLandingPage = useMenuLandingPage()
 
   const { lang: locale } = params
 

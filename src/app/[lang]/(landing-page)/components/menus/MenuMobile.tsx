@@ -1,10 +1,12 @@
+'use client'
+
 import Image from 'next/image'
 
 import { useParams, usePathname } from 'next/navigation'
 
 import VuexyLogo from '@core/svg/Logo'
 
-import MenuLandingPage from '@/app/data/MenuLandingPage'
+import useMenuLandingPage from '@/app/data/MenuLandingPage'
 import Link from '@components/Link'
 import logo from '../../../../../../public/images/logo/logo-minsoftware-new-small.png'
 import { useModalContext } from '@/app/contexts/ModalContext'
@@ -15,6 +17,7 @@ interface MenuMobileProps {
 
 export default function MenuMobile({ onClose }: MenuMobileProps) {
   const { openAuthModal } = useModalContext()
+  const MenuLandingPage = useMenuLandingPage()
 
   const pathname = usePathname()
   const params = useParams()
