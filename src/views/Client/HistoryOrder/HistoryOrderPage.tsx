@@ -51,10 +51,12 @@ export default function HistoryOrderPage() {
   }
 
   const getStatusBadge = (status: string) => {
+    console.log(status)
+
     switch (status) {
       case '0':
         return <Chip label='Chờ xử lý' size='small' icon={<BadgeCheck />} color='warning' />
-      case '1':
+      case '2':
         return <Chip label='Hoàn thành' size='small' icon={<TriangleAlert />} color='success' />
       case '5':
         return <Chip label='Hết hạn' size='small' icon={<BadgeMinus />} color='error' />
