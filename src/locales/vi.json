@@ -586,6 +586,81 @@
         "experience": "Năm kinh nghiệm"
       }
     },
+    "about": {
+      "hero": {
+        "title": {
+          "main": "Nhà cung cấp",
+          "highlight": "Proxy #1 Việt Nam"
+        },
+        "subtitle": "{{appName}} - Nền tảng proxy dân cư hàng đầu Việt Nam, là lựa chọn tin cậy của hơn 5000+ doanh nghiệp và chuyên gia để tối ưu hóa hiệu suất công việc và chinh phục các dự án quan trọng.",
+        "features": [
+          "Uptime 99.9% - Ổn định tuyệt đối",
+          "Hỗ trợ 24/7 - Luôn sẵn sàng phục vụ",
+          "Phủ sóng 64 tỉnh thành - Toàn quốc"
+        ],
+        "actions": {
+          "contact": "Liên hệ tư vấn",
+          "pricing": "Xem bảng giá"
+        },
+        "stats": {
+          "customers": "Khách hàng",
+          "provinces": "Tỉnh thành",
+          "uptime": "Uptime",
+          "experience": "Năm kinh nghiệm"
+        }
+      },
+      "companyInfo": {
+        "title": "Kết Nối Tới Thành Công.",
+        "description": "Tại {{appName}}, chúng tôi hiểu rằng sự ổn định và tốc độ của kết nối internet là nền tảng cho thành công trong công việc của bạn. Chính vì vậy, chúng tôi cung cấp dịch vụ proxy dân cư chất lượng cao hàng đầu Việt Nam, được thiết kế để mang lại hiệu suất vượt trội và sự an tâm tuyệt đối.",
+        "subDescription": "Với hệ thống IP sạch, tốc độ cao và đội ngũ hỗ trợ tận tình chuyên nghiệp, {{appName}} là đối tác đồng hành tin cậy trong mọi dự án quan trọng.",
+        "successTitle": "Kết nối thành công",
+        "successSubtitle": "Đối tác tin cậy của hàng nghìn doanh nghiệp"
+      },
+      "team": {
+        "title": "Đội ngũ",
+        "subtitle": "Đội ngũ {{appName}} gồm những chuyên gia công nghệ giàu kinh nghiệm, tận tâm và nhiệt huyết. Chúng tôi cam kết mang đến dịch vụ proxy chất lượng cao và hỗ trợ khách hàng tận tình 24/7.",
+        "professionalTitle": "Đội ngũ chuyên nghiệp - Kinh nghiệm 5+ năm",
+        "professionalDesc1": "Đội ngũ {{appName}} được tuyển chọn kỹ lưỡng từ những chuyên gia hàng đầu trong lĩnh vực mạng và bảo mật. Với kinh nghiệm trung bình 5+ năm, chúng tôi hiểu rõ nhu cầu và thách thức của khách hàng.",
+        "professionalDesc2": "Chúng tôi không chỉ cung cấp dịch vụ mà còn đồng hành cùng khách hàng trong suốt quá trình sử dụng. Đội ngũ kỹ thuật luôn sẵn sàng hỗ trợ, tư vấn và giải quyết mọi vấn đề một cách nhanh chóng và hiệu quả.",
+        "stats": {
+          "experts": "Chuyên gia",
+          "experience": "Năm kinh nghiệm",
+          "support": "Hỗ trợ"
+        },
+        "teamTitle": "Đội ngũ chuyên nghiệp",
+        "teamSubtitle": "25+ chuyên gia với 5+ năm kinh nghiệm"
+      },
+      "missionVision": {
+        "title": "Sứ mệnh & Tầm nhìn",
+        "subtitle": "Chúng tôi cam kết mang đến dịch vụ proxy chất lượng cao nhất, xây dựng niềm tin và sự hài lòng của khách hàng.",
+        "mission": {
+          "title": "Sứ mệnh",
+          "description": "Cung cấp dịch vụ proxy chất lượng cao, ổn định và đáng tin cậy nhất tại Việt Nam. Chúng tôi cam kết mang đến những giải pháp proxy tối ưu, giúp khách hàng đạt được mục tiêu kinh doanh và công việc một cách hiệu quả nhất."
+        },
+        "vision": {
+          "title": "Tầm nhìn",
+          "description": "Trở thành nhà cung cấp dịch vụ proxy hàng đầu Việt Nam, được khách hàng tin tưởng và lựa chọn. Xây dựng hệ sinh thái proxy toàn diện, phủ sóng toàn quốc với công nghệ tiên tiến và dịch vụ chăm sóc khách hàng xuất sắc."
+        },
+        "values": {
+          "title": "Giá trị cốt lõi",
+          "items": [
+            "Chất lượng dịch vụ là ưu tiên hàng đầu",
+            "Minh bạch trong mọi giao dịch và chính sách",
+            "Hỗ trợ khách hàng tận tâm 24/7",
+            "Không ngừng đổi mới và cải tiến"
+          ]
+        },
+        "commitment": {
+          "title": "Cam kết của chúng tôi",
+          "items": [
+            "Uptime 99.9% cho tất cả dịch vụ",
+            "Hỗ trợ kỹ thuật chuyên nghiệp 24/7",
+            "Giá cả cạnh tranh và chính sách ưu đãi",
+            "Bảo mật thông tin khách hàng tuyệt đối"
+          ]
+        }
+      }
+    },
     "footer": {
       "cta": {
         "title": "HÃY CỘNG TÁC VỚI CHÚNG TÔI",

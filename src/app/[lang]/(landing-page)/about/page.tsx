@@ -6,9 +6,16 @@ import TeamSection from '@/app/[lang]/(landing-page)/components/abount/TeamSecti
 import MissionVision from '@/app/[lang]/(landing-page)/components/abount/MissionVision'
 import type { Metadata } from 'next'
 
-export const metadata: Metadata = {
-  title: `Giới thiệu về chúng tôi`,
-  description: 'Mô tả ngắn gọn về trang web.'
+export async function generateMetadata({ params }: { params: { lang: string } }): Promise<Metadata> {
+  const { lang } = params
+  
+  // Import dictionary based on language
+  const dictionary = await import(`@/locales/${lang}.json`).then(m => m.default)
+  
+  return {
+    title: dictionary.landing?.header?.menu?.about || 'About Us',
+    description: dictionary.landing?.about?.companyInfo?.description || 'Learn more about our company'
+  }
 }
 
 export default function PageAbount() {

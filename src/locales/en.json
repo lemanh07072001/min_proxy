@@ -586,6 +586,81 @@
         "experience": "Years of Experience"
       }
     },
+    "about": {
+      "hero": {
+        "title": {
+          "main": "Provider",
+          "highlight": "Proxy #1 Vietnam"
+        },
+        "subtitle": "{{appName}} - Vietnam's leading residential proxy platform, is the trusted choice of over 5000+ businesses and experts to optimize work performance and conquer important projects.",
+        "features": [
+          "99.9% Uptime - Absolute stability",
+          "24/7 Support - Always ready to serve",
+          "64 provinces coverage - Nationwide"
+        ],
+        "actions": {
+          "contact": "Contact for consultation",
+          "pricing": "View pricing"
+        },
+        "stats": {
+          "customers": "Customers",
+          "provinces": "Provinces",
+          "uptime": "Uptime",
+          "experience": "Years of Experience"
+        }
+      },
+      "companyInfo": {
+        "title": "Connect to Success.",
+        "description": "At {{appName}}, we understand that the stability and speed of internet connection is the foundation for your work success. That's why we provide Vietnam's leading high-quality residential proxy services, designed to deliver superior performance and absolute peace of mind.",
+        "subDescription": "With clean IP system, high speed and dedicated professional support team, {{appName}} is a trusted partner in every important project.",
+        "successTitle": "Connect to success",
+        "successSubtitle": "Trusted partner of thousands of businesses"
+      },
+      "team": {
+        "title": "Team",
+        "subtitle": "The {{appName}} team consists of experienced, dedicated and passionate technology experts. We are committed to providing high-quality proxy services and 24/7 dedicated customer support.",
+        "professionalTitle": "Professional Team - 5+ Years Experience",
+        "professionalDesc1": "The {{appName}} team is carefully selected from leading experts in the field of networks and security. With an average of 5+ years of experience, we understand the needs and challenges of our customers.",
+        "professionalDesc2": "We not only provide services but also accompany customers throughout the usage process. The technical team is always ready to support, advise and solve all problems quickly and effectively.",
+        "stats": {
+          "experts": "Experts",
+          "experience": "Years of Experience",
+          "support": "Support"
+        },
+        "teamTitle": "Professional Team",
+        "teamSubtitle": "25+ experts with 5+ years of experience"
+      },
+      "missionVision": {
+        "title": "Mission & Vision",
+        "subtitle": "We are committed to providing the highest quality proxy services, building trust and customer satisfaction.",
+        "mission": {
+          "title": "Mission",
+          "description": "Provide the highest quality, stable and reliable proxy services in Vietnam. We are committed to bringing optimal proxy solutions, helping customers achieve business and work goals most effectively."
+        },
+        "vision": {
+          "title": "Vision",
+          "description": "Become Vietnam's leading proxy service provider, trusted and chosen by customers. Build a comprehensive proxy ecosystem, covering the whole country with advanced technology and excellent customer service."
+        },
+        "values": {
+          "title": "Core Values",
+          "items": [
+            "Service quality is the top priority",
+            "Transparency in all transactions and policies",
+            "24/7 dedicated customer support",
+            "Continuous innovation and improvement"
+          ]
+        },
+        "commitment": {
+          "title": "Our Commitment",
+          "items": [
+            "99.9% Uptime for all services",
+            "24/7 professional technical support",
+            "Competitive pricing and preferential policies",
+            "Absolute customer information security"
+          ]
+        }
+      }
+    },
     "footer": {
       "cta": {
         "title": "LET'S COOPERATE WITH US",

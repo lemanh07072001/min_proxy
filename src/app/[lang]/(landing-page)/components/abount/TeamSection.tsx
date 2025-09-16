@@ -1,8 +1,16 @@
+'use client'
+
 import React from 'react'
 
 import { Users, Star, Award, Target, Heart, Zap } from 'lucide-react'
 
+import { useTranslation } from 'react-i18next'
+
+import { useLanguageSync } from '@/hooks/useLanguageSync'
+
 const TeamSection = () => {
+  const { t } = useTranslation()
+  useLanguageSync()
   const teamValues = [
     {
       icon: (
@@ -87,24 +95,20 @@ const TeamSection = () => {
           {/* Content */}
           <div className='space-y-8'>
             <div>
-              <p className='text-orange-500 font-semibold text-lg mb-4'>Đội ngũ</p>
+              <p className='text-orange-500 font-semibold text-lg mb-4'>{t('landing.about.team.title')}</p>
               <h2 className='text-3xl md:text-4xl font-bold text-gray-900 mb-6'>{process.env.NEXT_PUBLIC_APP_NAME}</h2>
               <p className='text-gray-600 text-lg leading-relaxed mb-8'>
-                Đội ngũ {process.env.NEXT_PUBLIC_APP_NAME} gồm những chuyên gia công nghệ giàu kinh nghiệm, tận tâm và
-                nhiệt huyết. Chúng tôi cam kết mang đến dịch vụ proxy chất lượng cao và hỗ trợ khách hàng tận tình 24/7.
+                {t('landing.about.team.subtitle', { appName: process.env.NEXT_PUBLIC_APP_NAME })}
               </p>
             </div>
 
             <div className='space-y-6'>
-              <h3 className='text-xl font-bold text-gray-900'>Đội ngũ chuyên nghiệp - Kinh nghiệm 5+ năm</h3>
+              <h3 className='text-xl font-bold text-gray-900'>{t('landing.about.team.professionalTitle')}</h3>
               <p className='text-gray-600 leading-relaxed'>
-                Đội ngũ {process.env.NEXT_PUBLIC_APP_NAME} được tuyển chọn kỹ lưỡng từ những chuyên gia hàng đầu trong
-                lĩnh vực mạng và bảo mật. Với kinh nghiệm trung bình 5+ năm, chúng tôi hiểu rõ nhu cầu và thách thức của
-                khách hàng.
+                {t('landing.about.team.professionalDesc1', { appName: process.env.NEXT_PUBLIC_APP_NAME })}
               </p>
               <p className='text-gray-600 leading-relaxed'>
-                Chúng tôi không chỉ cung cấp dịch vụ mà còn đồng hành cùng khách hàng trong suốt quá trình sử dụng. Đội
-                ngũ kỹ thuật luôn sẵn sàng hỗ trợ, tư vấn và giải quyết mọi vấn đề một cách nhanh chóng và hiệu quả.
+                {t('landing.about.team.professionalDesc2')}
               </p>
             </div>
 
@@ -112,15 +116,15 @@ const TeamSection = () => {
             <div className='flex flex-wrap gap-8'>
               <div className='text-center'>
                 <div className='text-3xl font-bold text-orange-500'>25+</div>
-                <div className='text-gray-600 text-sm'>Chuyên gia</div>
+                <div className='text-gray-600 text-sm'>{t('landing.about.team.stats.experts')}</div>
               </div>
               <div className='text-center'>
                 <div className='text-3xl font-bold text-orange-500'>5+</div>
-                <div className='text-gray-600 text-sm'>Năm kinh nghiệm</div>
+                <div className='text-gray-600 text-sm'>{t('landing.about.team.stats.experience')}</div>
               </div>
               <div className='text-center'>
                 <div className='text-3xl font-bold text-orange-500'>24/7</div>
-                <div className='text-gray-600 text-sm'>Hỗ trợ</div>
+                <div className='text-gray-600 text-sm'>{t('landing.about.team.stats.support')}</div>
               </div>
             </div>
           </div>
@@ -139,8 +143,8 @@ const TeamSection = () => {
                   </div>
                 ))}
               </div>
-              <h3 className='text-xl font-bold text-white mb-2'>Đội ngũ chuyên nghiệp</h3>
-              <p className='text-slate-300'>25+ chuyên gia với 5+ năm kinh nghiệm</p>
+              <h3 className='text-xl font-bold text-white mb-2'>{t('landing.about.team.teamTitle')}</h3>
+              <p className='text-slate-300'>{t('landing.about.team.teamSubtitle')}</p>
             </div>
           </div>
         </div>

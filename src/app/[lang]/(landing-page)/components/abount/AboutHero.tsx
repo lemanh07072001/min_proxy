@@ -39,7 +39,7 @@ const AboutHero = () => {
               </p>
 
               <div className='hero-features-modern'>
-                {t('landing.about.hero.features', { returnObjects: true }).map((feature: string, index: number) => (
+                {(t('landing.about.hero.features', { returnObjects: true }) as string[] || []).map((feature: string, index: number) => (
                   <div key={index} className='feature-item-modern'>
                     <CheckCircle size={20} />
                     <span>{feature}</span>

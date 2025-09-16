@@ -27,7 +27,7 @@ export default function ProductsSection({ local }: { local: string }) {
       originalPrice: '25.000',
       period: t('time.months'),
       discount: '28%',
-      features: t('landing.products.cards.viettel.features', { returnObjects: true }) as string[],
+      features: (t('landing.products.cards.viettel.features', { returnObjects: true }) as string[] || []),
       color: '#e53e3e',
       popular: false,
       badge: t('landing.products.cards.viettel.badge')
@@ -41,7 +41,7 @@ export default function ProductsSection({ local }: { local: string }) {
       originalPrice: '24.000',
       period: t('time.months'),
       discount: '25%',
-      features: t('landing.products.cards.fpt.features', { returnObjects: true }) as string[],
+      features: (t('landing.products.cards.fpt.features', { returnObjects: true }) as string[] || []),
       color: '#f56500',
       popular: true,
       badge: t('landing.products.cards.fpt.badge')
@@ -55,7 +55,7 @@ export default function ProductsSection({ local }: { local: string }) {
       originalPrice: '26.000',
       period: t('time.months'),
       discount: '31%',
-      features: t('landing.products.cards.vnpt.features', { returnObjects: true }) as string[],
+      features: (t('landing.products.cards.vnpt.features', { returnObjects: true }) as string[] || []),
       color: '#3182ce',
       popular: false,
       badge: t('landing.products.cards.vnpt.badge')

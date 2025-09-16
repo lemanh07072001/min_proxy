@@ -1,10 +1,18 @@
+'use client'
+
 import React from 'react'
 
 import Image from 'next/image'
 
 import { MapPin, Phone, Mail, Globe, FileText, Calendar, Shield, CheckCircle, Award, Users } from 'lucide-react'
 
+import { useTranslation } from 'react-i18next'
+
+import { useLanguageSync } from '@/hooks/useLanguageSync'
+
 const CompanyInfo = () => {
+  const { t } = useTranslation()
+  useLanguageSync()
   const advantages = [
     {
       icon: '/images/softwares/bao-mat.jpg',
@@ -33,18 +41,14 @@ const CompanyInfo = () => {
           <div className='space-y-8'>
             <div>
               <p className='text-orange-500 font-semibold text-lg mb-4'>{process.env.NEXT_PUBLIC_APP_NAME}</p>
-              <h2 className='text-3xl md:text-4xl font-bold text-gray-900 mb-6'>Kết Nối Tới Thành Công.</h2>
+              <h2 className='text-3xl md:text-4xl font-bold text-gray-900 mb-6'>{t('landing.about.companyInfo.title')}</h2>
               <p className='text-gray-600 text-lg leading-relaxed'>
-                Tại ${process.env.NEXT_PUBLIC_APP_NAME}, chúng tôi hiểu rằng sự ổn định và tốc độ của kết nối internet
-                là nền tảng cho thành công trong công việc của bạn. Chính vì vậy, chúng tôi cung cấp dịch vụ proxy dân
-                cư chất lượng cao hàng đầu Việt Nam, được thiết kế để mang lại hiệu suất vượt trội và sự an tâm tuyệt
-                đối.
+                {t('landing.about.companyInfo.description', { appName: process.env.NEXT_PUBLIC_APP_NAME })}
               </p>
             </div>
 
             <p className='text-gray-600 leading-relaxed'>
-              Với hệ thống IP sạch, tốc độ cao và đội ngũ hỗ trợ tận tình chuyên nghiệp, $
-              {process.env.NEXT_PUBLIC_APP_NAME} là đối tác đồng hành tin cậy trong mọi dự án quan trọng.
+              {t('landing.about.companyInfo.subDescription', { appName: process.env.NEXT_PUBLIC_APP_NAME })}
             </p>
           </div>
 
@@ -55,9 +59,9 @@ const CompanyInfo = () => {
                 <div className='w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4'>
                   <Users className='w-10 h-10 text-white' />
                 </div>
-                <h3 className='text-2xl font-bold'>Kết nối thành công</h3>
+                <h3 className='text-2xl font-bold'>{t('landing.about.companyInfo.successTitle')}</h3>
               </div>
-              <p className='text-white/90'>Đối tác tin cậy của hàng nghìn doanh nghiệp</p>
+              <p className='text-white/90'>{t('landing.about.companyInfo.successSubtitle')}</p>
             </div>
           </div>
         </div>
