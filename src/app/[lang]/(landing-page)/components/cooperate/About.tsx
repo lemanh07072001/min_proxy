@@ -1,23 +1,38 @@
+'use client'
+
 import React from 'react'
 
 import { Users, Target, Heart } from 'lucide-react'
 
+import { useTranslation } from 'react-i18next'
+
+import { useLanguageSync } from '@/hooks/useLanguageSync'
+
 const About = () => {
+  const { t } = useTranslation()
+  useLanguageSync()
+  
+  const values = t('landing.cooperate.about.values', { returnObjects: true }) as Array<{
+    title: string
+    description: string
+  }>
+  
+  const valueIcons = [Target, Heart, Users]
+  
   return (
     <section id='about' className='py-20 bg-white'>
       <div className='container-lg mx-auto px-4 sm:px-6 lg:px-8'>
         {/* Section Header */}
         <div className='text-center mb-16'>
           <h2 className='text-4xl md:text-5xl font-bold text-gray-900 mb-6'>
-            HƯỚNG DẪN TRỞ THÀNH <span className='text-red-600'>ĐẠI LÝ</span> CÙNG CHÚNG TÔI
+            {t('landing.cooperate.about.title')}
           </h2>
           <p className='text-xl text-gray-600 max-w-4xl mx-auto'>
-            Giải pháp bảo vệ tài khoản thương mại điện tử, nâng cao hiệu quả hoạt động thương mại điện tử xuyên biên
-            giới.
+            {t('landing.cooperate.about.subtitle')}
           </p>
 
           <button className='mt-8 bg-red-600 hover:bg-red-700 text-white px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-300 hover:shadow-lg transform hover:scale-105'>
-            HỢP TÁC NGAY
+            {t('landing.cooperate.about.actions.cooperateNow')}
           </button>
         </div>
 
@@ -27,7 +42,7 @@ const About = () => {
             {/* Company Header */}
             <div className='text-center mb-8'>
               <div className='bg-gray-800 text-white py-4 px-8 rounded-xl inline-block mb-4'>
-                <h3 className='text-xl font-bold'>CÔNG TY TNHH GIẢI PHÁP VIỄN THÔNG</h3>
+                <h3 className='text-xl font-bold'>{t('landing.cooperate.about.company.name')}</h3>
               </div>
               <div className='flex items-center justify-center space-x-4 mb-6'>
                 <div className='bg-red-600 p-4 rounded-xl'>
@@ -74,7 +89,7 @@ const About = () => {
                   <Target className='w-8 h-8 text-white' />
                 </div>
                 <h4 className='text-2xl font-bold text-gray-900 mb-2'>500+</h4>
-                <p className='text-gray-600'>Đại lý thành công</p>
+                <p className='text-gray-600'>{t('landing.cooperate.about.stats.successfulAgents')}</p>
               </div>
 
               <div className='text-center'>
@@ -82,7 +97,7 @@ const About = () => {
                   <Users className='w-8 h-8 text-white' />
                 </div>
                 <h4 className='text-2xl font-bold text-gray-900 mb-2'>10,000+</h4>
-                <p className='text-gray-600'>Khách hàng hài lòng</p>
+                <p className='text-gray-600'>{t('landing.cooperate.about.stats.satisfiedCustomers')}</p>
               </div>
 
               <div className='text-center'>
@@ -90,7 +105,7 @@ const About = () => {
                   <Heart className='w-8 h-8 text-white' />
                 </div>
                 <h4 className='text-2xl font-bold text-gray-900 mb-2'>24/7</h4>
-                <p className='text-gray-600'>Hỗ trợ tận tình</p>
+                <p className='text-gray-600'>{t('landing.cooperate.about.stats.support')}</p>
               </div>
             </div>
           </div>
@@ -98,31 +113,18 @@ const About = () => {
 
         {/* Values Section */}
         <div className='grid grid-cols-1 md:grid-cols-3 gap-8'>
-          {[
-            {
-              title: 'Chất lượng',
-              description: 'Cam kết cung cấp dịch vụ proxy chất lượng cao nhất',
-              icon: Target
-            },
-            {
-              title: 'Uy tín',
-              description: 'Xây dựng lòng tin qua nhiều năm kinh nghiệm',
-              icon: Heart
-            },
-            {
-              title: 'Hỗ trợ',
-              description: 'Đồng hành cùng đại lý trong mọi tình huống',
-              icon: Users
-            }
-          ].map((value, index) => (
-            <div key={index} className='text-center p-8 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors'>
-              <div className='bg-red-600 p-4 rounded-xl inline-block mb-6'>
-                <value.icon className='w-8 h-8 text-white' />
+          {(values || []).map((value, index) => {
+            const IconComponent = valueIcons[index]
+            return (
+              <div key={index} className='text-center p-8 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors'>
+                <div className='bg-red-600 p-4 rounded-xl inline-block mb-6'>
+                  <IconComponent className='w-8 h-8 text-white' />
+                </div>
+                <h3 className='text-xl font-bold text-gray-900 mb-4'>{value.title}</h3>
+                <p className='text-gray-600'>{value.description}</p>
               </div>
-              <h3 className='text-xl font-bold text-gray-900 mb-4'>{value.title}</h3>
-              <p className='text-gray-600'>{value.description}</p>
-            </div>
-          ))}
+            )
+          })}
         </div>
       </div>
     </section>

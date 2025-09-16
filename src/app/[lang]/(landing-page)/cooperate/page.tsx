@@ -4,9 +4,14 @@ import Agency from '../components/cooperate/Agency'
 import About from '../components/cooperate/About'
 import type { Metadata } from 'next'
 
-export const metadata: Metadata = {
-  title: `Hợp tác với chúng tôi`,
-  description: 'Mô tả ngắn gọn về trang web.'
+export async function generateMetadata({ params }: { params: { lang: string } }): Promise<Metadata> {
+  const { lang } = params
+  const dictionary = await import(`@/locales/${lang}.json`).then(m => m.default)
+
+  return {
+    title: dictionary.landing?.header?.menu?.cooperate || 'Cooperate with us',
+    description: dictionary.landing?.cooperate?.about?.subtitle || 'Join us as an agent and enjoy preferential policies'
+  }
 }
 
 export default function CooperatePage() {

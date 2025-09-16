@@ -661,6 +661,107 @@
         }
       }
     },
+    "cooperate": {
+      "services": {
+        "title": "专业代理服务",
+        "subtitle": "我们提供多样化的高质量代理包，适合所有使用需求",
+        "cards": {
+          "ipv4": {
+            "title": "私有IPv4代理",
+            "description": "来自{{appName}}的住宅代理提供来自VNPT、Viettel、FPT等主要地区的私有住宅IP地址...",
+            "features": [
+              "高质量私有住宅IP",
+              "大带宽孔径",
+              "支持HTTP/HTTPS和SOCKS5",
+              "通过仪表板轻松管理",
+              "完整的API集成"
+            ]
+          },
+          "ipv6": {
+            "title": "私有IPv6代理",
+            "description": "来自{{appName}}的代理以干净、高质量的IP源脱颖而出，由主要网络提供商提供...",
+            "features": [
+              "干净稳定的IPv6",
+              "高速和无限带宽",
+              "多平台支持",
+              "绝对安全和匿名",
+              "专业24/7支持"
+            ]
+          },
+          "ipv6Rotating": {
+            "title": "IPv6轮换代理",
+            "description": "来自{{appName}}的轮换代理提供根据灵活周期（如60分钟）连续变化的IP地址...",
+            "features": [
+              "自动IP轮换",
+              "高且稳定的带宽",
+              "智能管理",
+              "易于集成",
+              "有竞争力的价格"
+            ]
+          }
+        },
+        "actions": {
+          "selectPackage": "选择此套餐",
+          "notSure": "不确定哪个套餐适合您？",
+          "freeConsultation": "免费咨询"
+        }
+      },
+      "agency": {
+        "title": "注册成为代理商",
+        "subtitle": "我们邀请您决定我们的代码来联系我们",
+        "benefits": [
+          {
+            "title": "高佣金",
+            "description": "每笔订单最高40%佣金"
+          },
+          {
+            "title": "24/7支持",
+            "description": "专业支持团队随时待命"
+          },
+          {
+            "title": "优惠政策",
+            "description": "许多有吸引力的促销计划"
+          }
+        ],
+        "actions": {
+          "registerNow": "立即注册",
+          "learnMore": "了解更多"
+        },
+        "qrCode": {
+          "title": "联系二维码",
+          "description": "扫描代码与我们联系"
+        }
+      },
+      "about": {
+        "title": "成为我们代理商的指南",
+        "subtitle": "保护电子商务账户的解决方案，提高跨境电子商务运营效率。",
+        "actions": {
+          "cooperateNow": "立即合作"
+        },
+        "company": {
+          "name": "电信解决方案有限公司"
+        },
+        "stats": {
+          "successfulAgents": "成功代理商",
+          "satisfiedCustomers": "满意客户",
+          "support": "贴心支持"
+        },
+        "values": [
+          {
+            "title": "质量",
+            "description": "承诺提供最高质量的代理服务"
+          },
+          {
+            "title": "信誉",
+            "description": "通过多年经验建立信任"
+          },
+          {
+            "title": "支持",
+            "description": "在所有情况下陪伴代理商"
+          }
+        ]
+      }
+    },
     "footer": {
       "cta": {
         "title": "与我们合作",

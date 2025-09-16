@@ -661,6 +661,107 @@
         }
       }
     },
+    "cooperate": {
+      "services": {
+        "title": "Professional Proxy Services",
+        "subtitle": "We provide diverse proxy packages with high quality, suitable for all usage needs",
+        "cards": {
+          "ipv4": {
+            "title": "Private IPv4 Proxy",
+            "description": "Residential Proxy from {{appName}} provides private residential IP addresses from major areas like VNPT, Viettel, FPT...",
+            "features": [
+              "High quality private residential IP",
+              "Large bandwidth aperture",
+              "HTTP/HTTPS and SOCKS5 support",
+              "Easy management via dashboard",
+              "Full API integration"
+            ]
+          },
+          "ipv6": {
+            "title": "Private IPv6 Proxy",
+            "description": "Proxy from {{appName}} stands out with clean, high-quality IP sources, provided from major network providers...",
+            "features": [
+              "Clean and stable IPv6",
+              "High speed and unlimited bandwidth",
+              "Multi-platform support",
+              "Absolute security and anonymity",
+              "Professional 24/7 support"
+            ]
+          },
+          "ipv6Rotating": {
+            "title": "IPv6 Rotating Proxy",
+            "description": "Rotating Proxy from {{appName}} provides IP addresses that change continuously according to flexible cycles like 60 minutes...",
+            "features": [
+              "Automatic IP rotation",
+              "High and stable bandwidth",
+              "Smart management",
+              "Easy integration",
+              "Competitive pricing"
+            ]
+          }
+        },
+        "actions": {
+          "selectPackage": "Select this package",
+          "notSure": "Not sure which package suits you?",
+          "freeConsultation": "Free consultation"
+        }
+      },
+      "agency": {
+        "title": "Register as Agent",
+        "subtitle": "We invite you to decide our code to contact us",
+        "benefits": [
+          {
+            "title": "High commission",
+            "description": "Up to 40% commission from each order"
+          },
+          {
+            "title": "24/7 Support",
+            "description": "Professional support team always ready"
+          },
+          {
+            "title": "Preferential policies",
+            "description": "Many attractive promotional programs"
+          }
+        ],
+        "actions": {
+          "registerNow": "Register now",
+          "learnMore": "Learn more"
+        },
+        "qrCode": {
+          "title": "Contact QR Code",
+          "description": "Scan code to connect with us"
+        }
+      },
+      "about": {
+        "title": "GUIDE TO BECOME AN AGENT WITH US",
+        "subtitle": "Solution to protect e-commerce accounts, improve cross-border e-commerce operation efficiency.",
+        "actions": {
+          "cooperateNow": "COOPERATE NOW"
+        },
+        "company": {
+          "name": "TELECOMMUNICATION SOLUTIONS COMPANY LIMITED"
+        },
+        "stats": {
+          "successfulAgents": "Successful agents",
+          "satisfiedCustomers": "Satisfied customers",
+          "support": "Dedicated support"
+        },
+        "values": [
+          {
+            "title": "Quality",
+            "description": "Committed to providing the highest quality proxy services"
+          },
+          {
+            "title": "Reputation",
+            "description": "Building trust through years of experience"
+          },
+          {
+            "title": "Support",
+            "description": "Accompanying agents in all situations"
+          }
+        ]
+      }
+    },
     "footer": {
       "cta": {
         "title": "LET'S COOPERATE WITH US",

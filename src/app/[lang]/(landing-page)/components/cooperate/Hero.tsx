@@ -10,7 +10,9 @@ import { useLanguageSync } from '@/hooks/useLanguageSync'
 
 const Hero = () => {
   const { t } = useTranslation()
+
   useLanguageSync() // Sync language with URL
+
   return (
     <section
       id='home'
@@ -50,20 +52,23 @@ const Hero = () => {
 
           {/* Features */}
           <div className='grid grid-cols-1 md:grid-cols-3 gap-6 mb-12'>
-            {t('landing.cooperate.hero.features', { returnObjects: true }).map((feature: { title: string; desc: string }, index: number) => {
-              const icons = [Shield, Zap, Globe]
-              const IconComponent = icons[index]
-              return (
-                <div
-                  key={index}
-                  className='flex flex-col items-center p-6 bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 hover:bg-white/10 transition-all duration-300'
-                >
-                  <IconComponent className='w-8 h-8 text-red-400 mb-3' />
-                  <h3 className='text-white font-semibold mb-2'>{feature.title}</h3>
-                  <p className='text-gray-400 text-sm'>{feature.desc}</p>
-                </div>
-              )
-            })}
+            {t('landing.cooperate.hero.features', { returnObjects: true }).map(
+              (feature: { title: string; desc: string }, index: number) => {
+                const icons = [Shield, Zap, Globe]
+                const IconComponent = icons[index]
+
+                return (
+                  <div
+                    key={index}
+                    className='flex flex-col items-center p-6 bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 hover:bg-white/10 transition-all duration-300'
+                  >
+                    <IconComponent className='w-8 h-8 text-red-400 mb-3' />
+                    <h3 className='text-white font-semibold mb-2'>{feature.title}</h3>
+                    <p className='text-gray-400 text-sm'>{feature.desc}</p>
+                  </div>
+                )
+              }
+            )}
           </div>
 
           {/* CTA Buttons */}

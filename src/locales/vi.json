@@ -661,6 +661,107 @@
         }
       }
     },
+    "cooperate": {
+      "services": {
+        "title": "Dịch vụ Proxy chuyên nghiệp",
+        "subtitle": "Chúng tôi cung cấp các gói proxy đa dạng với chất lượng cao, phù hợp với mọi nhu cầu sử dụng",
+        "cards": {
+          "ipv4": {
+            "title": "Proxy Private IPv4",
+            "description": "Proxy Dân Cư từ {{appName}} cung cấp địa chỉ IP dân cư riêng tư của các địa bàn lớn như VNPT, Viettel, FPT...",
+            "features": [
+              "IP dân cư riêng tư chất lượng cao",
+              "Khẩu độ băng thông lớn",
+              "Hỗ trợ HTTP/HTTPS và SOCKS5",
+              "Quản lý dễ dàng qua dashboard",
+              "Tích hợp API đầy đủ"
+            ]
+          },
+          "ipv6": {
+            "title": "Proxy Private IPv6",
+            "description": "Proxy từ {{appName}} nổi bật với nguồn IP sạch, chất lượng cao, được cung cấp từ các nhà mạng lớn...",
+            "features": [
+              "IPv6 sạch và ổn định",
+              "Tốc độ cao và băng thông không giới hạn",
+              "Hỗ trợ đa nền tảng",
+              "Bảo mật và ẩn danh tuyệt đối",
+              "Support 24/7 chuyên nghiệp"
+            ]
+          },
+          "ipv6Rotating": {
+            "title": "Proxy IPv6 XOAY",
+            "description": "Proxy Xoay từ {{appName}} cung cấp địa chỉ IP thay đổi liên tục theo chu kỳ linh hoạt như 60 phút...",
+            "features": [
+              "IP rotation tự động",
+              "Băng thông cao và ổn định",
+              "Quản lý thông minh",
+              "Tích hợp dễ dàng",
+              "Giá cả cạnh tranh"
+            ]
+          }
+        },
+        "actions": {
+          "selectPackage": "Chọn gói này",
+          "notSure": "Không chắc gói nào phù hợp với bạn?",
+          "freeConsultation": "Tư vấn miễn phí"
+        }
+      },
+      "agency": {
+        "title": "Đăng Ký Làm Đại Lý",
+        "subtitle": "Mời bạn quyết mã của chúng tôi để liên hệ với chúng tôi",
+        "benefits": [
+          {
+            "title": "Hoa hồng cao",
+            "description": "Lên đến 40% hoa hồng từ mỗi đơn hàng"
+          },
+          {
+            "title": "Hỗ trợ 24/7",
+            "description": "Đội ngũ support chuyên nghiệp luôn sẵn sàng"
+          },
+          {
+            "title": "Chính sách ưu đãi",
+            "description": "Nhiều chương trình khuyến mãi hấp dẫn"
+          }
+        ],
+        "actions": {
+          "registerNow": "Đăng ký ngay",
+          "learnMore": "Tìm hiểu thêm"
+        },
+        "qrCode": {
+          "title": "QR Code Liên Hệ",
+          "description": "Quét mã để kết nối với chúng tôi"
+        }
+      },
+      "about": {
+        "title": "HƯỚNG DẪN TRỞ THÀNH ĐẠI LÝ CÙNG CHÚNG TÔI",
+        "subtitle": "Giải pháp bảo vệ tài khoản thương mại điện tử, nâng cao hiệu quả hoạt động thương mại điện tử xuyên biên giới.",
+        "actions": {
+          "cooperateNow": "HỢP TÁC NGAY"
+        },
+        "company": {
+          "name": "CÔNG TY TNHH GIẢI PHÁP VIỄN THÔNG"
+        },
+        "stats": {
+          "successfulAgents": "Đại lý thành công",
+          "satisfiedCustomers": "Khách hàng hài lòng",
+          "support": "Hỗ trợ tận tình"
+        },
+        "values": [
+          {
+            "title": "Chất lượng",
+            "description": "Cam kết cung cấp dịch vụ proxy chất lượng cao nhất"
+          },
+          {
+            "title": "Uy tín",
+            "description": "Xây dựng lòng tin qua nhiều năm kinh nghiệm"
+          },
+          {
+            "title": "Hỗ trợ",
+            "description": "Đồng hành cùng đại lý trong mọi tình huống"
+          }
+        ]
+      }
+    },
     "footer": {
       "cta": {
         "title": "HÃY CỘNG TÁC VỚI CHÚNG TÔI",

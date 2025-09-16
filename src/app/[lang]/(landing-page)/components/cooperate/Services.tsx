@@ -1,50 +1,47 @@
+'use client'
+
 import React from 'react'
 
 import { Shield, Globe, Zap, Check } from 'lucide-react'
 
+import { useTranslation } from 'react-i18next'
+
+import { useLanguageSync } from '@/hooks/useLanguageSync'
+
 const Services = () => {
+  const { t } = useTranslation()
+
+  useLanguageSync()
+
   const services = [
     {
       id: 1,
       icon: Shield,
-      title: 'Proxy Private IPv4',
-      description:
-        'Proxy Dân Cư từ HomeProxy cung cấp địa chỉ IP dân cư riêng tư của các địa bàn lớn như VNPT, Viettel, FPT...',
-      features: [
-        'IP dân cư riêng tư chất lượng cao',
-        'Khẩu độ băng thông lớn',
-        'Hỗ trợ HTTP/HTTPS và SOCKS5',
-        'Quản lý dễ dàng qua dashboard',
-        'Tích hợp API đầy đủ'
-      ],
+      title: t('landing.cooperate.services.cards.ipv4.title'),
+      description: t('landing.cooperate.services.cards.ipv4.description', {
+        appName: process.env.NEXT_PUBLIC_APP_NAME
+      }),
+      features: t('landing.cooperate.services.cards.ipv4.features', { returnObjects: true }) as string[],
       color: 'red'
     },
     {
       id: 2,
       icon: Globe,
-      title: 'Proxy Private IPv6',
-      description: 'Proxy từ HomeProxy nổi bật với nguồn IP sạch, chất lượng cao, được cung cấp từ các nhà mạng lớn...',
-      features: [
-        'IPv6 sạch và ổn định',
-        'Tốc độ cao và băng thông không giới hạn',
-        'Hỗ trợ đa nền tảng',
-        'Bảo mật và ẩn danh tuyệt đối',
-        'Support 24/7 chuyên nghiệp'
-      ],
+      title: t('landing.cooperate.services.cards.ipv6.title'),
+      description: t('landing.cooperate.services.cards.ipv6.description', {
+        appName: process.env.NEXT_PUBLIC_APP_NAME
+      }),
+      features: t('landing.cooperate.services.cards.ipv6.features', { returnObjects: true }) as string[],
       color: 'blue'
     },
     {
       id: 3,
       icon: Zap,
-      title: 'Proxy IPv6 XOAY',
-      description: 'Proxy Xoay từ HomeProxy cung cấp địa chỉ IP thay đổi liên tục theo chu kỳ linh hoạt như 60 phút...',
-      features: [
-        'IP rotation tự động',
-        'Băng thông cao và ổn định',
-        'Quản lý thông minh',
-        'Tích hợp dễ dàng',
-        'Giá cả cạnh tranh'
-      ],
+      title: t('landing.cooperate.services.cards.ipv6Rotating.title'),
+      description: t('landing.cooperate.services.cards.ipv6Rotating.description', {
+        appName: process.env.NEXT_PUBLIC_APP_NAME
+      }),
+      features: t('landing.cooperate.services.cards.ipv6Rotating.features', { returnObjects: true }) as string[],
       color: 'green'
     }
   ]
@@ -96,12 +93,8 @@ const Services = () => {
       <div className='container-lg mx-auto px-4 sm:px-6 lg:px-8 relative z-10'>
         {/* Section Header */}
         <div className='text-center mb-16'>
-          <h2 className='text-4xl md:text-5xl font-bold text-white mb-6'>
-            Dịch vụ <span className='text-red-400'>Proxy</span> chuyên nghiệp
-          </h2>
-          <p className='text-xl text-gray-300 max-w-3xl mx-auto'>
-            Chúng tôi cung cấp các gói proxy đa dạng với chất lượng cao, phù hợp với mọi nhu cầu sử dụng
-          </p>
+          <h2 className='text-4xl md:text-5xl font-bold text-white mb-6'>{t('landing.cooperate.services.title')}</h2>
+          <p className='text-xl text-gray-300 max-w-3xl mx-auto'>{t('landing.cooperate.services.subtitle')}</p>
         </div>
 
         {/* Services Grid */}
@@ -131,7 +124,7 @@ const Services = () => {
 
                 {/* Features List */}
                 <ul className='space-y-3 mb-8'>
-                  {service.features.map((feature, featureIndex) => (
+                  {(service.features || []).map((feature, featureIndex) => (
                     <li key={featureIndex} className='flex items-center text-gray-300'>
                       <Check className='w-5 h-5 text-green-400 mr-3 flex-shrink-0' />
                       <span className='text-sm'>{feature}</span>
@@ -143,7 +136,7 @@ const Services = () => {
                 <button
                   className={`w-full ${colors.bg} ${colors.hover} text-white py-4 px-6 rounded-xl font-semibold transition-all duration-300 group-hover:shadow-lg`}
                 >
-                  Chọn gói này
+                  {t('landing.cooperate.services.actions.selectPackage')}
                 </button>
               </div>
             )
@@ -152,9 +145,9 @@ const Services = () => {
 
         {/* Bottom CTA */}
         <div className='text-center mt-16'>
-          <p className='text-gray-300 mb-6'>Không chắc gói nào phù hợp với bạn?</p>
+          <p className='text-gray-300 mb-6'>{t('landing.cooperate.services.actions.notSure')}</p>
           <button className='bg-red-600 hover:bg-red-700 text-white px-8 py-4 rounded-xl font-semibold transition-all duration-300 hover:shadow-lg'>
-            Tư vấn miễn phí
+            {t('landing.cooperate.services.actions.freeConsultation')}
           </button>
         </div>
       </div>
