@@ -5,6 +5,8 @@ import { useEffect, useRef } from 'react'
 import type { CSSProperties } from 'react'
 
 // Third-party Imports
+import Image from 'next/image'
+
 import styled from '@emotion/styled'
 
 // Type Imports
@@ -13,7 +15,6 @@ import type { VerticalNavContextProps } from '@menu/contexts/verticalNavContext'
 // Hook Imports
 import useVerticalNav from '@menu/hooks/useVerticalNav'
 import { useSettings } from '@core/hooks/useSettings'
-import Image from 'next/image'
 
 type LogoTextProps = {
   isHovered?: VerticalNavContextProps['isHovered']
@@ -66,10 +67,9 @@ const Logo = ({ color }: { color?: CSSProperties['color'] }) => {
 
   return (
     <div className='flex items-center'>
+      <Image src='/images/logo/Logo_MKT_Proxy.png' alt='MKT_PROXY_2' width={190} height={50} />
 
-      <Image src='/images/logo/MKT_PROXY_2.png' alt='MKT_PROXY_2' width={50} height={50}/>
-
-      <LogoText
+      {/* <LogoText
         color={color}
         ref={logoTextRef}
         isHovered={isHovered}
@@ -78,7 +78,7 @@ const Logo = ({ color }: { color?: CSSProperties['color'] }) => {
         isBreakpointReached={isBreakpointReached}
       >
         {process.env.NEXT_PUBLIC_APP_NAME}
-      </LogoText>
+      </LogoText> */}
     </div>
   )
 }

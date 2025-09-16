@@ -75,10 +75,8 @@ export default function OrderRotatingProxyPage() {
     switch (status) {
       case 'ACTIVE':
         return <Chip label='Đang hoạt động' size='small' icon={<BadgeCheck />} color='success' />
-      case 'INACTIVE':
-        return <Chip label='Hết hạn' size='small' icon={<TriangleAlert />} color='error' />
-      case 'suspended':
-        return <Chip label='Tạm dừng' size='small' icon={<BadgeMinus />} color='warning' />
+      case 'EXPRIRED':
+        return <Chip label='Tạm dừng' size='small' icon={<BadgeMinus />} color='error' />
       default:
         return <Chip label='Không xác định' size='small' icon={<CircleQuestionMark />} color='secondary' />
     }
@@ -93,8 +91,8 @@ export default function OrderRotatingProxyPage() {
           <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
             <FormControlLabel
               sx={{
-                '&.MuiFormControlLabel-root' : {
-                  margin: 0,
+                '&.MuiFormControlLabel-root': {
+                  margin: 0
                 }
               }}
               control={
@@ -112,8 +110,8 @@ export default function OrderRotatingProxyPage() {
           <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
             <FormControlLabel
               sx={{
-                '&.MuiFormControlLabel-root' : {
-                  margin: 0,
+                '&.MuiFormControlLabel-root': {
+                  margin: 0
                 }
               }}
               control={

@@ -66,27 +66,32 @@ export default function TransactionHistoryPage() {
       {
         header: 'ID',
         cell: ({ row }) => {
-          console.log(row.original)
-
-          return <span className='font-sm ms-2'>{row.original?.bank_auto?.tid}</span>
+          return <span className='font-sm ms-2'>{row.original?.id}</span>
         },
         size: 60
       },
       {
         header: 'Lịch sử giao dịch',
         cell: ({ row }) => {
-          if (row.original?.bank_auto?.transaction_type === 'PLUS') {
+          if (row.original?.type === 'NAPTIEN') {
             return (
               <div>
                 <Chip label='Nạp' size='small' color='success' />
                 <span className='font-sm ms-2'>Nạp tiền thành công!</span>
               </div>
             )
-          } else if (row.original.type === 'wallet') {
+          } else if (row.original.type === 'TRUTIEN') {
             return (
               <div>
                 <Chip label='Tiêu' size='small' color='primary' style={{ color: '#fff' }} />
                 <span className='font-sm ms-2'>Trừ tiền thành công!</span>
+              </div>
+            )
+          } else if (row.original.type === 'BUY') {
+            return (
+              <div>
+                <Chip label='Mua' size='small' color='primary' style={{ color: '#fff' }} />
+                <span className='font-sm ms-2'>{row.original.noidung}</span>
               </div>
             )
           }
@@ -104,7 +109,7 @@ export default function TransactionHistoryPage() {
             currency: 'VND'
           })
 
-          const amount = row.original?.bank_auto?.amount
+          const amount = row.original?.sotienthaydoi
           const sotiengoc = row.original.sotientruoc
 
           return (

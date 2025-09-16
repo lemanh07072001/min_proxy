@@ -52,11 +52,11 @@ export default function HistoryOrderPage() {
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'pending':
+      case '0':
         return <Chip label='Chờ xử lý' size='small' icon={<BadgeCheck />} color='warning' />
-      case 'completed':
+      case '1':
         return <Chip label='Hoàn thành' size='small' icon={<TriangleAlert />} color='success' />
-      case 'expired':
+      case '5':
         return <Chip label='Hết hạn' size='small' icon={<BadgeMinus />} color='error' />
       default:
         return <Chip label='Không xác định' size='small' icon={<CircleQuestionMark />} color='secondary' />
@@ -68,8 +68,7 @@ export default function HistoryOrderPage() {
       {
         accessorKey: 'order_code',
         header: 'ID',
-        size: 170,
-
+        size: 170
       },
       {
         accessorKey: 'user.email',
@@ -114,7 +113,7 @@ export default function HistoryOrderPage() {
               </div>
             </>
           )
-        },
+        }
       },
       {
         accessorKey: 'expired_at',
@@ -129,9 +128,8 @@ export default function HistoryOrderPage() {
               </div>
             </>
           )
-        },
-      },
-
+        }
+      }
     ],
     []
   )

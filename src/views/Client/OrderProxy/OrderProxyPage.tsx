@@ -1,7 +1,9 @@
 'use client'
 
 import { useMemo, useState } from 'react'
+
 import Image from 'next/image'
+
 import {
   TriangleAlert,
   Copy,
@@ -38,16 +40,15 @@ import Checkbox from '@mui/material/Checkbox'
 
 import { FormControlLabel } from '@mui/material'
 
+import { useQuery } from '@tanstack/react-query'
+
 import CustomIconButton from '@core/components/mui/IconButton'
 import { formatDateTimeLocal } from '@/utils/formatDate'
 import { useCopy } from '@/app/hooks/useCopy'
 
 import { ChangePassword } from './ChangePassword'
 
-import { useQuery } from '@tanstack/react-query'
-
 import useAxiosAuth from '@/hocs/useAxiosAuth'
-
 
 export default function OrderProxyPage() {
   const [columnFilters, setColumnFilters] = useState([])
@@ -63,26 +64,21 @@ export default function OrderProxyPage() {
   const axiosAuth = useAxiosAuth()
   const [, copy] = useCopy()
 
-  const {
-    data: dataOrders = [],
-    isLoading,
-  } = useQuery({
+  const { data: dataOrders = [], isLoading } = useQuery({
     queryKey: ['orderProxyStatic'],
     queryFn: async () => {
       const res = await axiosAuth.get('/get-order-proxy-static')
+
       return res.data.data
     }
   })
-
 
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'ACTIVE':
         return <Chip label='Đang hoạt động' size='small' icon={<BadgeCheck />} color='success' />
-      case 'INACTIVE':
-        return <Chip label='Hết hạn' size='small' icon={<TriangleAlert />} color='error' />
-      case 'suspended':
-        return <Chip label='Tạm dừng' size='small' icon={<BadgeMinus />} color='warning' />
+      case 'EXPRIRED':
+        return <Chip label='Hết hạn' size='small' icon={<BadgeMinus />} color='error' />
       default:
         return <Chip label='Không xác định' size='small' icon={<CircleQuestionMark />} color='secondary' />
     }
@@ -96,8 +92,8 @@ export default function OrderProxyPage() {
           <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
             <FormControlLabel
               sx={{
-                '&.MuiFormControlLabel-root' : {
-                  margin: 0,
+                '&.MuiFormControlLabel-root': {
+                  margin: 0
                 }
               }}
               control={
@@ -115,8 +111,8 @@ export default function OrderProxyPage() {
           <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
             <FormControlLabel
               sx={{
-                '&.MuiFormControlLabel-root' : {
-                  margin: 0,
+                '&.MuiFormControlLabel-root': {
+                  margin: 0
                 }
               }}
               control={
@@ -143,6 +139,7 @@ export default function OrderProxyPage() {
         cell: ({ row }) => {
           const proxys = row.original.proxys || {} // fallback nếu null
           const loaiproxy = proxys.loaiproxy || '-' // fallback nếu không tồn tại
+
           return <span className='text-red'>{loaiproxy}</span>
         },
         size: 140
@@ -156,6 +153,7 @@ export default function OrderProxyPage() {
           const proxyValues = Object.entries(proxys)
             .filter(([key]) => key !== 'loaiproxy')
             .map(([_, value]) => value)
+
           return (
             <div className='proxy-cell'>
               <span className='proxy-label'>{proxyValues[0] || '-'}</span>
@@ -218,7 +216,6 @@ export default function OrderProxyPage() {
         },
         size: 150
       }
-
     ],
     []
   )
@@ -306,7 +303,7 @@ export default function OrderProxyPage() {
           <div className='table-container'>
             {/* Table */}
             <div className='table-wrapper'>
-              <table className='data-table'  style={isLoading || dataOrders.length === 0 ? { height: '100%' } : {}}>
+              <table className='data-table' style={isLoading || dataOrders.length === 0 ? { height: '100%' } : {}}>
                 <thead className='table-header'>
                   {table.getHeaderGroups().map(headerGroup => (
                     <tr key={headerGroup.id}>
