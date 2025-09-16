@@ -10,7 +10,11 @@ import {
   useReactTable,
   getCoreRowModel,
   flexRender,
-  getFilteredRowModel // Thêm để lọc hàng đã chọn
+  getFilteredRowModel,
+  getSortedRowModel,
+  getPaginationRowModel,
+  getFacetedRowModel,
+  getFacetedUniqueValues // Thêm để lọc hàng đã chọn
 } from '@tanstack/react-table'
 
 import Chip from '@mui/material/Chip'
