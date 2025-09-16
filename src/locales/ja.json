@@ -1,0 +1,16 @@
+{
+    "welcome": "ウェブサイトへようこそ",
+    "home": {
+        "title": "ホームページ",
+        "description": "ホームページの日本語版です。"
+    },
+    "auth": {
+        "login": "ログイン",
+        "logout": "ログアウト",
+        "register": "登録"
+    },
+    "common": {
+        "yes": "はい",
+        "no": "いいえ"
+    }
+}

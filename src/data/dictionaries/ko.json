@@ -1,0 +1,40 @@
+{
+    "navigation": {
+        "home": "홈페이지",
+        "overview": "개요",
+        "proxy": "프록시",
+        "staticProxy": "정적 프록시",
+        "rotatingProxy": "로테이팅 프록시",
+        "checkProxy": "프록시 확인",
+        "proxyOrders": "프록시 주문",
+        "rotatingProxyOrders": "로테이팅 프록시 주문",
+        "purchaseHistory": "구매 내역",
+        "transactionHistory": "거래 내역",
+        "proxyChangeHistory": "프록시 변경 내역",
+        "loginHistory": "로그인 내역",
+        "guide": "가이드",
+        "support": "지원"
+    },
+    "staticProxy": {
+        "title": "주거용 프록시",
+        "describe": "귀하의 요구에 맞는 프록시 패키지를 선택하세요"
+    },
+    "rotatingProxy": {
+        "title": "로테이팅 프록시",
+        "describe": "로테이팅 프록시 패키지를 선택하세요",
+        "networkType": "네트워크 유형",
+        "fiberOptic": "광섬유",
+        "provider": "제공업체",
+        "providers": "Viettel, FPT, VNPT",
+        "minChangeTime": "최소 IP 변경 시간",
+        "changeTimeValue": "60초/회",
+        "minLifetime": "최소 수명",
+        "minLifetimeValue": "15분",
+        "maxLifetime": "최대 수명",
+        "maxLifetimeValue": "30분",
+        "location": "위치",
+        "randomLocation": "무작위",
+        "quantity": "수량",
+        "days": "사용 일수"
+    }
+}

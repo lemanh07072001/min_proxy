@@ -2,6 +2,8 @@
 
 import React, { useState } from 'react'
 
+import { useTranslation } from 'react-i18next'
+
 import { useForm, Controller, useWatch } from 'react-hook-form'
 import * as yup from 'yup'
 import { yupResolver } from '@hookform/resolvers/yup'

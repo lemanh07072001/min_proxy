@@ -1,20 +1,23 @@
+import type { Metadata } from 'next'
+
 import Hero from '@/app/[lang]/(landing-page)/components/Hero'
 import ProductsSection from '@/app/[lang]/(landing-page)/components/ProductsSection'
 import PartnersSection from '@/app/[lang]/(landing-page)/components/PartnersSection'
-import type { Metadata } from 'next'
+
 export const metadata: Metadata = {
   title: `Chào mừng đến mới ${process.env.NEXT_PUBLIC_APP_NAME} `,
   description: 'Mô tả ngắn gọn về trang web.'
 }
-export default async function  Page({ params }: { params: { lang: string } }) {
-  const {lang} = await params
+
+export default async function Page({ params }: { params: { lang: string } }) {
+  const { lang } = await params
 
   return (
     <div>
       <Hero />
 
-      <ProductsSection params={params} />
-      <PartnersSection local={lang}/>
+      <ProductsSection local={lang} />
+      <PartnersSection local={lang} />
     </div>
   )
 }

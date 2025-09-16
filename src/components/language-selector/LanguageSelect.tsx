@@ -1,22 +1,42 @@
 
-import { useRef, useState } from 'react'
+'use client'
+
+import { useRef, useState, useEffect } from 'react'
+import { usePathname } from 'next/navigation'
 
 import "@components/language-selector/main.css"
 
 import LanguagesData from '@/data/languages/languagesData'
+import { useLanguageSwitcher, getCurrentLocale } from '@/utils/languageUtils'
 
 export default function LanguageSelect() {
-  const [selectedLanguage, setSelectedLanguage] = useState('vi');
-  const [showLanguageDropdown, setShowLanguageDropdown] = useState(false);
+  const [showLanguageDropdown, setShowLanguageDropdown] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
-
-  const currentLanguage = LanguagesData.find(lang => lang.code === selectedLanguage);
+  const pathname = usePathname()
+  const { switchLanguage } = useLanguageSwitcher()
+  
+  // Lấy ngôn ngữ hiện tại từ URL
+  const currentLocale = getCurrentLocale(pathname)
+  const currentLanguage = LanguagesData.find(lang => lang.code === currentLocale)
 
   const handleLanguageChange = (languageCode: string) => {
-    setSelectedLanguage(languageCode);
-    setShowLanguageDropdown(false);
-    console.log('Đổi ngôn ngữ sang:', languageCode);
-  };
+    setShowLanguageDropdown(false)
+    switchLanguage(languageCode as any)
+  }
+
+  // Đóng dropdown khi click bên ngoài
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowLanguageDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   return (
     <>
@@ -44,12 +64,12 @@ export default function LanguageSelect() {
             {LanguagesData.map((language) => (
               <button
                 key={language.code}
-                className={`language-option ${selectedLanguage === language.code ? 'active' : ''}`}
+                className={`language-option ${currentLocale === language.code ? 'active' : ''}`}
                 onClick={() => handleLanguageChange(language.code)}
               >
                 <span className="option-flag">{language.flag}</span>
                 <span className="option-name">{language.name}</span>
-                {selectedLanguage === language.code && (
+                {currentLocale === language.code && (
                   <svg className="check-icon" width="16" height="16" viewBox="0 0 16 16">
                     <path d="M13.5 4.5L6 12L2.5 8.5" stroke="currentColor" strokeWidth="2" fill="none"/>
                   </svg>

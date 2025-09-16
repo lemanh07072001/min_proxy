@@ -11,7 +11,12 @@ import '@/app/root.css'
 // Generated Icon CSS Imports
 import '@assets/iconify-icons/generated-icons.css'
 
+import { useEffect, useState } from 'react'
+
 import { Figtree } from 'next/font/google'
+
+import { headers } from 'next/headers'
+
 import InitColorSchemeScript from '@mui/material/InitColorSchemeScript'
 
 import { getServerSession } from 'next-auth'
@@ -19,8 +24,6 @@ import { getServerSession } from 'next-auth'
 import { i18n } from '@/configs/configi18n'
 
 import '@/app/[lang]/(landing-page)/main.css'
-
-import { headers } from 'next/headers'
 
 import type { Locale } from '@/configs/configi18n'
 
@@ -35,8 +38,11 @@ import { ModalContextProvider } from '@/app/contexts/ModalContext'
 
 import { authOptions } from '@/libs/auth'
 import { UserProvider } from '@/app/contexts/UserContext'
+
+import I18nextProvider from '@/app/i18n-provider'
+
 import { usePathname } from 'next/navigation'
-import { useEffect, useState } from 'react'
+
 import ClientLayout from '@components/ClientLayout'
 
 const figtree = Figtree({
@@ -61,6 +67,7 @@ const RootLayout = async (props: ChildrenType & { params: Promise<{ lang: Locale
 
   // ✅ Gọi API /me trên server
   let user = null
+
   if (session) {
     if (session?.access_token) {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/me`, {
@@ -68,6 +75,7 @@ const RootLayout = async (props: ChildrenType & { params: Promise<{ lang: Locale
         headers: { Authorization: `Bearer ${session.access_token}` },
         cache: 'no-store'
       })
+
       if (res.ok) user = await res.json()
     }
   }
@@ -76,12 +84,14 @@ const RootLayout = async (props: ChildrenType & { params: Promise<{ lang: Locale
     <TranslationWrapper headersList={headersList} lang={params.lang}>
       <html id='__next' lang={params.lang} dir={direction} className={figtree.variable} suppressHydrationWarning>
         <body className='flex is-full min-bs-full flex-auto flex-col'>
-          <TanstackProvider>
-            <InitColorSchemeScript attribute='data' defaultMode={systemMode} />
-            <ModalContextProvider>
-              <UserProvider value={user}>{children}</UserProvider>
-            </ModalContextProvider>
-          </TanstackProvider>
+          <I18nextProvider locale={params.lang}>
+            <TanstackProvider>
+              <InitColorSchemeScript attribute='data' defaultMode={systemMode} />
+              <ModalContextProvider>
+                <UserProvider value={user}>{children}</UserProvider>
+              </ModalContextProvider>
+            </TanstackProvider>
+          </I18nextProvider>
         </body>
       </html>
     </TranslationWrapper>

@@ -1,0 +1,40 @@
+{
+    "navigation": {
+        "home": "ホームページ",
+        "overview": "概要",
+        "proxy": "プロキシ",
+        "staticProxy": "静的プロキシ",
+        "rotatingProxy": "ローテーティングプロキシ",
+        "checkProxy": "プロキシ確認",
+        "proxyOrders": "プロキシ注文",
+        "rotatingProxyOrders": "ローテーティングプロキシ注文",
+        "purchaseHistory": "購入履歴",
+        "transactionHistory": "取引履歴",
+        "proxyChangeHistory": "プロキシ変更履歴",
+        "loginHistory": "ログイン履歴",
+        "guide": "ガイド",
+        "support": "サポート"
+    },
+    "staticProxy": {
+        "title": "住宅用プロキシ",
+        "describe": "あなたのニーズに合ったプロキシパッケージを選択してください"
+    },
+    "rotatingProxy": {
+        "title": "ローテーティングプロキシ",
+        "describe": "ローテーティングプロキシパッケージを選択してください",
+        "networkType": "ネットワークタイプ",
+        "fiberOptic": "光ファイバー",
+        "provider": "プロバイダー",
+        "providers": "Viettel, FPT, VNPT",
+        "minChangeTime": "最小IP変更時間",
+        "changeTimeValue": "60秒/回",
+        "minLifetime": "最小生存時間",
+        "minLifetimeValue": "15分",
+        "maxLifetime": "最大生存時間",
+        "maxLifetimeValue": "30分",
+        "location": "位置",
+        "randomLocation": "ランダム",
+        "quantity": "数量",
+        "days": "使用日数"
+    }
+}

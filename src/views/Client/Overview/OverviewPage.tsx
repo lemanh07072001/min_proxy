@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useTransition } from 'react'
 
 import { useSearchParams } from 'next/navigation'
 
@@ -22,10 +22,8 @@ export function OverviewPage() {
   // Hiện thông báo khi đổi mật khẩu thành công
   const searchParams = useSearchParams()
 
-  console.log(searchParams.get('resetSuccess'))
   useEffect(() => {
     if (searchParams.get('resetSuccess') === 'true') {
-      console.log('da')
       toast.success('Đổi mật khẩu thành công!')
       openAuthModal('login')
     }

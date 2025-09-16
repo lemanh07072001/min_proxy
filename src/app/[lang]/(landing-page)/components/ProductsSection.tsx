@@ -3,10 +3,10 @@ import React from 'react'
 import Image from 'next/image'
 
 import { Shield, Star, CheckCircle, ArrowRight } from 'lucide-react'
+
 import Link from '@components/Link'
 
-export default  function ProductsSection({ params }: { params: string }) {
-
+export default function ProductsSection({ local }: { local: string }) {
   const products = [
     {
       id: 1,
@@ -113,7 +113,7 @@ export default  function ProductsSection({ params }: { params: string }) {
                   </div>
 
                   {/* CTA Button */}
-                  <Link  href={`/${params.lang}/proxy-tinh`} className='buy-button'>
+                  <Link href={`/${local}/proxy-tinh`} className='buy-button'>
                     <span>Mua ngay</span>
                     <ArrowRight size={18} />
                   </Link>
@@ -144,4 +144,3 @@ export default  function ProductsSection({ params }: { params: string }) {
     </section>
   )
 }
-

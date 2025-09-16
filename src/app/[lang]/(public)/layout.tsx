@@ -1,5 +1,6 @@
 // Type Imports
 import type { ChildrenType } from '@core/types'
+import type { Locale } from '@/configs/configi18n'
 
 // Layout Imports
 import LayoutWrapper from '@layouts/LayoutWrapper'
@@ -11,6 +12,7 @@ import Providers from '@components/Providers'
 import LayoutProvider from '@components/LayoutProvider'
 import Navigation from '@components/layout/vertical/Navigation'
 import Navbar from '@components/layout/vertical/Navbar'
+import LanguageSyncWrapper from '@/components/LanguageSyncWrapper'
 
 // Util Imports
 import { getMode, getSystemMode } from '@core/utils/serverHelpers'
@@ -24,7 +26,7 @@ function HorizontalFooter() {
   return null
 }
 
-const Layout = async (props: ChildrenType) => {
+const Layout = async (props: ChildrenType & { params: Promise<{ lang: Locale }> }) => {
   const { children } = props
 
   const params = await props.params
@@ -39,25 +41,28 @@ const Layout = async (props: ChildrenType) => {
   return (
     <Providers direction="ltr">
       <LayoutProvider>
-        <LayoutWrapper
-          systemMode={systemMode}
-          verticalLayout={
-            <VerticalLayout 
-              navigation={<Navigation dictionary={dictionary} mode={mode} />} 
-              navbar={<Navbar />}
-            >
-              {children}
-            </VerticalLayout>
-          }
-          horizontalLayout={
-            <HorizontalLayout 
-              header={<Header dictionary={dictionary} />} 
-              footer={<HorizontalFooter />}
-            >
-              {children}
-            </HorizontalLayout>
-          }
-        />
+        <LanguageSyncWrapper>
+          <LayoutWrapper
+            systemMode={systemMode}
+            verticalLayout={
+              <VerticalLayout 
+                navigation={<Navigation dictionary={dictionary} mode={mode} />} 
+                navbar={<Navbar />}
+                landingPage={false}
+              >
+                {children}
+              </VerticalLayout>
+            }
+            horizontalLayout={
+              <HorizontalLayout 
+                header={<Header dictionary={dictionary} />} 
+                footer={<HorizontalFooter />}
+              >
+                {children}
+              </HorizontalLayout>
+            }
+          />
+        </LanguageSyncWrapper>
       </LayoutProvider>
     </Providers>
   )

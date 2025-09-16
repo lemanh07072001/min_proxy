@@ -24,6 +24,7 @@ import type { Locale } from '@/configs/configi18n'
 
 // Hook Imports
 import { useSettings } from '@core/hooks/useSettings'
+import { useLanguageSync } from '@/hooks/useLanguageSync'
 
 // Flags
 import flagEn from '@/../public/images/flags/united-states-of-america.png'
@@ -48,19 +49,19 @@ const getLocalePath = (pathName: string, locale: string) => {
 // Vars
 const languageData: LanguageDataType[] = [
   {
+    langCode: 'vi',
+    langName: 'Tiếng Việt',
+    flag: flagVi
+  },
+  {
     langCode: 'en',
     langName: 'English',
     flag: flagEn
   },
   {
     langCode: 'cn',
-    langName: 'Chinna',
+    langName: '中文',
     flag: flagCh
-  },
-  {
-    langCode: 'vi',
-    langName: 'Tiếng việt',
-    flag: flagVi
   }
 ]
 
@@ -75,6 +76,9 @@ const LanguageDropdown = () => {
   const pathName = usePathname()
   const { settings } = useSettings()
   const { lang } = useParams()
+  
+  // Sync i18n với URL language
+  useLanguageSync()
 
   const handleClose = () => {
     setOpen(false)

@@ -2,49 +2,62 @@ import React from 'react'
 import './styles.css'
 
 import type { Metadata } from 'next'
+import type { Locale } from '@/configs/configi18n'
+import { getDictionary } from '@/utils/getDictionary'
+import ProxyPlansClient from '@/components/ProxyPlansClient'
 
-import RotatingProxyPage from '@views/Client/RotatingProxy/RotatingProxyPage'
-import axiosInstance from '@/libs/axios'
-
-export const metadata: Metadata = {
-  title: `${process.env.NEXT_PUBLIC_APP_NAME} | Proxy Xoay`,
-  description: 'Mô tả ngắn gọn về trang web.'
-}
-
-export default async function RotatingProxy() {
-  let proxyPlans = []
-
+// Fetch data on server-side
+async function getProxyPlans() {
   try {
-    const response = await axiosInstance.get('/get-proxy-rotating', {
-      timeout: 10000 // Timeout 10 giây
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/get-proxy-rotating`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      cache: 'no-store' // Ensure fresh data on each request
     })
 
-    proxyPlans = response.data.data
-  } catch (error) {
-    console.log(error)
-  }
+    if (!response.ok) {
+      throw new Error('Failed to fetch proxy plans')
+    }
 
+    const data = await response.json()
+    return data.data || []
+  } catch (error) {
+    console.error('Error fetching proxy plans:', error)
+    return []
+  }
+}
+
+export default async function RotatingProxy({ params }: { params: Promise<{ lang: Locale }> }) {
+  const { lang } = await params
+  
+  // Fetch data and dictionary in parallel
+  const [proxyPlans, dictionary] = await Promise.all([
+    getProxyPlans(),
+    getDictionary(lang)
+  ])
+
+  // Create proxy template using server-side translations
   const proxyTemplate = {
     features: [
-      { label: 'Kiểu mạng', value: 'Cáp quang', status: 'success' },
-
-      // { label: 'IPv4 sạch-Unlimited Bandwidth', value: '', status: 'success' },
-      { label: 'Nhà mạng', value: 'Viettel, FPT, VNPT', status: 'success' },
-      { label: 'Thời gian đổi IP tối thiểu', value: '60 giây / lần', status: 'success' },
-      { label: 'Thời gian sống tối thiểu', value: '15 phút', status: 'success' },
-      { label: 'Thời gian sống tối đa', value: '30 phút', status: 'success' },
-      { label: 'Vị trí', value: 'Ngẫu nhiên', status: 'success' },
-      { label: 'Số lượng', status: 'input', inputType: 'number', field: 'quantity', min: 1, max: 100 },
-      { label: 'Ngày sử dụng', status: 'input', inputType: 'number', field: 'time', min: 1, max: 100 }
+      { label: dictionary.rotatingProxy.networkType, value: dictionary.rotatingProxy.fiberOptic, status: 'success' },
+      { label: dictionary.rotatingProxy.provider, value: dictionary.rotatingProxy.providers, status: 'success' },
+      { label: dictionary.rotatingProxy.minChangeTime, value: dictionary.rotatingProxy.changeTimeValue, status: 'success' },
+      { label: dictionary.rotatingProxy.minLifetime, value: dictionary.rotatingProxy.minLifetimeValue, status: 'success' },
+      { label: dictionary.rotatingProxy.maxLifetime, value: dictionary.rotatingProxy.maxLifetimeValue, status: 'success' },
+      { label: dictionary.rotatingProxy.location, value: dictionary.rotatingProxy.randomLocation, status: 'success' },
+      { label: dictionary.rotatingProxy.quantity, status: 'input', inputType: 'number', field: 'quantity', min: 1, max: 100 },
+      { label: dictionary.rotatingProxy.days, status: 'input', inputType: 'number', field: 'time', min: 1, max: 100 }
     ]
   }
 
-  const mergedPlans = proxyPlans.map(plan => {
+  const mergedPlans = proxyPlans.map((plan: any) => {
     // copy features từ template
     const features = proxyTemplate.features.map(f => ({ ...f }))
 
-    // tìm vị trí của "Kiểu mạng"
-    const index = features.findIndex(f => f.label === 'Kiểu mạng')
+    // tìm vị trí của networkType
+    const index = features.findIndex(f => f.label === dictionary.rotatingProxy.networkType)
 
     // chèn ip_version ngay sau vị trí đó
     features.splice(index + 1, 0, {
@@ -64,11 +77,5 @@ export default async function RotatingProxy() {
     }
   })
 
-  return (
-    <div className='proxy-xoay-page'>
-      <div className='plans-container'>
-        <RotatingProxyPage data={mergedPlans} />
-      </div>
-    </div>
-  )
+  return <ProxyPlansClient data={mergedPlans} />
 }
