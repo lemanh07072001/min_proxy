@@ -1,0 +1,180 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Get Api",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://api.mktproxy.com"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  },
+  "paths": {
+    "/api/proxies/new": {
+      "post": {
+        "tags": [
+          "Proxy"
+        ],
+        "summary": "Lấy proxy mới",
+        "description": "API trả về proxy HTTP/SOCKS5 với token xác thực Bearer.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "key": {
+                    "type": "string",
+                    "example": "GSaTZVGtrHPRiYUhBUSfPx"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "realIpAddress": {
+                          "type": "string",
+                          "example": "42.119.124.219"
+                        },
+                        "http": {
+                          "type": "string",
+                          "example": "42.119.124.219:16847:khljtiNj3Kd:fdkm3nbjg45d"
+                        },
+                        "socks5": {
+                          "type": "string",
+                          "example": "42.119.124.219:26847:khljtiNj3Kd:fdkm3nbjg45d"
+                        },
+                        "httpPort": {
+                          "type": "string",
+                          "example": "16847"
+                        },
+                        "socks5Port": {
+                          "type": "string",
+                          "example": "26847"
+                        },
+                        "host": {
+                          "type": "string",
+                          "example": "42.119.124.219"
+                        },
+                        "location": {
+                          "type": "string",
+                          "example": "YenBai1"
+                        },
+                        "expirationAt": {
+                          "type": "integer",
+                          "example": 1758099900
+                        }
+                      }
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "code": {
+                      "type": "integer",
+                      "example": 200
+                    },
+                    "status": {
+                      "type": "string",
+                      "example": "SUCCESS"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Thất bại (ví dụ thay đổi proxy quá sớm)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "code": {
+                      "type": "integer",
+                      "example": 40400006
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Proxy can be changed again in 49 seconds."
+                    },
+                    "status": {
+                      "type": "string",
+                      "example": "FAIL"
+                    },
+                    "error": {
+                      "type": "string",
+                      "example": "ERROR_SERVER"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Lỗi xác thực",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Unauthorized"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Lỗi server",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Internal Server Error"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
