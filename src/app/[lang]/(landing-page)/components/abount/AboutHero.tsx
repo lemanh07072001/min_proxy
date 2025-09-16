@@ -1,8 +1,16 @@
+'use client'
+
 import React from 'react'
 
 import { Shield, Award, Users, Globe, Star, CheckCircle } from 'lucide-react'
 
+import { useTranslation } from 'react-i18next'
+
+import { useLanguageSync } from '@/hooks/useLanguageSync'
+
 const AboutHero = () => {
+  const { t } = useTranslation()
+  useLanguageSync() // Sync language with URL
   return (
     <section className='about-hero-modern'>
       <div className='about-hero-bg'>
@@ -22,37 +30,29 @@ const AboutHero = () => {
           <div className='col-lg-6'>
             <div className='about-hero-content'>
               <h1 className='about-hero-title-modern'>
-                <span className='title-main'>Nhà cung cấp</span>
-                <span className='title-highlight'>Proxy #1 Việt Nam</span>
+                <span className='title-main'>{t('landing.about.hero.title.main')}</span>
+                <span className='title-highlight'>{t('landing.about.hero.title.highlight')}</span>
               </h1>
 
               <p className='about-hero-subtitle-modern'>
-                {process.env.NEXT_PUBLIC_APP_NAME} - Nền tảng proxy dân cư hàng đầu Việt Nam, là lựa chọn tin cậy của
-                hơn 5000+ doanh nghiệp và chuyên gia để tối ưu hóa hiệu suất công việc và chinh phục các dự án quan
-                trọng.
+                {t('landing.about.hero.subtitle', { appName: process.env.NEXT_PUBLIC_APP_NAME })}
               </p>
 
               <div className='hero-features-modern'>
-                <div className='feature-item-modern'>
-                  <CheckCircle size={20} />
-                  <span>Uptime 99.9% - Ổn định tuyệt đối</span>
-                </div>
-                <div className='feature-item-modern'>
-                  <CheckCircle size={20} />
-                  <span>Hỗ trợ 24/7 - Luôn sẵn sàng phục vụ</span>
-                </div>
-                <div className='feature-item-modern'>
-                  <CheckCircle size={20} />
-                  <span>Phủ sóng 64 tỉnh thành - Toàn quốc</span>
-                </div>
+                {t('landing.about.hero.features', { returnObjects: true }).map((feature: string, index: number) => (
+                  <div key={index} className='feature-item-modern'>
+                    <CheckCircle size={20} />
+                    <span>{feature}</span>
+                  </div>
+                ))}
               </div>
 
               <div className='hero-cta-modern'>
                 <button className='btn-primary-modern'>
-                  <span>Liên hệ tư vấn</span>
+                  <span>{t('landing.about.hero.actions.contact')}</span>
                 </button>
                 <button className='btn-secondary-modern'>
-                  <span>Xem bảng giá</span>
+                  <span>{t('landing.about.hero.actions.pricing')}</span>
                 </button>
               </div>
             </div>
@@ -67,7 +67,7 @@ const AboutHero = () => {
                   </div>
                   <div className='stat-content'>
                     <div className='stat-number'>5000+</div>
-                    <div className='stat-label'>Khách hàng</div>
+                    <div className='stat-label'>{t('landing.about.hero.stats.customers')}</div>
                   </div>
                 </div>
 
@@ -77,7 +77,7 @@ const AboutHero = () => {
                   </div>
                   <div className='stat-content'>
                     <div className='stat-number'>64</div>
-                    <div className='stat-label'>Tỉnh thành</div>
+                    <div className='stat-label'>{t('landing.about.hero.stats.provinces')}</div>
                   </div>
                 </div>
 
@@ -87,7 +87,7 @@ const AboutHero = () => {
                   </div>
                   <div className='stat-content'>
                     <div className='stat-number'>99.9%</div>
-                    <div className='stat-label'>Uptime</div>
+                    <div className='stat-label'>{t('landing.about.hero.stats.uptime')}</div>
                   </div>
                 </div>
 
@@ -97,7 +97,7 @@ const AboutHero = () => {
                   </div>
                   <div className='stat-content'>
                     <div className='stat-number'>5+</div>
-                    <div className='stat-label'>Năm kinh nghiệm</div>
+                    <div className='stat-label'>{t('landing.about.hero.stats.experience')}</div>
                   </div>
                 </div>
               </div>

@@ -1,22 +1,30 @@
+'use client'
+
 import React from 'react'
 
 import { Shield, Phone, Mail, MapPin, Facebook, Send, MessageCircle } from 'lucide-react'
 
+import { useTranslation } from 'react-i18next'
+
+import { useLanguageSync } from '@/hooks/useLanguageSync'
+
 const Footer = () => {
+  const { t } = useTranslation()
+  useLanguageSync() // Sync language with URL
   return (
     <footer className='footer-main'>
       {/* CTA Section */}
       <div className='footer-cta'>
         <div className='container-lg'>
           <div className='cta-content'>
-            <h2>HÃY CỘNG TÁC VỚI CHÚNG TÔI</h2>
-            <p>Trở thành đại lý ngay hôm nay, hưởng chính sách giá ưu đãi và bảo vệ quyền lợi độc quyền của bạn</p>
+            <h2>{t('landing.footer.cta.title')}</h2>
+            <p>{t('landing.footer.cta.description')}</p>
             <div className='cta-buttons'>
               <button className='btn-cta-primary'>
-                <span>Liên hệ làm cộng tác viên</span>
+                <span>{t('landing.footer.cta.contactAgent')}</span>
               </button>
               <button className='btn-cta-secondary'>
-                <span>Đăng ký ngay</span>
+                <span>{t('landing.footer.cta.registerNow')}</span>
               </button>
             </div>
           </div>
@@ -30,19 +38,19 @@ const Footer = () => {
             {/* Company Info */}
             <div className='col-lg-3 col-md-6 mb-4'>
               <div className='footer-section'>
-                <h4>Company</h4>
+                <h4>{t('landing.footer.sections.company.title')}</h4>
                 <ul className='footer-links'>
                   <li>
-                    <a href='#'>Về chúng tôi</a>
+                    <a href='#'>{t('landing.footer.sections.company.about')}</a>
                   </li>
                   <li>
-                    <a href='#'>Ưu đãi đại lý</a>
+                    <a href='#'>{t('landing.footer.sections.company.agentOffers')}</a>
                   </li>
                   <li>
-                    <a href='#'>Đối tác</a>
+                    <a href='#'>{t('landing.footer.sections.company.partners')}</a>
                   </li>
                   <li>
-                    <a href='#'>Sitemap</a>
+                    <a href='#'>{t('landing.footer.sections.company.sitemap')}</a>
                   </li>
                 </ul>
               </div>
@@ -51,13 +59,13 @@ const Footer = () => {
             {/* Products */}
             <div className='col-lg-3 col-md-6 mb-4'>
               <div className='footer-section'>
-                <h4>Products</h4>
+                <h4>{t('landing.footer.sections.products.title')}</h4>
                 <ul className='footer-links'>
                   <li>
-                    <a href='#'>Proxy Dân cư Tỉnh</a>
+                    <a href='#'>{t('landing.footer.sections.products.staticProxy')}</a>
                   </li>
                   <li>
-                    <a href='#'>Proxy Dân cư Xoay</a>
+                    <a href='#'>{t('landing.footer.sections.products.rotatingProxy')}</a>
                   </li>
                 </ul>
               </div>
@@ -66,22 +74,22 @@ const Footer = () => {
             {/* Top Locations */}
             <div className='col-lg-3 col-md-6 mb-4'>
               <div className='footer-section'>
-                <h4>Top Locations</h4>
+                <h4>{t('landing.footer.sections.locations.title')}</h4>
                 <ul className='footer-links'>
                   <li>
-                    <a href='#'>Hồ Chí Minh City</a>
+                    <a href='#'>{t('landing.footer.sections.locations.hcm')}</a>
                   </li>
                   <li>
-                    <a href='#'>Hà Nội</a>
+                    <a href='#'>{t('landing.footer.sections.locations.hanoi')}</a>
                   </li>
                   <li>
-                    <a href='#'>Hưng Yên</a>
+                    <a href='#'>{t('landing.footer.sections.locations.hungYen')}</a>
                   </li>
                   <li>
-                    <a href='#'>Tuyên Quang</a>
+                    <a href='#'>{t('landing.footer.sections.locations.tuyenQuang')}</a>
                   </li>
                   <li>
-                    <a href='#'>Bình Định</a>
+                    <a href='#'>{t('landing.footer.sections.locations.binhDinh')}</a>
                   </li>
                 </ul>
               </div>
@@ -90,22 +98,22 @@ const Footer = () => {
             {/* Get Started */}
             <div className='col-lg-3 col-md-6 mb-4'>
               <div className='footer-section'>
-                <h4>Get started</h4>
+                <h4>{t('landing.footer.sections.getStarted.title')}</h4>
                 <ul className='footer-links'>
                   <li>
-                    <a href='#'>Trở thành CTV</a>
+                    <a href='#'>{t('landing.footer.sections.getStarted.becomeCTV')}</a>
                   </li>
                   <li>
-                    <a href='#'>Trở thành đại lý uy quyền</a>
+                    <a href='#'>{t('landing.footer.sections.getStarted.becomeAgent')}</a>
                   </li>
                   <li>
-                    <a href='#'>Mua proxy giá rẻ</a>
+                    <a href='#'>{t('landing.footer.sections.getStarted.buyCheap')}</a>
                   </li>
                   <li>
-                    <a href='#'>Tương tác tự vận</a>
+                    <a href='#'>{t('landing.footer.sections.getStarted.autoTrade')}</a>
                   </li>
                   <li>
-                    <a href='#'>Giúp đỡ</a>
+                    <a href='#'>{t('landing.footer.sections.getStarted.help')}</a>
                   </li>
                 </ul>
               </div>
@@ -127,12 +135,12 @@ const Footer = () => {
             <div className='col-md-6'>
               <div className='footer-legal'>
                 <div className='legal-links'>
-                  <a href='#'>Privacy Policy</a>
-                  <a href='#'>Service Agreement</a>
-                  <a href='#'>Refund Policy</a>
+                  <a href='#'>{t('landing.footer.legal.privacy')}</a>
+                  <a href='#'>{t('landing.footer.legal.service')}</a>
+                  <a href='#'>{t('landing.footer.legal.refund')}</a>
                 </div>
                 <div className='copyright'>
-                  © 2025 {process.env.NEXT_PUBLIC_APP_NAME} COMPANY LIMITED. All Rights Reserved
+                  {t('landing.footer.legal.copyright', { appName: process.env.NEXT_PUBLIC_APP_NAME })}
                 </div>
               </div>
             </div>
@@ -143,7 +151,7 @@ const Footer = () => {
       {/* Contact Info */}
       <div className='contact-info'>
         <div className='container'>
-          <div className='contact-text'>Liên hệ với chúng tôi</div>
+          <div className='contact-text'>{t('landing.footer.contact.title')}</div>
           <div className='contact-icons'>
             <a href='#' className='contact-icon facebook'>
               <Facebook size={20} />

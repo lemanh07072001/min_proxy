@@ -388,5 +388,250 @@
     "cn": "中文",
     "ko": "한국어",
     "ja": "日本語"
+  },
+  "landing": {
+    "header": {
+      "promoBanner": {
+        "text": "Tuyển đại lý: Trở thành đại lý cho {appName} để nhận được nhiều ưu đãi hấp dẫn",
+        "button": "Hợp tác ngay"
+      },
+      "menu": {
+        "home": "Trang chủ",
+        "about": "Giới thiệu",
+        "products": "Sản phẩm",
+        "cooperate": "Hợp tác",
+        "hotline": "Hotline"
+      },
+      "auth": {
+        "login": "Đăng nhập",
+        "register": "Đăng ký"
+      }
+    },
+    "hero": {
+      "title": {
+        "line1": "PROXY VIỆT NAM",
+        "line2": "Tốc độ cao - Ổn định"
+      },
+      "subtitle": "Dịch vụ proxy dân cư chất lượng cao với hệ thống phủ sóng toàn quốc. Hỗ trợ đầy đủ 3 nhà mạng lớn: Viettel, FPT, VNPT với tốc độ lên đến 1Gbps.",
+      "features": {
+        "coverage": "Phủ sóng 64 tỉnh thành",
+        "speed": "Tốc độ lên đến 1Gbps",
+        "uptime": "Uptime 99.9%",
+        "support": "Hỗ trợ 24/7"
+      },
+      "actions": {
+        "buyNow": "Mua Proxy Ngay",
+        "watchDemo": "Xem Demo"
+      },
+      "trust": {
+        "customers": "Khách hàng",
+        "uptime": "Uptime",
+        "support": "Hỗ trợ"
+      },
+      "floatingCards": {
+        "security": {
+          "title": "Bảo mật cao",
+          "desc": "SSL/TLS"
+        },
+        "speed": {
+          "title": "Tốc độ cao",
+          "desc": "1Gbps"
+        },
+        "coverage": {
+          "title": "Toàn quốc",
+          "desc": "64 tỉnh"
+        }
+      }
+    },
+    "products": {
+      "title": "Gói Proxy Phù Hợp Với Bạn",
+      "subtitle": "Chọn gói proxy phù hợp với nhu cầu của bạn. Tất cả gói đều đảm bảo chất lượng cao và hỗ trợ 24/7.",
+      "cards": {
+        "viettel": {
+          "name": "Viettel Proxy",
+          "badge": "Ổn định",
+          "features": [
+            "IPv4 dân cư Việt Nam",
+            "Hơn 20 đầu IP tùy chọn",
+            "Tốc độ 550 Mbps",
+            "Uptime 99.9%"
+          ]
+        },
+        "fpt": {
+          "name": "FPT Proxy",
+          "badge": "Phổ biến",
+          "features": [
+            "IPv4 dân cư Việt Nam",
+            "Hơn 14 đầu IP tùy chọn",
+            "Tốc độ 550 Mbps",
+            "Bảo mật cao"
+          ]
+        },
+        "vnpt": {
+          "name": "VNPT Proxy",
+          "badge": "Nhanh",
+          "features": [
+            "IPv4 dân cư Việt Nam",
+            "Hơn 45 đầu IP tùy chọn",
+            "Tốc độ 550 Mbps",
+            "Kết nối ổn định"
+          ]
+        }
+      },
+      "actions": {
+        "buyNow": "Mua ngay",
+        "guarantee": "Đảm bảo hoàn tiền 100%",
+        "popular": "Phổ biến nhất"
+      },
+      "cta": {
+        "title": "Cần tư vấn thêm?",
+        "description": "Liên hệ với chúng tôi để được tư vấn gói proxy phù hợp nhất",
+        "button": "Liên hệ tư vấn"
+      }
+    },
+    "testimonials": {
+      "title": "100+ Khách hàng cả nước",
+      "reviews": [
+        {
+          "name": "Nguyễn Thanh Bình",
+          "role": "Kinh doanh proxy full time",
+          "content": "Tôi là đại lý từ những ngày đầu {appName} ra mắt và rất bất ngờ với sự chuyên nghiệp trong cách vận hành và hỗ trợ. Tôi có website riêng được tùy chỉnh theo ý mình, chính sách rõ ràng, chăm sóc kỹ lưỡng. Đây là nền tảng đáng tin cậy và nghiêm túc trong mảng proxy."
+        },
+        {
+          "name": "Nguyễn Hoa",
+          "role": "Đại lý kinh doanh proxy tại TP.HCM",
+          "content": "Ban đầu tôi rất ngại bán hàng qua web vì sợ phức tạp và chi phí cao. Nhưng từ khi tham gia chương trình đại lý web riêng của {appName}, tôi được hỗ trợ tận tình, miễn phí web riêng và tăng hẳn 3 triệu trải nghiệm. Giờ tôi bán proxy ổn định hàng tháng, khởi đầu nhẹ nhàng đồng thú."
+        },
+        {
+          "name": "Vũ Huy",
+          "role": "Đối tác web riêng {appName}",
+          "content": "Tôi hài lòng khi tìm đại lý {appName} vì cảm giác được đồng hành thật sự. Không chỉ lấy sản phẩm bán lại, tôi được hỗ trợ thiết kế web riêng chuyên nghiệp, xây dựng thương hiệu có nhận rõ ràng, tạo sự tin tưởng với khách hàng và luôn được {appName} hỗ trợ khi cần."
+        },
+        {
+          "name": "Trần Văn Nam",
+          "role": "Chuyên gia marketing online",
+          "content": "Sau nhiều năm sử dụng proxy từ nhiều nhà cung cấp khác nhau, tôi thấy {appName} có chất lượng ổn định nhất. IP sạch, tốc độ nhanh, ít bị block. Đặc biệt là team support rất nhiệt tình, giải quyết vấn đề nhanh chóng 24/7."
+        },
+        {
+          "name": "Phạm Thị Lan",
+          "role": "Quản lý dự án digital",
+          "content": "{appName} đã giúp công ty chúng tôi tiết kiệm rất nhiều chi phí và thời gian. Hệ thống proxy ổn định, dễ sử dụng, và quan trọng nhất là có đội ngũ kỹ thuật hỗ trợ chuyên nghiệp. Chúng tôi rất hài lòng với dịch vụ này."
+        }
+      ],
+      "stats": {
+        "trustedCustomers": "Khách hàng tin tưởng",
+        "uptime": "Thời gian hoạt động",
+        "support": "Hỗ trợ kỹ thuật",
+        "networks": "Nhà mạng lớn"
+      }
+    },
+    "about": {
+      "hero": {
+        "title": {
+          "main": "Nhà cung cấp",
+          "highlight": "Proxy #1 Việt Nam"
+        },
+        "subtitle": "{appName} - Nền tảng proxy dân cư hàng đầu Việt Nam, là lựa chọn tin cậy của hơn 5000+ doanh nghiệp và chuyên gia để tối ưu hóa hiệu suất công việc và chinh phục các dự án quan trọng.",
+        "features": [
+          "Uptime 99.9% - Ổn định tuyệt đối",
+          "Hỗ trợ 24/7 - Luôn sẵn sàng phục vụ",
+          "Phủ sóng 64 tỉnh thành - Toàn quốc"
+        ],
+        "actions": {
+          "contact": "Liên hệ tư vấn",
+          "pricing": "Xem bảng giá"
+        },
+        "stats": {
+          "customers": "Khách hàng",
+          "provinces": "Tỉnh thành",
+          "uptime": "Uptime",
+          "experience": "Năm kinh nghiệm"
+        }
+      }
+    },
+    "cooperate": {
+      "hero": {
+        "badge": "🚀 Dịch vụ Proxy hàng đầu Việt Nam",
+        "title": {
+          "line1": "CHÍNH SÁCH ưu đãi cho các",
+          "line2": "ĐẠI LÝ"
+        },
+        "subtitle": "{appName} luôn đặt quyền lợi của đại lý làm ưu tiên hàng đầu, cam kết mang đến sự hỗ trợ thiết thực và tối ưu nhất",
+        "features": [
+          {
+            "title": "Bảo mật cao",
+            "desc": "Mã hóa dữ liệu an toàn"
+          },
+          {
+            "title": "Tốc độ nhanh",
+            "desc": "Hiệu suất vượt trội"
+          },
+          {
+            "title": "Toàn cầu",
+            "desc": "Mạng lưới rộng khắp"
+          }
+        ],
+        "actions": {
+          "startNow": "Bắt đầu ngay",
+          "learnMore": "Tìm hiểu thêm"
+        }
+      }
+    },
+    "partners": {
+      "title": "Đối tác của chúng tôi",
+      "subtitle": "Chọn chỗ gì mà không hợp tác cùng {{appName}} - Một trong những nhà cung cấp proxy uy tín và giá rẻ.",
+      "trust": {
+        "partners": "Đối tác tin cậy",
+        "reliability": "Độ tin cậy",
+        "experience": "Năm kinh nghiệm"
+      }
+    },
+    "footer": {
+      "cta": {
+        "title": "HÃY CỘNG TÁC VỚI CHÚNG TÔI",
+        "description": "Trở thành đại lý ngay hôm nay, hưởng chính sách giá ưu đãi và bảo vệ quyền lợi độc quyền của bạn",
+        "contactAgent": "Liên hệ làm cộng tác viên",
+        "registerNow": "Đăng ký ngay"
+      },
+      "sections": {
+        "company": {
+          "title": "Company",
+          "about": "Về chúng tôi",
+          "agentOffers": "Ưu đãi đại lý",
+          "partners": "Đối tác",
+          "sitemap": "Sitemap"
+        },
+        "products": {
+          "title": "Products",
+          "staticProxy": "Proxy Dân cư Tỉnh",
+          "rotatingProxy": "Proxy Dân cư Xoay"
+        },
+        "locations": {
+          "title": "Top Locations",
+          "hcm": "Hồ Chí Minh City",
+          "hanoi": "Hà Nội",
+          "hungYen": "Hưng Yên",
+          "tuyenQuang": "Tuyên Quang",
+          "binhDinh": "Bình Định"
+        },
+        "getStarted": {
+          "title": "Get started",
+          "becomeCTV": "Trở thành CTV",
+          "becomeAgent": "Trở thành đại lý uy quyền",
+          "buyCheap": "Mua proxy giá rẻ",
+          "autoTrade": "Tương tác tự vận",
+          "help": "Giúp đỡ"
+        }
+      },
+      "legal": {
+        "privacy": "Privacy Policy",
+        "service": "Service Agreement",
+        "refund": "Refund Policy",
+        "copyright": "© 2025 {appName} COMPANY LIMITED. All Rights Reserved"
+      },
+      "contact": {
+        "title": "Liên hệ với chúng tôi"
+      }
+    }
   }
 }

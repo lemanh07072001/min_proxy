@@ -6,11 +6,17 @@ import { useParams } from 'next/navigation'
 
 import { Shield, Zap, Globe, Users, ArrowRight, Play } from 'lucide-react'
 
+import { useTranslation } from 'react-i18next'
+
+import { useLanguageSync } from '@/hooks/useLanguageSync'
+
 import Link from '@/components/Link'
 
 const Hero = () => {
   const params = useParams()
   const { lang: locale } = params
+  const { t } = useTranslation()
+  useLanguageSync() // Sync language with URL
 
   return (
     <section className='hero-main'>
@@ -51,14 +57,13 @@ const Hero = () => {
 
               {/* Main Title */}
               <h1 className='hero-title'>
-                <span className='title-line-1'>PROXY VIỆT NAM</span>
-                <span className='title-line-2'>Tốc độ cao - Ổn định</span>
+                <span className='title-line-1'>{t('landing.hero.title.line1')}</span>
+                <span className='title-line-2'>{t('landing.hero.title.line2')}</span>
               </h1>
 
               {/* Subtitle */}
               <p className='hero-subtitle'>
-                Dịch vụ proxy dân cư chất lượng cao với hệ thống phủ sóng toàn quốc. Hỗ trợ đầy đủ 3 nhà mạng lớn:
-                Viettel, FPT, VNPT với tốc độ lên đến 1Gbps.
+                {t('landing.hero.subtitle')}
               </p>
 
               {/* Key Features */}
@@ -67,25 +72,25 @@ const Hero = () => {
                   <div className='feature-icon'>
                     <Globe size={20} />
                   </div>
-                  <span className='text-gray-300'>Phủ sóng 64 tỉnh thành</span>
+                  <span className='text-gray-300'>{t('landing.hero.features.coverage')}</span>
                 </div>
                 <div className='feature-item'>
                   <div className='feature-icon'>
                     <Zap size={20} />
                   </div>
-                  <span className='text-gray-300'>Tốc độ lên đến 1Gbps</span>
+                  <span className='text-gray-300'>{t('landing.hero.features.speed')}</span>
                 </div>
                 <div className='feature-item'>
                   <div className='feature-icon'>
                     <Shield size={20} />
                   </div>
-                  <span className='text-gray-300'>Uptime 99.9%</span>
+                  <span className='text-gray-300'>{t('landing.hero.features.uptime')}</span>
                 </div>
                 <div className='feature-item'>
                   <div className='feature-icon'>
                     <Users size={20} />
                   </div>
-                  <span className='text-gray-300'>Hỗ trợ 24/7</span>
+                  <span className='text-gray-300'>{t('landing.hero.features.support')}</span>
                 </div>
               </div>
 
@@ -93,13 +98,13 @@ const Hero = () => {
               <div className='hero-actions'>
                 <button className='btn-primary'>
                   <Link target='_blank' href={`/${locale}/overview`}>
-                    Mua Proxy Ngay
+                    {t('landing.hero.actions.buyNow')}
                   </Link>
                   <ArrowRight size={20} />
                 </button>
                 <button className='btn-secondary'>
                   <Play size={18} />
-                  <span>Xem Demo</span>
+                  <span>{t('landing.hero.actions.watchDemo')}</span>
                 </button>
               </div>
 
@@ -107,15 +112,15 @@ const Hero = () => {
               <div className='trust-indicators'>
                 <div className='trust-item'>
                   <div className='trust-number'>5000+</div>
-                  <div className='trust-label'>Khách hàng</div>
+                  <div className='trust-label'>{t('landing.hero.trust.customers')}</div>
                 </div>
                 <div className='trust-item'>
                   <div className='trust-number'>99.9%</div>
-                  <div className='trust-label'>Uptime</div>
+                  <div className='trust-label'>{t('landing.hero.trust.uptime')}</div>
                 </div>
                 <div className='trust-item'>
                   <div className='trust-number'>24/7</div>
-                  <div className='trust-label'>Hỗ trợ</div>
+                  <div className='trust-label'>{t('landing.hero.trust.support')}</div>
                 </div>
               </div>
             </div>
@@ -170,8 +175,8 @@ const Hero = () => {
                     <Shield size={24} />
                   </div>
                   <div className='card-content'>
-                    <div className='card-title'>Bảo mật cao</div>
-                    <div className='card-desc'>SSL/TLS</div>
+                    <div className='card-title'>{t('landing.hero.floatingCards.security.title')}</div>
+                    <div className='card-desc'>{t('landing.hero.floatingCards.security.desc')}</div>
                   </div>
                 </div>
 
@@ -180,8 +185,8 @@ const Hero = () => {
                     <Zap size={24} />
                   </div>
                   <div className='card-content'>
-                    <div className='card-title'>Tốc độ cao</div>
-                    <div className='card-desc'>1Gbps</div>
+                    <div className='card-title'>{t('landing.hero.floatingCards.speed.title')}</div>
+                    <div className='card-desc'>{t('landing.hero.floatingCards.speed.desc')}</div>
                   </div>
                 </div>
 
@@ -190,8 +195,8 @@ const Hero = () => {
                     <Globe size={24} />
                   </div>
                   <div className='card-content'>
-                    <div className='card-title'>Toàn quốc</div>
-                    <div className='card-desc'>64 tỉnh</div>
+                    <div className='card-title'>{t('landing.hero.floatingCards.coverage.title')}</div>
+                    <div className='card-desc'>{t('landing.hero.floatingCards.coverage.desc')}</div>
                   </div>
                 </div>
               </div>

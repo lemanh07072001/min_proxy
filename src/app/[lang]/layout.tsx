@@ -11,11 +11,13 @@ import '@/app/root.css'
 // Generated Icon CSS Imports
 import '@assets/iconify-icons/generated-icons.css'
 
-import { useEffect, useState } from 'react'
-
 import { Figtree } from 'next/font/google'
 
 import { headers } from 'next/headers'
+
+import { usePathname } from 'next/navigation'
+
+import type { Metadata } from 'next'
 
 import InitColorSchemeScript from '@mui/material/InitColorSchemeScript'
 
@@ -41,8 +43,6 @@ import { UserProvider } from '@/app/contexts/UserContext'
 
 import I18nextProvider from '@/app/i18n-provider'
 
-import { usePathname } from 'next/navigation'
-
 import ClientLayout from '@components/ClientLayout'
 
 const figtree = Figtree({
@@ -50,6 +50,11 @@ const figtree = Figtree({
   variable: '--font-figtree',
   display: 'swap'
 })
+
+export const metadata: Metadata = {
+  title: 'Tên trang web',
+  icons: { icon: '/images/logo/MKT_PROXY_2.png' }
+}
 
 export const revalidate = 0 //
 

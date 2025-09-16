@@ -20,7 +20,7 @@ export const useLanguageSync = () => {
       pathname
     })
     
-    if (i18n.isInitialized && currentLocale !== i18n.language) {
+    if (i18n.isInitialized && currentLocale && currentLocale !== i18n.language) {
       console.log('Changing language from', i18n.language, 'to', currentLocale)
       i18n.changeLanguage(currentLocale).then(() => {
         console.log('Language changed successfully to', currentLocale)
@@ -29,7 +29,7 @@ export const useLanguageSync = () => {
         console.error('Failed to change language:', error)
         setIsSynced(false)
       })
-    } else if (i18n.isInitialized && currentLocale === i18n.language) {
+    } else if (i18n.isInitialized && currentLocale && currentLocale === i18n.language) {
       setIsSynced(true)
     }
   }, [pathname, currentLocale, i18n])

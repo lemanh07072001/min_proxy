@@ -1,8 +1,16 @@
+'use client'
+
 import React from 'react'
 
 import { ArrowRight, Shield, Zap, Globe } from 'lucide-react'
 
+import { useTranslation } from 'react-i18next'
+
+import { useLanguageSync } from '@/hooks/useLanguageSync'
+
 const Hero = () => {
+  const { t } = useTranslation()
+  useLanguageSync() // Sync language with URL
   return (
     <section
       id='home'
@@ -26,47 +34,46 @@ const Hero = () => {
         <div className='max-w-4xl mx-auto'>
           {/* Badge */}
           <div className='inline-flex items-center bg-red-600/20 border border-red-600/30 rounded-full px-4 py-2 mb-8'>
-            <span className='text-red-400 text-sm font-medium'>🚀 Dịch vụ Proxy hàng đầu Việt Nam</span>
+            <span className='text-red-400 text-sm font-medium'>{t('landing.cooperate.hero.badge')}</span>
           </div>
 
           {/* Main Title */}
           <h1 className='text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight'>
-            CHÍNH SÁCH ưu đãi cho các
-            <span className='text-red-400 block'>ĐẠI LÝ</span>
+            {t('landing.cooperate.hero.title.line1')}
+            <span className='text-red-400 block'>{t('landing.cooperate.hero.title.line2')}</span>
           </h1>
 
           {/* Subtitle */}
           <p className='text-xl md:text-2xl text-gray-300 mb-8 max-w-3xl mx-auto leading-relaxed'>
-            {process.env.NEXT_PUBLIC_APP_NAME} luôn đặt quyền lợi của đại lý làm ưu tiên hàng đầu, cam kết mang đến sự
-            hỗ trợ thiết thực và tối ưu nhất
+            {t('landing.cooperate.hero.subtitle', { appName: process.env.NEXT_PUBLIC_APP_NAME })}
           </p>
 
           {/* Features */}
           <div className='grid grid-cols-1 md:grid-cols-3 gap-6 mb-12'>
-            {[
-              { icon: Shield, title: 'Bảo mật cao', desc: 'Mã hóa dữ liệu an toàn' },
-              { icon: Zap, title: 'Tốc độ nhanh', desc: 'Hiệu suất vượt trội' },
-              { icon: Globe, title: 'Toàn cầu', desc: 'Mạng lưới rộng khắp' }
-            ].map((feature, index) => (
-              <div
-                key={index}
-                className='flex flex-col items-center p-6 bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 hover:bg-white/10 transition-all duration-300'
-              >
-                <feature.icon className='w-8 h-8 text-red-400 mb-3' />
-                <h3 className='text-white font-semibold mb-2'>{feature.title}</h3>
-                <p className='text-gray-400 text-sm'>{feature.desc}</p>
-              </div>
-            ))}
+            {t('landing.cooperate.hero.features', { returnObjects: true }).map((feature: { title: string; desc: string }, index: number) => {
+              const icons = [Shield, Zap, Globe]
+              const IconComponent = icons[index]
+              return (
+                <div
+                  key={index}
+                  className='flex flex-col items-center p-6 bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 hover:bg-white/10 transition-all duration-300'
+                >
+                  <IconComponent className='w-8 h-8 text-red-400 mb-3' />
+                  <h3 className='text-white font-semibold mb-2'>{feature.title}</h3>
+                  <p className='text-gray-400 text-sm'>{feature.desc}</p>
+                </div>
+              )
+            })}
           </div>
 
           {/* CTA Buttons */}
           <div className='flex flex-col sm:flex-row gap-4 justify-center'>
             <button className='group bg-red-600 hover:bg-red-700 text-white px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center'>
-              Bắt đầu ngay
+              {t('landing.cooperate.hero.actions.startNow')}
               <ArrowRight className='w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform' />
             </button>
             <button className='border-2 border-white/30 hover:border-red-400 text-white hover:text-red-400 px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-300 backdrop-blur-sm'>
-              Tìm hiểu thêm
+              {t('landing.cooperate.hero.actions.learnMore')}
             </button>
           </div>
         </div>

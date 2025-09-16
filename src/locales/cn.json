@@ -108,7 +108,7 @@
     },
     "messages": {
       "welcomeBack": "欢迎回来",
-      "welcomeToApp": "欢迎来到{appName}",
+      "welcomeToApp": "欢迎来到{{appName}}",
       "forgotPasswordTitle": "忘记密码",
       "loginInstructions": "请填写登录信息",
       "registerInstructions": "请填写注册信息",
@@ -388,5 +388,250 @@
     "cn": "中文",
     "ko": "한국어",
     "ja": "日本語"
+  },
+  "landing": {
+    "header": {
+      "promoBanner": {
+        "text": "代理商招募：成为{{appName}}代理商，享受丰厚优惠",
+        "button": "立即合作"
+      },
+      "menu": {
+        "home": "首页",
+        "about": "关于我们",
+        "products": "产品",
+        "cooperate": "合作",
+        "hotline": "热线"
+      },
+      "auth": {
+        "login": "登录",
+        "register": "注册"
+      }
+    },
+    "hero": {
+      "title": {
+        "line1": "越南代理",
+        "line2": "高速稳定"
+      },
+      "subtitle": "高品质住宅代理服务，覆盖全国。全面支持三大网络：Viettel、FPT、VNPT，速度高达1Gbps。",
+      "features": {
+        "coverage": "覆盖64个省份",
+        "speed": "速度高达1Gbps",
+        "uptime": "99.9%正常运行时间",
+        "support": "24/7支持"
+      },
+      "actions": {
+        "buyNow": "立即购买代理",
+        "watchDemo": "观看演示"
+      },
+      "trust": {
+        "customers": "客户",
+        "uptime": "正常运行时间",
+        "support": "支持"
+      },
+      "floatingCards": {
+        "security": {
+          "title": "高安全性",
+          "desc": "SSL/TLS"
+        },
+        "speed": {
+          "title": "高速",
+          "desc": "1Gbps"
+        },
+        "coverage": {
+          "title": "全国覆盖",
+          "desc": "64个省份"
+        }
+      }
+    },
+    "products": {
+      "title": "适合您的代理套餐",
+      "subtitle": "选择适合您需求的代理套餐。所有套餐都确保高质量和24/7支持。",
+      "cards": {
+        "viettel": {
+          "name": "Viettel代理",
+          "badge": "稳定",
+          "features": [
+            "越南住宅IPv4",
+            "超过20个IP前缀可选",
+            "550 Mbps速度",
+            "99.9%正常运行时间"
+          ]
+        },
+        "fpt": {
+          "name": "FPT代理",
+          "badge": "热门",
+          "features": [
+            "越南住宅IPv4",
+            "超过14个IP前缀可选",
+            "550 Mbps速度",
+            "高安全性"
+          ]
+        },
+        "vnpt": {
+          "name": "VNPT代理",
+          "badge": "快速",
+          "features": [
+            "越南住宅IPv4",
+            "超过45个IP前缀可选",
+            "550 Mbps速度",
+            "稳定连接"
+          ]
+        }
+      },
+      "actions": {
+        "buyNow": "立即购买",
+        "guarantee": "100%退款保证",
+        "popular": "最受欢迎"
+      },
+      "cta": {
+        "title": "需要更多咨询？",
+        "description": "联系我们，为您推荐最合适的代理套餐",
+        "button": "联系咨询"
+      }
+    },
+    "testimonials": {
+      "title": "100+全国客户",
+      "reviews": [
+        {
+          "name": "阮成平",
+          "role": "全职代理业务",
+          "content": "我从{{appName}}推出初期就是代理商，对运营和支持的专业性感到非常惊讶。我有自己的网站，可以按我的意愿定制，政策清晰，服务周到。这是代理领域值得信赖和严肃的平台。"
+        },
+        {
+          "name": "阮花",
+          "role": "胡志明市代理业务代理商",
+          "content": "起初我很担心通过网站销售，因为害怕复杂性和高成本。但自从加入{{appName}}的私人网站代理计划后，我得到了贴心的支持，免费私人网站，体验增加了300万。现在我每月稳定销售代理，开始轻松顺利。"
+        },
+        {
+          "name": "武辉",
+          "role": "{{appName}}私人网站合作伙伴",
+          "content": "我很满意找到{{appName}}代理商，因为感觉真正被陪伴。不仅仅是拿产品转售，我还得到了专业私人网站设计支持，建立清晰的品牌认知，与客户建立信任，总是在需要时得到{{appName}}的支持。"
+        },
+        {
+          "name": "陈文南",
+          "role": "在线营销专家",
+          "content": "经过多年使用不同提供商的代理，我发现{{appName}}质量最稳定。IP干净，速度快，很少被屏蔽。特别是支持团队非常热情，24/7快速解决问题。"
+        },
+        {
+          "name": "范氏兰",
+          "role": "数字项目经理",
+          "content": "{{appName}}帮助我们公司节省了大量成本和时间。代理系统稳定，易于使用，最重要的是有专业的技术支持团队。我们对这项服务非常满意。"
+        }
+      ],
+      "stats": {
+        "trustedCustomers": "信任客户",
+        "uptime": "运行时间",
+        "support": "技术支持",
+        "networks": "主要网络"
+      }
+    },
+    "about": {
+      "hero": {
+        "title": {
+          "main": "提供商",
+          "highlight": "代理#1越南"
+        },
+        "subtitle": "{{appName}} - 越南领先的住宅代理平台，是超过5000+企业和专家优化工作性能和征服重要项目的可信选择。",
+        "features": [
+          "99.9%正常运行时间 - 绝对稳定",
+          "24/7支持 - 随时准备服务",
+          "覆盖64个省份 - 全国范围"
+        ],
+        "actions": {
+          "contact": "联系咨询",
+          "pricing": "查看价格"
+        },
+        "stats": {
+          "customers": "客户",
+          "provinces": "省份",
+          "uptime": "正常运行时间",
+          "experience": "年经验"
+        }
+      }
+    },
+    "cooperate": {
+      "hero": {
+        "badge": "🚀 越南领先代理服务",
+        "title": {
+          "line1": "代理商",
+          "line2": "优惠政策"
+        },
+        "subtitle": "{{appName}}始终将代理商利益放在首位，承诺提供最实用和最优的支持",
+        "features": [
+          {
+            "title": "高安全性",
+            "desc": "安全数据加密"
+          },
+          {
+            "title": "快速速度",
+            "desc": "卓越性能"
+          },
+          {
+            "title": "全球覆盖",
+            "desc": "广泛网络覆盖"
+          }
+        ],
+        "actions": {
+          "startNow": "立即开始",
+          "learnMore": "了解更多"
+        }
+      }
+    },
+    "partners": {
+      "title": "我们的合作伙伴",
+      "subtitle": "为什么不与{{appName}}合作 - 最值得信赖和实惠的代理提供商之一。",
+      "trust": {
+        "partners": "值得信赖的合作伙伴",
+        "reliability": "可靠性",
+        "experience": "年经验"
+      }
+    },
+    "footer": {
+      "cta": {
+        "title": "与我们合作",
+        "description": "立即成为代理商，享受优惠价格政策并保护您的专有权利",
+        "contactAgent": "联系成为合作者",
+        "registerNow": "立即注册"
+      },
+      "sections": {
+        "company": {
+          "title": "公司",
+          "about": "关于我们",
+          "agentOffers": "代理商优惠",
+          "partners": "合作伙伴",
+          "sitemap": "网站地图"
+        },
+        "products": {
+          "title": "产品",
+          "staticProxy": "住宅静态代理",
+          "rotatingProxy": "住宅轮换代理"
+        },
+        "locations": {
+          "title": "热门地区",
+          "hcm": "胡志明市",
+          "hanoi": "河内",
+          "hungYen": "兴安",
+          "tuyenQuang": "宣光",
+          "binhDinh": "平定"
+        },
+        "getStarted": {
+          "title": "开始使用",
+          "becomeCTV": "成为CTV",
+          "becomeAgent": "成为授权代理商",
+          "buyCheap": "购买便宜代理",
+          "autoTrade": "自动交易",
+          "help": "帮助"
+        }
+      },
+      "legal": {
+        "privacy": "隐私政策",
+        "service": "服务协议",
+        "refund": "退款政策",
+        "copyright": "© 2025 {{appName}} 有限公司。保留所有权利"
+      },
+      "contact": {
+        "title": "联系我们"
+      }
+    }
   }
 }

@@ -1,4 +1,6 @@
 // Type Imports
+import type { Metadata } from 'next'
+
 import type { ChildrenType } from '@core/types'
 import type { Locale } from '@/configs/configi18n'
 
@@ -32,21 +34,17 @@ const Layout = async (props: ChildrenType & { params: Promise<{ lang: Locale }> 
   const params = await props.params
 
   // Vars - Fetch song song để tối ưu performance
-  const [mode, systemMode, dictionary] = await Promise.all([
-    getMode(),
-    getSystemMode(),
-    getDictionary(params.lang)
-  ])
+  const [mode, systemMode, dictionary] = await Promise.all([getMode(), getSystemMode(), getDictionary(params.lang)])
 
   return (
-    <Providers direction="ltr">
+    <Providers direction='ltr'>
       <LayoutProvider>
         <LanguageSyncWrapper>
           <LayoutWrapper
             systemMode={systemMode}
             verticalLayout={
-              <VerticalLayout 
-                navigation={<Navigation dictionary={dictionary} mode={mode} />} 
+              <VerticalLayout
+                navigation={<Navigation dictionary={dictionary} mode={mode} />}
                 navbar={<Navbar />}
                 landingPage={false}
               >
@@ -54,10 +52,7 @@ const Layout = async (props: ChildrenType & { params: Promise<{ lang: Locale }> 
               </VerticalLayout>
             }
             horizontalLayout={
-              <HorizontalLayout 
-                header={<Header dictionary={dictionary} />} 
-                footer={<HorizontalFooter />}
-              >
+              <HorizontalLayout header={<Header dictionary={dictionary} />} footer={<HorizontalFooter />}>
                 {children}
               </HorizontalLayout>
             }

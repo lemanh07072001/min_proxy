@@ -108,7 +108,7 @@
     },
     "messages": {
       "welcomeBack": "Welcome back",
-      "welcomeToApp": "Welcome to {appName}",
+      "welcomeToApp": "Welcome to {{{appName}}}",
       "forgotPasswordTitle": "Forgot Password",
       "loginInstructions": "Please fill in your login information",
       "registerInstructions": "Please fill in your registration information",
@@ -388,5 +388,250 @@
     "cn": "中文",
     "ko": "한국어",
     "ja": "日本語"
+  },
+  "landing": {
+    "header": {
+      "promoBanner": {
+        "text": "Agent Recruitment: Become an agent for {{{appName}}} to receive attractive benefits",
+        "button": "Cooperate Now"
+      },
+      "menu": {
+        "home": "Home",
+        "about": "About",
+        "products": "Products",
+        "cooperate": "Cooperate",
+        "hotline": "Hotline"
+      },
+      "auth": {
+        "login": "Login",
+        "register": "Register"
+      }
+    },
+    "hero": {
+      "title": {
+        "line1": "VIETNAM PROXY",
+        "line2": "High Speed - Stable"
+      },
+      "subtitle": "High-quality residential proxy service with nationwide coverage. Full support for 3 major networks: Viettel, FPT, VNPT with speeds up to 1Gbps.",
+      "features": {
+        "coverage": "Coverage 64 provinces",
+        "speed": "Speed up to 1Gbps",
+        "uptime": "99.9% Uptime",
+        "support": "24/7 Support"
+      },
+      "actions": {
+        "buyNow": "Buy Proxy Now",
+        "watchDemo": "Watch Demo"
+      },
+      "trust": {
+        "customers": "Customers",
+        "uptime": "Uptime",
+        "support": "Support"
+      },
+      "floatingCards": {
+        "security": {
+          "title": "High Security",
+          "desc": "SSL/TLS"
+        },
+        "speed": {
+          "title": "High Speed",
+          "desc": "1Gbps"
+        },
+        "coverage": {
+          "title": "Nationwide",
+          "desc": "64 provinces"
+        }
+      }
+    },
+    "products": {
+      "title": "Proxy Packages Suitable For You",
+      "subtitle": "Choose the proxy package that suits your needs. All packages ensure high quality and 24/7 support.",
+      "cards": {
+        "viettel": {
+          "name": "Viettel Proxy",
+          "badge": "Stable",
+          "features": [
+            "Vietnamese residential IPv4",
+            "Over 20 IP prefixes to choose from",
+            "550 Mbps speed",
+            "99.9% Uptime"
+          ]
+        },
+        "fpt": {
+          "name": "FPT Proxy",
+          "badge": "Popular",
+          "features": [
+            "Vietnamese residential IPv4",
+            "Over 14 IP prefixes to choose from",
+            "550 Mbps speed",
+            "High security"
+          ]
+        },
+        "vnpt": {
+          "name": "VNPT Proxy",
+          "badge": "Fast",
+          "features": [
+            "Vietnamese residential IPv4",
+            "Over 45 IP prefixes to choose from",
+            "550 Mbps speed",
+            "Stable connection"
+          ]
+        }
+      },
+      "actions": {
+        "buyNow": "Buy Now",
+        "guarantee": "100% Money Back Guarantee",
+        "popular": "Most Popular"
+      },
+      "cta": {
+        "title": "Need more consultation?",
+        "description": "Contact us for consultation on the most suitable proxy package",
+        "button": "Contact for consultation"
+      }
+    },
+    "testimonials": {
+      "title": "100+ Customers nationwide",
+      "reviews": [
+        {
+          "name": "Nguyen Thanh Binh",
+          "role": "Full-time proxy business",
+          "content": "I have been an agent since the early days of {{appName}} launch and I am very surprised by the professionalism in operation and support. I have my own website customized to my liking, clear policies, and careful care. This is a reliable and serious platform in the proxy field."
+        },
+        {
+          "name": "Nguyen Hoa",
+          "role": "Proxy business agent in Ho Chi Minh City",
+          "content": "Initially, I was very hesitant to sell through websites because I was afraid of complexity and high costs. But since joining {{appName}}'s private website agent program, I have received dedicated support, free private website and increased 3 million experiences. Now I sell proxy stably monthly, starting gently and smoothly."
+        },
+        {
+          "name": "Vu Huy",
+          "role": "Private website partner {{appName}}",
+          "content": "I am satisfied when finding {{appName}} agent because I feel truly accompanied. Not only taking products to resell, I am supported with professional private website design, building a clear brand recognition, creating trust with customers and always being supported by {{appName}} when needed."
+        },
+        {
+          "name": "Tran Van Nam",
+          "role": "Online marketing expert",
+          "content": "After many years of using proxy from many different providers, I find {{appName}} has the most stable quality. Clean IP, fast speed, rarely blocked. Especially the support team is very enthusiastic, solving problems quickly 24/7."
+        },
+        {
+          "name": "Pham Thi Lan",
+          "role": "Digital project manager",
+          "content": "{{appName}} has helped our company save a lot of costs and time. The proxy system is stable, easy to use, and most importantly, has a professional technical support team. We are very satisfied with this service."
+        }
+      ],
+      "stats": {
+        "trustedCustomers": "Trusted customers",
+        "uptime": "Operating time",
+        "support": "Technical support",
+        "networks": "Major networks"
+      }
+    },
+    "about": {
+      "hero": {
+        "title": {
+          "main": "Provider",
+          "highlight": "Proxy #1 Vietnam"
+        },
+        "subtitle": "{{appName}} - Vietnam's leading residential proxy platform, is the trusted choice of over 5000+ businesses and experts to optimize work performance and conquer important projects.",
+        "features": [
+          "99.9% Uptime - Absolute stability",
+          "24/7 Support - Always ready to serve",
+          "Coverage 64 provinces - Nationwide"
+        ],
+        "actions": {
+          "contact": "Contact for consultation",
+          "pricing": "View pricing"
+        },
+        "stats": {
+          "customers": "Customers",
+          "provinces": "Provinces",
+          "uptime": "Uptime",
+          "experience": "Years of experience"
+        }
+      }
+    },
+    "cooperate": {
+      "hero": {
+        "badge": "🚀 Vietnam's leading Proxy service",
+        "title": {
+          "line1": "PREFERENTIAL policies for",
+          "line2": "AGENTS"
+        },
+        "subtitle": "{{appName}} always prioritizes agent benefits, committed to providing the most practical and optimal support",
+        "features": [
+          {
+            "title": "High security",
+            "desc": "Secure data encryption"
+          },
+          {
+            "title": "Fast speed",
+            "desc": "Outstanding performance"
+          },
+          {
+            "title": "Global",
+            "desc": "Wide network coverage"
+          }
+        ],
+        "actions": {
+          "startNow": "Start Now",
+          "learnMore": "Learn More"
+        }
+      }
+    },
+    "partners": {
+      "title": "Our Partners",
+      "subtitle": "Why not partner with {{appName}} - One of the most trusted and affordable proxy providers.",
+      "trust": {
+        "partners": "Trusted Partners",
+        "reliability": "Reliability",
+        "experience": "Years of Experience"
+      }
+    },
+    "footer": {
+      "cta": {
+        "title": "LET'S COOPERATE WITH US",
+        "description": "Become an agent today, enjoy preferential pricing policies and protect your exclusive rights",
+        "contactAgent": "Contact to become a collaborator",
+        "registerNow": "Register Now"
+      },
+      "sections": {
+        "company": {
+          "title": "Company",
+          "about": "About Us",
+          "agentOffers": "Agent Offers",
+          "partners": "Partners",
+          "sitemap": "Sitemap"
+        },
+        "products": {
+          "title": "Products",
+          "staticProxy": "Residential Static Proxy",
+          "rotatingProxy": "Residential Rotating Proxy"
+        },
+        "locations": {
+          "title": "Top Locations",
+          "hcm": "Ho Chi Minh City",
+          "hanoi": "Hanoi",
+          "hungYen": "Hung Yen",
+          "tuyenQuang": "Tuyen Quang",
+          "binhDinh": "Binh Dinh"
+        },
+        "getStarted": {
+          "title": "Get started",
+          "becomeCTV": "Become CTV",
+          "becomeAgent": "Become authorized agent",
+          "buyCheap": "Buy cheap proxy",
+          "autoTrade": "Auto trading",
+          "help": "Help"
+        }
+      },
+      "legal": {
+        "privacy": "Privacy Policy",
+        "service": "Service Agreement",
+        "refund": "Refund Policy",
+        "copyright": "© 2025 {{appName}} COMPANY LIMITED. All Rights Reserved"
+      },
+      "contact": {
+        "title": "Contact us"
+      }
+    }
   }
 }

@@ -68,10 +68,10 @@ export default function MenuDesktop() {
               style={{ padding: '5px 20px' }}
               onClick={handleOpenModalRegister}
             >
-              Đăng ký
+              {t('landing.header.auth.register')}
             </button>
             <button className='btn btn-gradient-primary' style={{ padding: '5px 20px' }} onClick={handleOpenModalLogin}>
-              {t('auth.login')}
+              {t('landing.header.auth.login')}
             </button>
           </div>
         )}

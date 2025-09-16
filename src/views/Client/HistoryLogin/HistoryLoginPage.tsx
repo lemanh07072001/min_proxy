@@ -4,11 +4,7 @@ import { useMemo, useState } from 'react'
 
 import Image from 'next/image'
 
-import {
-
-  List,
-  Clock,
-} from 'lucide-react'
+import { List, Clock } from 'lucide-react'
 
 import {
   useReactTable,
@@ -26,10 +22,11 @@ import Chip from '@mui/material/Chip'
 import Pagination from '@mui/material/Pagination'
 import { useQuery } from '@tanstack/react-query'
 
+import Button from '@mui/material/Button'
+
 import useAxiosAuth from '@/hocs/useAxiosAuth'
 import { useCopy } from '@/app/hooks/useCopy'
 import { formatDateTimeLocal } from '@/utils/formatDate'
-import Button from '@mui/material/Button'
 import CustomIconButton from '@core/components/mui/IconButton'
 import { ChangePassword } from '@views/Client/OrderProxy/ChangePassword'
 
@@ -44,7 +41,6 @@ export default function HistoryLoginPage() {
     pageSize: 10
   })
 
-
   const axiosAuth = useAxiosAuth()
   const [, copy] = useCopy()
 
@@ -57,23 +53,22 @@ export default function HistoryLoginPage() {
     }
   })
 
-
   const columns = useMemo(
     () => [
-      {
-        accessorKey: 'id',
-        header: 'ID',
-        size: 60,
-        cell: ({ getValue }) => (
-          <div className="text-center ">
-            {getValue()}
-          </div>
-        ),
-        meta: {
-          thClass: 'text-center',
-          tdClass: 'text-center'
-        },
-      },
+      // {
+      //   accessorKey: 'id',
+      //   header: 'ID',
+      //   size: 60,
+      //   cell: ({ getValue }) => (
+      //     <div className="text-center ">
+      //       {getValue()}
+      //     </div>
+      //   ),
+      //   meta: {
+      //     thClass: 'text-center',
+      //     tdClass: 'text-center'
+      //   },
+      // },
       {
         accessorKey: 'content',
         header: 'Nội dung',
@@ -113,9 +108,8 @@ export default function HistoryLoginPage() {
               </div>
             </>
           )
-        },
-      },
-
+        }
+      }
     ],
     []
   )
@@ -164,58 +158,61 @@ export default function HistoryLoginPage() {
                 <h5 className='mb-0 font-semibold'>Lịch sử đăng nhập</h5>
               </div>
             </div>
-
           </div>
 
           <div className='table-container'>
             {/* Table */}
             <div className='table-wrapper'>
-              <table className='data-table'  style={isLoading || dataOrders.length === 0 ? { height: '100%' } : {}}>
+              <table className='data-table' style={isLoading || dataOrders.length === 0 ? { height: '100%' } : {}}>
                 <thead className='table-header'>
-                {table.getHeaderGroups().map(headerGroup => (
-                  <tr key={headerGroup.id}>
-                    {headerGroup.headers.map(header => (
-                      <th style={{ width: header.getSize() }}  className={`table-header th ${header.column.columnDef.meta?.thClass || ''}`} key={header.id}>
-                        {flexRender(header.column.columnDef.header, header.getContext())}
-                      </th>
-                    ))}
-                  </tr>
-                ))}
-                </thead>
-                <tbody>
-                {isLoading ? (
-                  <tr>
-                    <td colSpan={columns.length} className='py-10 text-center'>
-                      <div className='loader-wrapper'>
-                        <div className='loader'>
-                          <span></span>
-                          <span></span>
-                          <span></span>
-                        </div>
-                        <p className='loading-text'>Đang tải dữ liệu...</p>
-                      </div>
-                    </td>
-                  </tr>
-                ) : table.getRowModel().rows.length === 0 ? (
-                  <tr>
-                    <td colSpan={columns.length} className='py-10 text-center'>
-                      <div className='flex flex-col items-center justify-center'>
-                        <Image src='/images/no-data.png' alt='No data' width={160} height={160} />
-                        <p className='mt-4 text-gray-500'>Không có dữ liệu</p>
-                      </div>
-                    </td>
-                  </tr>
-                ) : (
-                  table.getRowModel().rows.map(row => (
-                    <tr className='table-row' key={row.id}>
-                      {row.getVisibleCells().map(cell => (
-                        <td className={`table-cell ${cell.column.columnDef.meta?.tdClass || ''}`} key={cell.id}>
-                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                        </td>
+                  {table.getHeaderGroups().map(headerGroup => (
+                    <tr key={headerGroup.id}>
+                      {headerGroup.headers.map(header => (
+                        <th
+                          style={{ width: header.getSize() }}
+                          className={`table-header th ${header.column.columnDef.meta?.thClass || ''}`}
+                          key={header.id}
+                        >
+                          {flexRender(header.column.columnDef.header, header.getContext())}
+                        </th>
                       ))}
                     </tr>
-                  ))
-                )}
+                  ))}
+                </thead>
+                <tbody>
+                  {isLoading ? (
+                    <tr>
+                      <td colSpan={columns.length} className='py-10 text-center'>
+                        <div className='loader-wrapper'>
+                          <div className='loader'>
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                          </div>
+                          <p className='loading-text'>Đang tải dữ liệu...</p>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : table.getRowModel().rows.length === 0 ? (
+                    <tr>
+                      <td colSpan={columns.length} className='py-10 text-center'>
+                        <div className='flex flex-col items-center justify-center'>
+                          <Image src='/images/no-data.png' alt='No data' width={160} height={160} />
+                          <p className='mt-4 text-gray-500'>Không có dữ liệu</p>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : (
+                    table.getRowModel().rows.map(row => (
+                      <tr className='table-row' key={row.id}>
+                        {row.getVisibleCells().map(cell => (
+                          <td className={`table-cell ${cell.column.columnDef.meta?.tdClass || ''}`} key={cell.id}>
+                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                          </td>
+                        ))}
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
@@ -274,8 +271,6 @@ export default function HistoryLoginPage() {
           </div>
         </div>
       </div>
-
-
     </>
   )
 }

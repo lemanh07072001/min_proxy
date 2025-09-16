@@ -153,6 +153,7 @@ const LanguageDropdown = () => {
                       key={locale.langCode}
                       component={Link}
                       href={getLocalePath(pathName, locale.langCode)}
+                      scroll={false}
                       onClick={handleClose}
                       selected={lang === locale.langCode}
                     >

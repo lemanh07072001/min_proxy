@@ -25,9 +25,7 @@ export default function MenuMobile({ onClose }: MenuMobileProps) {
     <div className='menu-container'>
       <div className='mobile-header'>
         <div className='mobile-logo'>
-          <VuexyLogo className='text-2xl text-primary' />
-
-          <span>{process.env.NEXT_PUBLIC_APP_NAME}</span>
+          <Image src='/images/logo/Logo_MKT_Proxy.png' alt='Logo_MKT_Proxy' width={180} height={50} />
         </div>
         {/* Close Button */}
         <button className='btn-close-menu' onClick={onClose} aria-label='Đóng menu'>

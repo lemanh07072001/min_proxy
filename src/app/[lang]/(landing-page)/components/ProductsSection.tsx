@@ -1,54 +1,64 @@
+'use client'
+
 import React from 'react'
 
 import Image from 'next/image'
 
 import { Shield, Star, CheckCircle, ArrowRight } from 'lucide-react'
 
+import { useTranslation } from 'react-i18next'
+
+import { useLanguageSync } from '@/hooks/useLanguageSync'
+
 import Link from '@components/Link'
 
 export default function ProductsSection({ local }: { local: string }) {
+  const { t } = useTranslation()
+
+  useLanguageSync() // Sync language with URL
+
   const products = [
     {
       id: 1,
-      name: 'Viettel Proxy',
+      name: t('landing.products.cards.viettel.name'),
       provider: 'Viettel',
       img: '/images/softwares/viettel.png',
       price: '18.000',
       originalPrice: '25.000',
       period: 'tháng',
       discount: '28%',
-      features: ['IPv4 dân cư Việt Nam', 'Hơn 20 đầu IP tùy chọn', 'Tốc độ 550 Mbps', 'Uptime 99.9%'],
+      features: t('landing.products.cards.viettel.features', { returnObjects: true }) as string[],
       color: '#e53e3e',
       popular: false,
-      badge: 'Ổn định'
+      badge: t('landing.products.cards.viettel.badge')
     },
     {
       id: 2,
-      name: 'FPT Proxy',
+      name: t('landing.products.cards.fpt.name'),
       provider: 'FPT',
       img: '/images/softwares/fpt.png',
       price: '18.000',
       originalPrice: '24.000',
       period: 'tháng',
       discount: '25%',
-      features: ['IPv4 dân cư Việt Nam', 'Hơn 14 đầu IP tùy chọn', 'Tốc độ 550 Mbps', 'Bảo mật cao'],
+      features: t('landing.products.cards.fpt.features', { returnObjects: true }) as string[],
       color: '#f56500',
       popular: true,
-      badge: 'Phổ biến'
+      badge: t('landing.products.cards.fpt.badge')
     },
     {
       id: 3,
-      name: 'VNPT Proxy',
+      name: t('landing.products.cards.vnpt.name'),
       provider: 'VNPT',
       img: '/images/softwares/vnpt.png',
       price: '18.000',
       originalPrice: '26.000',
       period: 'tháng',
       discount: '31%',
-      features: ['IPv4 dân cư Việt Nam', 'Hơn 45 đầu IP tùy chọn', 'Tốc độ 550 Mbps', 'Kết nối ổn định'],
+      features: t('landing.products.cards.vnpt.features', { returnObjects: true }) as string[],
       color: '#3182ce',
       popular: false,
-      badge: 'Nhanh'
+      badge: t('landing.products.cards.vnpt.badge')
     }
   ]
 
@@ -57,12 +67,8 @@ export default function ProductsSection({ local }: { local: string }) {
       <div className='container-lg'>
         {/* Header */}
         <div className='section-header'>
-          <h2 className='section-title'>
-            Gói Proxy <span className='text-highlight'>Phù Hợp</span> Với Bạn
-          </h2>
-          <p className='section-subtitle'>
-            Chọn gói proxy phù hợp với nhu cầu của bạn. Tất cả gói đều đảm bảo chất lượng cao và hỗ trợ 24/7.
-          </p>
+          <h2 className='section-title'>{t('landing.products.title')}</h2>
+          <p className='section-subtitle'>{t('landing.products.subtitle')}</p>
         </div>
 
         {/* Products Grid */}
@@ -78,7 +84,7 @@ export default function ProductsSection({ local }: { local: string }) {
                   {product.popular && (
                     <div className='popular-badge'>
                       <Star size={16} fill='white' />
-                      <span>Phổ biến nhất</span>
+                      <span>{t('landing.products.actions.popular')}</span>
                     </div>
                   )}
 
@@ -114,14 +120,14 @@ export default function ProductsSection({ local }: { local: string }) {
 
                   {/* CTA Button */}
                   <Link href={`/${local}/proxy-tinh`} className='buy-button'>
-                    <span>Mua ngay</span>
+                    <span>{t('landing.products.actions.buyNow')}</span>
                     <ArrowRight size={18} />
                   </Link>
 
                   {/* Guarantee */}
                   <div className='guarantee'>
                     <Shield size={14} />
-                    <span>Đảm bảo hoàn tiền 100%</span>
+                    <span>{t('landing.products.actions.guarantee')}</span>
                   </div>
                 </div>
               </div>
@@ -132,10 +138,10 @@ export default function ProductsSection({ local }: { local: string }) {
         {/* Bottom CTA */}
         <div className='section-cta'>
           <div className='cta-content'>
-            <h3>Cần tư vấn thêm?</h3>
-            <p>Liên hệ với chúng tôi để được tư vấn gói proxy phù hợp nhất</p>
+            <h3>{t('landing.products.cta.title')}</h3>
+            <p>{t('landing.products.cta.description')}</p>
             <button className='btn-contact'>
-              <span>Liên hệ tư vấn</span>
+              <span>{t('landing.products.cta.button')}</span>
               <ArrowRight size={18} />
             </button>
           </div>

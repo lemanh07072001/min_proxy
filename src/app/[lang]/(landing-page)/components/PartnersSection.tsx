@@ -2,7 +2,15 @@
 
 import React from 'react'
 
+import { useTranslation } from 'react-i18next'
+
+import { useLanguageSync } from '@/hooks/useLanguageSync'
+
 const PartnersSection = () => {
+  const { t } = useTranslation()
+
+  useLanguageSync()
+
   const partners = [
     {
       name: 'PC',
@@ -73,11 +81,10 @@ const PartnersSection = () => {
         {/* Header */}
         <div className='partners-header'>
           <h2 className='partners-title'>
-            <span className='title-highlight'>Đối tác</span> của chúng tôi
+            <span className='title-highlight'>{t('landing.partners.title')}</span>
           </h2>
           <p className='partners-subtitle'>
-            Chọn chỗ gì mà không hợp tác cùng {process.env.NEXT_PUBLIC_APP_NAME} - Một trong những nhà cung cấp proxy uy
-            tín và giá rẻ.
+            {t('landing.partners.subtitle', { appName: process.env.NEXT_PUBLIC_APP_NAME })}
           </p>
         </div>
 
@@ -183,7 +190,7 @@ const PartnersSection = () => {
             </div>
             <div className='trust-content'>
               <div className='trust-number'>50+</div>
-              <div className='trust-label'>Đối tác tin cậy</div>
+              <div className='trust-label'>{t('landing.partners.trust.partners')}</div>
             </div>
           </div>
 
@@ -198,7 +205,7 @@ const PartnersSection = () => {
             </div>
             <div className='trust-content'>
               <div className='trust-number'>99.9%</div>
-              <div className='trust-label'>Độ tin cậy</div>
+              <div className='trust-label'>{t('landing.partners.trust.reliability')}</div>
             </div>
           </div>
 
@@ -213,7 +220,7 @@ const PartnersSection = () => {
             </div>
             <div className='trust-content'>
               <div className='trust-number'>5+</div>
-              <div className='trust-label'>Năm kinh nghiệm</div>
+              <div className='trust-label'>{t('landing.partners.trust.experience')}</div>
             </div>
           </div>
         </div>

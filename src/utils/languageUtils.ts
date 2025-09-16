@@ -41,7 +41,7 @@ export const useLanguageSwitcher = () => {
   
   const switchLanguage = (locale: Locale) => {
     const newPath = getLocalePath(pathname, locale)
-    router.push(newPath)
+    router.push(newPath, { scroll: false })
   }
   
   return {
