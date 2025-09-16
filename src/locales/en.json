@@ -762,6 +762,67 @@
         ]
       }
     },
+    "hotline": {
+      "hero": {
+        "title": "Contact us",
+        "subtitle": "We are always ready to support and advise you"
+      },
+      "contactInfo": {
+        "hotline": {
+          "title": "Hotline",
+          "phone": "0987111049",
+          "description": "Call now for free consultation"
+        },
+        "email": {
+          "title": "Email",
+          "address": "admin@admin.vn",
+          "description": "Send email for detailed support"
+        },
+        "address": {
+          "title": "Address",
+          "location": "81/2 Street 2, Truong Tho Ward, Thu Duc City, Ho Chi Minh City",
+          "description": "Visit our office"
+        },
+        "website": {
+          "title": "Website",
+          "url": "https://mktproxy.vn",
+          "description": "Visit official website"
+        }
+      },
+      "contactForm": {
+        "title": "Send message",
+        "subtitle": "Fill in the information and we will contact you as soon as possible",
+        "fields": {
+          "name": "Full name",
+          "email": "Email",
+          "phone": "Phone number",
+          "message": "Message content"
+        },
+        "submit": "Send message",
+        "success": {
+          "title": "Thank you for contacting us!",
+          "message": "We will respond as soon as possible."
+        }
+      },
+      "features": {
+        "title": "Why choose {{appName}}?",
+        "subtitle": "We are committed to providing the best service with professional and experienced team",
+        "items": [
+          {
+            "title": "24/7 Support",
+            "description": "Always ready to support you anytime, anywhere"
+          },
+          {
+            "title": "Professional",
+            "description": "Team of experienced experts"
+          },
+          {
+            "title": "Trustworthy",
+            "description": "Trusted and highly rated by customers"
+          }
+        ]
+      }
+    },
     "footer": {
       "cta": {
         "title": "LET'S COOPERATE WITH US",

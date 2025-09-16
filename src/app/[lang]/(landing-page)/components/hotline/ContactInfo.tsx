@@ -6,15 +6,21 @@ import '@/app/[lang]/(landing-page)/hotline/style.css'
 
 import { Phone, Mail, MapPin, Globe, Send, CheckCircle, Menu, X } from 'lucide-react'
 
+import { useTranslation } from 'react-i18next'
+
+import { useLanguageSync } from '@/hooks/useLanguageSync'
+
 const ContactInfo = () => {
+  const { t } = useTranslation()
+  useLanguageSync()
   const [isSubmitted, setIsSubmitted] = useState(false)
 
   return (
     <main className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-16'>
       {/* Hero Section */}
       <div className='text-center mb-12 lg:mb-16'>
-        <h1 className='text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4'>Liên hệ với chúng tôi</h1>
-        <p className='text-lg text-gray-600 max-w-2xl mx-auto'>Chúng tôi luôn sẵn sàng hỗ trợ và tư vấn cho bạn</p>
+        <h1 className='text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4'>{t('landing.hotline.hero.title')}</h1>
+        <p className='text-lg text-gray-600 max-w-2xl mx-auto'>{t('landing.hotline.hero.subtitle')}</p>
       </div>
 
       {/* Contact Content */}
@@ -28,14 +34,14 @@ const ContactInfo = () => {
                 <Phone className='w-6 h-6 text-white' />
               </div>
               <div className='flex-1 min-w-0'>
-                <h3 className='text-lg font-semibold text-gray-900 mb-1'>Hotline</h3>
+                <h3 className='text-lg font-semibold text-gray-900 mb-1'>{t('landing.hotline.contactInfo.hotline.title')}</h3>
                 <a
-                  href='tel:0987111049'
+                  href={`tel:${t('landing.hotline.contactInfo.hotline.phone')}`}
                   className='text-xl font-bold text-red-500 hover:text-red-600 transition-colors block'
                 >
-                  0987111049
+                  {t('landing.hotline.contactInfo.hotline.phone')}
                 </a>
-                <p className='text-sm text-gray-500 mt-1'>Gọi ngay để được tư vấn miễn phí</p>
+                <p className='text-sm text-gray-500 mt-1'>{t('landing.hotline.contactInfo.hotline.description')}</p>
               </div>
             </div>
           </div>
@@ -47,14 +53,14 @@ const ContactInfo = () => {
                 <Mail className='w-6 h-6 text-white' />
               </div>
               <div className='flex-1 min-w-0'>
-                <h3 className='text-lg font-semibold text-gray-900 mb-1'>Email</h3>
+                <h3 className='text-lg font-semibold text-gray-900 mb-1'>{t('landing.hotline.contactInfo.email.title')}</h3>
                 <a
-                  href='mailto:admin@admin.vn'
+                  href={`mailto:${t('landing.hotline.contactInfo.email.address')}`}
                   className='text-lg font-medium text-red-500 hover:text-red-600 transition-colors break-all'
                 >
-                  admin@admin.vn
+                  {t('landing.hotline.contactInfo.email.address')}
                 </a>
-                <p className='text-sm text-gray-500 mt-1'>Gửi email để được hỗ trợ chi tiết</p>
+                <p className='text-sm text-gray-500 mt-1'>{t('landing.hotline.contactInfo.email.description')}</p>
               </div>
             </div>
           </div>
@@ -66,13 +72,11 @@ const ContactInfo = () => {
                 <MapPin className='w-6 h-6 text-white' />
               </div>
               <div className='flex-1 min-w-0'>
-                <h3 className='text-lg font-semibold text-gray-900 mb-1'>Địa chỉ</h3>
+                <h3 className='text-lg font-semibold text-gray-900 mb-1'>{t('landing.hotline.contactInfo.address.title')}</h3>
                 <p className='text-gray-700 font-medium leading-relaxed'>
-                  81/2 Đường số 2, P.Trường Thọ,
-                  <br />
-                  TP.Thủ Đức, TP.HCM
+                  {t('landing.hotline.contactInfo.address.location')}
                 </p>
-                <p className='text-sm text-gray-500 mt-1'>Ghé thăm văn phòng của chúng tôi</p>
+                <p className='text-sm text-gray-500 mt-1'>{t('landing.hotline.contactInfo.address.description')}</p>
               </div>
             </div>
           </div>
@@ -84,16 +88,16 @@ const ContactInfo = () => {
                 <Globe className='w-6 h-6 text-white' />
               </div>
               <div className='flex-1 min-w-0'>
-                <h3 className='text-lg font-semibold text-gray-900 mb-1'>Website</h3>
+                <h3 className='text-lg font-semibold text-gray-900 mb-1'>{t('landing.hotline.contactInfo.website.title')}</h3>
                 <a
-                  href='https://homeproxy.vn'
+                  href={t('landing.hotline.contactInfo.website.url')}
                   target='_blank'
                   rel='noopener noreferrer'
                   className='text-lg font-medium text-red-500 hover:text-red-600 transition-colors'
                 >
-                  https://mktproxy.vn
+                  {t('landing.hotline.contactInfo.website.url')}
                 </a>
-                <p className='text-sm text-gray-500 mt-1'>Truy cập website chính thức</p>
+                <p className='text-sm text-gray-500 mt-1'>{t('landing.hotline.contactInfo.website.description')}</p>
               </div>
             </div>
           </div>
@@ -103,15 +107,15 @@ const ContactInfo = () => {
         <div className='lg:col-span-2'>
           <div className='bg-white rounded-2xl p-6 lg:p-8 shadow-sm'>
             <div className='mb-8'>
-              <h2 className='text-2xl font-bold text-gray-900 mb-2'>Gửi tin nhắn</h2>
-              <p className='text-gray-600'>Điền thông tin và chúng tôi sẽ liên hệ với bạn sớm nhất có thể</p>
+              <h2 className='text-2xl font-bold text-gray-900 mb-2'>{t('landing.hotline.contactForm.title')}</h2>
+              <p className='text-gray-600'>{t('landing.hotline.contactForm.subtitle')}</p>
             </div>
 
             {isSubmitted ? (
               <div className='text-center py-12'>
                 <CheckCircle className='w-16 h-16 text-green-500 mx-auto mb-4' />
-                <h3 className='text-xl font-semibold text-green-600 mb-2'>Cảm ơn bạn đã liên hệ!</h3>
-                <p className='text-gray-600'>Chúng tôi sẽ phản hồi trong thời gian sớm nhất.</p>
+                <h3 className='text-xl font-semibold text-green-600 mb-2'>{t('landing.hotline.contactForm.success.title')}</h3>
+                <p className='text-gray-600'>{t('landing.hotline.contactForm.success.message')}</p>
               </div>
             ) : (
               <form className='space-y-6'>
@@ -122,7 +126,7 @@ const ContactInfo = () => {
                       name='name'
                       required
                       className='w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-colors outline-none bg-gray-50 focus:bg-white'
-                      placeholder='Họ và tên'
+                      placeholder={t('landing.hotline.contactForm.fields.name')}
                     />
                   </div>
 
@@ -132,7 +136,7 @@ const ContactInfo = () => {
                       name='email'
                       required
                       className='w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-colors outline-none bg-gray-50 focus:bg-white'
-                      placeholder='Email'
+                      placeholder={t('landing.hotline.contactForm.fields.email')}
                     />
                   </div>
                 </div>
@@ -143,7 +147,7 @@ const ContactInfo = () => {
                     name='phone'
                     required
                     className='w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-colors outline-none bg-gray-50 focus:bg-white'
-                    placeholder='Số điện thoại'
+                    placeholder={t('landing.hotline.contactForm.fields.phone')}
                   />
                 </div>
 
@@ -153,7 +157,7 @@ const ContactInfo = () => {
                     required
                     rows={5}
                     className='w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-colors outline-none resize-vertical bg-gray-50 focus:bg-white'
-                    placeholder='Nội dung tin nhắn'
+                    placeholder={t('landing.hotline.contactForm.fields.message')}
                   />
                 </div>
 
@@ -162,7 +166,7 @@ const ContactInfo = () => {
                     type='submit'
                     className='bg-red-500 hover:bg-red-600 text-white font-semibold py-3 px-8 rounded-xl transition-all duration-200 flex items-center space-x-2 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5'
                   >
-                    <span>Submit</span>
+                    <span>{t('landing.hotline.contactForm.submit')}</span>
                   </button>
                 </div>
               </form>
@@ -174,36 +178,29 @@ const ContactInfo = () => {
       {/* Additional Features Section */}
       <div className='mt-16 bg-white rounded-2xl p-8 shadow-sm'>
         <div className='text-center mb-8'>
-          <h3 className='text-2xl font-bold text-gray-900 mb-4'>Tại sao chọn {process.env.NEXT_PUBLIC_APP_NAME}?</h3>
+          <h3 className='text-2xl font-bold text-gray-900 mb-4'>{t('landing.hotline.features.title', { appName: process.env.NEXT_PUBLIC_APP_NAME })}</h3>
           <p className='text-gray-600 max-w-2xl mx-auto'>
-            Chúng tôi cam kết mang đến dịch vụ tốt nhất với đội ngũ chuyên nghiệp và kinh nghiệm
+            {t('landing.hotline.features.subtitle')}
           </p>
         </div>
 
         <div className='grid grid-cols-1 md:grid-cols-3 gap-8'>
-          <div className='text-center'>
-            <div className='bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4'>
-              <Phone className='w-8 h-8 text-blue-600' />
-            </div>
-            <h4 className='font-semibold text-gray-900 mb-2'>Hỗ trợ 24/7</h4>
-            <p className='text-gray-600'>Luôn sẵn sàng hỗ trợ bạn mọi lúc, mọi nơi</p>
-          </div>
-
-          <div className='text-center'>
-            <div className='bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4'>
-              <CheckCircle className='w-8 h-8 text-green-600' />
-            </div>
-            <h4 className='font-semibold text-gray-900 mb-2'>Chuyên nghiệp</h4>
-            <p className='text-gray-600'>Đội ngũ chuyên gia giàu kinh nghiệm</p>
-          </div>
-
-          <div className='text-center'>
-            <div className='bg-purple-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4'>
-              <Globe className='w-8 h-8 text-purple-600' />
-            </div>
-            <h4 className='font-semibold text-gray-900 mb-2'>Uy tín</h4>
-            <p className='text-gray-600'>Được khách hàng tin tựởng và đánh giá cao</p>
-          </div>
+          {(t('landing.hotline.features.items', { returnObjects: true }) as Array<{ title: string; description: string }> || []).map((feature, index) => {
+            const icons = [Phone, CheckCircle, Globe]
+            const IconComponent = icons[index]
+            const bgColors = ['bg-blue-100', 'bg-green-100', 'bg-purple-100']
+            const textColors = ['text-blue-600', 'text-green-600', 'text-purple-600']
+            
+            return (
+              <div key={index} className='text-center'>
+                <div className={`${bgColors[index]} w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4`}>
+                  <IconComponent className={`w-8 h-8 ${textColors[index]}`} />
+                </div>
+                <h4 className='font-semibold text-gray-900 mb-2'>{feature.title}</h4>
+                <p className='text-gray-600'>{feature.description}</p>
+              </div>
+            )
+          })}
         </div>
       </div>
     </main>

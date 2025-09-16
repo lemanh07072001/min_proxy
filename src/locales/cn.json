@@ -762,6 +762,67 @@
         ]
       }
     },
+    "hotline": {
+      "hero": {
+        "title": "联系我们",
+        "subtitle": "我们随时准备为您提供支持和咨询"
+      },
+      "contactInfo": {
+        "hotline": {
+          "title": "热线电话",
+          "phone": "0987111049",
+          "description": "立即致电免费咨询"
+        },
+        "email": {
+          "title": "邮箱",
+          "address": "admin@admin.vn",
+          "description": "发送邮件获得详细支持"
+        },
+        "address": {
+          "title": "地址",
+          "location": "胡志明市守德市长寿坊2号路81/2号",
+          "description": "访问我们的办公室"
+        },
+        "website": {
+          "title": "网站",
+          "url": "https://mktproxy.vn",
+          "description": "访问官方网站"
+        }
+      },
+      "contactForm": {
+        "title": "发送消息",
+        "subtitle": "填写信息，我们将尽快与您联系",
+        "fields": {
+          "name": "姓名",
+          "email": "邮箱",
+          "phone": "电话号码",
+          "message": "消息内容"
+        },
+        "submit": "发送消息",
+        "success": {
+          "title": "感谢您联系我们！",
+          "message": "我们将尽快回复。"
+        }
+      },
+      "features": {
+        "title": "为什么选择{{appName}}？",
+        "subtitle": "我们致力于提供最好的服务，拥有专业和经验丰富的团队",
+        "items": [
+          {
+            "title": "24/7支持",
+            "description": "随时准备为您提供支持"
+          },
+          {
+            "title": "专业",
+            "description": "经验丰富的专家团队"
+          },
+          {
+            "title": "值得信赖",
+            "description": "受到客户信任和高度评价"
+          }
+        ]
+      }
+    },
     "footer": {
       "cta": {
         "title": "与我们合作",

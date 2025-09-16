@@ -762,6 +762,67 @@
         ]
       }
     },
+    "hotline": {
+      "hero": {
+        "title": "Liên hệ với chúng tôi",
+        "subtitle": "Chúng tôi luôn sẵn sàng hỗ trợ và tư vấn cho bạn"
+      },
+      "contactInfo": {
+        "hotline": {
+          "title": "Hotline",
+          "phone": "0987111049",
+          "description": "Gọi ngay để được tư vấn miễn phí"
+        },
+        "email": {
+          "title": "Email",
+          "address": "admin@admin.vn",
+          "description": "Gửi email để được hỗ trợ chi tiết"
+        },
+        "address": {
+          "title": "Địa chỉ",
+          "location": "81/2 Đường số 2, P.Trường Thọ, TP.Thủ Đức, TP.HCM",
+          "description": "Ghé thăm văn phòng của chúng tôi"
+        },
+        "website": {
+          "title": "Website",
+          "url": "https://mktproxy.vn",
+          "description": "Truy cập website chính thức"
+        }
+      },
+      "contactForm": {
+        "title": "Gửi tin nhắn",
+        "subtitle": "Điền thông tin và chúng tôi sẽ liên hệ với bạn sớm nhất có thể",
+        "fields": {
+          "name": "Họ và tên",
+          "email": "Email",
+          "phone": "Số điện thoại",
+          "message": "Nội dung tin nhắn"
+        },
+        "submit": "Gửi tin nhắn",
+        "success": {
+          "title": "Cảm ơn bạn đã liên hệ!",
+          "message": "Chúng tôi sẽ phản hồi trong thời gian sớm nhất."
+        }
+      },
+      "features": {
+        "title": "Tại sao chọn {{appName}}?",
+        "subtitle": "Chúng tôi cam kết mang đến dịch vụ tốt nhất với đội ngũ chuyên nghiệp và kinh nghiệm",
+        "items": [
+          {
+            "title": "Hỗ trợ 24/7",
+            "description": "Luôn sẵn sàng hỗ trợ bạn mọi lúc, mọi nơi"
+          },
+          {
+            "title": "Chuyên nghiệp",
+            "description": "Đội ngũ chuyên gia giàu kinh nghiệm"
+          },
+          {
+            "title": "Uy tín",
+            "description": "Được khách hàng tin tưởng và đánh giá cao"
+          }
+        ]
+      }
+    },
     "footer": {
       "cta": {
         "title": "HÃY CỘNG TÁC VỚI CHÚNG TÔI",
