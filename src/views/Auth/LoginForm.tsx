@@ -16,17 +16,14 @@ import { toast } from 'react-toastify'
 
 import * as yup from 'yup'
 
+import { useTranslation } from 'react-i18next'
+
 import { useModalContext } from '@/app/contexts/ModalContext'
 
 type LoginFormInputs = {
   email: string
   password: string
 }
-
-const schema = yup.object({
-  email: yup.string().email('Email không hợp lệ').required('Vui lòng nhập email'),
-  password: yup.string().min(6, 'Mật khẩu ít nhất 6 ký tự').required('Vui lòng nhập mật khẩu')
-})
 
 export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false)
@@ -39,6 +36,16 @@ export default function LoginForm() {
   const { closeAuthModal, setAuthModalMode } = useModalContext()
 
   const { lang: locale } = params
+
+  const { t } = useTranslation()
+
+  const schema = yup.object({
+    email: yup.string().email(t('auth.validation.emailInvalid')).required(t('auth.validation.emailRequired')),
+    password: yup
+      .string()
+      .min(6, t('auth.validation.passwordMinLength'))
+      .required(t('auth.validation.passwordRequired'))
+  })
 
   const {
     register,
@@ -59,7 +66,7 @@ export default function LoginForm() {
 
     if (res?.ok) {
       setLoading(false)
-      toast.success('Đăng nhập thành công.')
+      toast.success(t('auth.loginSuccess'))
       closeAuthModal()
 
       // Reload page để update session ở server-side
@@ -67,7 +74,7 @@ export default function LoginForm() {
       window.location.reload()
     } else {
       setLoading(false)
-      toast.error('Tài khoản hoặc mật khẩu không chính xác.')
+      toast.error(t('auth.loginError'))
     }
   }
 
@@ -75,12 +82,12 @@ export default function LoginForm() {
     <form className='login-modal-form' onSubmit={handleSubmit(onSubmit)}>
       {/* Email */}
       <div className='login-form-group'>
-        <label className={`login-form-label ${errors.email && 'text-red-500'}`}>Email</label>
+        <label className={`login-form-label ${errors.email && 'text-red-500'}`}>{t('auth.email')}</label>
         <input
           type='text'
           name='email'
           className={`login-form-input ${errors.email && 'border-red-500'}`}
-          placeholder='Nhập email'
+          placeholder={t('auth.placeholders.enterEmail')}
           {...register('email')}
         />
         {errors.email && <p className='text-red-500 text-sm mt-1'>{errors.email.message}</p>}
@@ -88,13 +95,13 @@ export default function LoginForm() {
 
       {/* Password */}
       <div className='login-form-group'>
-        <label className={`login-form-label ${errors.password && 'text-red-500'}`}>Mật khẩu</label>
+        <label className={`login-form-label ${errors.password && 'text-red-500'}`}>{t('auth.password')}</label>
         <div className='login-password-wrapper'>
           <input
             type={showPassword ? 'text' : 'password'}
             name='password'
             className={`login-form-input ${errors.password && 'border-red-500'}`}
-            placeholder='********'
+            placeholder={t('auth.placeholders.enterPassword')}
             {...register('password')}
           />
           <button type='button' className='login-password-toggle' onClick={() => setShowPassword(!showPassword)}>
@@ -113,20 +120,20 @@ export default function LoginForm() {
             className='login-checkbox-input'
           />
           <span className='login-checkbox-custom'></span>
-          <span className='login-checkbox-label'>Ghi nhớ đăng nhập</span>
+          <span className='login-checkbox-label'>{t('auth.rememberMe')}</span>
         </label>
         <a href='#' className='login-forgot-link' onClick={() => setAuthModalMode('reset')}>
-          Quên mật khẩu
+          {t('auth.buttons.forgotPassword')}
         </a>
       </div>
 
       {loading ? (
         <button type='button' disabled={loading} className='login-submit-btn'>
-          <Loader className='rotate' /> Loading...
+          <Loader className='rotate' /> {t('auth.buttons.loading')}
         </button>
       ) : (
         <button type='submit' className='login-submit-btn'>
-          Đăng nhập
+          {t('auth.buttons.login')}
         </button>
       )}
     </form>

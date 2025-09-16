@@ -12,6 +12,8 @@ import { Eye, EyeOff } from 'lucide-react'
 
 import { toast } from 'react-toastify'
 
+import { useTranslation } from 'react-i18next'
+
 import axiosInstance from '@/libs/axios'
 import { useModalContext } from '@/app/contexts/ModalContext'
 
@@ -21,18 +23,6 @@ type RegisterFormInputs = {
   password: string
   password_confirmation: string
 }
-
-const schema = yup
-  .object({
-    name: yup.string().required('Vui lòng nhập tên'),
-    email: yup.string().email('Email không hợp lệ').required('Vui lòng nhập email'),
-    password: yup.string().min(6, 'Mật khẩu ít nhất 6 ký tự').required('Vui lòng nhập mật khẩu'),
-    password_confirmation: yup
-      .string()
-      .oneOf([yup.ref('password')], 'Mật khẩu xác nhận không khớp')
-      .required('Vui lòng xác nhận mật khẩu')
-  })
-  .required()
 
 const registerUser = async (data: RegisterFormInputs) => {
   const response = await axiosInstance.post('/register', data)
@@ -46,6 +36,22 @@ export default function RegisterForm() {
   const [rememberMe, setRememberMe] = useState(false)
 
   const { closeAuthModal } = useModalContext()
+  const { t } = useTranslation()
+
+  const schema = yup
+    .object({
+      name: yup.string().required(t('auth.validation.nameRequired')),
+      email: yup.string().email(t('auth.validation.emailInvalid')).required(t('auth.validation.emailRequired')),
+      password: yup
+        .string()
+        .min(6, t('auth.validation.passwordMinLength'))
+        .required(t('auth.validation.passwordRequired')),
+      password_confirmation: yup
+        .string()
+        .oneOf([yup.ref('password')], t('auth.validation.passwordsNotMatch'))
+        .required(t('auth.validation.confirmPasswordRequired'))
+    })
+    .required()
 
   const { mutate, isPending } = useMutation({
     mutationFn: registerUser,
@@ -61,7 +67,7 @@ export default function RegisterForm() {
     onError: error => {
       console.error('Lỗi đăng ký:', error)
 
-      toast.error('Đăng ký thất bại. Vui lòng thử lại.')
+      toast.error(t('auth.registerError'))
     }
   })
 
@@ -83,11 +89,11 @@ export default function RegisterForm() {
     <form className='login-modal-form' onSubmit={handleSubmit(onSubmit)}>
       {/* Email */}
       <div className='login-form-group'>
-        <label className={`login-form-label ${errors.email && 'text-red-500'}`}>Email</label>
+        <label className={`login-form-label ${errors.email && 'text-red-500'}`}>{t('auth.email')}</label>
         <input
           type='text'
           className={`login-form-input ${errors.email && 'border-red-500'}`}
-          placeholder='Nhập email'
+          placeholder={t('auth.placeholders.enterEmail')}
           {...register('email')}
         />
         {errors.email && <p className='text-red-500 text-sm mt-1'>{errors.email.message}</p>}
@@ -95,11 +101,11 @@ export default function RegisterForm() {
 
       {/* Username */}
       <div className='login-form-group'>
-        <label className={`login-form-label ${errors.name && 'text-red-500'}`}>Username</label>
+        <label className={`login-form-label ${errors.name && 'text-red-500'}`}>{t('auth.username')}</label>
         <input
           type='text'
           className={`login-form-input ${errors.name && 'border-red-500'}`}
-          placeholder='Nhập họ tên'
+          placeholder={t('auth.placeholders.enterName')}
           {...register('name')}
         />
         {errors.name && <p className='text-red-500 text-sm mt-1'>{errors.name.message}</p>}
@@ -107,12 +113,12 @@ export default function RegisterForm() {
 
       {/* Password */}
       <div className='login-form-group'>
-        <label className={`login-form-label ${errors.password && 'text-red-500'}`}>Mật khẩu</label>
+        <label className={`login-form-label ${errors.password && 'text-red-500'}`}>{t('auth.password')}</label>
         <div className='login-password-wrapper'>
           <input
             type={showPassword ? 'text' : 'password'}
             className={`login-form-input ${errors.password && 'border-red-500'}`}
-            placeholder='********'
+            placeholder={t('auth.placeholders.enterPassword')}
             {...register('password')}
           />
           <button type='button' className='login-password-toggle' onClick={() => setShowPassword(!showPassword)}>
@@ -125,13 +131,13 @@ export default function RegisterForm() {
       {/* password_confirmation */}
       <div className='login-form-group'>
         <label className={`login-form-label ${errors.password_confirmation && 'text-red-500'}`}>
-          Nhập lại mật khẩu
+          {t('auth.confirmPassword')}
         </label>
         <div className='login-password-wrapper'>
           <input
             type={showPasswordConfirmation ? 'text' : 'password'}
             className={`login-form-input ${errors.password_confirmation && 'border-red-500'}`}
-            placeholder='********'
+            placeholder={t('auth.placeholders.enterPassword')}
             {...register('password_confirmation')}
           />
           <button
@@ -148,7 +154,7 @@ export default function RegisterForm() {
       </div>
 
       <button type='submit' className='login-submit-btn' disabled={isPending}>
-        {isPending ? 'Đang xử lý...' : 'Đăng ký'}
+        {isPending ? t('auth.buttons.loading') : t('auth.register')}
       </button>
     </form>
   )

@@ -3,16 +3,21 @@
 import { X, Eye, EyeOff } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 
+import PasswordReset from '@views/Auth/PasswordReset'
+
+import { useTranslation } from 'react-i18next'
+
 import { useModalContext } from '@/app/contexts/ModalContext'
 
 import LoginForm from '@views/Auth/LoginForm'
 import RegisterForm from '@views/Auth/RegisterForm'
-import PasswordReset from '@views/Auth/PasswordReset'
 import ForgotPasswordForm from '@views/Auth/ForgotPasswordForm'
 import ResetPasswordForm from '@views/Auth/ResetPasswordForm'
 
 const AuthModal: React.FC = () => {
   const { isAuthModalOpen, authModalMode, closeAuthModal, setAuthModalMode } = useModalContext()
+
+  const { t } = useTranslation()
 
   return (
     <AnimatePresence>
@@ -55,16 +60,17 @@ const AuthModal: React.FC = () => {
                 </div>
               </div>
               <h1 className='login-modal-title'>
-                {authModalMode === 'login' && 'Chào ừng bạn quay lại'}
-                {authModalMode === 'register' && `Chào mừng bạn đến với ${process.env.NEXT_PUBLIC_APP_NAME}`}
-                {authModalMode === 'reset' && 'Quên mật khẩu'}
-                {authModalMode === 'resetpass' && 'Đổi mật khẩu'}
+                {authModalMode === 'login' && t('auth.messages.welcomeBack')}
+                {authModalMode === 'register' &&
+                  t('auth.messages.welcomeToApp', { appName: process.env.NEXT_PUBLIC_APP_NAME })}
+                {authModalMode === 'reset' && t('auth.messages.forgotPasswordTitle')}
+                {authModalMode === 'resetpass' && t('auth.messages.forgotPasswordTitle')}
               </h1>
               <p className='login-modal-subtitle'>
-                {authModalMode === 'login' && 'Vui lòng điền thông tin đăng nhập'}
-                {authModalMode === 'register' && 'Vui lòng điền thông tin đăng ký'}
-                {authModalMode === 'reset' && 'Vui lòng điền email'}
-                {authModalMode === 'resetpass' && 'Vui lòng điền mật khẩu'}
+                {authModalMode === 'login' && t('auth.messages.loginInstructions')}
+                {authModalMode === 'register' && t('auth.messages.registerInstructions')}
+                {authModalMode === 'reset' && t('auth.messages.forgotPasswordInstructions')}
+                {authModalMode === 'resetpass' && t('auth.messages.forgotPasswordInstructions')}
               </p>
             </div>
 
@@ -78,7 +84,7 @@ const AuthModal: React.FC = () => {
             <div className='login-modal-switch'>
               {authModalMode === 'login' ? (
                 <div>
-                  <span>Chưa có tài khoản? </span>
+                  <span>{t('auth.buttons.noAccount')} </span>
                   <button
                     type='button'
                     className='login-modal-switch-btn'
@@ -87,12 +93,12 @@ const AuthModal: React.FC = () => {
                     }}
                     onClick={() => setAuthModalMode('register')}
                   >
-                    Đăng ký ngay
+                    {t('auth.buttons.loginNow')}
                   </button>
                 </div>
               ) : (
                 <div>
-                  <span>Đã có tài khoản? </span>
+                  <span> {t('auth.buttons.hasAccount')} </span>
                   <button
                     type='button'
                     className='login-modal-switch-btn'
@@ -101,7 +107,7 @@ const AuthModal: React.FC = () => {
                     }}
                     onClick={() => setAuthModalMode('login')}
                   >
-                    Đăng nhập ngay
+                    {t('auth.buttons.loginNow')}
                   </button>
                 </div>
               )}

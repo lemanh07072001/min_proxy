@@ -1,23 +1,29 @@
-"use client"
+'use client'
+
+import { useContext } from 'react'
 
 import { useParams, usePathname } from 'next/navigation'
+
+import { SessionContext } from 'next-auth/react'
+
+import { useTranslation } from 'react-i18next'
 
 import MenuLandingPage from '@/app/data/MenuLandingPage'
 
 import LanguageSelect from '@components/language-selector/LanguageSelect'
 
-import Link from '@components/Link';
+import Link from '@components/Link'
 import LanguageDropdown from '@components/layout/shared/LanguageDropdown'
 import { useModalContext } from '@/app/contexts/ModalContext'
-import { useContext } from 'react'
-import { SessionContext } from 'next-auth/react'
+
 import UserDropdown from '@components/layout/shared/UserDropdown'
 
 export default function MenuDesktop() {
   const pathname = usePathname()
   const params = useParams()
   const { openAuthModal } = useModalContext()
-  const {data} = useContext(SessionContext);
+  const { data } = useContext(SessionContext)
+  const { t } = useTranslation()
 
   const { lang: locale } = params
 
@@ -33,13 +39,12 @@ export default function MenuDesktop() {
     <>
       <ul className='navbar-nav mx-auto'>
         {MenuLandingPage.map((item, index) => {
-
-          const isActive = pathname === `/${locale }${item.href}`
+          const isActive = pathname === `/${locale}${item.href}`
 
           return (
             <li key={index} className='nav-item'>
               <Link
-                href={`/${locale }${item.href}`}
+                href={`/${locale}${item.href}`}
                 className={`nav-link nav-link-custom ${isActive ? 'active' : ''}`}
                 target={item.target}
                 rel={item.target === '_blank' ? 'noopener noreferrer' : undefined}
@@ -56,13 +61,17 @@ export default function MenuDesktop() {
 
         {data ? (
           <UserDropdown session={data} />
-        ):(
+        ) : (
           <div className='d-flex align-items-center gap-2'>
-            <button className='btn btn-gradient-primary me-2' style={{padding:'5px 20px'}} onClick={handleOpenModalRegister}>
+            <button
+              className='btn btn-gradient-primary me-2'
+              style={{ padding: '5px 20px' }}
+              onClick={handleOpenModalRegister}
+            >
               Đăng ký
             </button>
-            <button className='btn btn-gradient-primary' style={{padding:'5px 20px'}} onClick={handleOpenModalLogin}>
-              Đăng nhập
+            <button className='btn btn-gradient-primary' style={{ padding: '5px 20px' }} onClick={handleOpenModalLogin}>
+              {t('auth.login')}
             </button>
           </div>
         )}
