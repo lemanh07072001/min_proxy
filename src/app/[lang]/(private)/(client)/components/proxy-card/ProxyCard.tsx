@@ -27,6 +27,8 @@ import axios from 'axios'
 
 import { toast } from 'react-toastify'
 
+import { useDispatch } from 'react-redux'
+
 import CustomTextField from '@core/components/mui/TextField'
 
 import QuantityControl from '@components/form/input-quantity/QuantityControl'
@@ -40,6 +42,8 @@ import { useModalContext } from '@/app/contexts/ModalContext'
 
 import { DURATION_MAP } from '@/utils/empty'
 import { ConfirmDialogOrder } from '@/components/confirm-modal/ConfirmDialogOrder'
+import { subtractBalance } from '@/store/userSlice'
+import type { AppDispatch } from '@/store'
 
 interface ProxyCardProps {
   provider: string
@@ -80,6 +84,7 @@ const useBuyProxy = () => {
   const queryClient = useQueryClient()
   const session = useSession()
   const router = useRouter()
+  const dispatch = useDispatch<AppDispatch>()
 
   const mutation = useMutation({
     mutationFn: orderData => {
@@ -95,11 +100,14 @@ const useBuyProxy = () => {
 
       return api.post('/proxy-static', orderData)
     },
-    onSuccess: data => {
+    onSuccess: (data, variables) => {
       if (data.data.success == false) {
         toast.error('Lỗi hệ thông xin vui lòng liên hệ Admin.')
         router.push('/order-proxy')
       } else {
+        const total = variables.total
+
+        dispatch(subtractBalance(total))
         toast.success('Mua proxy thành công.')
       }
 

@@ -39,9 +39,11 @@ import TranslationWrapper from '@/hocs/TranslationWrapper'
 import { ModalContextProvider } from '@/app/contexts/ModalContext'
 
 import { authOptions } from '@/libs/auth'
-import { UserProvider } from '@/app/contexts/UserContext'
 
 import I18nextProvider from '@/app/i18n-provider'
+
+import StoreProvider from '@/components/StoreProvider'
+import { setUser, getUser, addBalance } from '@/store/userSlice'
 
 const figtree = Figtree({
   subsets: ['latin'],
@@ -90,9 +92,9 @@ const RootLayout = async (props: ChildrenType & { params: Promise<{ lang: Locale
           <I18nextProvider locale={params.lang}>
             <TanstackProvider>
               <InitColorSchemeScript attribute='data' defaultMode={systemMode} />
-              <ModalContextProvider>
-                <UserProvider value={user}>{children}</UserProvider>
-              </ModalContextProvider>
+              <StoreProvider initialUser={user}>
+                <ModalContextProvider>{children}</ModalContextProvider>
+              </StoreProvider>
             </TanstackProvider>
           </I18nextProvider>
         </body>

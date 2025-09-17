@@ -1,10 +1,12 @@
 'use client'
 
+import { useEffect } from 'react'
+
+import { useSelector, useDispatch } from 'react-redux'
 import { Wallet } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { useSession } from 'next-auth/react'
-import { useModalContext } from '@/app/contexts/ModalContext'
-import { useUser } from '@/app/contexts/UserContext'
+
+import type { RootState, AppDispatch } from '@/store'
 
 interface BalanceCardClientProps {
   isWalletVisible: boolean
@@ -12,15 +14,8 @@ interface BalanceCardClientProps {
   initialBalance: number
 }
 
-export default function BalanceCardClient({
-  isWalletVisible,
-  isInitialLoad,
-  initialBalance
-}: BalanceCardClientProps) {
-  const { user } = useUser()
-  const session = useSession()
-  const { openAuthModal } = useModalContext()
-
+export default function BalanceCardClient({ isWalletVisible, isInitialLoad }: BalanceCardClientProps) {
+  const { sodu } = useSelector((state: RootState) => state.user)
 
   return (
     <>
@@ -41,9 +36,8 @@ export default function BalanceCardClient({
                 </div>
               </div>
               <div className='text-2xl font-bold mb-2'>
-                {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(user?.sodu ?? 0)}
+                {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(sodu ?? 0)}
               </div>
-
             </div>
           </motion.div>
         )}

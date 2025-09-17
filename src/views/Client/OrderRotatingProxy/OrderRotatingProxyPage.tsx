@@ -6,6 +6,8 @@ import { headers } from 'next/headers'
 
 import Image from 'next/image'
 
+import ToggleButton from '@mui/material/ToggleButton'
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup'
 import {
   TriangleAlert,
   Copy,
@@ -16,7 +18,7 @@ import {
   Clock3,
   Clock,
   List,
-  Eye,
+  RefreshCcw,
   Loader
 } from 'lucide-react'
 
@@ -54,6 +56,7 @@ import { formatDateTimeLocal } from '@/utils/formatDate'
 import useAxiosAuth from '@/hocs/useAxiosAuth'
 import ProxyDetailModal from './ProxyDetailModal'
 import axiosInstance from '@/libs/axios'
+import ApiUsage from './ApiUsage'
 
 export default function OrderRotatingProxyPage() {
   const [columnFilters, setColumnFilters] = useState([])
@@ -68,7 +71,7 @@ export default function OrderRotatingProxyPage() {
   const [modalOpen, setModalOpen] = useState(false)
   const [selectedProxy, setSelectedProxy] = useState<any | null>(null)
   const [loadingId, setLoadingId] = useState<string | null>(null)
-
+  const [currentView, setCurrentView] = useState<'table' | 'api'>('api')
   const axiosAuth = useAxiosAuth()
 
   const [, copy] = useCopy()
@@ -87,7 +90,7 @@ export default function OrderRotatingProxyPage() {
       case 'ACTIVE':
         return <Chip label='Đang hoạt động' size='small' icon={<BadgeCheck />} color='success' />
       case 'EXPRIRED':
-        return <Chip label='Tạm dừng' size='small' icon={<BadgeMinus />} color='error' />
+        return <Chip label='Hết hạn' size='small' icon={<BadgeMinus />} color='error' />
       default:
         return <Chip label='Không xác định' size='small' icon={<CircleQuestionMark />} color='secondary' />
     }
@@ -241,7 +244,7 @@ export default function OrderRotatingProxyPage() {
             disabled={isRowLoading}
             onClick={() => handleOpenModal(row.original?.api_key)}
           >
-            {isRowLoading ? <Loader size={16} /> : <Eye size={16} />}
+            {isRowLoading ? <Loader size={16} /> : <RefreshCcw size={16} />}
           </CustomIconButton>
         )
       },
@@ -289,128 +292,148 @@ export default function OrderRotatingProxyPage() {
               <div className='page-icon'>
                 <List size={17} />
               </div>
-              <div>
+              {/* <div>
                 <h5 className='mb-0 font-semibold'>Danh sách proxy xoay</h5>
-              </div>
+              </div> */}
             </div>
             <div>
-              {/* Download */}
-              <Button variant='outlined' startIcon={<Download size={16} />}>
-                Download
-              </Button>
-
-              {/* Copy all */}
-              <CustomIconButton aria-label='capture screenshot' variant='outlined'>
-                <Copy size={16} />
-              </CustomIconButton>
-            </div>
-          </div>
-
-          <div className='table-container'>
-            {/* Table */}
-            <div className='table-wrapper'>
-              <table className='data-table' style={isLoading || dataOrders.length === 0 ? { height: '100%' } : {}}>
-                <thead className='table-header'>
-                  {table.getHeaderGroups().map(headerGroup => (
-                    <tr key={headerGroup.id}>
-                      {headerGroup.headers.map(header => (
-                        <th style={{ width: header.getSize() }} className='table-header th' key={header.id}>
-                          {flexRender(header.column.columnDef.header, header.getContext())}
-                        </th>
-                      ))}
-                    </tr>
-                  ))}
-                </thead>
-                <tbody>
-                  {isLoading ? (
-                    <tr>
-                      <td colSpan={columns.length} className='py-10 text-center'>
-                        <div className='loader-wrapper'>
-                          <div className='loader'>
-                            <span></span>
-                            <span></span>
-                            <span></span>
-                          </div>
-                          <p className='loading-text'>Đang tải dữ liệu...</p>
-                        </div>
-                      </td>
-                    </tr>
-                  ) : table.getRowModel().rows.length === 0 ? (
-                    <tr>
-                      <td colSpan={columns.length} className='py-10 text-center'>
-                        <div className='flex flex-col items-center justify-center'>
-                          <Image src='/images/no-data.png' alt='No data' width={160} height={160} />
-                          <p className='mt-4 text-gray-500'>Không có dữ liệu</p>
-                        </div>
-                      </td>
-                    </tr>
-                  ) : (
-                    table.getRowModel().rows.map(row => (
-                      <tr className='table-row' key={row.id}>
-                        {row.getVisibleCells().map(cell => (
-                          <td className='table-cell' key={cell.id}>
-                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                          </td>
-                        ))}
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Pagination */}
-            <div className='pagination-container'>
-              <div className='pagination-wrapper'>
-                <div className='pagination-info'>
-                  <div className='page-size-select'>
-                    <span className='text-sm text-gray'>Kích cỡ trang linh</span>
-                    <div className='page-size-select-wrapper'>
-                      <select
-                        value={table.getState().pagination.pageSize}
-                        onChange={e => {
-                          table.setPageSize(Number(e.target.value))
-                        }}
-                        className='page-size-select'
-                      >
-                        <option value='10'>10</option>
-                        <option value='50'>50</option>
-                        <option value='100'>100</option>
-                      </select>
-                      <div className='select-arrow'>
-                        <svg className='h-4 w-4' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'>
-                          <path d='M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z' />
-                        </svg>
-                      </div>
-                    </div>
+              <div className='bg-white'>
+                <div className='flex items-center justify-end'>
+                  <div className='flex bg-gray-100 rounded-lg p-1'>
+                    <button
+                      onClick={() => setCurrentView('table')}
+                      className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                        currentView === 'table'
+                          ? 'bg-white text-gray-900 shadow-sm'
+                          : 'text-gray-500 hover:text-gray-700'
+                      }`}
+                    >
+                      Danh sách
+                    </button>
+                    <button
+                      onClick={() => setCurrentView('api')}
+                      className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                        currentView === 'api' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+                      }`}
+                    >
+                      Api
+                    </button>
                   </div>
-                  {/* --- Hiển thị số hàng trên trang hiện tại --- */}
-                  <div>
-                    {totalRows > 0 ? (
-                      <span>
-                        {startRow} - {endRow} của {totalRows} hàng
-                      </span>
-                    ) : (
-                      <span>Không có dữ liệu</span>
-                    )}
-                  </div>
-                </div>
-
-                <div className='pagination-buttons'>
-                  <Pagination
-                    count={table.getPageCount()}
-                    shape='rounded'
-                    variant='outlined'
-                    color='primary'
-                    page={table.getState().pagination.pageIndex + 1}
-                    onChange={(event, page) => {
-                      table.setPageIndex(page - 1)
-                    }}
-                  />
                 </div>
               </div>
             </div>
           </div>
+
+          {/* Table */}
+          {currentView === 'table' && (
+            <div className='table-container'>
+              {/* Table */}
+              <div className='table-wrapper'>
+                <table className='data-table' style={isLoading || dataOrders.length === 0 ? { height: '100%' } : {}}>
+                  <thead className='table-header'>
+                    {table.getHeaderGroups().map(headerGroup => (
+                      <tr key={headerGroup.id}>
+                        {headerGroup.headers.map(header => (
+                          <th style={{ width: header.getSize() }} className='table-header th' key={header.id}>
+                            {flexRender(header.column.columnDef.header, header.getContext())}
+                          </th>
+                        ))}
+                      </tr>
+                    ))}
+                  </thead>
+                  <tbody>
+                    {isLoading ? (
+                      <tr>
+                        <td colSpan={columns.length} className='py-10 text-center'>
+                          <div className='loader-wrapper'>
+                            <div className='loader'>
+                              <span></span>
+                              <span></span>
+                              <span></span>
+                            </div>
+                            <p className='loading-text'>Đang tải dữ liệu...</p>
+                          </div>
+                        </td>
+                      </tr>
+                    ) : table.getRowModel().rows.length === 0 ? (
+                      <tr>
+                        <td colSpan={columns.length} className='py-10 text-center'>
+                          <div className='flex flex-col items-center justify-center'>
+                            <Image src='/images/no-data.png' alt='No data' width={160} height={160} />
+                            <p className='mt-4 text-gray-500'>Không có dữ liệu</p>
+                          </div>
+                        </td>
+                      </tr>
+                    ) : (
+                      table.getRowModel().rows.map(row => (
+                        <tr className='table-row' key={row.id}>
+                          {row.getVisibleCells().map(cell => (
+                            <td className='table-cell' key={cell.id}>
+                              {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                            </td>
+                          ))}
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Pagination */}
+              <div className='pagination-container'>
+                <div className='pagination-wrapper'>
+                  <div className='pagination-info'>
+                    <div className='page-size-select'>
+                      <span className='text-sm text-gray'>Kích cỡ trang linh</span>
+                      <div className='page-size-select-wrapper'>
+                        <select
+                          value={table.getState().pagination.pageSize}
+                          onChange={e => {
+                            table.setPageSize(Number(e.target.value))
+                          }}
+                          className='page-size-select'
+                        >
+                          <option value='10'>10</option>
+                          <option value='50'>50</option>
+                          <option value='100'>100</option>
+                        </select>
+                        <div className='select-arrow'>
+                          <svg className='h-4 w-4' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'>
+                            <path d='M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z' />
+                          </svg>
+                        </div>
+                      </div>
+                    </div>
+                    {/* --- Hiển thị số hàng trên trang hiện tại --- */}
+                    <div>
+                      {totalRows > 0 ? (
+                        <span>
+                          {startRow} - {endRow} của {totalRows} hàng
+                        </span>
+                      ) : (
+                        <span>Không có dữ liệu</span>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className='pagination-buttons'>
+                    <Pagination
+                      count={table.getPageCount()}
+                      shape='rounded'
+                      variant='outlined'
+                      color='primary'
+                      page={table.getState().pagination.pageIndex + 1}
+                      onChange={(event, page) => {
+                        table.setPageIndex(page - 1)
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {currentView === 'api' && <ApiUsage />}
         </div>
       </div>
 

@@ -18,12 +18,15 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 import { toast } from 'react-toastify'
 
+import { useDispatch, useSelector } from 'react-redux'
+
 import ConfirmDialog from '@components/confirm-modal/ConfirmDialog'
 
 import { useModalContext } from '@/app/contexts/ModalContext'
 
 import CustomTextField from '@core/components/mui/TextField'
-
+import { subtractBalance } from '@/store/userSlice'
+import type { AppDispatch } from '@/store'
 import './styles.css'
 
 // Định nghĩa schema validation chung cho các gói proxy.
@@ -123,6 +126,7 @@ const SwitchFeatureRow = ({ feature, control, planId }) => (
 const useBuyProxy = () => {
   const queryClient = useQueryClient()
   const session = useSession()
+  const dispatch = useDispatch<AppDispatch>()
 
   const mutation = useMutation({
     mutationFn: orderData => {
@@ -138,11 +142,14 @@ const useBuyProxy = () => {
 
       return api.post('/buy-proxy', orderData)
     },
-    onSuccess: data => {
+    onSuccess: (data, variables) => {
       // Xử lý khi request thành công
       if (data.data.success == false) {
         toast.error('Lỗi hệ thông xin vui lòng liên hệ Admin.  ')
       } else {
+        const total = variables.total
+
+        dispatch(subtractBalance(total))
         toast.success(data.data.message)
       }
 
