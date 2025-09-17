@@ -43,8 +43,6 @@ import { UserProvider } from '@/app/contexts/UserContext'
 
 import I18nextProvider from '@/app/i18n-provider'
 
-import ClientLayout from '@components/ClientLayout'
-
 const figtree = Figtree({
   subsets: ['latin'],
   variable: '--font-figtree',

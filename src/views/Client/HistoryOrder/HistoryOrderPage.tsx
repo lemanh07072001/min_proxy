@@ -4,6 +4,8 @@ import { useMemo, useState } from 'react'
 
 import Image from 'next/image'
 
+import { Button } from '@mui/material'
+
 import { TriangleAlert, CircleQuestionMark, BadgeCheck, BadgeMinus, List, Clock3, Clock } from 'lucide-react'
 
 import {
@@ -25,11 +27,18 @@ import { useQuery } from '@tanstack/react-query'
 import useAxiosAuth from '@/hocs/useAxiosAuth'
 import { useCopy } from '@/app/hooks/useCopy'
 import { formatDateTimeLocal } from '@/utils/formatDate'
+import OrderDetail from './OrderDetail'
 
 export default function HistoryOrderPage() {
-  const [columnFilters, setColumnFilters] = useState([])
+  const [columnFilters, setColumnFilters] = useState<any[]>([])
   const [rowSelection, setRowSelection] = useState({}) // State để lưu các hàng được chọn
-  const [sorting, setSorting] = useState([])
+  const [sorting, setSorting] = useState<any[]>([])
+
+  const [open, setOpen] = useState(false)
+  const [selectedOrder, setSelectedOrder] = useState<any | null>(null)
+
+  // Debug logs
+  console.log('HistoryOrderPage render - open:', open, 'selectedOrder:', selectedOrder)
 
   const [pagination, setPagination] = useState({
     pageIndex: 0,
@@ -62,8 +71,6 @@ export default function HistoryOrderPage() {
   }
 
   const getStatusBadge = (status: string) => {
-    console.log(status)
-
     switch (status) {
       case '0':
         return <Chip label='Chờ xử lý' size='small' icon={<BadgeCheck />} color='warning' />
@@ -90,11 +97,11 @@ export default function HistoryOrderPage() {
       },
       {
         header: 'Số tiền',
-        cell: ({ row }) => (
+        cell: ({ row }: { row: any }) => (
           <div>
             <div className='font-bold'>{new Intl.NumberFormat('vi-VN').format(row.original.total_amount) + ' đ'}</div>
             <span className='font-sm'>
-              Số tiền: {new Intl.NumberFormat('vi-VN').format(row.original.price_per_unit) + ' đ'} VND
+              Giá tiền: {new Intl.NumberFormat('vi-VN').format(row.original.price_per_unit) + ' đ'}
             </span>
           </div>
         ),
@@ -108,7 +115,7 @@ export default function HistoryOrderPage() {
       {
         accessorKey: 'status',
         header: 'Trạng thái',
-        cell: ({ row }) => {
+        cell: ({ row }: { row: any }) => {
           return getStatusBadge(row.original.status)
         },
         size: 150
@@ -117,7 +124,7 @@ export default function HistoryOrderPage() {
         accessorKey: 'buy_at',
         header: 'Ngày mua',
         size: 200,
-        cell: ({ row }) => {
+        cell: ({ row }: { row: any }) => {
           return (
             <>
               <div className='d-flex align-items-center  gap-1 '>
@@ -132,7 +139,7 @@ export default function HistoryOrderPage() {
         accessorKey: 'expired_at',
         header: 'Ngày hết hạn',
         size: 200,
-        cell: ({ row }) => {
+        cell: ({ row }: { row: any }) => {
           return (
             <>
               <div className='d-flex align-items-center  gap-1 '>
@@ -142,6 +149,26 @@ export default function HistoryOrderPage() {
             </>
           )
         }
+      },
+      {
+        header: 'Action',
+        cell: ({ row }: { row: any }) => {
+          return (
+            <>
+              <Button
+                variant='contained'
+                onClick={() => {
+                  console.log('Button clicked, order data:', row.original) // Debug log
+                  setSelectedOrder(row.original) // lưu dữ liệu dòng hiện tại
+                  setOpen(true) // mở modal
+                }}
+              >
+                Xem chi tiết đơn
+              </Button>
+            </>
+          )
+        },
+        size: 200
       }
     ],
     []
@@ -190,6 +217,37 @@ export default function HistoryOrderPage() {
               <div>
                 <h5 className='mb-0 font-semibold'>Lịch sử mua hàng</h5>
               </div>
+            </div>
+            <div className='header-right'>
+              <Button
+                variant='outlined'
+                onClick={() => {
+                  console.log('Test button clicked')
+                  setSelectedOrder({
+                    order_code: 'TEST-001',
+                    total_amount: 100000,
+                    quantity: 5,
+                    status: '2',
+                    buy_at: new Date().toISOString(),
+                    expired_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+                    proxys: [
+                      {
+                        id: '1',
+                        proxys: {
+                          loaiproxy: 'Viettel',
+                          http: '192.168.1.1:8080:user:pass'
+                        },
+                        buy_at: new Date().toISOString(),
+                        expired_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+                        status: 'active'
+                      }
+                    ]
+                  })
+                  setOpen(true)
+                }}
+              >
+                Test Modal
+              </Button>
             </div>
           </div>
           {/* Table */}
@@ -297,6 +355,18 @@ export default function HistoryOrderPage() {
           </div>
         </div>
       </div>
+
+      {open && (
+        <OrderDetail
+          open={open}
+          onClose={() => {
+            console.log('Closing modal')
+            setOpen(false)
+            setSelectedOrder(null)
+          }}
+          order={selectedOrder}
+        />
+      )}
     </>
   )
 }
