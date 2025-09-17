@@ -67,7 +67,7 @@ export default function OrderRotatingProxyPage() {
 
   const [modalOpen, setModalOpen] = useState(false)
   const [selectedProxy, setSelectedProxy] = useState<any | null>(null)
-  const [loading, setLoading] = useState(false)
+  const [loadingId, setLoadingId] = useState<string | null>(null)
 
   const axiosAuth = useAxiosAuth()
 
@@ -94,7 +94,7 @@ export default function OrderRotatingProxyPage() {
   }
 
   const handleOpenModal = async (key: string) => {
-    setLoading(true)
+    setLoadingId(key)
 
     try {
       const res = await axiosAuth.post('/proxies/new', { key })
@@ -105,153 +105,149 @@ export default function OrderRotatingProxyPage() {
       } else {
         toast.error(res.data.message)
       }
-
-      setLoading(false)
     } catch (error) {
-      setLoading(false)
       toast.error('Lỗi hệ thông vui lòng thử lại sau.')
+    } finally {
+      setLoadingId(null)
     }
   }
 
-  const columns = useMemo(
-    () => [
-      {
-        id: 'select',
-        size: 20,
-        header: ({ table }) => (
-          <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-            <FormControlLabel
-              sx={{
-                '&.MuiFormControlLabel-root': {
-                  margin: 0
-                }
-              }}
-              control={
-                <Checkbox
-                  checked={table.getIsAllRowsSelected()}
-                  indeterminate={table.getIsSomeRowsSelected()}
-                  onChange={table.getToggleAllRowsSelectedHandler()}
-                />
+  const columns = useMemo(() => [
+    {
+      id: 'select',
+      size: 20,
+      header: ({ table }) => (
+        <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+          <FormControlLabel
+            sx={{
+              '&.MuiFormControlLabel-root': {
+                margin: 0
               }
-              label='' // bỏ label để không chiếm chỗ
-            />
-          </div>
-        ),
-        cell: ({ row }) => (
-          <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-            <FormControlLabel
-              sx={{
-                '&.MuiFormControlLabel-root': {
-                  margin: 0
-                }
-              }}
-              control={
-                <Checkbox
-                  checked={row.getIsSelected()}
-                  disabled={!row.getCanSelect()}
-                  onChange={row.getToggleSelectedHandler()}
-                />
+            }}
+            control={
+              <Checkbox
+                checked={table.getIsAllRowsSelected()}
+                indeterminate={table.getIsSomeRowsSelected()}
+                onChange={table.getToggleAllRowsSelectedHandler()}
+              />
+            }
+            label='' // bỏ label để không chiếm chỗ
+          />
+        </div>
+      ),
+      cell: ({ row }) => (
+        <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+          <FormControlLabel
+            sx={{
+              '&.MuiFormControlLabel-root': {
+                margin: 0
               }
-              label=''
-            />
-          </div>
-        ),
-        size: 60
-      },
-      {
-        accessorKey: 'id',
-        header: 'ID',
-        size: 60
-      },
-      {
-        accessorKey: 'api_key',
-        header: 'Api key',
-        cell: ({ row }) => {
-          const api_key = row.original.api_key || '-'
+            }}
+            control={
+              <Checkbox
+                checked={row.getIsSelected()}
+                disabled={!row.getCanSelect()}
+                onChange={row.getToggleSelectedHandler()}
+              />
+            }
+            label=''
+          />
+        </div>
+      ),
+      size: 60
+    },
+    {
+      accessorKey: 'id',
+      header: 'ID',
+      size: 60
+    },
+    {
+      accessorKey: 'api_key',
+      header: 'Api key',
+      cell: ({ row }) => {
+        const api_key = row.original.api_key || '-'
 
-          return <span className='text-red'>{api_key}</span>
-        },
-        size: 300
+        return <span className='text-red'>{api_key}</span>
       },
-      {
-        accessorKey: 'protocol',
-        header: 'Loại',
-        cell: ({ row }) => {
-          const keys = row.original.plan_type || '-'
+      size: 300
+    },
+    {
+      accessorKey: 'protocol',
+      header: 'Loại',
+      cell: ({ row }) => {
+        const keys = row.original.plan_type || '-'
 
-          return <div className='font-bold'>{keys}</div>
-        },
-        size: 100
+        return <div className='font-bold'>{keys}</div>
       },
-      {
-        header: 'Ip Version',
-        cell: ({ row }) => {
-          const ip_version = row.original.type_service?.ip_version ?? '-'
+      size: 100
+    },
+    {
+      header: 'Ip Version',
+      cell: ({ row }) => {
+        const ip_version = row.original.type_service?.ip_version ?? '-'
 
-          return <div className='font-bold'>{ip_version}</div>
-        },
-        size: 100
+        return <div className='font-bold'>{ip_version}</div>
       },
-      {
-        accessorKey: 'buyDate',
-        header: 'Ngày mua',
-        cell: ({ row }) => {
-          return (
-            <>
-              <div className='d-flex align-items-center  gap-1 '>
-                <Clock3 size={14} />
-                <div style={{ marginTop: '2px' }}>{formatDateTimeLocal(row.original.buy_at)}</div>
-              </div>
-            </>
-          )
-        },
-        size: 200
+      size: 100
+    },
+    {
+      accessorKey: 'buyDate',
+      header: 'Ngày mua',
+      cell: ({ row }) => {
+        return (
+          <>
+            <div className='d-flex align-items-center  gap-1 '>
+              <Clock3 size={14} />
+              <div style={{ marginTop: '2px' }}>{formatDateTimeLocal(row.original.buy_at)}</div>
+            </div>
+          </>
+        )
       },
-      {
-        accessorKey: 'expiryDate',
-        header: 'Ngày hết hạn',
-        cell: ({ row }) => {
-          return (
-            <>
-              <div className='d-flex align-items-center  gap-1 '>
-                <Clock size={14} />
-                <div style={{ marginTop: '2px' }}>{formatDateTimeLocal(row.original.expired_at)}</div>
-              </div>
-            </>
-          )
-        },
-        size: 200
+      size: 200
+    },
+    {
+      accessorKey: 'expiryDate',
+      header: 'Ngày hết hạn',
+      cell: ({ row }) => {
+        return (
+          <>
+            <div className='d-flex align-items-center  gap-1 '>
+              <Clock size={14} />
+              <div style={{ marginTop: '2px' }}>{formatDateTimeLocal(row.original.expired_at)}</div>
+            </div>
+          </>
+        )
       },
-      {
-        accessorKey: 'status',
-        header: 'Trạng thái',
-        cell: ({ row }) => {
-          return getStatusBadge(row.original.status)
-        },
-        size: 150
+      size: 200
+    },
+    {
+      accessorKey: 'status',
+      header: 'Trạng thái',
+      cell: ({ row }) => {
+        return getStatusBadge(row.original.status)
       },
-      {
-        header: 'Action',
-        cell: ({ row }) => {
-          console.log(row.original?.api_key)
+      size: 150
+    },
+    {
+      header: 'Action',
+      cell: ({ row }) => {
+        const isRowLoading = loadingId === row.original.api_key
 
-          return (
-            <CustomIconButton
-              aria-label='capture screenshot'
-              color='info'
-              variant='tonal'
-              disabled={loading}
-              onClick={() => handleOpenModal(row.original?.api_key)}
-            >
-              {loading ? <Loader size={16} /> : <Eye size={16} />}
-            </CustomIconButton>
-          )
-        },
-        size: 120
-      }
-    ],
-    []
-  )
+        return (
+          <CustomIconButton
+            aria-label='capture screenshot'
+            color='info'
+            variant='tonal'
+            disabled={isRowLoading}
+            onClick={() => handleOpenModal(row.original?.api_key)}
+          >
+            {isRowLoading ? <Loader size={16} /> : <Eye size={16} />}
+          </CustomIconButton>
+        )
+      },
+      size: 120
+    }
+  ])
 
   const table = useReactTable({
     data: dataOrders,
