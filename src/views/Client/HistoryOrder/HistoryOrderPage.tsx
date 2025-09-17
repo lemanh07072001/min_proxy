@@ -90,11 +90,6 @@ export default function HistoryOrderPage() {
         size: 170
       },
       {
-        accessorKey: 'user.email',
-        header: 'Tài khoản',
-        size: 200
-      },
-      {
         header: 'Số tiền',
         cell: ({ row }: { row: any }) => (
           <div>
@@ -217,37 +212,6 @@ export default function HistoryOrderPage() {
               <div>
                 <h5 className='mb-0 font-semibold'>Lịch sử mua hàng</h5>
               </div>
-            </div>
-            <div className='header-right'>
-              <Button
-                variant='outlined'
-                onClick={() => {
-                  console.log('Test button clicked')
-                  setSelectedOrder({
-                    order_code: 'TEST-001',
-                    total_amount: 100000,
-                    quantity: 5,
-                    status: '2',
-                    buy_at: new Date().toISOString(),
-                    expired_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-                    proxys: [
-                      {
-                        id: '1',
-                        proxys: {
-                          loaiproxy: 'Viettel',
-                          http: '192.168.1.1:8080:user:pass'
-                        },
-                        buy_at: new Date().toISOString(),
-                        expired_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-                        status: 'active'
-                      }
-                    ]
-                  })
-                  setOpen(true)
-                }}
-              >
-                Test Modal
-              </Button>
             </div>
           </div>
           {/* Table */}
