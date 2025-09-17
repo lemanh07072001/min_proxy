@@ -52,7 +52,7 @@ const figtree = Figtree({
 })
 
 export const metadata: Metadata = {
-  title: 'Tên trang web',
+  title: process.env.NEXT_PUBLIC_APP_NAME,
   icons: { icon: '/images/logo/MKT_PROXY_2.png' }
 }
 
