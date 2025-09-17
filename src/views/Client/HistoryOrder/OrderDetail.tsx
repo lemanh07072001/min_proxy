@@ -2,7 +2,17 @@
 
 import React, { useMemo, useState } from 'react'
 
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography, Box, Chip } from '@mui/material'
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  Typography,
+  Box,
+  Chip,
+  Pagination
+} from '@mui/material'
 
 import {
   useReactTable,
@@ -13,7 +23,7 @@ import {
   getSortedRowModel
 } from '@tanstack/react-table'
 
-import { Copy, Clock, Clock3, BadgeCheck, TriangleAlert, BadgeMinus, CircleQuestionMark } from 'lucide-react'
+import { Copy, Clock, Clock3, BadgeCheck, TriangleAlert, BadgeMinus, CircleQuestionMark, X } from 'lucide-react'
 
 import { formatDateTimeLocal } from '@/utils/formatDate'
 import { useCopy } from '@/app/hooks/useCopy'
@@ -74,8 +84,6 @@ const OrderDetail: React.FC<OrderDetailProps> = ({ open, onClose, order }) => {
   // ----------------- Data -----------------
   // Lấy danh sách proxy từ order, nếu không có thì tạo array rỗng
   const dataOrder = order?.api_keys || []
-
-  console.log(order)
 
   // ----------------- Columns -----------------
   const columns = useMemo(
@@ -216,8 +224,27 @@ const OrderDetail: React.FC<OrderDetailProps> = ({ open, onClose, order }) => {
   // ----------------- Render -----------------
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth='xl' aria-labelledby='order-detail-dialog'>
-      <DialogTitle id='order-detail-dialog'>
+      <DialogTitle
+        id='customized-dialog-title'
+        sx={{
+          display: 'flex',
+          width: '100%',
+          justifyContent: 'space-between',
+          position: 'relative',
+          alignItems: 'center',
+          padding: '8px 16px'
+        }}
+      >
         {order ? `Chi tiết đơn hàng #${order.order_code}` : 'Không có dữ liệu'}
+        <Button
+          onClick={onClose}
+          disableRipple
+          sx={{
+            fontSize: '20px'
+          }}
+        >
+          <i className='tabler-x' />
+        </Button>
       </DialogTitle>
 
       <DialogContent dividers>
@@ -331,13 +358,26 @@ const OrderDetail: React.FC<OrderDetailProps> = ({ open, onClose, order }) => {
             </Typography>
           </Box>
         )}
-      </DialogContent>
 
-      <DialogActions>
-        <Button onClick={onClose} variant='contained' color='primary'>
-          Đóng
-        </Button>
-      </DialogActions>
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'end'
+          }}
+        >
+          <Pagination
+            count={table.getPageCount()}
+            shape='rounded'
+            variant='outlined'
+            color='primary'
+            size={'small'}
+            page={table.getState().pagination.pageIndex + 1}
+            onChange={(event, page) => {
+              table.setPageIndex(page - 1)
+            }}
+          />
+        </Box>
+      </DialogContent>
     </Dialog>
   )
 }

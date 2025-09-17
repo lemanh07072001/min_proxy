@@ -6,7 +6,7 @@ import Image from 'next/image'
 
 import { Button } from '@mui/material'
 
-import { TriangleAlert, CircleQuestionMark, BadgeCheck, BadgeMinus, List, Clock3, Clock } from 'lucide-react'
+import { TriangleAlert, CircleQuestionMark, BadgeCheck, BadgeMinus, List, Clock3, Clock, Eye } from 'lucide-react'
 
 import {
   useReactTable,
@@ -24,6 +24,8 @@ import Chip from '@mui/material/Chip'
 import Pagination from '@mui/material/Pagination'
 import { useQuery } from '@tanstack/react-query'
 
+import CustomIconButton from '@core/components/mui/IconButton'
+
 import useAxiosAuth from '@/hocs/useAxiosAuth'
 import { useCopy } from '@/app/hooks/useCopy'
 import { formatDateTimeLocal } from '@/utils/formatDate'
@@ -36,9 +38,6 @@ export default function HistoryOrderPage() {
 
   const [open, setOpen] = useState(false)
   const [selectedOrder, setSelectedOrder] = useState<any | null>(null)
-
-  // Debug logs
-  console.log('HistoryOrderPage render - open:', open, 'selectedOrder:', selectedOrder)
 
   const [pagination, setPagination] = useState({
     pageIndex: 0,
@@ -155,20 +154,21 @@ export default function HistoryOrderPage() {
         cell: ({ row }: { row: any }) => {
           return (
             <>
-              <Button
-                variant='contained'
+              <CustomIconButton
+                aria-label='capture screenshot'
+                color='info'
+                variant='tonal'
                 onClick={() => {
-                  console.log('Button clicked, order data:', row.original) // Debug log
                   setSelectedOrder(row.original) // lưu dữ liệu dòng hiện tại
                   setOpen(true) // mở modal
                 }}
               >
-                Xem chi tiết đơn
-              </Button>
+                <Eye size={16} />
+              </CustomIconButton>
             </>
           )
         },
-        size: 200
+        size: 100
       }
     ],
     []
