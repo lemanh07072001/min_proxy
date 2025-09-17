@@ -15,7 +15,9 @@ import {
   Download,
   Clock3,
   Clock,
-  List
+  List,
+  Eye,
+  Loader
 } from 'lucide-react'
 
 import Button from '@mui/material/Button'
@@ -42,11 +44,16 @@ import Checkbox from '@mui/material/Checkbox'
 
 import { useQuery } from '@tanstack/react-query'
 
+import { toast } from 'react-toastify'
+
 import CustomIconButton from '@core/components/mui/IconButton'
+
 import { useCopy } from '@/app/hooks/useCopy'
 import { formatDateTimeLocal } from '@/utils/formatDate'
 
 import useAxiosAuth from '@/hocs/useAxiosAuth'
+import ProxyDetailModal from './ProxyDetailModal'
+import axiosInstance from '@/libs/axios'
 
 export default function OrderRotatingProxyPage() {
   const [columnFilters, setColumnFilters] = useState([])
@@ -57,6 +64,10 @@ export default function OrderRotatingProxyPage() {
     pageIndex: 0,
     pageSize: 10
   })
+
+  const [modalOpen, setModalOpen] = useState(false)
+  const [selectedProxy, setSelectedProxy] = useState<any | null>(null)
+  const [loading, setLoading] = useState(false)
 
   const axiosAuth = useAxiosAuth()
 
@@ -79,6 +90,26 @@ export default function OrderRotatingProxyPage() {
         return <Chip label='Tạm dừng' size='small' icon={<BadgeMinus />} color='error' />
       default:
         return <Chip label='Không xác định' size='small' icon={<CircleQuestionMark />} color='secondary' />
+    }
+  }
+
+  const handleOpenModal = async (key: string) => {
+    setLoading(true)
+
+    try {
+      const res = await axiosAuth.post('/proxies/new', { key })
+
+      if (res.data.success) {
+        setSelectedProxy(res.data.data)
+        setModalOpen(true)
+      } else {
+        toast.error(res.data.message)
+      }
+
+      setLoading(false)
+    } catch (error) {
+      setLoading(false)
+      toast.error('Lỗi hệ thông vui lòng thử lại sau.')
     }
   }
 
@@ -198,6 +229,25 @@ export default function OrderRotatingProxyPage() {
           return getStatusBadge(row.original.status)
         },
         size: 150
+      },
+      {
+        header: 'Action',
+        cell: ({ row }) => {
+          console.log(row.original?.api_key)
+
+          return (
+            <CustomIconButton
+              aria-label='capture screenshot'
+              color='info'
+              variant='tonal'
+              disabled={loading}
+              onClick={() => handleOpenModal(row.original?.api_key)}
+            >
+              {loading ? <Loader size={16} /> : <Eye size={16} />}
+            </CustomIconButton>
+          )
+        },
+        size: 120
       }
     ],
     []
@@ -367,6 +417,15 @@ export default function OrderRotatingProxyPage() {
           </div>
         </div>
       </div>
+
+      <ProxyDetailModal
+        open={modalOpen}
+        onClose={() => {
+          setModalOpen(false)
+          setSelectedProxy(null)
+        }}
+        proxy={selectedProxy}
+      />
     </>
   )
 }
