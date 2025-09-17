@@ -247,6 +247,15 @@ const VerticalMenu = ({ scrollMenu, dictionary }: Props) => {
           >
             {dictionary['navigation'].transactionHistory}
           </MenuItem>
+
+          <MenuItem
+            icon={<FileText size={20} strokeWidth={1.5} />}
+            rootStyles={getMenuItemStyles('docs')}
+            href={`/${locale}/docs`}
+            target='_blank'
+          >
+            {dictionary['navigation'].docsApi}
+          </MenuItem>
         </MenuSection>
 
         <MenuSection label='Liên hệ' rootStyles={menuSectionHeaderStyles}>

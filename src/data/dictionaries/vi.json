@@ -13,7 +13,8 @@
     "proxyChangeHistory": "Lịch sử đổi proxy",
     "loginHistory": "Lịch sử đăng nhập",
     "guide": "Hướng dẫn",
-    "support": "Hỗ trợ"
+    "support": "Hỗ trợ",
+    "docsApi": "Docs Api"
   },
   "staticProxy": {
     "title": "Proxy dân cư",

@@ -12,7 +12,8 @@
     "transactionHistory": "交易历史",
     "proxyChangeHistory": "代理更换历史",
     "guide": "指南",
-    "support": "支持"
+    "support": "支持",
+    "docsApi": "Docs Api"
   },
   "staticProxy": {
     "title": "住宅代理",

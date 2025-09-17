@@ -13,7 +13,8 @@
     "proxyChangeHistory": "Proxy Change History",
     "loginHistory": "Login History",
     "guide": "Guide",
-    "support": "Support"
+    "support": "Support",
+    "docsApi": "Docs Api"
   },
   "staticProxy": {
     "title": "Residential Proxy",

@@ -1,7 +1,7 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "Get Api",
+    "title": "Get Api Proxy",
     "version": "1.0.0"
   },
   "servers": [
@@ -22,9 +22,9 @@
     "/api/proxies/new": {
       "post": {
         "tags": [
-          "Proxy"
+          "Api Get Proxy"
         ],
-        "summary": "Lấy proxy mới",
+        "summary": "Lấy proxy xoay",
         "description": "API trả về proxy HTTP/SOCKS5 với token xác thực Bearer.",
         "security": [
           {
