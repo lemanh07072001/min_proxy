@@ -48,19 +48,6 @@ export default function TransactionHistoryPage() {
     }
   })
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'completed':
-        return <Chip label='Hoàn thành' size='small' icon={<BadgeCheck />} color='success' />
-      case 'expired':
-        return <Chip label='Hết hạn' size='small' icon={<TriangleAlert />} color='error' />
-      case 'suspended':
-        return <Chip label='Chờ giao dịch' size='small' icon={<BadgeMinus />} color='warning' />
-      default:
-        return <Chip label='Không xác định' size='small' icon={<CircleQuestionMark />} color='secondary' />
-    }
-  }
-
   const columns = useMemo(
     () => [
       {
@@ -99,7 +86,23 @@ export default function TransactionHistoryPage() {
         size: 400
       },
       {
-        accessorKey: 'amount',
+        size: 100,
+        header: 'Số trước',
+        cell: ({ row }) => {
+          // Tạo một formatter cho tiền tệ Việt Nam
+          const formatter = new Intl.NumberFormat('vi-VN', {
+            style: 'currency',
+            currency: 'VND'
+          })
+
+          return (
+            <div>
+              <span className='text-sm text-gray-500 font-bold'>{formatter.format(row.original.sotientruoc)}</span>
+            </div>
+          )
+        }
+      },
+      {
         size: 100,
         header: 'Số tiền',
         cell: ({ row }) => {
@@ -109,14 +112,26 @@ export default function TransactionHistoryPage() {
             currency: 'VND'
           })
 
-          const amount = row.original?.sotienthaydoi
-          const sotiengoc = row.original.sotientruoc
+          return (
+            <div>
+              <span className='text-sm text-gray-500 font-bold'>{formatter.format(row.original.sotienthaydoi)}</span>
+            </div>
+          )
+        }
+      },
+      {
+        size: 100,
+        header: 'Số tiền sau',
+        cell: ({ row }) => {
+          // Tạo một formatter cho tiền tệ Việt Nam
+          const formatter = new Intl.NumberFormat('vi-VN', {
+            style: 'currency',
+            currency: 'VND'
+          })
 
           return (
             <div>
-              <div className='font-bold'>{formatter.format(amount)}</div>
-
-              <span className='text-sm text-gray-500'>Số tiền gốc: {formatter.format(sotiengoc)}</span>
+              <span className='text-sm text-gray-500 font-bold'>{formatter.format(row.original.sotiensau)}</span>
             </div>
           )
         }
