@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Gọi đến backend API thực sự
-    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+    const backendUrl = process.env.NEXT_PUBLIC_API_URL
     
     const response = await axios.post(`${backendUrl}/me`, {}, {
       headers: {

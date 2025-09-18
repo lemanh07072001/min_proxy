@@ -90,7 +90,7 @@ const useAxiosAuth = () => {
           } catch (refreshError: any) {
             console.error('❌ [response] Critical error during token refresh:', refreshError)
             processQueue(refreshError, null)
-            await signOut()
+            await signOut({ redirect: false })
 
             return Promise.reject(refreshError)
           } finally {
