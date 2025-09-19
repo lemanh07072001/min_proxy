@@ -14,12 +14,12 @@ export const useTokenExpirationCheck = () => {
   const pathname = usePathname()
 
   useEffect(() => {
-    // Chỉ kiểm tra khi user đã authenticated
-    if (status === 'authenticated' && session?.access_token) {
-      console.log('🔍 [useTokenExpirationCheck] Checking token validity...')
+    // Kiểm tra khi user đã authenticated
+    if (status === 'authenticated') {
+      console.log('🔍 [useTokenExpirationCheck] Checking session validity...')
       
-      // Kiểm tra token expiration trước khi gọi API
-      const checkToken = async () => {
+      // Kiểm tra session ngay lập tức
+      const checkSession = async () => {
         // Kiểm tra nếu session có error (refresh token đã thất bại)
         if (session?.error === 'RefreshAccessTokenError') {
           console.log('⚠️ [useTokenExpirationCheck] Session has refresh error, signing out...')
@@ -28,6 +28,18 @@ export const useTokenExpirationCheck = () => {
           router.push(`/${lang}`)
           return
         }
+
+        // Kiểm tra nếu access_token bị undefined (token đã hết hạn)
+        if (!session?.access_token) {
+          console.log('⚠️ [useTokenExpirationCheck] No access_token, signing out...')
+          await signOut({ redirect: false })
+          const lang = pathname.split('/')[1] || 'vi'
+          router.push(`/${lang}`)
+          return
+        }
+
+        // Nếu có access_token, kiểm tra token validity bằng API
+        console.log('🔍 [useTokenExpirationCheck] Checking token validity with API...')
         try {
           const response = await fetch('/api/me', {
             method: 'POST',
@@ -70,9 +82,9 @@ export const useTokenExpirationCheck = () => {
       }
 
       // Kiểm tra ngay lập tức
-      checkToken()
+      checkSession()
     }
-  }, [session?.access_token, status, updateSession, router, pathname])
+  }, [session, status, updateSession, router, pathname])
 
   return {
     isAuthenticated: status === 'authenticated',
