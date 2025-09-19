@@ -12,6 +12,7 @@ import { useLanguageSync } from '@/hooks/useLanguageSync'
 
 const ContactInfo = () => {
   const { t } = useTranslation()
+
   useLanguageSync()
   const [isSubmitted, setIsSubmitted] = useState(false)
 
@@ -19,7 +20,9 @@ const ContactInfo = () => {
     <main className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-16'>
       {/* Hero Section */}
       <div className='text-center mb-12 lg:mb-16'>
-        <h1 className='text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4'>{t('landing.hotline.hero.title')}</h1>
+        <h1 className='text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4'>
+          {t('landing.hotline.hero.title')}
+        </h1>
         <p className='text-lg text-gray-600 max-w-2xl mx-auto'>{t('landing.hotline.hero.subtitle')}</p>
       </div>
 
@@ -28,7 +31,7 @@ const ContactInfo = () => {
         {/* Contact Information */}
         <div className='lg:col-span-1 space-y-6'>
           {/* Hotline */}
-          <div className='bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow duration-300'>
+          {/* <div className='bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow duration-300'>
             <div className='flex items-start space-x-4'>
               <div className='bg-green-500 p-3 rounded-xl flex-shrink-0'>
                 <Phone className='w-6 h-6 text-white' />
@@ -44,7 +47,7 @@ const ContactInfo = () => {
                 <p className='text-sm text-gray-500 mt-1'>{t('landing.hotline.contactInfo.hotline.description')}</p>
               </div>
             </div>
-          </div>
+          </div> */}
 
           {/* Email */}
           <div className='bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow duration-300'>
@@ -53,7 +56,9 @@ const ContactInfo = () => {
                 <Mail className='w-6 h-6 text-white' />
               </div>
               <div className='flex-1 min-w-0'>
-                <h3 className='text-lg font-semibold text-gray-900 mb-1'>{t('landing.hotline.contactInfo.email.title')}</h3>
+                <h3 className='text-lg font-semibold text-gray-900 mb-1'>
+                  {t('landing.hotline.contactInfo.email.title')}
+                </h3>
                 <a
                   href={`mailto:${t('landing.hotline.contactInfo.email.address')}`}
                   className='text-lg font-medium text-red-500 hover:text-red-600 transition-colors break-all'
@@ -72,7 +77,9 @@ const ContactInfo = () => {
                 <MapPin className='w-6 h-6 text-white' />
               </div>
               <div className='flex-1 min-w-0'>
-                <h3 className='text-lg font-semibold text-gray-900 mb-1'>{t('landing.hotline.contactInfo.address.title')}</h3>
+                <h3 className='text-lg font-semibold text-gray-900 mb-1'>
+                  {t('landing.hotline.contactInfo.address.title')}
+                </h3>
                 <p className='text-gray-700 font-medium leading-relaxed'>
                   {t('landing.hotline.contactInfo.address.location')}
                 </p>
@@ -88,7 +95,9 @@ const ContactInfo = () => {
                 <Globe className='w-6 h-6 text-white' />
               </div>
               <div className='flex-1 min-w-0'>
-                <h3 className='text-lg font-semibold text-gray-900 mb-1'>{t('landing.hotline.contactInfo.website.title')}</h3>
+                <h3 className='text-lg font-semibold text-gray-900 mb-1'>
+                  {t('landing.hotline.contactInfo.website.title')}
+                </h3>
                 <a
                   href={t('landing.hotline.contactInfo.website.url')}
                   target='_blank'
@@ -114,7 +123,9 @@ const ContactInfo = () => {
             {isSubmitted ? (
               <div className='text-center py-12'>
                 <CheckCircle className='w-16 h-16 text-green-500 mx-auto mb-4' />
-                <h3 className='text-xl font-semibold text-green-600 mb-2'>{t('landing.hotline.contactForm.success.title')}</h3>
+                <h3 className='text-xl font-semibold text-green-600 mb-2'>
+                  {t('landing.hotline.contactForm.success.title')}
+                </h3>
                 <p className='text-gray-600'>{t('landing.hotline.contactForm.success.message')}</p>
               </div>
             ) : (
@@ -178,22 +189,29 @@ const ContactInfo = () => {
       {/* Additional Features Section */}
       <div className='mt-16 bg-white rounded-2xl p-8 shadow-sm'>
         <div className='text-center mb-8'>
-          <h3 className='text-2xl font-bold text-gray-900 mb-4'>{t('landing.hotline.features.title', { appName: process.env.NEXT_PUBLIC_APP_NAME })}</h3>
-          <p className='text-gray-600 max-w-2xl mx-auto'>
-            {t('landing.hotline.features.subtitle')}
-          </p>
+          <h3 className='text-2xl font-bold text-gray-900 mb-4'>
+            {t('landing.hotline.features.title', { appName: process.env.NEXT_PUBLIC_APP_NAME })}
+          </h3>
+          <p className='text-gray-600 max-w-2xl mx-auto'>{t('landing.hotline.features.subtitle')}</p>
         </div>
 
         <div className='grid grid-cols-1 md:grid-cols-3 gap-8'>
-          {(t('landing.hotline.features.items', { returnObjects: true }) as Array<{ title: string; description: string }> || []).map((feature, index) => {
+          {(
+            (t('landing.hotline.features.items', { returnObjects: true }) as Array<{
+              title: string
+              description: string
+            }>) || []
+          ).map((feature, index) => {
             const icons = [Phone, CheckCircle, Globe]
             const IconComponent = icons[index]
             const bgColors = ['bg-blue-100', 'bg-green-100', 'bg-purple-100']
             const textColors = ['text-blue-600', 'text-green-600', 'text-purple-600']
-            
+
             return (
               <div key={index} className='text-center'>
-                <div className={`${bgColors[index]} w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4`}>
+                <div
+                  className={`${bgColors[index]} w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4`}
+                >
                   <IconComponent className={`w-8 h-8 ${textColors[index]}`} />
                 </div>
                 <h4 className='font-semibold text-gray-900 mb-2'>{feature.title}</h4>

@@ -12,14 +12,19 @@ let failedQueue: {
 }[] = []
 
 const processQueue = (error: Error | null, token: string | null = null) => {
-  console.log('📦 [processQueue] Processing queue, token:', token, 'error:', error)
+  console.log('📦 [processQueue] Processing queue, token:', token ? 'present' : 'null', 'error:', error?.message || 'none')
+  
   failedQueue.forEach(prom => {
     if (error || !token) {
-      prom.reject(error || new Error('No token'))
+      const rejectError = error || new Error('Token refresh failed: no token available')
+      console.log('❌ [processQueue] Rejecting request with error:', rejectError.message)
+      prom.reject(rejectError)
     } else {
+      console.log('✅ [processQueue] Resolving request with new token')
       prom.resolve(token)
     }
   })
+  
   failedQueue = []
 }
 
@@ -58,10 +63,17 @@ const useAxiosAuth = () => {
               failedQueue.push({ resolve, reject })
             }).then(token => {
               console.log('✅ [response] Queue retry with new token')
-              if (!token) throw new Error('No token from queue')
+              if (!token) {
+                const error = new Error('No token from queue - refresh failed')
+                console.error('❌ [response] Queue retry failed:', error.message)
+                throw error
+              }
               originalRequest.headers.Authorization = `Bearer ${token}`
 
               return axiosInstance(originalRequest)
+            }).catch(error => {
+              console.error('❌ [response] Queue retry error:', error.message)
+              throw error
             })
           }
 
@@ -75,6 +87,7 @@ const useAxiosAuth = () => {
             console.log('✅ [response] updateSession result:', refreshedSession)
 
             if (!refreshedSession?.access_token) {
+              console.error('❌ [response] No access_token in refreshed session')
               throw new Error('Failed to refresh token: no access_token')
             }
 
@@ -89,10 +102,15 @@ const useAxiosAuth = () => {
             return axiosInstance(originalRequest)
           } catch (refreshError: any) {
             console.error('❌ [response] Critical error during token refresh:', refreshError)
-            processQueue(refreshError, null)
+            
+            // Tạo error object rõ ràng hơn
+            const error = new Error(`Token refresh failed: ${refreshError.message || 'Unknown error'}`)
+            processQueue(error, null)
+            
+            // Sign out user
             await signOut({ redirect: false })
 
-            return Promise.reject(refreshError)
+            return Promise.reject(error)
           } finally {
             isRefreshing = false
             console.log('🔓 [response] Refresh flow completed')

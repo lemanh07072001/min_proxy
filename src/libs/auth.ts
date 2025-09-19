@@ -42,6 +42,7 @@ async function refreshAccessToken(token: JWT) {
       { headers: { Authorization: `Bearer ${token.access_token}` } }
     )
 
+    const data = res.data
     console.log('✅ [refreshAccessToken] API response:', data)
 
     const updatedToken: JWT = {
@@ -66,7 +67,7 @@ export const authOptions: NextAuthOptions = {
     CredentialProvider({
       name: 'Credentials',
       credentials: {},
-      async authorize(credentials,req) {
+      async authorize(credentials, req) {
         console.log('🔑 [authorize] Attempting login', new Date().toISOString())
         const { email, password } = credentials as { email: string; password: string }
         const apiUrl = process.env.API_URL
@@ -75,7 +76,7 @@ export const authOptions: NextAuthOptions = {
         try {
           const res = await fetch(`${apiUrl}/login`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json','User-Agent': userAgent, },
+            headers: { 'Content-Type': 'application/json', 'User-Agent': userAgent },
 
             body: JSON.stringify({ email, password })
           })

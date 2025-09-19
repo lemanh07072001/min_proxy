@@ -775,7 +775,7 @@
         },
         "email": {
           "title": "邮箱",
-          "address": "admin@admin.vn",
+          "address": "mktproxy.com@gmail.com",
           "description": "发送邮件获得详细支持"
         },
         "address": {
@@ -785,7 +785,7 @@
         },
         "website": {
           "title": "网站",
-          "url": "https://mktproxy.vn",
+          "url": "https://mktproxy.com",
           "description": "访问官方网站"
         }
       },
