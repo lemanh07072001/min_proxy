@@ -1,200 +1,223 @@
-'use client'
 import React, { useState } from 'react'
 
-import { ChevronDown, ChevronUp, Copy } from 'lucide-react'
-import IconButton from '@mui/material/IconButton'
+import { Copy, Check, ChevronDown, ChevronUp, Code, Settings, BookOpen, Globe, Key, Clock } from 'lucide-react'
 
-import { apiEndpoints } from '@/configs/apiDocsConfig'
+import { apiEndpoints, type ApiEndpoint } from '@/configs/apiDocsConfig'
 
-export default function ApiUsage() {
-  const [currentView, setCurrentView] = useState<'get' | 'post'>('get')
-  const [showBody, setShowBody] = useState(true)
-  const [showResponses, setShowResponses] = useState(true)
-  const [selectedStatusCode, setSelectedStatusCode] = useState<number>(200)
+interface CodeBlockProps {
+  code: string
+  language?: string
+  title?: string
+}
 
-  // Get first GET API as default
-  const getApis = apiEndpoints.filter(api => api.method.toLowerCase() === 'get')
-  const [expandedId, setExpandedId] = useState(getApis.length > 0 ? getApis[0].id : apiEndpoints[0].id)
-  
-  // Keep track of the current API name to maintain selection across method changes
-  const [currentApiName, setCurrentApiName] = useState(getApis.length > 0 ? getApis[0].name : apiEndpoints[0].name)
+function CodeBlock({ code, language = 'json', title }: CodeBlockProps) {
+  const [copied, setCopied] = useState(false)
 
-  const handleCopy = (text: string) => navigator.clipboard.writeText(text)
-
-  // Filter APIs based on current view
-  const filteredApis = apiEndpoints.filter(api => api.method.toLowerCase() === currentView)
-
-  // Keep current API selected by name when switching methods
-  React.useEffect(() => {
-    if (filteredApis.length > 0) {
-      // Find API with the same name in the new method
-      const sameNameApi = filteredApis.find(api => api.name === currentApiName)
-      if (sameNameApi) {
-        // Keep the same API name, just update the ID
-        setExpandedId(sameNameApi.id)
-      } else {
-        // If no API with same name exists, select first and update name
-        setExpandedId(filteredApis[0].id)
-        setCurrentApiName(filteredApis[0].name)
-      }
-    }
-  }, [currentView, filteredApis, currentApiName])
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(code)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
 
   return (
-    <div className='min-h-screen bg-gray-50 flex'>
-      {/* Sidebar */}
-      <div className='w-80 bg-white border-r border-gray-200'>
-        <div className='p-6'>
-          <h2 className='text-lg font-semibold text-gray-900 mb-6'>API Documentation</h2>
+    <div className='bg-gray-900 rounded-lg overflow-hidden'>
+      {title && (
+        <div className='bg-gray-800 px-4 py-2 border-b border-gray-700'>
+          <div className='flex items-center justify-between'>
+            <span className='text-gray-300 text-sm font-medium'>{title}</span>
+            <button
+              onClick={copyToClipboard}
+              className='flex items-center space-x-1 px-2 py-1 bg-gray-700 hover:bg-gray-600 rounded text-gray-300 hover:text-white transition-colors text-xs'
+            >
+              {copied ? <Check size={14} /> : <Copy size={14} />}
+              <span>{copied ? 'Copied' : 'Copy'}</span>
+            </button>
+          </div>
+        </div>
+      )}
+      <div className='relative'>
+        <pre className='p-4 overflow-x-auto text-sm'>
+          <code className='text-gray-300 font-mono'>{code}</code>
+        </pre>
+        {!title && (
+          <button
+            onClick={copyToClipboard}
+            className='absolute top-2 right-2 p-2 bg-gray-800 hover:bg-gray-700 rounded text-gray-400 hover:text-white transition-colors'
+          >
+            {copied ? <Check size={16} /> : <Copy size={16} />}
+          </button>
+        )}
+      </div>
+    </div>
+  )
+}
 
+interface StatusButtonProps {
+  status: string
+  isActive: boolean
+  onClick: () => void
+}
+
+function StatusButton({ status, isActive, onClick }: StatusButtonProps) {
+  const getStatusColor = (status: string) => {
+    if (status.startsWith('2')) return 'bg-green-100 text-green-800 border-green-200'
+    if (status.startsWith('4')) return 'bg-red-100 text-red-800 border-red-200'
+    if (status.startsWith('5')) return 'bg-orange-100 text-orange-800 border-orange-200'
+
+    return 'bg-gray-100 text-gray-800 border-gray-200'
+  }
+
+  return (
+    <button
+      onClick={onClick}
+      className={`px-3 py-1 rounded-md border text-sm font-medium transition-all ${
+        isActive
+          ? getStatusColor(status) + ' ring-2 ring-opacity-50 ring-blue-500'
+          : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100'
+      }`}
+    >
+      {status}
+    </button>
+  )
+}
+
+export default function ApiUsage() {
+  const [selectedApi, setSelectedApi] = useState('get-current-proxy')
+  const [selectedStatus, setSelectedStatus] = useState('200 OK')
+  const [isBodyExpanded, setIsBodyExpanded] = useState(true)
+  const [isResponseExpanded, setIsResponseExpanded] = useState(true)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [selectedCategory, setSelectedCategory] = useState('all')
+
+  const filteredApis = apiEndpoints.filter(api => {
+    const matchesSearch =
+      api.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      api.description.toLowerCase().includes(searchTerm.toLowerCase())
+
+    const matchesCategory = selectedCategory === 'all' || api.category === selectedCategory
+
+    return matchesSearch && matchesCategory
+  })
+
+  const currentApi = apiEndpoints.find(api => api.id === selectedApi) || apiEndpoints[0]
+
+  const getMethodColor = (method: string) => {
+    switch (method) {
+      case 'GET':
+        return 'bg-blue-500'
+      case 'POST':
+        return 'bg-green-500'
+      case 'PUT':
+        return 'bg-yellow-500'
+      case 'DELETE':
+        return 'bg-red-500'
+      default:
+        return 'bg-gray-500'
+    }
+  }
+
+  return (
+    <div className='flex h-screen bg-gray-50'>
+      {/* API Sidebar */}
+      <div className='w-80 bg-white border-r border-gray-200 flex flex-col'>
+        {/* API List */}
+        <div className='flex-1 overflow-y-auto'>
           {filteredApis.map(api => (
-            <div key={api.id} className='mb-4'>
-              <button
-                onClick={() => {
-                  setExpandedId(api.id)
-                  setCurrentApiName(api.name)
-                }}
-                className={`flex items-center justify-between w-full text-left p-3 rounded-lg transition-colors ${
-                  expandedId === api.id
-                    ? 'bg-orange-100 text-orange-700 border border-orange-200'
-                    : 'text-orange-500 hover:bg-orange-50'
-                }`}
-              >
-                <span className='font-medium'>{api.name}</span>
-                {expandedId === api.id ? <ChevronUp className='w-4 h-4' /> : <ChevronDown className='w-4 h-4' />}
-              </button>
+            <div
+              key={api.id}
+              onClick={() => setSelectedApi(api.id)}
+              className={`p-4 border-b border-gray-100 cursor-pointer transition-colors ${
+                selectedApi === api.id ? 'bg-white-100 border-l-4 border-l-orange-500' : 'hover:bg-white-100'
+              }`}
+            >
+              <div className='flex items-center justify-between mb-2'>
+                <h3 className='font-medium m-0 text-gray-900 text-sm'>{api.title}</h3>
+                <span className={`px-2 py-1 rounded text-xs font-bold text-white ${getMethodColor(api.method)}`}>
+                  {api.method}
+                </span>
+              </div>
             </div>
           ))}
         </div>
       </div>
 
       {/* Main Content */}
-      <div className='flex-1 overflow-auto p-8'>
-        {filteredApis.map(
-          api =>
-            expandedId === api.id && (
-              <div key={api.id}>
-                {/* Header */}
-                <div className='mb-6 flex items-center justify-between space-x-3'>
-                  <div className='flex items-center justify-end gap-2'>
-                    <span className='bg-green-100 text-green-700 px-3 py-1 rounded text-sm font-medium'>
-                      {api.method}
-                    </span>
-                    <h1 className='text-2xl font-bold text-gray-900'>{api.name}</h1>
-                  </div>
-
-                  <div>
-                    <div className='bg-white'>
-                      <div className='flex items-center justify-end'>
-                        <div className='flex bg-gray-100 rounded-lg p-1'>
-                          <button
-                            onClick={() => setCurrentView('get')}
-                            className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-                              currentView === 'get'
-                                ? 'bg-white text-gray-900 shadow-sm'
-                                : 'text-gray-500 hover:text-gray-700'
-                            }`}
-                          >
-                            GET
-                          </button>
-                          <button
-                            onClick={() => setCurrentView('post')}
-                            className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-                              currentView === 'post'
-                                ? 'bg-white text-gray-900 shadow-sm'
-                                : 'text-gray-500 hover:text-gray-700'
-                            }`}
-                          >
-                            POST
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* URL */}
-                <div className='bg-gray-900 rounded-lg p-4 mb-6'>
-                  <div className='flex items-center justify-between mb-2'>
-                    <span className='text-gray-400 text-sm'>URL:</span>
-                    <IconButton onClick={() => handleCopy(api.url)}>
-                      <Copy className='w-4 h-4 text-white' />
-                    </IconButton>
-                  </div>
-                  <code className='text-blue-400 text-sm break-all'>{api.url}</code>
-                </div>
-
-                {/* Body - Only show for POST requests */}
-                {api.method.toLowerCase() === 'post' && (
-                  <div className='bg-white rounded-lg border border-gray-200 mb-6'>
-                    <div className='flex items-center justify-between p-3 border-b'>
-                      <button
-                        onClick={() => setShowBody(!showBody)}
-                        className='flex items-center space-x-2 bg-white  text-gray-700'
-                      >
-                        <span className='font-medium '>Body</span>
-                        {showBody ? <ChevronUp className='w-4 h-4' /> : <ChevronDown className='w-4 h-4' />}
-                      </button>
-                    </div>
-                    {showBody && (
-                      <div className='bg-gray-900 p-4'>
-                        <div className='flex items-center justify-between mb-2'>
-                          <span className='text-gray-400 text-sm'>JSON Body</span>
-                          <IconButton onClick={() => handleCopy(JSON.stringify(api.body, null, 2))}>
-                            <Copy className='w-4 h-4 text-white' />
-                          </IconButton>
-                        </div>
-                        <pre className='text-sm overflow-x-auto text-gray-300'>{JSON.stringify(api.body, null, 2)}</pre>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* Response */}
-                <div className='bg-white rounded-lg border border-gray-200'>
-                  <div className='flex items-center justify-between p-3 border-b'>
-                    <button
-                      onClick={() => setShowResponses(!showResponses)}
-                      className='flex items-center  bg-white  space-x-2 text-gray-700'
+      <div className='flex-1 flex flex-col'>
+        <div className='flex-1 overflow-y-auto p-6'>
+          <div className='max-w-4xl mx-auto space-y-6'>
+            {/* API Endpoint */}
+            <div className='bg-white rounded-xl shadow-sm border border-gray-200 p-6'>
+              <div className='space-y-4'>
+                <div>
+                  <label className='block text-sm font-medium text-gray-700 mb-2'>
+                    <Code size={16} className='inline mr-1' />
+                    URL Endpoint
+                  </label>
+                  <div className='flex items-center space-x-2'>
+                    <span
+                      className={`px-2 py-1 rounded text-xs font-bold text-white ${getMethodColor(currentApi.method)}`}
                     >
-                      <span className='font-medium'>Responses</span>
-                      {showResponses ? <ChevronUp className='w-4 h-4' /> : <ChevronDown className='w-4 h-4' />}
-                    </button>
-                    <div className='flex gap-2'>
-                      {Object.keys(api.responses).map(statusCode => (
-                        <button
-                          key={statusCode}
-                          onClick={() => setSelectedStatusCode(Number(statusCode))}
-                          className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
-                            selectedStatusCode === Number(statusCode)
-                              ? 'bg-orange-500 text-white'
-                              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                          }`}
-                        >
-                          {statusCode} {Number(statusCode) >= 400 ? 'ERROR' : 'OK'}
-                        </button>
-                      ))}
+                      {currentApi.method}
+                    </span>
+                    <div className='flex-1 bg-gray-900 rounded-lg p-3'>
+                      <code className='text-blue-400 font-mono text-sm'>{currentApi.endpoint}</code>
                     </div>
                   </div>
-                  {showResponses && (
-                    <div className='bg-gray-900 p-4'>
-                      <div className='flex items-center justify-between mb-2'>
-                        <span className='text-gray-400 text-sm'>
-                          JSON Response
-                        </span>
-                        <IconButton onClick={() => handleCopy(JSON.stringify(api.responses[selectedStatusCode as keyof typeof api.responses], null, 2))}>
-                          <Copy className='w-4 h-4 text-white' />
-                        </IconButton>
-                      </div>
-                      <pre className='text-sm overflow-x-auto text-gray-300'>
-                        {JSON.stringify(api.responses[selectedStatusCode as keyof typeof api.responses], null, 2)}
-                      </pre>
-                    </div>
-                  )}
                 </div>
               </div>
-            )
-        )}
+            </div>
+
+            {/* Request Body */}
+            {currentApi.requestBody && (
+              <div className='bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden'>
+                <div
+                  className='flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 transition-colors'
+                  onClick={() => setIsBodyExpanded(!isBodyExpanded)}
+                >
+                  <h3 className='text-lg font-semibold text-gray-900 flex items-center'>
+                    <Settings size={20} className='mr-2' />
+                    Request Body
+                  </h3>
+                  {isBodyExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                </div>
+                {isBodyExpanded && (
+                  <div className='px-4 pb-4'>
+                    <CodeBlock code={currentApi.requestBody} title='JSON Body' />
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Response */}
+            <div className='bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden'>
+              <div
+                className='flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 transition-colors'
+                onClick={() => setIsResponseExpanded(!isResponseExpanded)}
+              >
+                <h3 className='text-lg font-semibold text-gray-900'>Responses</h3>
+                {isResponseExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+              </div>
+              {isResponseExpanded && (
+                <div className='px-4 pb-4 space-y-4'>
+                  {/* Status Code Buttons */}
+                  <div className='flex flex-wrap gap-2'>
+                    {currentApi.statusCodes.map(status => (
+                      <StatusButton
+                        key={status}
+                        status={status}
+                        isActive={selectedStatus === status}
+                        onClick={() => setSelectedStatus(status)}
+                      />
+                    ))}
+                  </div>
+
+                   {/* Response Body */}
+                   <CodeBlock code={currentApi.responses[selectedStatus] || 'No response data'} title={`JSON Response (${selectedStatus})`} />
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   )
