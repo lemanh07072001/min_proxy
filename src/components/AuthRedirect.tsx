@@ -1,8 +1,10 @@
 'use client'
 
-import { useSession } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
+
+import { useRouter } from 'next/navigation'
+
+import { useSession } from 'next-auth/react'
 
 import type { Locale } from '@/configs/configi18n'
 import EmptyAuthPage from './EmptyAuthPage'
@@ -10,6 +12,10 @@ import EmptyAuthPage from './EmptyAuthPage'
 const AuthRedirect = ({ lang, children }: { lang: Locale; children: React.ReactNode }) => {
   const { data: session, status } = useSession()
   const router = useRouter()
+
+  console.log('session:', session)
+
+  console.log('status:', status)
 
   useEffect(() => {
     // Nếu đã có session thì chuyển hướng (có thể đổi URL tuỳ nhu cầu)

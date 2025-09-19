@@ -51,13 +51,6 @@ export default function TransactionHistoryPage() {
   const columns = useMemo(
     () => [
       {
-        header: 'ID',
-        cell: ({ row }) => {
-          return <span className='font-sm ms-2'>{row.original?.id}</span>
-        },
-        size: 60
-      },
-      {
         header: 'Lịch sử giao dịch',
         cell: ({ row }) => {
           if (row.original?.type === 'NAPTIEN') {

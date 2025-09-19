@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 
 import { useSession, signOut } from 'next-auth/react'
 import type { Session } from 'next-auth'
+import { useRouter, usePathname } from 'next/navigation'
 
 import axiosInstance from '@/libs/axios'
 
@@ -12,11 +13,17 @@ let failedQueue: {
 }[] = []
 
 const processQueue = (error: Error | null, token: string | null = null) => {
-  console.log('📦 [processQueue] Processing queue, token:', token ? 'present' : 'null', 'error:', error?.message || 'none')
-  
+  console.log(
+    '📦 [processQueue] Processing queue, token:',
+    token ? 'present' : 'null',
+    'error:',
+    error?.message || 'none'
+  )
+
   failedQueue.forEach(prom => {
     if (error || !token) {
       const rejectError = error || new Error('Token refresh failed: no token available')
+
       console.log('❌ [processQueue] Rejecting request with error:', rejectError.message)
       prom.reject(rejectError)
     } else {
@@ -24,12 +31,14 @@ const processQueue = (error: Error | null, token: string | null = null) => {
       prom.resolve(token)
     }
   })
-  
+
   failedQueue = []
 }
 
 const useAxiosAuth = () => {
   const { data: session, update: updateSession } = useSession()
+  const router = useRouter()
+  const pathname = usePathname()
 
   useEffect(() => {
     console.log('🔗 [useAxiosAuth] Setting up interceptors', new Date().toISOString())
@@ -40,8 +49,6 @@ const useAxiosAuth = () => {
           config.headers.Authorization = `Bearer ${session.access_token}`
           console.log('➡️ [request] Added Authorization header')
         }
-
-
 
         return config
       },
@@ -61,20 +68,25 @@ const useAxiosAuth = () => {
 
             return new Promise((resolve, reject) => {
               failedQueue.push({ resolve, reject })
-            }).then(token => {
-              console.log('✅ [response] Queue retry with new token')
-              if (!token) {
-                const error = new Error('No token from queue - refresh failed')
-                console.error('❌ [response] Queue retry failed:', error.message)
-                throw error
-              }
-              originalRequest.headers.Authorization = `Bearer ${token}`
-
-              return axiosInstance(originalRequest)
-            }).catch(error => {
-              console.error('❌ [response] Queue retry error:', error.message)
-              throw error
             })
+              .then(token => {
+                console.log('✅ [response] Queue retry with new token')
+
+                if (!token) {
+                  const error = new Error('No token from queue - refresh failed')
+
+                  console.error('❌ [response] Queue retry failed:', error.message)
+                  throw error
+                }
+
+                originalRequest.headers.Authorization = `Bearer ${token}`
+
+                return axiosInstance(originalRequest)
+              })
+              .catch(error => {
+                console.error('❌ [response] Queue retry error:', error.message)
+                throw error
+              })
           }
 
           originalRequest._retry = true
@@ -86,9 +98,10 @@ const useAxiosAuth = () => {
 
             console.log('✅ [response] updateSession result:', refreshedSession)
 
-            if (!refreshedSession?.access_token) {
-              console.error('❌ [response] No access_token in refreshed session')
-              throw new Error('Failed to refresh token: no access_token')
+            // Kiểm tra nếu có lỗi refresh token hoặc không có access_token
+            if (refreshedSession?.error === 'RefreshAccessTokenError' || !refreshedSession?.access_token) {
+              console.error('❌ [response] Token refresh failed:', refreshedSession?.error || 'no access_token')
+              throw new Error('Failed to refresh token: ' + (refreshedSession?.error || 'no access_token'))
             }
 
             const newToken = refreshedSession.access_token
@@ -102,13 +115,18 @@ const useAxiosAuth = () => {
             return axiosInstance(originalRequest)
           } catch (refreshError: any) {
             console.error('❌ [response] Critical error during token refresh:', refreshError)
-            
+
             // Tạo error object rõ ràng hơn
             const error = new Error(`Token refresh failed: ${refreshError.message || 'Unknown error'}`)
+
             processQueue(error, null)
-            
+
             // Sign out user
             await signOut({ redirect: false })
+            
+            // Redirect về trang chủ landing page sau khi logout
+            const lang = pathname.split('/')[1] || 'vi'
+            router.push(`/${lang}`)
 
             return Promise.reject(error)
           } finally {
@@ -126,7 +144,7 @@ const useAxiosAuth = () => {
       axiosInstance.interceptors.request.eject(requestInterceptor)
       axiosInstance.interceptors.response.eject(responseInterceptor)
     }
-  }, [session, updateSession])
+  }, [session, updateSession, router, pathname])
 
   return axiosInstance
 }
