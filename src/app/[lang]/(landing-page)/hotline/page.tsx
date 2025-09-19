@@ -1,5 +1,6 @@
-import ContactInfo from '@/app/[lang]/(landing-page)/components/hotline/ContactInfo'
 import type { Metadata } from 'next'
+
+import ContactInfo from '@/app/[lang]/(landing-page)/components/hotline/ContactInfo'
 
 export async function generateMetadata({ params }: { params: { lang: string } }): Promise<Metadata> {
   const { lang } = params
