@@ -71,7 +71,7 @@ export default function OrderRotatingProxyPage() {
   const [modalOpen, setModalOpen] = useState(false)
   const [selectedProxy, setSelectedProxy] = useState<any | null>(null)
   const [loadingId, setLoadingId] = useState<string | null>(null)
-  const [currentView, setCurrentView] = useState<'table' | 'api'>('api')
+  const [currentView, setCurrentView] = useState<'table' | 'api'>('table')
   const axiosAuth = useAxiosAuth()
 
   const [, copy] = useCopy()
