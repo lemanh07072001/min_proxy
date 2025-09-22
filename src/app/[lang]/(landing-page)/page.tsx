@@ -5,7 +5,7 @@ import ProductsSection from '@/app/[lang]/(landing-page)/components/ProductsSect
 import PartnersSection from '@/app/[lang]/(landing-page)/components/PartnersSection'
 
 export const metadata: Metadata = {
-  title: `Chào mừng đến mới ${process.env.NEXT_PUBLIC_APP_NAME} `,
+  title: `Trang chủ`,
   description: 'Mô tả ngắn gọn về trang web.'
 }
 

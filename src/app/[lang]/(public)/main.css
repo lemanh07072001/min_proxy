@@ -813,6 +813,13 @@ body {
   box-shadow: 0 10px 30px rgba(239, 68, 68, 0.3);
 }
 
+.buy-button:disabled {
+  background: #ccc !important;
+  color: #666 !important;
+  cursor: not-allowed !important;
+  box-shadow: none !important;
+}
+
 .guarantee {
   display: flex;
   align-items: center;
@@ -2106,6 +2113,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  margin-block-end: 100px;
 }
 
 /*.contact-item {*/
