@@ -50,7 +50,6 @@ const Layout = async (props: ChildrenType & { params: Promise<{ lang: Locale }> 
           systemMode={systemMode}
           verticalLayout={
             <VerticalLayout landingPage={true} navbar={<Header />} footer={<Footer />}>
-              <TokenExpirationChecker />
               {children}
               <ToastContainer
                 position='top-right'

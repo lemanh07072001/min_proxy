@@ -11,6 +11,7 @@ import { useTranslation } from 'react-i18next'
 import { useLanguageSync } from '@/hooks/useLanguageSync'
 
 import { infoConfigs } from '@/configs/infoConfig'
+import Link from '@/components/Link'
 
 const Footer = () => {
   const { t } = useTranslation()
@@ -188,9 +189,9 @@ const Footer = () => {
       <div className='floating-contact'>
         {infoConfigs.map(item => {
           return (
-            <div key={item.key} className=' phone'>
+            <Link href={item.link} key={item.key} target='_blank'>
               <Image src={item.icon} alt={item.title || 'Social Icon'} width='80' height='80' />
-            </div>
+            </Link>
           )
         })}
       </div>

@@ -18,7 +18,6 @@ import Navbar from '@components/layout/vertical/Navbar'
 import LanguageSyncWrapper from '@/components/LanguageSyncWrapper'
 
 import AuthGuard from '@/hocs/AuthGuard'
-import ClientSessionGuard from '@/components/ClientSessionGuard'
 
 // Util Imports
 import { getMode, getSystemMode } from '@core/utils/serverHelpers'
@@ -57,9 +56,7 @@ const Layout = async (props: ChildrenType & { params: Promise<{ lang: Locale }> 
               landingPage={false}
             >
                 <AuthGuard locale={params.lang}>
-                  <ClientSessionGuard>
-                    {children}
-                  </ClientSessionGuard>
+                  {children}
                 </AuthGuard>
               </VerticalLayout>
             }
@@ -69,9 +66,7 @@ const Layout = async (props: ChildrenType & { params: Promise<{ lang: Locale }> 
                 footer={<HorizontalFooter />}
               >
                 <AuthGuard locale={params.lang}>
-                  <ClientSessionGuard>
-                    {children}
-                  </ClientSessionGuard>
+                  {children}
                 </AuthGuard>
               </HorizontalLayout>
             }

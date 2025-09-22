@@ -1,8 +1,9 @@
 import { useEffect } from 'react'
 
+import { useRouter, usePathname } from 'next/navigation'
+
 import { useSession, signOut } from 'next-auth/react'
 import type { Session } from 'next-auth'
-import { useRouter, usePathname } from 'next/navigation'
 
 import axiosInstance from '@/libs/axios'
 
@@ -41,13 +42,10 @@ const useAxiosAuth = () => {
   const pathname = usePathname()
 
   useEffect(() => {
-    console.log('🔗 [useAxiosAuth] Setting up interceptors', new Date().toISOString())
-
     const requestInterceptor = axiosInstance.interceptors.request.use(
       config => {
         if (session?.access_token && !config.headers?.Authorization) {
           config.headers.Authorization = `Bearer ${session.access_token}`
-          console.log('➡️ [request] Added Authorization header')
         }
 
         return config
@@ -61,21 +59,14 @@ const useAxiosAuth = () => {
         const originalRequest = error.config
 
         if (error.response?.status === 401 && !originalRequest._retry) {
-          console.warn('⚠️ [response] 401 detected for', originalRequest.url)
-
           if (isRefreshing) {
-            console.log('🔄 [response] Already refreshing, queuing request')
-
             return new Promise((resolve, reject) => {
               failedQueue.push({ resolve, reject })
             })
               .then(token => {
-                console.log('✅ [response] Queue retry with new token')
-
                 if (!token) {
                   const error = new Error('No token from queue - refresh failed')
 
-                  console.error('❌ [response] Queue retry failed:', error.message)
                   throw error
                 }
 
@@ -84,54 +75,63 @@ const useAxiosAuth = () => {
                 return axiosInstance(originalRequest)
               })
               .catch(error => {
-                console.error('❌ [response] Queue retry error:', error.message)
                 throw error
               })
           }
 
           originalRequest._retry = true
           isRefreshing = true
-          console.log('🔄 [response] Starting token refresh…')
+
+          console.log(session)
 
           try {
-            const refreshedSession = await updateSession()
+            // Gọi API refresh trực tiếp
+            const refreshResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/refresh`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${session?.access_token}`
+              }
+            })
 
-            console.log('✅ [response] updateSession result:', refreshedSession)
-
-            // Kiểm tra nếu có lỗi refresh token hoặc không có access_token
-            if (refreshedSession?.error === 'RefreshAccessTokenError' || !refreshedSession?.access_token) {
-              console.error('❌ [response] Token refresh failed:', refreshedSession?.error || 'no access_token')
-              throw new Error('Failed to refresh token: ' + (refreshedSession?.error || 'no access_token'))
+            if (!refreshResponse.ok) {
+              throw new Error('Failed to refresh token')
             }
 
-            const newToken = refreshedSession.access_token
+            const refreshData = await refreshResponse.json()
+
+            console.log(refreshData)
+            console.log(refreshData.access_token)
+
+            if (!refreshData.access_token) {
+              throw new Error('No access token in refresh response')
+            }
+
+            // Update session với token mới
+            await updateSession({
+              access_token: refreshData.access_token,
+              accessTokenExpires: Date.now() + (refreshData.expires_in || 3600) * 1000,
+              error: undefined
+            })
+
+            const newToken = refreshData.access_token
 
             axiosInstance.defaults.headers.common.Authorization = `Bearer ${newToken}`
 
             processQueue(null, newToken)
             originalRequest.headers.Authorization = `Bearer ${newToken}`
-            console.log('✅ [response] Retrying original request with new token')
 
             return axiosInstance(originalRequest)
           } catch (refreshError: any) {
-            console.error('❌ [response] Critical error during token refresh:', refreshError)
-
-            // Tạo error object rõ ràng hơn
             const error = new Error(`Token refresh failed: ${refreshError.message || 'Unknown error'}`)
 
             processQueue(error, null)
 
-            // Sign out user
             await signOut({ redirect: false })
-            
-            // Redirect về trang chủ landing page sau khi logout
-            const lang = pathname.split('/')[1] || 'vi'
-            router.push(`/${lang}`)
 
             return Promise.reject(error)
           } finally {
             isRefreshing = false
-            console.log('🔓 [response] Refresh flow completed')
           }
         }
 
