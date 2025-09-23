@@ -32,6 +32,7 @@ const useAxiosAuth = () => {
       async error => {
         const originalRequest = error.config
 
+
         if (error.response?.status === 401 && !originalRequest._retry) {
           // Kiểm tra nếu session có error (server refresh đã thất bại)
           if ((session as any)?.error === 'RefreshAccessTokenError') {
