@@ -14,6 +14,7 @@ import {
   FileText,
   User,
   MessageCircleQuestionMark,
+
   // Admin icons
   Users,
   Settings,
@@ -301,7 +302,10 @@ const VerticalMenu = ({ scrollMenu, dictionary }: Props) => {
               <MenuItem rootStyles={getMenuItemStyles('admin/users/create')} href={`/${locale}/admin/users/create`}>
                 Thêm User mới
               </MenuItem>
-              <MenuItem rootStyles={getMenuItemStyles('admin/users/permissions')} href={`/${locale}/admin/users/permissions`}>
+              <MenuItem
+                rootStyles={getMenuItemStyles('admin/users/permissions')}
+                href={`/${locale}/admin/users/permissions`}
+              >
                 Phân quyền User
               </MenuItem>
             </SubMenu>
@@ -312,7 +316,7 @@ const VerticalMenu = ({ scrollMenu, dictionary }: Props) => {
               rootStyles={subMenuStyles}
               defaultOpen={isAdminSubMenuActive && pathname.includes('/admin/proxy')}
             >
-              <MenuItem rootStyles={getMenuItemStyles('admin/proxy/list')} href={`/${locale}/admin/proxy/list`}>
+              <MenuItem rootStyles={getMenuItemStyles('admin/proxy')} href={`/${locale}/admin/proxy`}>
                 Danh sách Proxy
               </MenuItem>
               <MenuItem rootStyles={getMenuItemStyles('admin/proxy/create')} href={`/${locale}/admin/proxy/create`}>
@@ -320,6 +324,26 @@ const VerticalMenu = ({ scrollMenu, dictionary }: Props) => {
               </MenuItem>
               <MenuItem rootStyles={getMenuItemStyles('admin/proxy/config')} href={`/${locale}/admin/proxy/config`}>
                 Cấu hình Proxy
+              </MenuItem>
+            </SubMenu>
+
+            <SubMenu
+              label='Quản lý Đối tác'
+              icon={<CreditCard size={20} strokeWidth={1.5} />}
+              rootStyles={subMenuStyles}
+              defaultOpen={isAdminSubMenuActive && pathname.includes('/admin/partner')}
+            >
+              <MenuItem rootStyles={getMenuItemStyles('admin/partner')} href={`/${locale}/admin/partner`}>
+                Danh sách đối tác
+              </MenuItem>
+              <MenuItem rootStyles={getMenuItemStyles('admin/orders/pending')} href={`/${locale}/admin/orders/pending`}>
+                Đơn hàng chờ xử lý
+              </MenuItem>
+              <MenuItem
+                rootStyles={getMenuItemStyles('admin/orders/transactions')}
+                href={`/${locale}/admin/orders/transactions`}
+              >
+                Lịch sử giao dịch
               </MenuItem>
             </SubMenu>
 
@@ -335,7 +359,10 @@ const VerticalMenu = ({ scrollMenu, dictionary }: Props) => {
               <MenuItem rootStyles={getMenuItemStyles('admin/orders/pending')} href={`/${locale}/admin/orders/pending`}>
                 Đơn hàng chờ xử lý
               </MenuItem>
-              <MenuItem rootStyles={getMenuItemStyles('admin/orders/transactions')} href={`/${locale}/admin/orders/transactions`}>
+              <MenuItem
+                rootStyles={getMenuItemStyles('admin/orders/transactions')}
+                href={`/${locale}/admin/orders/transactions`}
+              >
                 Lịch sử giao dịch
               </MenuItem>
             </SubMenu>
@@ -346,7 +373,10 @@ const VerticalMenu = ({ scrollMenu, dictionary }: Props) => {
               rootStyles={subMenuStyles}
               defaultOpen={isAdminSubMenuActive && pathname.includes('/admin/reports')}
             >
-              <MenuItem rootStyles={getMenuItemStyles('admin/reports/revenue')} href={`/${locale}/admin/reports/revenue`}>
+              <MenuItem
+                rootStyles={getMenuItemStyles('admin/reports/revenue')}
+                href={`/${locale}/admin/reports/revenue`}
+              >
                 Báo cáo doanh thu
               </MenuItem>
               <MenuItem rootStyles={getMenuItemStyles('admin/reports/users')} href={`/${locale}/admin/reports/users`}>
@@ -380,13 +410,19 @@ const VerticalMenu = ({ scrollMenu, dictionary }: Props) => {
               rootStyles={subMenuStyles}
               defaultOpen={isAdminSubMenuActive && pathname.includes('/admin/security')}
             >
-              <MenuItem rootStyles={getMenuItemStyles('admin/security/api-keys')} href={`/${locale}/admin/security/api-keys`}>
+              <MenuItem
+                rootStyles={getMenuItemStyles('admin/security/api-keys')}
+                href={`/${locale}/admin/security/api-keys`}
+              >
                 Quản lý API Keys
               </MenuItem>
               <MenuItem rootStyles={getMenuItemStyles('admin/security/audit')} href={`/${locale}/admin/security/audit`}>
                 Audit Logs
               </MenuItem>
-              <MenuItem rootStyles={getMenuItemStyles('admin/security/settings')} href={`/${locale}/admin/security/settings`}>
+              <MenuItem
+                rootStyles={getMenuItemStyles('admin/security/settings')}
+                href={`/${locale}/admin/security/settings`}
+              >
                 Cài đặt bảo mật
               </MenuItem>
             </SubMenu>
