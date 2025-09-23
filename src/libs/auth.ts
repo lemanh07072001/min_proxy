@@ -1,29 +1,28 @@
 // Third-party Imports
-import CredentialProvider from 'next-auth/providers/credentials'
-import GoogleProvider from 'next-auth/providers/google'
-
-// import type { NextAuthOptions } from 'next-auth'
+import type { NextAuthOptions, User, Account, Session } from 'next-auth'
 import type { JWT } from 'next-auth/jwt'
+import CredentialsProvider from 'next-auth/providers/credentials'
 
-// Biến này sẽ lưu trữ promise của lần refresh đang diễn ra.
-let refreshTokenPromise: Promise<JWT | null> | null = null
+// Biến này lưu trữ promise của lần refresh token đang diễn ra để tránh race condition.
+let refreshTokenPromise: Promise<JWT> | null = null
 
+/**
+ * Gửi yêu cầu làm mới access token đến API server.
+ * @param token JWT token hiện tại chứa access_token.
+ * @returns JWT token mới với access_token đã được làm mới, hoặc token cũ với lỗi.
+ */
 async function refreshToken(token: JWT): Promise<JWT> {
-  // Nếu đã có một promise refresh đang chạy, các lần gọi sau sẽ không tạo request mới
-  // mà sẽ chờ promise cũ hoàn thành và trả về kết quả của nó.
+  // Sử dụng cơ chế debounce: nếu đã có một yêu cầu refresh đang chạy,
+  // các lệnh gọi khác sẽ chờ và sử dụng kết quả của yêu cầu đó.
   if (refreshTokenPromise) {
-    console.log('🔄 [Server Debounce] Một lần refresh khác đang chạy, đang chờ kết quả...')
-
-    return await refreshTokenPromise
+    console.log('[AUTH] Một lần refresh khác đang chạy, đang chờ kết quả...')
+    return refreshTokenPromise
   }
 
-  // Nếu không có promise nào, tạo một promise mới và gán vào biến toàn cục.
   refreshTokenPromise = (async () => {
-    console.log('▶️ [Server Refresh] Bắt đầu quá trình làm mới token...')
-
     try {
+      console.log('[AUTH] Bắt đầu quá trình làm mới access token...')
       const res = await fetch(`${process.env.API_URL}/refresh`, {
-        // Dùng API_URL cho server
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -33,47 +32,44 @@ async function refreshToken(token: JWT): Promise<JWT> {
 
       const refreshedTokens = await res.json()
 
-      console.log(refreshedTokens)
-
       if (!res.ok) {
         throw refreshedTokens
       }
 
-      console.log('✅ [Server Refresh] Token refreshed successfully.')
-
-      const newToken = {
-        ...token,
-        access_token: refreshedTokens.access_token,
-        accessTokenExpires: Date.now() + (refreshedTokens.expires_in || 3600) * 1000,
-        error: undefined
-      }
-
-      console.log('🔄 [Server Refresh] Token mới sẽ hết hạn vào:', new Date(newToken.accessTokenExpires))
-
-      return newToken
-    } catch (error) {
-      console.error('❌ [Server Refresh] Thất bại khi làm mới token:', error)
+      console.log('[AUTH] ✅ Làm mới token thành công.')
 
       return {
+        // Chỉ giữ lại những thông tin quan trọng từ token cũ
+        userData: token.userData,
+        role: token.role,
+
+        // Cập nhật các giá trị mới từ API
+        access_token: refreshedTokens.access_token,
+        accessTokenExpires: Date.now() + (refreshedTokens.expires_in || 3600) * 1000,
+
+        // Xóa lỗi nếu có
+        error: undefined
+      }
+    } catch (error) {
+      console.error('[AUTH] ❌ Thất bại khi làm mới token:', error)
+      return {
         ...token,
-        error: 'RefreshAccessTokenError'
+        error: 'RefreshAccessTokenError' // Đánh dấu lỗi để client xử lý
       }
     }
   })()
 
   try {
-    // Đợi promise hoàn thành và trả về kết quả
     return await refreshTokenPromise
   } finally {
-    // Dọn dẹp promise sau khi nó đã hoàn thành (dù thành công hay thất bại)
-    // để các lần refresh sau có thể được thực hiện.
+    // Dọn dẹp promise sau khi hoàn thành để các lần gọi sau có thể tạo request mới.
     refreshTokenPromise = null
   }
 }
 
-export const authOptions = {
+export const authOptions: NextAuthOptions = {
   providers: [
-    CredentialProvider({
+    CredentialsProvider({
       name: 'Credentials',
       credentials: {},
       async authorize(credentials, req) {
@@ -90,76 +86,98 @@ export const authOptions = {
 
           const data = await res.json()
 
-          if (res.status !== 200 || !data.user) return null
+          // Nếu login thất bại hoặc không có data user -> trả về null
+          if (!res.ok || !data.user) {
+            return null
+          }
 
+          // Dữ liệu trả về từ authorize sẽ được truyền vào callback `jwt` thông qua tham số `user`
           return {
             id: data.user.id || data.user.email,
-            email: data.user.email,
-            role: data.user.role,
-            name: data.user.name,
             access_token: data.access_token,
             accessTokenExpires: Date.now() + (data.expires_in || 3600) * 1000,
+            role: data.user.role,
             userData: data.user
-          }
-        } catch (err) {
+          } as User
+        } catch (error) {
+          console.error('[AUTH] Lỗi trong authorize callback:', error)
           return null
         }
       }
     })
   ],
 
-  session: { strategy: 'jwt' },
-  pages: { signIn: '/login' },
+  session: {
+    strategy: 'jwt'
+  },
+
+  pages: {
+    signIn: '/login'
+  },
 
   callbacks: {
-    async jwt({ token, user, account, trigger, session }: any) {
-      // Khi user login lần đầu
+    /**
+     * Callback này được gọi mỗi khi JWT được tạo hoặc cập nhật.
+     * Dữ liệu trong `token` sẽ được truyền đến callback `session`.
+     */
+    async jwt({ token, user, account, trigger, session }) {
+      // 1. Khi user đăng nhập lần đầu
       if (user && account) {
+        console.log('[AUTH] JWT - Đăng nhập lần đầu')
+
+        console.log('[AUTH] Token nhận được trong callback jwt:', {
+          hasToken: !!token.access_token,
+          expires: new Date(token.accessTokenExpires)
+        });
         return {
           ...token,
           access_token: user.access_token,
           accessTokenExpires: user.accessTokenExpires,
-          userData: user.userData,
-          name: user.userData?.name,
-          email: user.userData?.email,
-          sub: user.userData?.id,
-          role: user.userData?.role
+          role: user.role,
+          userData: user.userData
         }
       }
 
-      // Khi client gọi updateSession
-      if (trigger === 'update' && session) {
-        console.log('🔄 [JWT Callback] Updating token from client...')
-
+      // 2. Khi client gọi `updateSession` để đồng bộ token mới
+      if (trigger === 'update' && session?.access_token) {
+        console.log('[AUTH] JWT - Client trigger update',trigger)
         return {
           ...token,
           access_token: session.access_token,
           accessTokenExpires: session.accessTokenExpires,
-          error: undefined
+          error: undefined // Xóa lỗi khi client cung cấp token mới
         }
       }
 
-      // // Kiểm tra token còn hạn không (refresh trước 5 phút)
-      if (token.accessTokenExpires && Date.now() < token.accessTokenExpires - 60 * 1000) {
-        return token // Token còn hạn lâu
+      // 3. Khi các request sau đó diễn ra, kiểm tra xem token có còn hạn không
+      // Buffer 1 phút để refresh trước khi hết hạn thực sự
+      if (Date.now() < token.accessTokenExpires - 60 * 1000) {
+        return token // Token còn hạn
       }
 
-      return refreshToken(token)
+      // 4. Nếu token đã hoặc sắp hết hạn, tiến hành làm mới
+      console.log('[AUTH] JWT - Token đã hoặc sắp hết hạn, đang làm mới...')
+      const newRefreshedTokenObject = await refreshToken(token);
+
+      return {
+        ...token,
+        ...newRefreshedTokenObject
+      };
     },
 
-    async session({ session, token }: any) {
-      session.user = token.userData || session.user
-      session.access_token = token.access_token as string
-      session.error = token.error as string
-      session.role = token.role
-
+    /**
+     * Callback này được gọi mỗi khi session được truy cập từ client.
+     * Nó nhận dữ liệu từ callback `jwt` để xây dựng object session cho client.
+     */
+    async session({ session, token }: { session: Session; token: JWT }) {
+      // Gửi các thông tin cần thiết về cho client
+      if (token) {
+        session.user = token.userData || session.user
+        session.access_token = token.access_token
+        session.role = token.role
+        session.error = token.error
+      }
       return session
-    }
-  },
-
-  events: {
-    async signOut() {
-      // User signed out
     }
   }
 }

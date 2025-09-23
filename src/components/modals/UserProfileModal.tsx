@@ -63,7 +63,6 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onClose }) 
 
   const { user } = useSelector((state: RootState) => state.user)
 
-  console.log(user)
 
   const handleChange = (event: SyntheticEvent, newValue: string) => {
     setActiveTab(newValue)
