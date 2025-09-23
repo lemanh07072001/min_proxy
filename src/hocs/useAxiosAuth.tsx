@@ -59,12 +59,12 @@ const useAxiosAuth = () => {
               // Nếu updateSession không trả về token mới, refresh đã thất bại.
               // Lúc này callback `jwt` có thể đã đánh dấu session.error
               console.error('[AXIOS HOOK] ❌ Không nhận được session mới. Đăng xuất...')
-              // await signOut() // Đăng xuất người dùng
+              await signOut() // Đăng xuất người dùng
               return Promise.reject(error)
             }
           } catch (refreshError) {
             console.error('[AXIOS HOOK] ❌ Refresh token thất bại hoàn toàn. Đăng xuất...', refreshError)
-            // await signOut() // Đăng xuất người dùng
+            await signOut() // Đăng xuất người dùng
             return Promise.reject(error)
           }
         }
