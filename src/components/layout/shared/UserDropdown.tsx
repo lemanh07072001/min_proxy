@@ -66,9 +66,12 @@ const UserDropdown = () => {
 
   const handleConfirmLogout = async () => {
     setOpenConfirm(false)
+    
+    // Chỉ cần signOut, server sẽ xử lý logout
     await signOut({ redirect: false })
+    
+    // Redirect về trang chủ
     router.replace('/overview')
-    window.location.reload()
   }
 
   return (

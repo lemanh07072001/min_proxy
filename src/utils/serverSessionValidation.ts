@@ -81,12 +81,6 @@ export async function validateServerSessionBasic() {
 export async function getServerUserData() {
   const session = await getServerSession(authOptions)
 
-  console.log('session: ', session)
-
-  if (!session?.access_token) {
-    return null
-  }
-
   try {
     const response = await fetch(`${process.env.API_URL}/me`, {
       method: 'POST',

@@ -1,50 +1,77 @@
 // Third-party Imports
 import CredentialProvider from 'next-auth/providers/credentials'
 import GoogleProvider from 'next-auth/providers/google'
-import type { NextAuthOptions } from 'next-auth/next'
+
+// import type { NextAuthOptions } from 'next-auth'
 import type { JWT } from 'next-auth/jwt'
 
-// Types are now defined in declarations.d.ts
+// Biến này sẽ lưu trữ promise của lần refresh đang diễn ra.
+let refreshTokenPromise: Promise<JWT | null> | null = null
 
-// Token refresh được xử lý bởi useAxiosAuth
 async function refreshToken(token: JWT): Promise<JWT> {
-  try {
-    const res = await fetch(`${process.env.API_URL}/refresh`, {
-      // Dùng API_URL cho server-side
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token.access_token}`
+  // Nếu đã có một promise refresh đang chạy, các lần gọi sau sẽ không tạo request mới
+  // mà sẽ chờ promise cũ hoàn thành và trả về kết quả của nó.
+  if (refreshTokenPromise) {
+    console.log('🔄 [Server Debounce] Một lần refresh khác đang chạy, đang chờ kết quả...')
+
+    return await refreshTokenPromise
+  }
+
+  // Nếu không có promise nào, tạo một promise mới và gán vào biến toàn cục.
+  refreshTokenPromise = (async () => {
+    console.log('▶️ [Server Refresh] Bắt đầu quá trình làm mới token...')
+
+    try {
+      const res = await fetch(`${process.env.API_URL}/refresh`, {
+        // Dùng API_URL cho server
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token.access_token}`
+        }
+      })
+
+      const refreshedTokens = await res.json()
+
+      console.log(refreshedTokens)
+
+      if (!res.ok) {
+        throw refreshedTokens
       }
-    })
 
-    const refreshedTokens = await res.json()
+      console.log('✅ [Server Refresh] Token refreshed successfully.')
 
-    console.log('token', refreshedTokens)
+      const newToken = {
+        ...token,
+        access_token: refreshedTokens.access_token,
+        accessTokenExpires: Date.now() + (refreshedTokens.expires_in || 3600) * 1000,
+        error: undefined
+      }
 
-    if (!res.ok) {
-      throw refreshedTokens
+      console.log('🔄 [Server Refresh] Token mới sẽ hết hạn vào:', new Date(newToken.accessTokenExpires))
+
+      return newToken
+    } catch (error) {
+      console.error('❌ [Server Refresh] Thất bại khi làm mới token:', error)
+
+      return {
+        ...token,
+        error: 'RefreshAccessTokenError'
+      }
     }
+  })()
 
-    console.log('✅ [Server Refresh] Token refreshed successfully on server-side.')
-
-    return {
-      ...token,
-      access_token: refreshedTokens.access_token,
-      accessTokenExpires: Date.now() + (refreshedTokens.expires_in || 3600) * 1000,
-      error: undefined // Xóa lỗi nếu refresh thành công
-    }
-  } catch (error) {
-    console.error('❌ [Server Refresh] Failed to refresh token on server-side:', error)
-
-    return {
-      ...token,
-      error: 'RefreshAccessTokenError' // Gắn lỗi để client biết và xử lý
-    }
+  try {
+    // Đợi promise hoàn thành và trả về kết quả
+    return await refreshTokenPromise
+  } finally {
+    // Dọn dẹp promise sau khi nó đã hoàn thành (dù thành công hay thất bại)
+    // để các lần refresh sau có thể được thực hiện.
+    refreshTokenPromise = null
   }
 }
 
-export const authOptions: NextAuthOptions = {
+export const authOptions = {
   providers: [
     CredentialProvider({
       name: 'Credentials',
@@ -85,6 +112,7 @@ export const authOptions: NextAuthOptions = {
 
   callbacks: {
     async jwt({ token, user, account, trigger, session }: any) {
+      // Khi user login lần đầu
       if (user && account) {
         return {
           ...token,
@@ -97,59 +125,24 @@ export const authOptions: NextAuthOptions = {
         }
       }
 
+      // Khi client gọi updateSession
       if (trigger === 'update' && session) {
         console.log('🔄 [JWT Callback] Updating token from client...')
 
         return {
           ...token,
           access_token: session.access_token,
-          accessTokenExpires: session.accessTokenExpires
+          accessTokenExpires: session.accessTokenExpires,
+          error: undefined
         }
       }
 
-      if (token.accessTokenExpires && Date.now() < token.accessTokenExpires) {
-        // Chỉ validate token nếu đã gần hết hạn (trong vòng 1 phút)
-        const timeUntilExpiry = token.accessTokenExpires - Date.now()
-        const oneMinute = 1 * 60 * 1000
-        
-        if (timeUntilExpiry > oneMinute) {
-          return token // Token còn hạn lâu, không cần validate
-        }
-        
-        // Token gần hết hạn, kiểm tra thực tế
-        try {
-          const response = await fetch(`${process.env.API_URL}/me`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${token.access_token}`
-            },
-            cache: 'no-store'
-          })
-          
-          if (response.ok) {
-            return token // Token còn valid
-          } else {
-            console.log('🔄 [Server] Token expired in reality, refreshing...')
-            // Token không còn valid, thử refresh
-          }
-        } catch (error) {
-          console.log('🔄 [Server] Token validation failed, refreshing...')
-          // Có lỗi khi validate, thử refresh
-        }
+      // // Kiểm tra token còn hạn không (refresh trước 5 phút)
+      if (token.accessTokenExpires && Date.now() < token.accessTokenExpires - 60 * 1000) {
+        return token // Token còn hạn lâu
       }
 
-      // Token đã hết hạn, thử refresh trên server trước
-      // Nếu thất bại, đánh dấu lỗi để client xử lý
-      try {
-        return await refreshToken(token)
-      } catch (error) {
-        console.error('❌ [Server] Token refresh failed, marking for client-side refresh')
-        return {
-          ...token,
-          error: 'RefreshAccessTokenError'
-        }
-      }
+      return refreshToken(token)
     },
 
     async session({ session, token }: any) {
