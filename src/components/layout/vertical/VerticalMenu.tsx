@@ -201,7 +201,7 @@ const VerticalMenu = ({ scrollMenu, dictionary }: Props) => {
             label={dictionary['navigation'].proxy}
             icon={<Globe size={20} strokeWidth={1.5} />}
             rootStyles={subMenuStyles}
-            defaultOpen={isProxySubMenuActive}
+            defaultOpen={isProxySubMenuActive || false}
           >
             <MenuItem rootStyles={getMenuItemStyles('proxy-tinh')} href={`/${locale}/proxy-tinh`}>
               {dictionary['navigation'].staticProxy}
@@ -254,7 +254,7 @@ const VerticalMenu = ({ scrollMenu, dictionary }: Props) => {
             href={`/${locale}/docs`}
             target='_blank'
           >
-            {dictionary['navigation'].docsApi}
+            {dictionary['navigation'].docsApi || 'API Docs'}
           </MenuItem>
         </MenuSection>
 

@@ -17,6 +17,9 @@ import { headers } from 'next/headers'
 
 import { usePathname } from 'next/navigation'
 
+// Utils
+import { getServerUserData } from '@/utils/serverSessionValidation'
+
 import type { Metadata } from 'next'
 
 import InitColorSchemeScript from '@mui/material/InitColorSchemeScript'
@@ -68,22 +71,8 @@ const RootLayout = async (props: ChildrenType & { params: Promise<{ lang: Locale
 
   const direction = i18n.langDirection[params.lang]
 
-  const session = await getServerSession(authOptions)
-
-  // ✅ Gọi API /me trên server
-  let user = null
-
-  if (session) {
-    if (session?.access_token) {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/me`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${session.access_token}` },
-        cache: 'no-store'
-      })
-
-      if (res.ok) user = await res.json()
-    }
-  }
+  // ✅ Sử dụng server-side utility để lấy user data
+  const user = await getServerUserData()
 
   return (
     <TranslationWrapper headersList={headersList} lang={params.lang}>

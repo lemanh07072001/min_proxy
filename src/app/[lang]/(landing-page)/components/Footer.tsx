@@ -2,15 +2,22 @@
 
 import React from 'react'
 
+import Image from 'next/image'
+
 import { Shield, Phone, Mail, MapPin, Facebook, Send, MessageCircle } from 'lucide-react'
 
 import { useTranslation } from 'react-i18next'
 
 import { useLanguageSync } from '@/hooks/useLanguageSync'
 
+import { infoConfigs } from '@/configs/infoConfig'
+import Link from '@/components/Link'
+
 const Footer = () => {
   const { t } = useTranslation()
+
   useLanguageSync() // Sync language with URL
+
   return (
     <footer className='footer-main'>
       {/* CTA Section */}
@@ -180,15 +187,13 @@ const Footer = () => {
 
       {/* Floating Contact */}
       <div className='floating-contact'>
-        <div className='contact-item phone'>
-          <Phone size={20} />
-        </div>
-        <div className='contact-item whatsapp'>
-          <MessageCircle size={20} />
-        </div>
-        <div className='contact-item telegram'>
-          <Send size={20} />
-        </div>
+        {infoConfigs.map(item => {
+          return (
+            <Link href={item.link} key={item.key} target='_blank'>
+              <Image src={item.icon} alt={item.title || 'Social Icon'} width='80' height='80' />
+            </Link>
+          )
+        })}
       </div>
     </footer>
   )

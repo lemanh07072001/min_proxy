@@ -25,6 +25,7 @@ import HorizontalLayout from '@layouts/HorizontalLayout'
 
 import ScrollToTop from '@core/components/scroll-to-top'
 import Footer from './components/Footer'
+import TokenExpirationChecker from './components/TokenExpirationChecker'
 
 function HorizontalFooter() {
   return null

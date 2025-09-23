@@ -1,177 +1,221 @@
 import React, { useState } from 'react'
 
-import { ChevronDown, ChevronUp, Copy, Menu } from 'lucide-react'
-import IconButton from '@mui/material/IconButton'
+import { Copy, Check, ChevronDown, ChevronUp, Code, Settings, BookOpen, Globe, Key, Clock } from 'lucide-react'
 
-export default function ApiUsage() {
-  const [expandedSection, setExpandedSection] = useState<string>('rotate-proxy')
-  const [showResponses, setShowResponses] = useState(true)
-  const [showBody, setShowBody] = useState(true)
+import { apiEndpoints, type ApiEndpoint } from '@/configs/apiDocsConfig'
 
-  const apiUrl = 'https://api.netproxy.io/api/rotateProxy/getNewProxy'
+interface CodeBlockProps {
+  code: string
+  language?: string
+  title?: string
+}
+
+function CodeBlock({ code, language = 'json', title }: CodeBlockProps) {
+  const [copied, setCopied] = useState(false)
+
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(code)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
 
   return (
-    <div className='min-h-screen bg-gray-50 flex'>
-      {/* Sidebar */}
-      <div className='w-80 bg-white border-r border-gray-200 flex-shrink-0'>
-        <div className='p-6'>
-          <h2 className='text-lg font-semibold text-gray-900 mb-6'>API Documentation</h2>
-
-          {/* Rotate Proxy Section */}
-          <div className='mb-4'>
+    <div className='bg-gray-900 rounded-lg overflow-hidden'>
+      {title && (
+        <div className='bg-gray-800 px-4 py-2 border-b border-gray-700'>
+          <div className='flex items-center justify-between'>
+            <span className='text-gray-300 text-sm font-medium'>{title}</span>
             <button
-              onClick={() => setExpandedSection(expandedSection === 'rotate-proxy' ? '' : 'rotate-proxy')}
-              className='flex items-center justify-between w-full text-left p-3 text-orange-500 hover:bg-orange-50 rounded-lg transition-colors'
+              onClick={copyToClipboard}
+              className='flex items-center space-x-1 px-2 py-1 bg-gray-700 hover:bg-gray-600 rounded text-gray-300 hover:text-white transition-colors text-xs'
             >
-              <span className='font-medium'>Rotate Proxy</span>
-              {expandedSection === 'rotate-proxy' ? (
-                <ChevronUp className='w-4 h-4' />
-              ) : (
-                <ChevronDown className='w-4 h-4' />
-              )}
+              {copied ? <Check size={14} /> : <Copy size={14} />}
+              <span>{copied ? 'Copied' : 'Copy'}</span>
             </button>
-
-            {expandedSection === 'rotate-proxy' && (
-              <div className='mt-2 space-y-1'>
-                <button className='flex items-center space-x-3 w-full text-left p-3 bg-gray-100 text-gray-900 rounded-lg'>
-                  <span className='bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-medium'>POST</span>
-                  <span className='text-sm'>Get New Proxy</span>
-                </button>
-              </div>
-            )}
           </div>
+        </div>
+      )}
+      <div className='relative'>
+        <pre className='p-4 overflow-x-auto text-sm'>
+          <code className='text-gray-300 font-mono'>{code}</code>
+        </pre>
+        {!title && (
+          <button
+            onClick={copyToClipboard}
+            className='absolute top-2 right-2 p-2 bg-gray-800 hover:bg-gray-700 rounded text-gray-400 hover:text-white transition-colors'
+          >
+            {copied ? <Check size={16} /> : <Copy size={16} />}
+          </button>
+        )}
+      </div>
+    </div>
+  )
+}
+
+interface StatusButtonProps {
+  status: string
+  isActive: boolean
+  onClick: () => void
+}
+
+function StatusButton({ status, isActive, onClick }: StatusButtonProps) {
+  const getStatusColor = (status: string) => {
+    if (status.startsWith('2')) return 'bg-green-100 text-green-800 border-green-200'
+    if (status.startsWith('4')) return 'bg-red-100 text-red-800 border-red-200'
+    if (status.startsWith('5')) return 'bg-orange-100 text-orange-800 border-orange-200'
+
+    return 'bg-gray-100 text-gray-800 border-gray-200'
+  }
+
+  return (
+    <button
+      onClick={onClick}
+      className={`px-3 py-1 rounded-md border text-sm font-medium transition-all ${
+        isActive
+          ? getStatusColor(status) + ' ring-2 ring-opacity-50 ring-blue-500'
+          : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100'
+      }`}
+    >
+      {status}
+    </button>
+  )
+}
+
+export default function ApiUsage() {
+  const [selectedApi, setSelectedApi] = useState('get-current-proxy')
+  const [selectedStatus, setSelectedStatus] = useState('200 OK')
+  const [isBodyExpanded, setIsBodyExpanded] = useState(true)
+  const [isResponseExpanded, setIsResponseExpanded] = useState(true)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [selectedCategory, setSelectedCategory] = useState('all')
+
+  const filteredApis = apiEndpoints.filter(api => {
+    const matchesSearch =
+      api.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      api.description.toLowerCase().includes(searchTerm.toLowerCase())
+
+    const matchesCategory = selectedCategory === 'all' || api.category === selectedCategory
+
+    return matchesSearch && matchesCategory
+  })
+
+  const currentApi = apiEndpoints.find(api => api.id === selectedApi) || apiEndpoints[0]
+
+  const getMethodColor = (method: string) => {
+    switch (method) {
+      case 'GET':
+        return 'bg-blue-500'
+      case 'POST':
+        return 'bg-green-500'
+      case 'PUT':
+        return 'bg-yellow-500'
+      case 'DELETE':
+        return 'bg-red-500'
+      default:
+        return 'bg-gray-500'
+    }
+  }
+
+  return (
+    <div className='flex h-screen bg-gray-50'>
+      {/* API Sidebar */}
+      <div className='w-80 bg-white border-r border-gray-200 flex flex-col'>
+        {/* API List */}
+        <div className='flex-1 overflow-y-auto'>
+          {filteredApis.map(api => (
+            <div
+              key={api.id}
+              onClick={() => setSelectedApi(api.id)}
+              className={`p-4 border-b border-gray-100 cursor-pointer transition-colors ${
+                selectedApi === api.id ? 'bg-white-100 border-l-4 border-l-orange-500' : 'hover:bg-white-100'
+              }`}
+            >
+              <div className='flex items-center justify-between mb-2'>
+                <h3 className='font-medium m-0 text-gray-900 text-sm'>{api.title}</h3>
+                <span className={`px-2 py-1 rounded text-xs font-bold text-white ${getMethodColor(api.method)}`}>
+                  {api.method}
+                </span>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 
       {/* Main Content */}
-      <div className='flex-1 overflow-auto'>
-        <div className='p-8'>
-          {/* Header */}
-          <div className='mb-8'>
-            <div className='flex items-center space-x-3 mb-4'>
-              <span className='bg-green-100 text-green-700 px-3 py-1 rounded-lg text-sm font-medium'>POST</span>
-              <h1 className='text-2xl font-bold text-gray-900'>Get New Proxy</h1>
-            </div>
-          </div>
-
-          {/* URL Display */}
-          <div className='bg-gray-900 rounded-lg p-4 mb-6'>
-            <div className='flex items-center justify-between mb-2'>
-              <span className='text-gray-400 text-sm'>URL:</span>
-              <IconButton aria-label='capture screenshot'>
-                <Copy className='w-4 h-4' style={{ color: 'white' }} />
-              </IconButton>
-            </div>
-            <code className='text-blue-400 text-sm break-all'>{apiUrl}</code>
-          </div>
-
-          {/* Body Section */}
-          <div className='bg-white rounded-lg border border-gray-200 overflow-hidden mb-6'>
-            <div className='flex items-center justify-between p-3 border-b border-gray-200'>
-              <button
-                onClick={() => setShowBody(!showBody)}
-                className='flex items-center space-x-2 text-gray-700 bg-white hover:text-gray-900'
-              >
-                <span className='font-medium'>Body</span>
-                {showBody ? <ChevronUp className='w-4 h-4' /> : <ChevronDown className='w-4 h-4' />}
-              </button>
-            </div>
-
-            {showBody && (
-              <div className='bg-gray-900 p-4'>
-                <div className='flex items-center justify-between mb-2'>
+      <div className='flex-1 flex flex-col'>
+        <div className='flex-1 overflow-y-auto p-6'>
+          <div className='max-w-4xl mx-auto space-y-6'>
+            {/* API Endpoint */}
+            <div className='bg-white rounded-xl shadow-sm border border-gray-200 p-6'>
+              <div className='space-y-4'>
+                <div>
+                  <label className='block text-sm font-medium text-gray-700 mb-2'>
+                    <Code size={16} className='inline mr-1' />
+                    URL Endpoint
+                  </label>
                   <div className='flex items-center space-x-2'>
-                    <span className='text-gray-400 text-sm'>JSON Body</span>
+                    <span
+                      className={`px-2 py-1 rounded text-xs font-bold text-white ${getMethodColor(currentApi.method)}`}
+                    >
+                      {currentApi.method}
+                    </span>
+                    <div className='flex-1 bg-gray-900 rounded-lg p-3'>
+                      <code className='text-blue-400 font-mono text-sm'>{currentApi.endpoint}</code>
+                    </div>
                   </div>
-                  <IconButton aria-label='capture screenshot'>
-                    <Copy className='w-4 h-4' style={{ color: 'white' }} />
-                  </IconButton>
                 </div>
+              </div>
+            </div>
 
-                <pre className='text-sm overflow-x-auto'>
-                  <code className='text-gray-300'>
-                    <span className='text-gray-500'>{'{'}</span>
-                    {'\n    '}
-                    <span className='text-orange-400'>"key"</span>
-                    <span className='text-gray-500'>:</span>{' '}
-                    <span className='text-yellow-400'>"GSaTZVGtrHPRiYUhBUSfPx"</span>
-                    <span className='text-gray-500'>,</span>
-                    {'\n'}
-                    <span className='text-gray-500'>{'}'}</span>
-                  </code>
-                </pre>
+            {/* Request Body */}
+            {currentApi.requestBody && (
+              <div className='bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden'>
+                <div
+                  className='flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 transition-colors'
+                  onClick={() => setIsBodyExpanded(!isBodyExpanded)}
+                >
+                  <h3 className='text-lg font-semibold text-gray-900 flex items-center'>
+                    <Settings size={20} className='mr-2' />
+                    Request Body
+                  </h3>
+                  {isBodyExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                </div>
+                {isBodyExpanded && (
+                  <div className='px-4 pb-4'>
+                    <CodeBlock code={currentApi.requestBody} title='JSON Body' />
+                  </div>
+                )}
               </div>
             )}
-          </div>
 
-          {/* Responses Section */}
-          <div className='bg-white rounded-lg border border-gray-200 overflow-hidden'>
-            <div className='flex items-center justify-between p-3 border-b border-gray-200'>
-              <button
-                onClick={() => setShowResponses(!showResponses)}
-                className='flex items-center space-x-2 text-gray-700 bg-white hover:text-gray-900'
+            {/* Response */}
+            <div className='bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden'>
+              <div
+                className='flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 transition-colors'
+                onClick={() => setIsResponseExpanded(!isResponseExpanded)}
               >
-                <span className='font-medium'>Responses</span>
-                {showResponses ? <ChevronUp className='w-4 h-4' /> : <ChevronDown className='w-4 h-4' />}
-              </button>
-
-              <div className='flex items-center space-x-2'>
-                <span className='bg-orange-500 text-white px-3 py-1 rounded-lg text-sm font-medium'>200 OK</span>
+                <h3 className='text-lg font-semibold text-gray-900'>Responses</h3>
+                {isResponseExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
               </div>
-            </div>
-
-            {showResponses && (
-              <div className='bg-gray-900 p-4'>
-                <div className='flex items-center justify-between mb-2'>
-                  <div className='flex items-center space-x-2'>
-                    <span className='text-gray-400 text-sm'>JSON Response</span>
+              {isResponseExpanded && (
+                <div className='px-4 pb-4 space-y-4'>
+                  {/* Status Code Buttons */}
+                  <div className='flex flex-wrap gap-2'>
+                    {currentApi.statusCodes.map(status => (
+                      <StatusButton
+                        key={status}
+                        status={status}
+                        isActive={selectedStatus === status}
+                        onClick={() => setSelectedStatus(status)}
+                      />
+                    ))}
                   </div>
-                  <IconButton aria-label='capture screenshot'>
-                    <Copy className='w-4 h-4' style={{ color: 'white' }} />
-                  </IconButton>
+
+                   {/* Response Body */}
+                   <CodeBlock code={currentApi.responses[selectedStatus] || 'No response data'} title={`JSON Response (${selectedStatus})`} />
                 </div>
-                <pre className='text-sm overflow-x-auto'>
-                  <code className='text-gray-300'>
-                    <span className='text-gray-500'>{'{'}</span>
-                    {'\n  '}
-                    <span className='text-orange-400'>"data"</span>
-                    <span className='text-gray-500'>:</span> <span className='text-gray-500'>{'{'}</span>
-                    {'\n    '}
-                    <span className='text-orange-400'>"realIpAddress"</span>
-                    <span className='text-gray-500'>:</span> <span className='text-yellow-400'>"42.119.124.219"</span>,
-                    {' \n    '}
-                    <span className='text-orange-400'>"http"</span>
-                    <span className='text-gray-500'>:</span>{' '}
-                    <span className='text-yellow-400'>"42.119.124.219:16847:khljtiNj3Kd:fdkm3nbjg45d"</span>,{' \n    '}
-                    <span className='text-orange-400'>"socks5"</span>
-                    <span className='text-gray-500'>:</span>{' '}
-                    <span className='text-yellow-400'>"42.119.124.219:26847:khljtiNj3Kd:fdkm3nbjg45d"</span>,{' \n    '}
-                    <span className='text-orange-400'>"httpPort"</span>
-                    <span className='text-gray-500'>:</span> <span className='text-blue-400'>"16847"</span>,{' \n    '}
-                    <span className='text-orange-400'>"socks5Port"</span>
-                    <span className='text-gray-500'>:</span> <span className='text-blue-400'>"26847"</span>,{' \n    '}
-                    <span className='text-orange-400'>"host"</span>
-                    <span className='text-gray-500'>:</span> <span className='text-yellow-400'>"42.119.124.219"</span>,
-                    {' \n    '}
-                    <span className='text-orange-400'>"location"</span>
-                    <span className='text-gray-500'>:</span> <span className='text-yellow-400'>"YenBai1"</span>,
-                    {' \n    '}
-                    <span className='text-orange-400'>"expirationAt"</span>
-                    <span className='text-gray-500'>:</span> <span className='text-blue-400'>1758099900</span>
-                    {'\n  '}
-                    <span className='text-gray-500'>{'}'}</span>,{' \n  '}
-                    <span className='text-orange-400'>"success"</span>
-                    <span className='text-gray-500'>:</span> <span className='text-green-400'>true</span>,{' \n  '}
-                    <span className='text-orange-400'>"code"</span>
-                    <span className='text-gray-500'>:</span> <span className='text-blue-400'>200</span>,{' \n  '}
-                    <span className='text-orange-400'>"status"</span>
-                    <span className='text-gray-500'>:</span> <span className='text-yellow-400'>"SUCCESS"</span>
-                    {'\n'}
-                    <span className='text-gray-500'>{'}'}</span>
-                  </code>
-                </pre>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
       </div>

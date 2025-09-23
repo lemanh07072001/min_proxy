@@ -295,6 +295,13 @@
   background: linear-gradient(135deg, #e63946, #d62d20);
 }
 
+.buy-button:disabled {
+  background: #ccc !important;
+  color: #666 !important;
+  cursor: not-allowed !important;
+  box-shadow: none !important;
+}
+
 .plan-title {
   font-size: 20px;
   font-weight: 700;

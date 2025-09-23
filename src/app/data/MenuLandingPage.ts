@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 
 const useMenuLandingPage = () => {
   const { t } = useTranslation()
-  
+
   return [
     {
       label: t('landing.header.menu.home'),
@@ -22,7 +22,7 @@ const useMenuLandingPage = () => {
     },
     {
       label: t('landing.header.menu.products'),
-      href: '/overview',
+      href: '/proxy-tinh',
       icon: 'tabler-info-circle',
       target: '_blank'
     },

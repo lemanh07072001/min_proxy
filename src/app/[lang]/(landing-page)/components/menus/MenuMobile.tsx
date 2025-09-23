@@ -4,11 +4,8 @@ import Image from 'next/image'
 
 import { useParams, usePathname } from 'next/navigation'
 
-import VuexyLogo from '@core/svg/Logo'
-
 import useMenuLandingPage from '@/app/data/MenuLandingPage'
 import Link from '@components/Link'
-import logo from '../../../../../../public/images/logo/logo-minsoftware-new-small.png'
 import { useModalContext } from '@/app/contexts/ModalContext'
 
 interface MenuMobileProps {

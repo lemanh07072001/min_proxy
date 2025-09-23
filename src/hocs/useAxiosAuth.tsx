@@ -5,38 +5,22 @@ import type { Session } from 'next-auth'
 
 import axiosInstance from '@/libs/axios'
 
-let isRefreshing = false
-let failedQueue: {
-  resolve: (value?: any) => void
-  reject: (reason?: any) => void
-}[] = []
-
-const processQueue = (error: Error | null, token: string | null = null) => {
-  console.log('📦 [processQueue] Processing queue, token:', token, 'error:', error)
-  failedQueue.forEach(prom => {
-    if (error || !token) {
-      prom.reject(error || new Error('No token'))
-    } else {
-      prom.resolve(token)
-    }
-  })
-  failedQueue = []
-}
+// Đã xóa logic client-side refresh, chỉ dùng server-side
 
 const useAxiosAuth = () => {
   const { data: session, update: updateSession } = useSession()
 
   useEffect(() => {
-    console.log('🔗 [useAxiosAuth] Setting up interceptors', new Date().toISOString())
+    // Kiểm tra và cập nhật token khi component mount (sau F5)
+    if ((session as any)?.access_token) {
+      axiosInstance.defaults.headers.common.Authorization = `Bearer ${(session as any).access_token}`
+    }
 
     const requestInterceptor = axiosInstance.interceptors.request.use(
       config => {
-        if (session?.access_token && !config.headers?.Authorization) {
-          config.headers.Authorization = `Bearer ${session.access_token}`
-          console.log('➡️ [request] Added Authorization header')
+        if ((session as any)?.access_token && !config.headers?.Authorization) {
+          config.headers.Authorization = `Bearer ${(session as any).access_token}`
         }
-
-
 
         return config
       },
@@ -49,53 +33,43 @@ const useAxiosAuth = () => {
         const originalRequest = error.config
 
         if (error.response?.status === 401 && !originalRequest._retry) {
-          console.warn('⚠️ [response] 401 detected for', originalRequest.url)
-
-          if (isRefreshing) {
-            console.log('🔄 [response] Already refreshing, queuing request')
-
-            return new Promise((resolve, reject) => {
-              failedQueue.push({ resolve, reject })
-            }).then(token => {
-              console.log('✅ [response] Queue retry with new token')
-              if (!token) throw new Error('No token from queue')
-              originalRequest.headers.Authorization = `Bearer ${token}`
-
-              return axiosInstance(originalRequest)
-            })
-          }
-
-          originalRequest._retry = true
-          isRefreshing = true
-          console.log('🔄 [response] Starting token refresh…')
-
-          try {
-            const refreshedSession = await updateSession()
-
-            console.log('✅ [response] updateSession result:', refreshedSession)
-
-            if (!refreshedSession?.access_token) {
-              throw new Error('Failed to refresh token: no access_token')
-            }
-
-            const newToken = refreshedSession.access_token
-
-            axiosInstance.defaults.headers.common.Authorization = `Bearer ${newToken}`
-
-            processQueue(null, newToken)
-            originalRequest.headers.Authorization = `Bearer ${newToken}`
-            console.log('✅ [response] Retrying original request with new token')
-
-            return axiosInstance(originalRequest)
-          } catch (refreshError: any) {
-            console.error('❌ [response] Critical error during token refresh:', refreshError)
-            processQueue(refreshError, null)
+          // Kiểm tra nếu session có error (server refresh đã thất bại)
+          if ((session as any)?.error === 'RefreshAccessTokenError') {
+            console.log('❌ [Client] Server refresh failed previously, signing out...')
             await signOut({ redirect: false })
 
-            return Promise.reject(refreshError)
-          } finally {
-            isRefreshing = false
-            console.log('🔓 [response] Refresh flow completed')
+            return Promise.reject(new Error('Server refresh failed'))
+          }
+
+          console.log('🔄 [Client] Received 401, attempting token refresh...')
+
+          // Đánh dấu request đã retry để tránh loop
+          originalRequest._retry = true
+
+          try {
+            // Gọi updateSession để trigger JWT callback refresh
+            const newSession = await updateSession()
+
+            if (newSession?.access_token) {
+              console.log('✅ [Client] Token refreshed successfully, retrying request...')
+
+              // Cập nhật token cho request hiện tại và axios defaults
+              originalRequest.headers.Authorization = `Bearer ${newSession.access_token}`
+              axiosInstance.defaults.headers.common.Authorization = `Bearer ${newSession.access_token}`
+
+              // Thử lại request ban đầu với token mới
+              return axiosInstance(originalRequest)
+            } else {
+              console.log('❌ [Client] No new token received, signing out...')
+              await signOut({ redirect: false })
+
+              return Promise.reject(new Error('Token refresh failed'))
+            }
+          } catch (refreshError) {
+            console.error('❌ [Client] Token refresh failed, signing out...', refreshError)
+            await signOut({ redirect: false })
+
+            return Promise.reject(new Error('Token refresh failed'))
           }
         }
 
