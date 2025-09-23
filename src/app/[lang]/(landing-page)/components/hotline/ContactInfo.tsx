@@ -31,13 +31,15 @@ const ContactInfo = () => {
         {/* Contact Information */}
         <div className='lg:col-span-1 space-y-6'>
           {/* Hotline */}
-          {/* <div className='bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow duration-300'>
+          <div className='bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow duration-300'>
             <div className='flex items-start space-x-4'>
               <div className='bg-green-500 p-3 rounded-xl flex-shrink-0'>
                 <Phone className='w-6 h-6 text-white' />
               </div>
               <div className='flex-1 min-w-0'>
-                <h3 className='text-lg font-semibold text-gray-900 mb-1'>{t('landing.hotline.contactInfo.hotline.title')}</h3>
+                <h3 className='text-lg font-semibold text-gray-900 mb-1'>
+                  {t('landing.hotline.contactInfo.hotline.title')}
+                </h3>
                 <a
                   href={`tel:${t('landing.hotline.contactInfo.hotline.phone')}`}
                   className='text-xl font-bold text-red-500 hover:text-red-600 transition-colors block'
@@ -47,7 +49,7 @@ const ContactInfo = () => {
                 <p className='text-sm text-gray-500 mt-1'>{t('landing.hotline.contactInfo.hotline.description')}</p>
               </div>
             </div>
-          </div> */}
+          </div>
 
           {/* Email */}
           <div className='bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow duration-300'>

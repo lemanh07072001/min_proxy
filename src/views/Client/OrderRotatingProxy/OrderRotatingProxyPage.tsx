@@ -106,10 +106,11 @@ export default function OrderRotatingProxyPage() {
         setSelectedProxy(res.data.data)
         setModalOpen(true)
       } else {
+        console.log(res)
         toast.error(res.data.message)
       }
     } catch (error) {
-      toast.error('Lỗi hệ thông vui lòng thử lại sau.')
+      toast.error(error.response.data.message)
     } finally {
       setLoadingId(null)
     }
@@ -236,17 +237,19 @@ export default function OrderRotatingProxyPage() {
       cell: ({ row }) => {
         const isRowLoading = loadingId === row.original.api_key
 
-        return (
-          <CustomIconButton
-            aria-label='capture screenshot'
-            color='info'
-            variant='tonal'
-            disabled={isRowLoading}
-            onClick={() => handleOpenModal(row.original?.api_key)}
-          >
-            {isRowLoading ? <Loader size={16} /> : <RefreshCcw size={16} />}
-          </CustomIconButton>
-        )
+        if (row.original.status === 'ACTIVE') {
+          return (
+            <CustomIconButton
+              aria-label='capture screenshot'
+              color='info'
+              variant='tonal'
+              disabled={isRowLoading}
+              onClick={() => handleOpenModal(row.original?.api_key)}
+            >
+              {isRowLoading ? <Loader size={16} /> : <RefreshCcw size={16} />}
+            </CustomIconButton>
+          )
+        }
       },
       size: 120
     }
