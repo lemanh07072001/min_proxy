@@ -31,11 +31,13 @@ import { useSettings } from '@core/hooks/useSettings'
 import ConfirmDialog from '@components/confirm-modal/ConfirmDialog'
 
 import { maskEmail } from '@/utils/maskEmail'
+import UserProfileModal from '@/components/modals/UserProfileModal'
 
 const UserDropdown = () => {
   // States
   const [open, setOpen] = useState(false)
   const [openConfirm, setOpenConfirm] = useState(false)
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false)
 
   // Refs
   const anchorRef = useRef<HTMLDivElement>(null)
@@ -66,10 +68,10 @@ const UserDropdown = () => {
 
   const handleConfirmLogout = async () => {
     setOpenConfirm(false)
-    
+
     // Chỉ cần signOut, server sẽ xử lý logout
     await signOut({ redirect: false })
-    
+
     // Redirect về trang chủ
     router.replace('/overview')
   }
@@ -131,22 +133,15 @@ const UserDropdown = () => {
                       </div>
                     </div>
                     <Divider className='mlb-1' />
-                    <MenuItem className='mli-2 gap-3' onClick={e => handleDropdownClose(e)}>
+                    {/* <MenuItem className='mli-2 gap-3' onClick={() => setIsProfileModalOpen(true)}>
+                      <i className='tabler-user' />
+                      <Typography color='text.primary'>My Profile</Typography>
+                    </MenuItem> */}
+                    <MenuItem className='mli-2 gap-3'>
                       <i className='tabler-user' />
                       <Typography color='text.primary'>My Profile</Typography>
                     </MenuItem>
-                    <MenuItem className='mli-2 gap-3' onClick={e => handleDropdownClose(e)}>
-                      <i className='tabler-settings' />
-                      <Typography color='text.primary'>Settings</Typography>
-                    </MenuItem>
-                    <MenuItem className='mli-2 gap-3' onClick={e => handleDropdownClose(e)}>
-                      <i className='tabler-currency-dollar' />
-                      <Typography color='text.primary'>Pricing</Typography>
-                    </MenuItem>
-                    <MenuItem className='mli-2 gap-3' onClick={e => handleDropdownClose(e)}>
-                      <i className='tabler-help-circle' />
-                      <Typography color='text.primary'>FAQ</Typography>
-                    </MenuItem>
+
                     <div className='flex items-center plb-2 pli-3'>
                       <Button
                         fullWidth
@@ -178,6 +173,8 @@ const UserDropdown = () => {
       >
         Bạn có chắc chắn muốn kết thúc phiên làm việc và đăng xuất khỏi tài khoản này không?
       </ConfirmDialog>
+
+      <UserProfileModal isOpen={isProfileModalOpen} onClose={() => setIsProfileModalOpen(false)} />
     </>
   )
 }

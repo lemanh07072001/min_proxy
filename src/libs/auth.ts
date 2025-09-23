@@ -95,6 +95,7 @@ export const authOptions = {
           return {
             id: data.user.id || data.user.email,
             email: data.user.email,
+            role: data.user.role,
             name: data.user.name,
             access_token: data.access_token,
             accessTokenExpires: Date.now() + (data.expires_in || 3600) * 1000,
@@ -121,7 +122,8 @@ export const authOptions = {
           userData: user.userData,
           name: user.userData?.name,
           email: user.userData?.email,
-          sub: user.userData?.id
+          sub: user.userData?.id,
+          role: user.userData?.role
         }
       }
 
@@ -149,6 +151,7 @@ export const authOptions = {
       session.user = token.userData || session.user
       session.access_token = token.access_token as string
       session.error = token.error as string
+      session.role = token.role
 
       return session
     }
