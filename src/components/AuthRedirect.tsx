@@ -13,10 +13,6 @@ const AuthRedirect = ({ lang, children }: { lang: Locale; children: React.ReactN
   const { data: session, status } = useSession()
   const router = useRouter()
 
-  console.log('session:', session)
-
-  console.log('status:', status)
-
   useEffect(() => {
     // Nếu đã có session thì chuyển hướng (có thể đổi URL tuỳ nhu cầu)
     if (status === 'authenticated') {

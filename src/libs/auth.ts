@@ -9,8 +9,6 @@ import type { JWT } from 'next-auth/jwt'
 let refreshTokenPromise: Promise<JWT | null> | null = null
 
 async function refreshToken(token: JWT): Promise<JWT> {
-  // Nếu đã có một promise refresh đang chạy, các lần gọi sau sẽ không tạo request mới
-  // mà sẽ chờ promise cũ hoàn thành và trả về kết quả của nó.
   if (refreshTokenPromise) {
     console.log('🔄 [Server Debounce] Một lần refresh khác đang chạy, đang chờ kết quả...')
 

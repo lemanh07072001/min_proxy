@@ -6,8 +6,8 @@ import TeamSection from '@/app/[lang]/(landing-page)/components/abount/TeamSecti
 import MissionVision from '@/app/[lang]/(landing-page)/components/abount/MissionVision'
 import type { Metadata } from 'next'
 
-export async function generateMetadata({ params }: { params: { lang: string } }): Promise<Metadata> {
-  const { lang } = params
+export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }): Promise<Metadata> {
+  const { lang } = await params
   
   // Import dictionary based on language
   const dictionary = await import(`@/locales/${lang}.json`).then(m => m.default)
