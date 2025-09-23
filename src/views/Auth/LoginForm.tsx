@@ -70,8 +70,8 @@ export default function LoginForm() {
       closeAuthModal()
 
       // Reload page để update session ở server-side
-      router.replace('/overview')
-      window.location.reload()
+      // router.replace('/overview')
+      // window.location.reload()
     } else {
       setLoading(false)
       toast.error(t('auth.loginError'))

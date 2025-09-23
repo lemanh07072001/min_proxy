@@ -2,8 +2,8 @@ import type { Metadata } from 'next'
 
 import ContactInfo from '@/app/[lang]/(landing-page)/components/hotline/ContactInfo'
 
-export async function generateMetadata({ params }: { params: { lang: string } }): Promise<Metadata> {
-  const { lang } = params
+export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }): Promise<Metadata> {
+  const { lang } = await params
   const dictionary = await import(`@/locales/${lang}.json`).then(m => m.default)
 
   return {

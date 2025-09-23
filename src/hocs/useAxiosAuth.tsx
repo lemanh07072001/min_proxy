@@ -1,90 +1,78 @@
-import { useEffect } from 'react'
+// hooks/useAxiosAuth.ts
+import { useSession } from 'next-auth/react';
+import { useEffect } from 'react';
+import axios from 'axios';
+import axiosInstance from '@/libs/axios'; // axios instance của bạn
 
-import { useSession, signOut } from 'next-auth/react'
-import type { Session } from 'next-auth'
-
-import axiosInstance from '@/libs/axios'
-
-// Đã xóa logic client-side refresh, chỉ dùng server-side
+// Biến cờ để đảm bảo chỉ có một request refresh được gửi đi
+let isRefreshing = false;
 
 const useAxiosAuth = () => {
-  const { data: session, update: updateSession } = useSession()
+  const { data: session, update } = useSession();
 
   useEffect(() => {
-    // Kiểm tra và cập nhật token khi component mount (sau F5)
-    if ((session as any)?.access_token) {
-      axiosInstance.defaults.headers.common.Authorization = `Bearer ${(session as any).access_token}`
-    }
+    const requestIntercept = axiosInstance.interceptors.request.use(
+      async (config) => {
+        if (!session?.accessToken) return config;
 
-    const requestInterceptor = axiosInstance.interceptors.request.use(
-      config => {
-        if ((session as any)?.access_token && !config.headers?.Authorization) {
-          config.headers.Authorization = `Bearer ${(session as any).access_token}`
-        }
+        // Đặt buffer time (ví dụ: 5 phút) để refresh trước khi token hết hạn
+        const bufferTime =  60 * 1000;
+        const now = Date.now();
+        const tokenExpires = session.accessTokenExpires as number;
 
-        return config
-      },
-      error => Promise.reject(error)
-    )
+        const isTokenExpiring = now > tokenExpires - bufferTime;
 
-    const responseInterceptor = axiosInstance.interceptors.response.use(
-      response => response,
-      async error => {
-        const originalRequest = error.config
-
-        if (error.response?.status === 401 && !originalRequest._retry) {
-          // Kiểm tra nếu session có error (server refresh đã thất bại)
-          if ((session as any)?.error === 'RefreshAccessTokenError') {
-            console.log('❌ [Client] Server refresh failed previously, signing out...')
-            await signOut({ redirect: false })
-
-            return Promise.reject(new Error('Server refresh failed'))
-          }
-
-          console.log('🔄 [Client] Received 401, attempting token refresh...')
-
-          // Đánh dấu request đã retry để tránh loop
-          originalRequest._retry = true
-
+        if (isTokenExpiring && !isRefreshing) {
+          isRefreshing = true;
           try {
-            // Gọi updateSession để trigger JWT callback refresh
-            const newSession = await updateSession()
+            console.log('🔄 Token is expiring, attempting to refresh...');
+            // Dùng axios gốc để tránh interceptor loop
+            const response = await axios.post(
+              `${process.env.NEXT_PUBLIC_API_URL}/refresh`,
+              {},
+              { headers: { Authorization: `Bearer ${session.accessToken}` } }
+            );
+            
+            const newAccessToken = response.data.access_token;
+            const newExpiresIn = response.data.expires_in;
 
-            if (newSession?.access_token) {
-              console.log('✅ [Client] Token refreshed successfully, retrying request...')
+            // Cập nhật session với token mới
+            await update({
+              ...session,
+              accessToken: newAccessToken,
+              accessTokenExpires: Date.now() + newExpiresIn * 1000,
+            });
+            
+            console.log('✅ Token refreshed successfully.');
 
-              // Cập nhật token cho request hiện tại và axios defaults
-              originalRequest.headers.Authorization = `Bearer ${newSession.access_token}`
-              axiosInstance.defaults.headers.common.Authorization = `Bearer ${newSession.access_token}`
+            // Cập nhật header cho request hiện tại và các request sau
+            config.headers.Authorization = `Bearer ${newAccessToken}`;
+            axiosInstance.defaults.headers.common.Authorization = `Bearer ${newAccessToken}`;
 
-              // Thử lại request ban đầu với token mới
-              return axiosInstance(originalRequest)
-            } else {
-              console.log('❌ [Client] No new token received, signing out...')
-              await signOut({ redirect: false })
-
-              return Promise.reject(new Error('Token refresh failed'))
-            }
-          } catch (refreshError) {
-            console.error('❌ [Client] Token refresh failed, signing out...', refreshError)
-            await signOut({ redirect: false })
-
-            return Promise.reject(new Error('Token refresh failed'))
+          } catch (error) {
+            console.error('❌ Could not refresh token.', error);
+            // Xử lý lỗi refresh, ví dụ: signOut();
+          } finally {
+            isRefreshing = false;
           }
         }
-
-        return Promise.reject(error)
-      }
-    )
+        
+        // Luôn gán token mới nhất vào header
+        if (!config.headers.Authorization) {
+            config.headers.Authorization = `Bearer ${session.accessToken}`;
+        }
+        
+        return config;
+      },
+      (error) => Promise.reject(error)
+    );
 
     return () => {
-      console.log('🧹 [useAxiosAuth] Ejecting interceptors')
-      axiosInstance.interceptors.request.eject(requestInterceptor)
-      axiosInstance.interceptors.response.eject(responseInterceptor)
-    }
-  }, [session, updateSession])
+      axiosInstance.interceptors.request.eject(requestIntercept);
+    };
+  }, [session, update]);
 
-  return axiosInstance
-}
+  return axiosInstance;
+};
 
-export default useAxiosAuth
+export default useAxiosAuth;

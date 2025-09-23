@@ -50,7 +50,6 @@ const NavbarContent = () => {
     rechargeAmount: ''
   })
 
-  console.log(data)
 
   const handleGenerateQr = (data: { qrUrl: string; amount: string; rechargeAmount: string }) => {
     setTransactionData(data)
