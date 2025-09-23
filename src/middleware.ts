@@ -23,6 +23,18 @@ export default withAuth(
       }
     }
 
+    // Kiểm tra quyền admin cho các route admin
+    if (pathname.includes('/admin')) {
+      // Kiểm tra nếu user có quyền admin
+      const userRole = token?.role
+      const isAdmin = userRole === 'admin' || userRole === 'super_admin' || userRole === 'administrator'
+      
+      if (!isAdmin) {
+        console.log('🛡️ [middleware] Unauthorized access to admin route, user role:', userRole)
+        return NextResponse.redirect(new URL('/unauthorized', req.url))
+      }
+    }
+
     return NextResponse.next()
   },
   {
