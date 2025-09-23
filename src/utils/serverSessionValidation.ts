@@ -1,4 +1,5 @@
 import { getServerSession } from 'next-auth'
+
 import { authOptions } from '@/libs/auth'
 
 /**
@@ -80,12 +81,14 @@ export async function validateServerSessionBasic() {
 export async function getServerUserData() {
   const session = await getServerSession(authOptions)
 
+  console.log('session: ', session)
+
   if (!session?.access_token) {
     return null
   }
 
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/me`, {
+    const response = await fetch(`${process.env.API_URL}/me`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -97,8 +100,7 @@ export async function getServerUserData() {
     if (response.ok) {
       return await response.json()
     }
-  } catch (error) {
-  }
+  } catch (error) {}
 
   return null
 }

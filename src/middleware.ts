@@ -1,5 +1,6 @@
-import { withAuth } from 'next-auth/middleware'
 import { NextResponse } from 'next/server'
+
+import { withAuth } from 'next-auth/middleware'
 import type { NextRequestWithAuth } from 'next-auth/middleware'
 
 export default withAuth(
@@ -12,12 +13,13 @@ export default withAuth(
       // Kiểm tra nếu session có error
       if (token?.error === 'RefreshAccessTokenError') {
         console.log('🛡️ [middleware] Session has refresh error, redirecting to login')
-        return NextResponse.redirect(new URL('/login', req.url))
+
+        // return NextResponse.redirect(new URL('/login', req.url))
       }
 
       // Kiểm tra nếu không có access_token
       if (!token?.access_token) {
-        return NextResponse.redirect(new URL('/login', req.url))
+        // return NextResponse.redirect(new URL('/login', req.url))
       }
     }
 
@@ -40,6 +42,7 @@ export default withAuth(
             return true
           } else {
             console.log('🛡️ [middleware] Unauthorized access to private route')
+
             return false // Sẽ redirect về trang login được cấu hình trong NextAuth
           }
         }
@@ -62,6 +65,6 @@ export const config = {
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      */
-    '/((?!api|_next/static|_next/image|favicon.ico).*)',
-  ],
+    '/((?!api|_next/static|_next/image|favicon.ico).*)'
+  ]
 }

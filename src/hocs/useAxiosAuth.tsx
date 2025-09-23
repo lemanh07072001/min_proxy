@@ -42,10 +42,15 @@ const useAxiosAuth = () => {
   const pathname = usePathname()
 
   useEffect(() => {
+    // Kiểm tra và cập nhật token khi component mount (sau F5)
+    if ((session as any)?.access_token) {
+      axiosInstance.defaults.headers.common.Authorization = `Bearer ${(session as any).access_token}`
+    }
+
     const requestInterceptor = axiosInstance.interceptors.request.use(
       config => {
-        if (session?.access_token && !config.headers?.Authorization) {
-          config.headers.Authorization = `Bearer ${session.access_token}`
+        if ((session as any)?.access_token && !config.headers?.Authorization) {
+          config.headers.Authorization = `Bearer ${(session as any).access_token}`
         }
 
         return config
@@ -59,6 +64,11 @@ const useAxiosAuth = () => {
         const originalRequest = error.config
 
         if (error.response?.status === 401 && !originalRequest._retry) {
+          if ((session as any)?.error === 'RefreshAccessTokenError') {
+            console.log('🔄 [Client] Server-side refresh failed, attempting client-side refresh')
+            // Không signOut ngay, thử client-side refresh trước
+          }
+
           if (isRefreshing) {
             return new Promise((resolve, reject) => {
               failedQueue.push({ resolve, reject })
@@ -70,7 +80,9 @@ const useAxiosAuth = () => {
                   throw error
                 }
 
+                // Gán token mới vào request và axios defaults
                 originalRequest.headers.Authorization = `Bearer ${token}`
+                axiosInstance.defaults.headers.common.Authorization = `Bearer ${token}`
 
                 return axiosInstance(originalRequest)
               })
@@ -90,7 +102,7 @@ const useAxiosAuth = () => {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
-                Authorization: `Bearer ${session?.access_token}`
+                Authorization: `Bearer ${(session as any)?.access_token}`
               }
             })
 
@@ -107,19 +119,22 @@ const useAxiosAuth = () => {
               throw new Error('No access token in refresh response')
             }
 
-            // Update session với token mới
-            await updateSession({
+            const newToken = refreshData.access_token
+
+            // Gán token mới vào axios defaults trước
+            axiosInstance.defaults.headers.common.Authorization = `Bearer ${newToken}`
+
+            // Gán token vào request hiện tại
+            originalRequest.headers.Authorization = `Bearer ${newToken}`
+
+            // Update session với token mới (không cần await vì không ảnh hưởng đến request hiện tại)
+            updateSession({
               access_token: refreshData.access_token,
               accessTokenExpires: Date.now() + (refreshData.expires_in || 3600) * 1000,
               error: undefined
             })
 
-            const newToken = refreshData.access_token
-
-            axiosInstance.defaults.headers.common.Authorization = `Bearer ${newToken}`
-
             processQueue(null, newToken)
-            originalRequest.headers.Authorization = `Bearer ${newToken}`
 
             return axiosInstance(originalRequest)
           } catch (refreshError: any) {
@@ -127,7 +142,14 @@ const useAxiosAuth = () => {
 
             processQueue(error, null)
 
-            await signOut({ redirect: false })
+            // Trong kiến trúc hybrid, chỉ signOut nếu cả server và client refresh đều thất bại
+            if ((session as any)?.error === 'RefreshAccessTokenError') {
+              console.error('❌ [Client] Both server and client refresh failed. Signing out.')
+              await signOut({ redirect: true })
+            } else {
+              console.error('❌ [Client] Client refresh failed. Signing out.')
+              await signOut({ redirect: false })
+            }
 
             return Promise.reject(error)
           } finally {
