@@ -246,7 +246,7 @@ export default async function Overview() {
                     lineHeight: '120%'
                   }}
                 >
-                  2342
+                  2.342
                 </Typography>
                 <CustomIconButton aria-label='capture screenshot' color='success' variant='tonal'>
                   <User size={16} />
@@ -310,7 +310,7 @@ export default async function Overview() {
                     lineHeight: '120%'
                   }}
                 >
-                  2001
+                  2.001
                 </Typography>
                 <CustomIconButton aria-label='capture screenshot' color='success' variant='tonal'>
                   <EthernetPort size={16} />
@@ -370,7 +370,7 @@ export default async function Overview() {
                     lineHeight: '120%'
                   }}
                 >
-                  214973
+                  214.973
                 </Typography>
                 <CustomIconButton aria-label='capture screenshot' color='info' variant='tonal'>
                   <MapPinHouse size={16} />
