@@ -90,6 +90,23 @@ export default async function RotatingProxy({ params }: { params: Promise<{ lang
       status: 'success'
     })
 
+    // 👉 xử lý cột time: nếu time_type = 1 -> Ngày sử dụng, nếu = 7 -> Tuần sử dụng
+    const timeIndex = features.findIndex(f => f.field === 'time')
+
+    if (timeIndex !== -1) {
+      features[timeIndex] = {
+        ...features[timeIndex],
+        label:
+          plan.time_type === '1'
+            ? 'Ngày sử dụng'
+            : plan.time_type === '7'
+              ? 'Tuần sử dụng'
+              : plan.time_type === '30' // hoặc giá trị bạn định nghĩa cho tháng
+                ? 'Tháng sử dụng'
+                : 'Không xác định'
+      }
+    }
+
     return {
       id: plan.id,
       title: plan.name,
@@ -97,9 +114,12 @@ export default async function RotatingProxy({ params }: { params: Promise<{ lang
       api_body: plan.api_body,
       partner: plan.partner,
       ip_version: plan.ip_version,
+      time_type: plan.time_type, // lưu nếu cần dùng nơi khác
       features
     }
   })
+
+  console.log(proxyPlans)
 
   return <ProxyPlansClient data={mergedPlans} />
 }
