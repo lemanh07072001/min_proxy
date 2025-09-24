@@ -137,6 +137,7 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, logo, color, price, fea
   // Xác định chế độ select
   const isSelectMode = provider.show_time == 1
 
+  console.log(provider)
   // Tạo schema dựa trên chế độ
   const proxySchema = createProxySchema(isSelectMode)
 
@@ -157,9 +158,13 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, logo, color, price, fea
     mode: 'onChange'
   })
 
+
+
   const watchedQuantity = watch('quantity')
   const watchedDays = watch('days')
   const watchedProrocol = watch('protocol')
+
+
 
   let daysInNumber = 0
 
@@ -168,7 +173,9 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, logo, color, price, fea
     const quantity = parseInt(watchedQuantity, 10) || 1
 
     if (isSelectMode) {
-      daysInNumber = DURATION_MAP[watchedDays] || 0
+      // daysInNumber = DURATION_MAP[watchedDays] || 0
+      daysInNumber = parseInt(1, 10) || 0
+      console.log(daysInNumber)
     } else {
       daysInNumber = parseInt(watchedDays, 10) || 0
     }
