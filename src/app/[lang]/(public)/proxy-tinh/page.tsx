@@ -23,8 +23,6 @@ export default async function StaticProxy() {
     console.log(error)
   }
 
-  console.log(proxyPlans)
-
   const proxyProviders = {
     features: [
       {

@@ -168,18 +168,15 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, logo, color, price, fea
     const quantity = parseInt(watchedQuantity, 10) || 1
 
     if (isSelectMode) {
-      // Nếu là select, tra cứu trong DURATION_MAP
       daysInNumber = DURATION_MAP[watchedDays] || 0
     } else {
-      // Nếu là input, chuyển đổi trực tiếp
       daysInNumber = parseInt(watchedDays, 10) || 0
     }
 
     if (quantity < 1 || daysInNumber < 1) return 0
 
-    return basePrice * quantity
-
-    // return basePrice * quantity * daysInNumber
+    // TÍNH THEO SỐ NGÀY
+    return basePrice * quantity * daysInNumber
   }
 
   const calculateTotalFormat = () => {
