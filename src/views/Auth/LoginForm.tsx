@@ -73,17 +73,9 @@ export default function LoginForm() {
       toast.success(t('auth.loginSuccess'))
       closeAuthModal()
 
-      // Cập nhật Redux ngay lập tức
-      try {
-        const me = await axiosInstance.post('/me')
-        if (me?.data) {
-          store.dispatch(setUser(me.data))
-        }
-      } catch {}
-
-      // Điều hướng đúng theo ngôn ngữ
-      const nextPath = `/${locale}/overview`
-      router.replace(nextPath)
+      // Reload page để update session ở server-side
+      router.replace('/proxy-tinh')
+      window.location.reload()
     } else {
       setLoading(false)
       toast.error(t('auth.loginError'))
