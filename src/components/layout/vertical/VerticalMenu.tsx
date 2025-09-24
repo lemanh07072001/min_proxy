@@ -13,7 +13,8 @@ import {
   PackagePlus,
   FileText,
   User,
-  MessageCircleQuestionMark
+  MessageCircleQuestionMark,
+  Handshake
 } from 'lucide-react'
 
 // MUI Imports
@@ -240,6 +241,15 @@ const VerticalMenu = ({ scrollMenu, dictionary }: Props) => {
           >
             {dictionary['navigation'].purchaseHistory}
           </MenuItem>
+
+          <MenuItem
+            icon={<Handshake size={20} strokeWidth={1.5} />}
+            rootStyles={getMenuItemStyles('affiliate')}
+            href={`/${locale}/affiliate`}
+          >
+            {dictionary['navigation'].affiliate}
+          </MenuItem>
+
           <MenuItem
             icon={<FileText size={20} strokeWidth={1.5} />}
             rootStyles={getMenuItemStyles('transaction-history')}

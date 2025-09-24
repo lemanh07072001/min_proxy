@@ -4,12 +4,15 @@ import { Box } from '@mui/material'
 
 interface BoxCustomProps {
   children: ReactNode
+  className?: string
+  sx?: object
 }
 
-export default function BoxCustom({ children }: BoxCustomProps) {
+export default function BoxCustom({ children, className, sx }: BoxCustomProps) {
   return (
     <>
       <Box
+        className={className}
         sx={{
           boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
           height: '100%',
@@ -18,7 +21,8 @@ export default function BoxCustom({ children }: BoxCustomProps) {
           fontSize: '14px',
           listStyle: 'none',
           backgroundColor: '#ffffff',
-          borderRadius: '16px'
+          borderRadius: '16px',
+          ...sx
         }}
       >
         <Box

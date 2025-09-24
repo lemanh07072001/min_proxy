@@ -1,6 +1,7 @@
 'use client'
 
-import { createContext, useContext, useState, ReactNode } from 'react'
+import type { ReactNode } from 'react'
+import { createContext, useContext, useState } from 'react'
 
 interface ModalContextType {
   isAuthModalOpen: boolean
@@ -8,23 +9,20 @@ interface ModalContextType {
   resetEmail: string | null
   resetToken: string | null
   resetPassword: string | null
-  openAuthModal: (
-    mode?: 'login' | 'register' | 'reset' | 'resetpass',
-    email?: string,
-    token?: string
-  ) => void                        // ✅ bỏ password
+  openAuthModal: (mode?: 'login' | 'register' | 'reset' | 'resetpass', email?: string, token?: string) => void // ✅ bỏ password
   closeAuthModal: () => void
   setAuthModalMode: (mode: 'login' | 'register' | 'reset' | 'resetpass') => void
   setResetData: (email: string, token: string) => void
   setResetPassword: (password: string) => void
 }
 
-
 const ModalContext = createContext<ModalContextType | null>(null)
 
 export const useModalContext = () => {
   const context = useContext(ModalContext)
+
   if (!context) throw new Error('useModalContext must be used within ModalContextProvider')
+
   return context
 }
 
@@ -46,13 +44,14 @@ export const ModalContextProvider = ({ children }: ModalContextProviderProps) =>
     token?: string
   ) => {
     setAuthModalMode(mode)
+
     if (mode === 'reset' || mode === 'resetpass') {
       if (email) setResetEmail(email)
       if (token) setResetToken(token)
     }
+
     setIsAuthModalOpen(true)
   }
-
 
   const closeAuthModal = () => {
     setIsAuthModalOpen(false)
