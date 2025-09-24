@@ -16,12 +16,14 @@ async function refreshToken(token: JWT): Promise<JWT> {
   // các lệnh gọi khác sẽ chờ và sử dụng kết quả của yêu cầu đó.
   if (refreshTokenPromise) {
     console.log('[AUTH] Một lần refresh khác đang chạy, đang chờ kết quả...')
+
     return refreshTokenPromise
   }
 
   refreshTokenPromise = (async () => {
     try {
       console.log('[AUTH] Bắt đầu quá trình làm mới access token...')
+
       const res = await fetch(`${process.env.API_URL}/refresh`, {
         method: 'POST',
         headers: {
@@ -52,6 +54,7 @@ async function refreshToken(token: JWT): Promise<JWT> {
       }
     } catch (error) {
       console.error('[AUTH] ❌ Thất bại khi làm mới token:', error)
+
       return {
         ...token,
         error: 'RefreshAccessTokenError' // Đánh dấu lỗi để client xử lý
@@ -101,6 +104,7 @@ export const authOptions: NextAuthOptions = {
           } as User
         } catch (error) {
           console.error('[AUTH] Lỗi trong authorize callback:', error)
+
           return null
         }
       }
@@ -128,7 +132,8 @@ export const authOptions: NextAuthOptions = {
         console.log('[AUTH] Token nhận được trong callback jwt:', {
           hasToken: !!token.access_token,
           expires: new Date(token.accessTokenExpires)
-        });
+        })
+
         return {
           ...token,
           access_token: user.access_token,
@@ -140,7 +145,8 @@ export const authOptions: NextAuthOptions = {
 
       // 2. Khi client gọi `updateSession` để đồng bộ token mới
       if (trigger === 'update' && session?.access_token) {
-        console.log('[AUTH] JWT - Client trigger update',trigger)
+        console.log('[AUTH] JWT - Client trigger update', trigger)
+
         return {
           ...token,
           access_token: session.access_token,
@@ -157,12 +163,12 @@ export const authOptions: NextAuthOptions = {
 
       // 4. Nếu token đã hoặc sắp hết hạn, tiến hành làm mới
       console.log('[AUTH] JWT - Token đã hoặc sắp hết hạn, đang làm mới...')
-      const newRefreshedTokenObject = await refreshToken(token);
+      const newRefreshedTokenObject = await refreshToken(token)
 
       return {
         ...token,
         ...newRefreshedTokenObject
-      };
+      }
     },
 
     /**
@@ -177,6 +183,7 @@ export const authOptions: NextAuthOptions = {
         session.role = token.role
         session.error = token.error
       }
+
       return session
     }
   }

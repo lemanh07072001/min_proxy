@@ -1,5 +1,7 @@
 import { useEffect } from 'react'
+
 import { useSession, signOut } from 'next-auth/react'
+
 import axiosInstance from '@/libs/axios' // Import instance axios singleton
 
 /**
@@ -13,26 +15,28 @@ const useAxiosAuth = () => {
     // === 1. Request Interceptor ===
     // Mục đích: Gắn token vào header của mọi request gửi đi.
     const requestInterceptor = axiosInstance.interceptors.request.use(
-      (config) => {
+      config => {
         // Không ghi đè header Authorization nếu nó đã tồn tại.
         if (session?.access_token && !config.headers.Authorization) {
           config.headers.Authorization = `Bearer ${session.access_token}`
         }
+
         return config
       },
-      (error) => Promise.reject(error)
+      error => Promise.reject(error)
     )
 
     // === 2. Response Interceptor ===
     // Mục đích: Xử lý các response trả về, đặc biệt là lỗi 401.
     const responseInterceptor = axiosInstance.interceptors.response.use(
       // Trường hợp response thành công (status 2xx)
-      (response) => {
+      response => {
         // Không cần làm gì thêm, chỉ cần trả về response
         return response
       },
+
       // Trường hợp response bị lỗi
-      async (error) => {
+      async error => {
         const originalRequest = error.config
 
         // Chỉ xử lý lỗi 401 (Unauthorized) và đảm bảo request chưa được thử lại
@@ -60,11 +64,13 @@ const useAxiosAuth = () => {
               // Lúc này callback `jwt` có thể đã đánh dấu session.error
               console.error('[AXIOS HOOK] ❌ Không nhận được session mới. Đăng xuất...')
               await signOut() // Đăng xuất người dùng
+
               return Promise.reject(error)
             }
           } catch (refreshError) {
             console.error('[AXIOS HOOK] ❌ Refresh token thất bại hoàn toàn. Đăng xuất...', refreshError)
             await signOut() // Đăng xuất người dùng
+
             return Promise.reject(error)
           }
         }

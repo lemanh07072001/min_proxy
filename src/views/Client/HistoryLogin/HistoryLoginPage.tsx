@@ -74,22 +74,13 @@ export default function HistoryLoginPage() {
         header: 'Nội dung',
         size: 400
       },
-      {
-        header: 'device',
-        accessorKey: 'device',
-        size: 150
-      },
+
       {
         accessorKey: 'browser',
         header: 'Browser',
         size: 100
       },
 
-      {
-        accessorKey: 'os',
-        header: 'Os',
-        size: 100
-      },
       {
         accessorKey: 'ip_address',
         header: 'Ip',
