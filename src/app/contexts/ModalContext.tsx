@@ -1,7 +1,8 @@
 'use client'
 
 import type { ReactNode } from 'react'
-import { createContext, useContext, useState } from 'react'
+import { createContext, useContext, useEffect, useRef, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 
 interface ModalContextType {
   isAuthModalOpen: boolean
@@ -9,11 +10,13 @@ interface ModalContextType {
   resetEmail: string | null
   resetToken: string | null
   resetPassword: string | null
+  referralCode: string | null
   openAuthModal: (mode?: 'login' | 'register' | 'reset' | 'resetpass', email?: string, token?: string) => void // ✅ bỏ password
   closeAuthModal: () => void
   setAuthModalMode: (mode: 'login' | 'register' | 'reset' | 'resetpass') => void
   setResetData: (email: string, token: string) => void
   setResetPassword: (password: string) => void
+  setReferralCode: (code: string | null) => void
 }
 
 const ModalContext = createContext<ModalContextType | null>(null)
@@ -32,11 +35,32 @@ interface ModalContextProviderProps {
 
 export const ModalContextProvider = ({ children }: ModalContextProviderProps) => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
-  const [authModalMode, setAuthModalMode] = useState<'login' | 'register' | 'reset'>('login')
+  const [authModalMode, setAuthModalMode] = useState<'login' | 'register' | 'reset' | 'resetpass'>('login')
 
   // ✅ Thêm state cho email & token
   const [resetEmail, setResetEmail] = useState<string | null>(null)
   const [resetToken, setResetToken] = useState<string | null>(null)
+  const [resetPassword, setResetPassword] = useState<string | null>(null)
+  // ✅ Thêm state cho referral code
+  const [referralCode, setReferralCode] = useState<string | null>(null)
+
+  // ✅ Auto open register modal when ?ref= is present
+  const searchParams = useSearchParams()
+  const hasHandledRef = useRef(false)
+
+  useEffect(() => {
+    if (hasHandledRef.current) return
+
+    const ref = searchParams.get('ref')
+
+    if (ref) {
+      setReferralCode(ref)
+      setAuthModalMode('register')
+      setIsAuthModalOpen(true)
+    }
+
+    hasHandledRef.current = true
+  }, [searchParams])
 
   const openAuthModal = (
     mode: 'login' | 'register' | 'reset' | 'resetpass' = 'login',
@@ -57,7 +81,7 @@ export const ModalContextProvider = ({ children }: ModalContextProviderProps) =>
     setIsAuthModalOpen(false)
   }
 
-  const setMode = (mode: 'login' | 'register' | 'reset') => {
+  const setMode = (mode: 'login' | 'register' | 'reset' | 'resetpass') => {
     setAuthModalMode(mode)
   }
 
@@ -71,10 +95,14 @@ export const ModalContextProvider = ({ children }: ModalContextProviderProps) =>
     authModalMode,
     resetEmail,
     resetToken,
+    resetPassword,
+    referralCode,
     openAuthModal,
     closeAuthModal,
     setAuthModalMode: setMode,
-    setResetData
+    setResetData,
+    setResetPassword,
+    setReferralCode
   }
 
   return <ModalContext.Provider value={value}>{children}</ModalContext.Provider>

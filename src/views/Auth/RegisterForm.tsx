@@ -22,6 +22,7 @@ type RegisterFormInputs = {
   email: string
   password: string
   password_confirmation: string
+  ref?: string | null
 }
 
 const registerUser = async (data: RegisterFormInputs) => {
@@ -35,7 +36,7 @@ export default function RegisterForm() {
   const [showPasswordConfirmation, setPasswordConfirmation] = useState(false)
   const [rememberMe, setRememberMe] = useState(false)
 
-  const { closeAuthModal } = useModalContext()
+  const { closeAuthModal, referralCode } = useModalContext()
   const { t } = useTranslation()
 
   const schema = yup
@@ -81,8 +82,9 @@ export default function RegisterForm() {
   })
 
   const onSubmit = (data: RegisterFormInputs) => {
-    console.log('Dữ liệu form:', data)
-    mutate(data)
+    const payload: RegisterFormInputs = { ...data, ref: referralCode ?? undefined }
+    console.log('Dữ liệu form:', payload)
+    mutate(payload)
   }
 
   return (

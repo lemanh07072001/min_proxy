@@ -109,7 +109,7 @@
     },
     "messages": {
       "welcomeBack": "Chào mừng bạn quay lại",
-      "welcomeToApp": "Chào mừng bạn đến với {appName}",
+      "welcomeToApp": "Chào mừng bạn đến với {{appName}}",
       "forgotPasswordTitle": "Quên mật khẩu",
       "loginInstructions": "Vui lòng điền thông tin đăng nhập",
       "registerInstructions": "Vui lòng điền thông tin đăng ký",
@@ -393,7 +393,7 @@
   "landing": {
     "header": {
       "promoBanner": {
-        "text": "Tuyển đại lý: Trở thành đại lý cho {appName} để nhận được nhiều ưu đãi hấp dẫn",
+        "text": "Tuyển đại lý: Trở thành đại lý cho {{appName}} để nhận được nhiều ưu đãi hấp dẫn",
         "button": "Hợp tác ngay"
       },
       "menu": {
@@ -496,27 +496,27 @@
         {
           "name": "Nguyễn Thanh Bình",
           "role": "Kinh doanh proxy full time",
-          "content": "Tôi là đại lý từ những ngày đầu {appName} ra mắt và rất bất ngờ với sự chuyên nghiệp trong cách vận hành và hỗ trợ. Tôi có website riêng được tùy chỉnh theo ý mình, chính sách rõ ràng, chăm sóc kỹ lưỡng. Đây là nền tảng đáng tin cậy và nghiêm túc trong mảng proxy."
+          "content": "Tôi là đại lý từ những ngày đầu {{appName}} ra mắt và rất bất ngờ với sự chuyên nghiệp trong cách vận hành và hỗ trợ. Tôi có website riêng được tùy chỉnh theo ý mình, chính sách rõ ràng, chăm sóc kỹ lưỡng. Đây là nền tảng đáng tin cậy và nghiêm túc trong mảng proxy."
         },
         {
           "name": "Nguyễn Hoa",
           "role": "Đại lý kinh doanh proxy tại TP.HCM",
-          "content": "Ban đầu tôi rất ngại bán hàng qua web vì sợ phức tạp và chi phí cao. Nhưng từ khi tham gia chương trình đại lý web riêng của {appName}, tôi được hỗ trợ tận tình, miễn phí web riêng và tăng hẳn 3 triệu trải nghiệm. Giờ tôi bán proxy ổn định hàng tháng, khởi đầu nhẹ nhàng đồng thú."
+          "content": "Ban đầu tôi rất ngại bán hàng qua web vì sợ phức tạp và chi phí cao. Nhưng từ khi tham gia chương trình đại lý web riêng của {{appName}}, tôi được hỗ trợ tận tình, miễn phí web riêng và tăng hẳn 3 triệu trải nghiệm. Giờ tôi bán proxy ổn định hàng tháng, khởi đầu nhẹ nhàng đồng thú."
         },
         {
           "name": "Vũ Huy",
-          "role": "Đối tác web riêng {appName}",
-          "content": "Tôi hài lòng khi tìm đại lý {appName} vì cảm giác được đồng hành thật sự. Không chỉ lấy sản phẩm bán lại, tôi được hỗ trợ thiết kế web riêng chuyên nghiệp, xây dựng thương hiệu có nhận rõ ràng, tạo sự tin tưởng với khách hàng và luôn được {appName} hỗ trợ khi cần."
+          "role": "Đối tác web riêng {{appName}}",
+          "content": "Tôi hài lòng khi tìm đại lý {{appName}} vì cảm giác được đồng hành thật sự. Không chỉ lấy sản phẩm bán lại, tôi được hỗ trợ thiết kế web riêng chuyên nghiệp, xây dựng thương hiệu có nhận rõ ràng, tạo sự tin tưởng với khách hàng và luôn được {{appName}} hỗ trợ khi cần."
         },
         {
           "name": "Trần Văn Nam",
           "role": "Chuyên gia marketing online",
-          "content": "Sau nhiều năm sử dụng proxy từ nhiều nhà cung cấp khác nhau, tôi thấy {appName} có chất lượng ổn định nhất. IP sạch, tốc độ nhanh, ít bị block. Đặc biệt là team support rất nhiệt tình, giải quyết vấn đề nhanh chóng 24/7."
+          "content": "Sau nhiều năm sử dụng proxy từ nhiều nhà cung cấp khác nhau, tôi thấy {{appName}} có chất lượng ổn định nhất. IP sạch, tốc độ nhanh, ít bị block. Đặc biệt là team support rất nhiệt tình, giải quyết vấn đề nhanh chóng 24/7."
         },
         {
           "name": "Phạm Thị Lan",
           "role": "Quản lý dự án digital",
-          "content": "{appName} đã giúp công ty chúng tôi tiết kiệm rất nhiều chi phí và thời gian. Hệ thống proxy ổn định, dễ sử dụng, và quan trọng nhất là có đội ngũ kỹ thuật hỗ trợ chuyên nghiệp. Chúng tôi rất hài lòng với dịch vụ này."
+          "content": "{{appName}} đã giúp công ty chúng tôi tiết kiệm rất nhiều chi phí và thời gian. Hệ thống proxy ổn định, dễ sử dụng, và quan trọng nhất là có đội ngũ kỹ thuật hỗ trợ chuyên nghiệp. Chúng tôi rất hài lòng với dịch vụ này."
         }
       ],
       "stats": {
@@ -532,7 +532,7 @@
           "main": "Nhà cung cấp",
           "highlight": "Proxy #1 Việt Nam"
         },
-        "subtitle": "{appName} - Nền tảng proxy dân cư hàng đầu Việt Nam, là lựa chọn tin cậy của hơn 5000+ doanh nghiệp và chuyên gia để tối ưu hóa hiệu suất công việc và chinh phục các dự án quan trọng.",
+        "subtitle": "{{appName}} - Nền tảng proxy dân cư hàng đầu Việt Nam, là lựa chọn tin cậy của hơn 5000+ doanh nghiệp và chuyên gia để tối ưu hóa hiệu suất công việc và chinh phục các dự án quan trọng.",
         "features": [
           "Uptime 99.9% - Ổn định tuyệt đối",
           "Hỗ trợ 24/7 - Luôn sẵn sàng phục vụ",
@@ -557,7 +557,7 @@
           "line1": "CHÍNH SÁCH ưu đãi cho các",
           "line2": "ĐẠI LÝ"
         },
-        "subtitle": "{appName} luôn đặt quyền lợi của đại lý làm ưu tiên hàng đầu, cam kết mang đến sự hỗ trợ thiết thực và tối ưu nhất",
+        "subtitle": "{{appName}} luôn đặt quyền lợi của đại lý làm ưu tiên hàng đầu, cam kết mang đến sự hỗ trợ thiết thực và tối ưu nhất",
         "features": [
           {
             "title": "Bảo mật cao",
@@ -865,7 +865,7 @@
         "privacy": "Privacy Policy",
         "service": "Service Agreement",
         "refund": "Refund Policy",
-        "copyright": "© 2025 {appName} COMPANY LIMITED. All Rights Reserved"
+        "copyright": "© 2025 {{appName}} COMPANY LIMITED. All Rights Reserved"
       },
       "contact": {
         "title": "Liên hệ với chúng tôi"

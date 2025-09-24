@@ -19,6 +19,9 @@ import * as yup from 'yup'
 import { useTranslation } from 'react-i18next'
 
 import { useModalContext } from '@/app/contexts/ModalContext'
+import axiosInstance from '@/libs/axios'
+import { store } from '@/store'
+import { setUser } from '@/store/userSlice'
 
 type LoginFormInputs = {
   email: string
@@ -33,7 +36,7 @@ export default function LoginForm() {
   const router = useRouter()
   const params = useParams()
   const pathname = usePathname()
-  const { closeAuthModal, setAuthModalMode } = useModalContext()
+  const { closeAuthModal, setAuthModalMode, referralCode } = useModalContext()
 
   const { lang: locale } = params
 
@@ -61,7 +64,8 @@ export default function LoginForm() {
     const res = await signIn('credentials', {
       email: data.email,
       password: data.password,
-      redirect: false
+      redirect: false,
+      ref: referralCode ?? undefined
     })
 
     if (res?.ok) {
@@ -69,9 +73,17 @@ export default function LoginForm() {
       toast.success(t('auth.loginSuccess'))
       closeAuthModal()
 
-      // Reload page để update session ở server-side
-      router.replace('/overview')
-      window.location.reload()
+      // Cập nhật Redux ngay lập tức
+      try {
+        const me = await axiosInstance.post('/me')
+        if (me?.data) {
+          store.dispatch(setUser(me.data))
+        }
+      } catch {}
+
+      // Điều hướng đúng theo ngôn ngữ
+      const nextPath = `/${locale}/overview`
+      router.replace(nextPath)
     } else {
       setLoading(false)
       toast.error(t('auth.loginError'))
@@ -85,7 +97,6 @@ export default function LoginForm() {
         <label className={`login-form-label ${errors.email && 'text-red-500'}`}>{t('auth.email')}</label>
         <input
           type='text'
-          name='email'
           className={`login-form-input ${errors.email && 'border-red-500'}`}
           placeholder={t('auth.placeholders.enterEmail')}
           {...register('email')}
@@ -99,7 +110,6 @@ export default function LoginForm() {
         <div className='login-password-wrapper'>
           <input
             type={showPassword ? 'text' : 'password'}
-            name='password'
             className={`login-form-input ${errors.password && 'border-red-500'}`}
             placeholder={t('auth.placeholders.enterPassword')}
             {...register('password')}

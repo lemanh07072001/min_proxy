@@ -8,18 +8,25 @@ import CustomIconButton from '@core/components/mui/IconButton'
 
 import BoxCustom from '@/components/UI/BoxCustom'
 import CustomTextField from '@/@core/components/mui/TextField'
+import { useSelector } from 'react-redux'
+import type { RootState } from '@/store'
+import { toast } from 'react-toastify'
 
 export default function AffiliatePage() {
-  const [referralCode, setReferralCode] = useState('MKT2024PROXY')
+  const user = useSelector((state: RootState) => state.user.user)
+
+
   const [copied, setCopied] = useState(false)
-  const [selectedPeriod, setSelectedPeriod] = useState('month')
+
+
 
   const copyReferralLink = () => {
-    const referralLink = `https://mktproxy.com/register?ref=${referralCode}`
+    const referralLink = `${process.env.NEXT_PUBLIC_APP_URL}?ref=${user?.id}`
 
     navigator.clipboard.writeText(referralLink)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
+    toast.success('Copied!')
   }
 
   return (
@@ -43,9 +50,9 @@ export default function AffiliatePage() {
                 <label className='block text-sm font-medium text-gray-700 mb-2'>Mã giới thiệu của bạn</label>
                 <div className='flex space-x-3'>
                   <CustomTextField
-                    value={referralCode}
+                    value={`${process.env.NEXT_PUBLIC_APP_URL}?ref=${user?.id}`}
                     fullWidth
-                    onChange={e => setReferralCode(e.target.value)}
+
                     placeholder='Nhập mã giới thiệu'
                   />
 
