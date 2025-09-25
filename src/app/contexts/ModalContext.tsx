@@ -3,6 +3,7 @@
 import type { ReactNode } from 'react'
 import { createContext, useContext, useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 
 interface ModalContextType {
   isAuthModalOpen: boolean
@@ -44,23 +45,29 @@ export const ModalContextProvider = ({ children }: ModalContextProviderProps) =>
   // ✅ Thêm state cho referral code
   const [referralCode, setReferralCode] = useState<string | null>(null)
 
-  // ✅ Auto open register modal when ?ref= is present
+  // ✅ Auto open register modal when ?ref= is present (chỉ khi chưa đăng nhập)
   const searchParams = useSearchParams()
   const hasHandledRef = useRef(false)
+  const { data: session, status } = useSession()
 
   useEffect(() => {
     if (hasHandledRef.current) return
+    if (status === 'loading') return // Chờ xác định trạng thái authentication
 
     const ref = searchParams.get('ref')
 
-    if (ref) {
+    // Chỉ mở modal khi có ref VÀ user chưa đăng nhập
+    if (ref && status === 'unauthenticated') {
       setReferralCode(ref)
       setAuthModalMode('register')
       setIsAuthModalOpen(true)
+    } else if (ref) {
+      // Nếu có ref nhưng đã đăng nhập, chỉ lưu referral code
+      setReferralCode(ref)
     }
 
     hasHandledRef.current = true
-  }, [searchParams])
+  }, [searchParams, status])
 
   const openAuthModal = (
     mode: 'login' | 'register' | 'reset' | 'resetpass' = 'login',

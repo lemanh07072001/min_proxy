@@ -187,6 +187,7 @@ async function getUser(accessToken: string) {
 export default async function Overview() {
   const { access_token } = await getServerSession(authOptions)
 
+  if(!access_token) return null
   const user = await getUser(access_token)
 
   console.log(user)

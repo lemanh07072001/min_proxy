@@ -18,9 +18,9 @@ const AuthRedirect = ({ lang, children }: { lang: Locale; children: React.ReactN
   console.log('status:', status)
 
   useEffect(() => {
-    // Nếu đã có session thì chuyển hướng (có thể đổi URL tuỳ nhu cầu)
+    // Nếu đã có session thì chuyển hướng về proxy-tinh
     if (status === 'authenticated') {
-      router.push('/overview') // hoặc route bạn muốn
+      router.push('/proxy-tinh')
     }
   }, [status, router])
 

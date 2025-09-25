@@ -7,7 +7,7 @@ import type { MouseEvent } from 'react'
 import { useRouter } from 'next/navigation'
 
 // Next Imports
-
+import { useParams } from 'next/navigation';
 // MUI Imports
 import Badge from '@mui/material/Badge'
 import Avatar from '@mui/material/Avatar'
@@ -44,7 +44,8 @@ const UserDropdown = () => {
 
   // Fallback to useSession nếu không có session từ props (backward compatibility)
   const session = useSession()
-
+  const params = useParams();
+  const lang = params.lang || 'vi';
   // Hooks
   const router = useRouter()
 
@@ -69,11 +70,8 @@ const UserDropdown = () => {
   const handleConfirmLogout = async () => {
     setOpenConfirm(false)
 
-    // Chỉ cần signOut, server sẽ xử lý logout
-    await signOut({ redirect: false })
-
-    // Redirect về trang chủ
-    router.replace('/overview')
+    // Chỉ cần signOut, redirect về trang empty
+    await signOut({ callbackUrl: `/${lang}/empty` });
   }
 
   return (

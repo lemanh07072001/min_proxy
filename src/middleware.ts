@@ -1,70 +1,66 @@
 import { NextResponse } from 'next/server'
-
 import { withAuth } from 'next-auth/middleware'
 import type { NextRequestWithAuth } from 'next-auth/middleware'
 
+const privateRoutes = ['/overview', '/proxy-tinh', '/order-rotating-proxy', '/order-proxy', '/history-order', '/affiliate', '/transaction-history']
+
 export default withAuth(
+  // Hàm này chạy cho người dùng đã được `authorized` thành công.
+  // Đây là nơi hoàn hảo để thêm logic mới.
   function middleware(req: NextRequestWithAuth) {
     const { pathname } = req.nextUrl
     const token = req.nextauth.token
 
-    // Chỉ áp dụng cho private routes
-    if (pathname.includes('/(private)')) {
-      // Kiểm tra nếu session có error
-      if (token?.error === 'RefreshAccessTokenError') {
-        console.log('🛡️ [middleware] Session has refresh error, redirecting to login')
+    // Lấy mã ngôn ngữ từ URL (ví dụ: /vi/login -> 'vi')
+    const lang = pathname.split('/')[1] || 'vi'
 
-        // return NextResponse.redirect(new URL('/login', req.url))
-      }
+    // ⭐ LOGIC MỚI BẮT ĐẦU TỪ ĐÂY ⭐
+    // Định nghĩa các trang xác thực (login, register, ...)
+    const authRoutes = [`/${lang}/login`, `/${lang}/register`]
 
-      // Kiểm tra nếu không có access_token
-      if (!token?.access_token) {
-        // return NextResponse.redirect(new URL('/login', req.url))
-      }
+    // Kiểm tra xem trang hiện tại có phải là trang xác thực không
+    const isAuthRoute = authRoutes.some(route => pathname.startsWith(route))
+
+    // Nếu người dùng ĐÃ ĐĂNG NHẬP (có token) và đang cố vào trang login/register
+    if (token && isAuthRoute) {
+      // Chuyển hướng họ về trang proxy-tinh
+      return NextResponse.redirect(new URL(`/${lang}/proxy-tinh`, req.url))
     }
+    // ⭐ KẾT THÚC LOGIC MỚI ⭐
 
+    // Nếu không thuộc trường hợp trên, cho phép request tiếp tục
     return NextResponse.next()
   },
   {
     callbacks: {
+      // Logic gác cổng ở đây không thay đổi
       authorized: ({ token, req }) => {
         const { pathname } = req.nextUrl
 
-        // Nếu là public route, luôn cho phép
-        if (pathname.includes('/(public)') || pathname.includes('/(landing-page)')) {
+        const isPrivateRoute = privateRoutes.some(route =>
+          pathname.includes(route)
+        )
+
+        // Nếu không phải trang private, luôn cho phép
+        if (!isPrivateRoute) {
           return true
         }
 
-        // Nếu là private route, kiểm tra token
-        if (pathname.includes('/(private)')) {
-          // Kiểm tra cơ bản: có token và không có error
-          if (token && !token.error && token.access_token) {
-            return true
-          } else {
-            console.log('🛡️ [middleware] Unauthorized access to private route')
-
-            return false // Sẽ redirect về trang login được cấu hình trong NextAuth
-          }
+        // Nếu là trang private, yêu cầu phải có token hợp lệ
+        if (token && token.access_token && !token.error) {
+          return true
         }
 
-        return true
+        // Nếu là trang private mà không có token, trả về false để chuyển hướng
+        return false
       }
     },
     pages: {
-      signIn: '/login' // Trang login mặc định
+      signIn: '/empty'
     }
   }
 )
 
 export const config = {
-  matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - api (API routes)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     */
-    '/((?!api|_next/static|_next/image|favicon.ico).*)'
-  ]
+  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)']
 }

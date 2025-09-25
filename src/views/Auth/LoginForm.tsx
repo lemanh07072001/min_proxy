@@ -74,8 +74,8 @@ export default function LoginForm() {
       closeAuthModal()
 
       // Reload page để update session ở server-side
-      router.replace('/proxy-tinh')
-      window.location.reload()
+      router.push('/proxy-tinh')
+      // window.location.reload()
     } else {
       setLoading(false)
       toast.error(t('auth.loginError'))
