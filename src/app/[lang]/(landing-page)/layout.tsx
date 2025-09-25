@@ -52,16 +52,17 @@ const Layout = async (props: ChildrenType & { params: Promise<{ lang: Locale }> 
             <VerticalLayout landingPage={true} navbar={<Header />} footer={<Footer />}>
               {children}
               <ToastContainer
-                position='top-right'
-                autoClose={5000}
-                hideProgressBar={false}
+                position="top-center"
+                autoClose={2000}
+                hideProgressBar
                 newestOnTop={false}
-                closeOnClick={false}
+                closeOnClick
                 rtl={false}
-                pauseOnFocusLoss
-                draggable
-                pauseOnHover
-                theme='light'
+                pauseOnFocusLoss={false}
+                draggable={false}
+                pauseOnHover={false}
+                theme="light"
+
               />
             </VerticalLayout>
           }

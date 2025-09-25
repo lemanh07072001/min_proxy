@@ -5,6 +5,12 @@ body {
   margin: 0;
 }
 
+.Toastify__toast{
+  min-height: auto !important;
+  padding: 8px;
+  font-weight: 700;
+}
+
 .ts-submenu-root,
 .ts-menuitem-root {
   padding-inline-start: 20px;
@@ -76,7 +82,6 @@ body {
 .data-table {
   inline-size: 100%;
   border-collapse: collapse;
-  min-inline-size: 600px; /* Đặt chiều rộng tối thiểu để tránh bóp méo cột */
   table-layout: fixed;
   inline-size: 100%;
 }

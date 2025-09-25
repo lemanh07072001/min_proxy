@@ -30,16 +30,17 @@ export default function LayoutProvider({ children }: LayoutProviderProps) {
       
       {/* ToastContainer được đặt ở đây để tránh re-render */}
       <ToastContainer
-        position='top-right'
+        position="top-center"
         autoClose={2000}
-        hideProgressBar={false}
+        hideProgressBar
         newestOnTop={false}
         closeOnClick
         rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme='light'
+        pauseOnFocusLoss={false}
+        draggable={false}
+        pauseOnHover={false}
+        theme="light"
+
       />
 
       {/* ScrollToTop được đặt ở đây để tránh re-render */}

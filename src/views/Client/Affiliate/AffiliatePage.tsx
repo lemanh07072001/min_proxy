@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 
-import { BarChart3, Link, Share2, Copy } from 'lucide-react'
+import { BarChart3, Link, Share2, Copy, BanknoteArrowDown } from 'lucide-react'
 
 import CustomIconButton from '@core/components/mui/IconButton'
 
@@ -11,6 +11,7 @@ import CustomTextField from '@/@core/components/mui/TextField'
 import { useSelector } from 'react-redux'
 import type { RootState } from '@/store'
 import { toast } from 'react-toastify'
+import WithdrawalTable from '@views/Client/Affiliate/WithdrawalTable'
 
 export default function AffiliatePage() {
   const user = useSelector((state: RootState) => state.user.user)
@@ -72,7 +73,14 @@ export default function AffiliatePage() {
       </div>
 
       <div className='lg:col-span-1'>
-        <BoxCustom>sda</BoxCustom>
+        <BoxCustom>
+          <h2 className='text-xl font-bold text-gray-900 mb-6 flex items-center'>
+            <BanknoteArrowDown  className='w-5 h-5 mr-2 text-orange-500' />
+            Lịch sử rút tiền
+          </h2>
+
+          <WithdrawalTable/>
+        </BoxCustom>
       </div>
     </div>
   )
