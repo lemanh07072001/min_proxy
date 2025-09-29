@@ -37,9 +37,13 @@ const userSlice = createSlice({
     },
     subtractBalance: (state, action: PayloadAction<number>) => {
       state.sodu -= action.payload
+    },
+    clearUser: (state) => {
+      state.user = null
+      state.sodu = 0
     }
   }
 })
 
-export const { setUser, setBalance, addBalance, subtractBalance } = userSlice.actions
+export const { setUser, setBalance, addBalance, subtractBalance, clearUser } = userSlice.actions
 export default userSlice.reducer

@@ -27,6 +27,8 @@ import { signOut, useSession } from 'next-auth/react'
 import Box from '@mui/material/Box'
 
 import { useSettings } from '@core/hooks/useSettings'
+import { useDispatch } from 'react-redux'
+import { clearUser } from '@/store/userSlice'
 
 import ConfirmDialog from '@components/confirm-modal/ConfirmDialog'
 
@@ -48,6 +50,7 @@ const UserDropdown = () => {
   const lang = params.lang || 'vi';
   // Hooks
   const router = useRouter()
+  const dispatch = useDispatch()
 
   const { settings } = useSettings()
 
@@ -70,8 +73,23 @@ const UserDropdown = () => {
   const handleConfirmLogout = async () => {
     setOpenConfirm(false)
 
-    // Chỉ cần signOut, redirect về trang empty
-    await signOut({ callbackUrl: `/${lang}/empty` });
+    try {
+      // Clear Redux store trước
+      dispatch(clearUser())
+      
+      // Clear session và redirect về trang chủ
+      await signOut({ 
+        redirect: false,
+        callbackUrl: `/${lang}`
+      })
+      
+      // Force reload để clear tất cả state
+      window.location.href = `/${lang}`
+    } catch (error) {
+      // Nếu có lỗi, vẫn clear Redux và redirect về trang chủ
+      dispatch(clearUser())
+      window.location.href = `/${lang}`
+    }
   }
 
   return (

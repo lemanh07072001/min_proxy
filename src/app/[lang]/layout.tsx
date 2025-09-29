@@ -56,7 +56,34 @@ const figtree = Figtree({
 
 export const metadata: Metadata = {
   title: process.env.NEXT_PUBLIC_APP_NAME,
-  icons: { icon: '/images/logo/MKT_PROXY_2.png' }
+  icons: { icon: '/images/logo/MKT_PROXY_2.png' },
+  description: 'MKTProxy cung cấp giải pháp proxy IPV4 sạch, tốc độ cao, độ ổn định tuyệt đối. Chuyên dùng cho nuôi nick, marketing đa kênh, làm SEO và scraping dữ liệu.',
+
+  openGraph: {
+    title: `MKTProxy - Proxy Dân Cư & Datacenter Tốc Độ Cao, Giá Rẻ`,
+    description: 'Giải pháp proxy tốc độ cao, IP sạch cho các chiến dịch marketing, SEO và nuôi tài khoản. Bảo mật tuyệt đối. Dùng thử ngay!',
+    url: 'https://mktproxy.com', // Thay bằng domain chính thức của bạn
+    siteName: process.env.NEXT_PUBLIC_APP_NAME,
+    images: [
+      {
+        url: '/images/social-og-image.jpg', // Tạo một ảnh đẹp (1200x630px)
+        width: 1200,
+        height: 630,
+        alt: 'MKTProxy - Proxy Dân Cư Giá Rẻ',
+      },
+    ],
+    locale: 'vi_VN',
+    type: 'website',
+  },
+
+  // Cấu hình Twitter Card (quan trọng cho Twitter)
+  twitter: {
+    card: 'summary_large_image',
+    title: `MKTProxy - Proxy Dân Cư & Datacenter Tốc Độ Cao, Giá Rẻ`,
+    description: 'Proxy IPV4/IPV6 sạch cho marketing và SEO. Tốc độ cao, giá rẻ.',
+
+    images: ['/images/social-og-image.jpg'],
+  },
 }
 
 export const revalidate = 0 //

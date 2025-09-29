@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { FormControlLabel } from '@mui/material'
 import Checkbox from '@mui/material/Checkbox'
-import { Clock, Clock3, Copy } from 'lucide-react'
+import { BadgeCheck, BadgeMinus, CircleQuestionMark, Clock, Clock3, Copy, TriangleAlert } from 'lucide-react'
 import { formatDateTimeLocal } from '@/utils/formatDate'
 import {
   flexRender,
@@ -17,9 +17,11 @@ import Image from 'next/image'
 import Pagination from '@mui/material/Pagination'
 import { useQuery } from '@tanstack/react-query'
 import useAxiosAuth from '@/hocs/useAxiosAuth'
+import Chip from '@mui/material/Chip'
+import { useSession } from 'next-auth/react'
 
 
-export default function WithdrawalTable(){
+export default function UserWithdrawalTable(){
   const [columnFilters, setColumnFilters] = useState([])
   const [rowSelection, setRowSelection] = useState({}) // State để lưu các hàng được chọn
   const [sorting, setSorting] = useState([])
@@ -29,15 +31,27 @@ export default function WithdrawalTable(){
   })
 
   const axiosAuth = useAxiosAuth()
+  const { data: session, status } = useSession()
 
 
   const { data: dataWithdrawal, isLoading } = useQuery({
-    queryKey: ['withdrawal'],
+    queryKey: ['withdrawal-user'],
     queryFn: async () => {
-      const response = await axiosAuth.get('/withdrawal-history');
+      const response = await axiosAuth.get('/withdrawal-user');
       return response.data;
     }
   });
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 1:
+        return <Chip label='Đã thanh toán' size='small' icon={<BadgeCheck />} color='success' />
+      case 0:
+        return <Chip label='Chưa thành toán' size='small' icon={<TriangleAlert />} color='error' />
+      default:
+        return <Chip label='Không xác định' size='small' icon={<CircleQuestionMark />} color='secondary' />
+    }
+  }
 
   const columns = useMemo(
     () => [
@@ -57,11 +71,46 @@ export default function WithdrawalTable(){
         size: 10
       },
       {
-        accessorKey: 'amount',
-        header: 'Số tiền',
+        accessorKey: 'email',
+        header: 'Email',
         cell: ({ row }) => {
 
-          return <span className='text-red'>{new Intl.NumberFormat('vi-VN').format(row.original.amount) + ' đ'}</span>
+          return row.original.user.email
+        },
+        size: 60
+      },
+      {
+        header: 'Số tiền nạp',
+        cell: ({ row }) => {
+
+          return <span className='text-red'>{new Intl.NumberFormat('vi-VN').format(row.original.user.sotiennap) + ' đ'}</span>
+        },
+        size: 10
+      },
+      {
+        header: 'Thu nhập',
+        cell: ({ row }) => {
+          // 1. Tính toán giá trị cần hiển thị (phần trăm hoa hồng)
+          const incomeValue = (row.original.sotienthaydoi * session.user.affiliate_percent) / 100;
+
+          // 2. Định dạng số theo chuẩn Việt Nam (ví dụ: 100.000)
+          const formattedValue = new Intl.NumberFormat('vi-VN').format(incomeValue);
+
+          // 3. Hiển thị kết quả bằng cách nối chuỗi đơn vị tiền tệ
+          return (
+            <span className='text-red'>
+        {formattedValue} đ
+      </span>
+          );
+        },
+        size: 10
+      },
+
+      {
+        header: 'Trạng thái',
+        cell: ({ row }) => {
+
+          return getStatusBadge(row.original.is_payment_affiliate)
         },
         size: 10
       },
@@ -97,8 +146,10 @@ export default function WithdrawalTable(){
   const totalRows = table.getFilteredRowModel().rows.length
   const startRow = pageIndex * pageSize + 1
   const endRow = Math.min(startRow + pageSize - 1, totalRows)
+  
   return (
     <div className='table-container' style={{boxShadow:'none'}}>
+
       {/* Table */}
       <div className='table-wrapper'>
         <table className='data-table' style={isLoading || dataWithdrawal.length === 0 ? { height: '100%' } : {}}>

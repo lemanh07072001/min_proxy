@@ -12,6 +12,8 @@ import { useSelector } from 'react-redux'
 import type { RootState } from '@/store'
 import { toast } from 'react-toastify'
 import WithdrawalTable from '@views/Client/Affiliate/WithdrawalTable'
+import UserWithdrawalTable from '@views/Client/Affiliate/UserWithdrawalTable'
+import { useSession } from 'next-auth/react'
 
 export default function AffiliatePage() {
   const user = useSelector((state: RootState) => state.user.user)
@@ -33,7 +35,7 @@ export default function AffiliatePage() {
   return (
     <div className='grid lg:grid-cols-3 gap-8'>
       {/* Left Column */}
-      <div className='lg:col-span-2'>
+      <div className='lg:col-span-2 gap-8 grid'>
         {/* Referral Link Section */}
         <BoxCustom
           sx={{
@@ -68,6 +70,21 @@ export default function AffiliatePage() {
                 </div>
               </div>
             </div>
+          </div>
+        </BoxCustom>
+
+        <BoxCustom
+          sx={{
+            height: 'auto !important' // ✅ dùng !important nếu thật sự cần
+          }}
+        >
+          <h2 className='text-xl font-bold text-gray-900 mb-6 flex items-center'>
+            <Link className='w-5 h-5 mr-2 text-orange-500' />
+            Lịch sử hoa hồng
+          </h2>
+
+          <div className='space-y-4'>
+           <UserWithdrawalTable/>
           </div>
         </BoxCustom>
       </div>
