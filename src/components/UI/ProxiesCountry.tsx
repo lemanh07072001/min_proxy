@@ -7,7 +7,7 @@ import { Box, Typography } from '@mui/material'
 import { List } from 'lucide-react'
 
 import BoxCustom from './BoxCustom'
-
+import Image from 'next/image';
 interface ProxiesCountryProps {
   data: any
 }
@@ -48,8 +48,15 @@ export default function ProxiesCountry({ data }: ProxiesCountryProps) {
         <div className='grid grid-cols-1 md:grid-cols-4 gap-2 mt-4'>
           {provinces.map(item => (
             <Box key={item.country} className='flex items-center p-2 gap-2 rounded font-semibold'>
+              <Image
+                src={`/images/proxyCountry/${item.flag}.png`}
+                width={25}
+                height={20}
+                alt={item.country}
+
+              />
               <span>
-                {item.flag} {item.country} -
+                {item.country} -
               </span>
               <span className='font-bold'>{item.count}</span>
             </Box>
