@@ -61,7 +61,15 @@ export default function MenuDesktop() {
         <LanguageDropdown />
 
         {data ? (
-          <UserDropdown session={data} />
+          // <UserDropdown session={data} />
+          <Link
+            className='btn btn-gradient-primary me-2'
+            style={{ padding: '5px 20px' }}
+            href={`/${locale}/overview`}
+            target={`_blank`}
+          >
+            Đi đến Trang chủ
+          </Link>
         ) : (
           <div className='d-flex align-items-center gap-2'>
             <button
