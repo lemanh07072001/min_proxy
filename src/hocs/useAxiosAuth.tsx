@@ -6,7 +6,7 @@ import axiosInstance from '@/libs/axios' // Import instance axios singleton
 
 /**
  * Hook tùy chỉnh để tích hợp Axios với NextAuth.
- * Tự động đính kèm token vào request và xử lý refresh token khi cần.
+ * Tự động đính kèm token vào request và logout khi token hết hạn.
  */
 const useAxiosAuth = () => {
   const { data: session, update: updateSession } = useSession()
@@ -17,8 +17,8 @@ const useAxiosAuth = () => {
     const requestInterceptor = axiosInstance.interceptors.request.use(
       config => {
         // Không ghi đè header Authorization nếu nó đã tồn tại.
-        if (session?.access_token && !config.headers.Authorization) {
-          config.headers.Authorization = `Bearer ${session.access_token}`
+        if ((session as any)?.access_token && !config.headers.Authorization) {
+          config.headers.Authorization = `Bearer ${(session as any).access_token}`
         }
 
         return config
@@ -27,7 +27,7 @@ const useAxiosAuth = () => {
     )
 
     // === 2. Response Interceptor ===
-    // Mục đích: Xử lý các response trả về, đặc biệt là lỗi 401.
+    // Mục đích: Xử lý các response trả về, logout ngay khi gặp lỗi 401.
     const responseInterceptor = axiosInstance.interceptors.response.use(
       // Trường hợp response thành công (status 2xx)
       response => {
@@ -37,42 +37,10 @@ const useAxiosAuth = () => {
 
       // Trường hợp response bị lỗi
       async error => {
-        const originalRequest = error.config
-
-        // Chỉ xử lý lỗi 401 (Unauthorized) và đảm bảo request chưa được thử lại
-        if (error.response?.status === 401 && !originalRequest._retry) {
-          originalRequest._retry = true // Đánh dấu là đã thử lại để tránh lặp vô hạn
-
-          try {
-            console.log('[AXIOS HOOK] 🔄 Token hết hạn, đang yêu cầu session mới...')
-
-            // Kích hoạt callback `jwt` ở server-side để làm mới token.
-            // Đây là cách làm "chính thống" của NextAuth.
-            const newSession = await updateSession()
-
-            if (newSession?.access_token) {
-              console.log('[AXIOS HOOK] ✅ Session đã được làm mới, đang thử lại request...')
-
-              // Cập nhật token cho request hiện tại và các request sau này
-              axiosInstance.defaults.headers.common.Authorization = `Bearer ${newSession.access_token}`
-              originalRequest.headers.Authorization = `Bearer ${newSession.access_token}`
-
-              // Thực hiện lại request ban đầu với token mới
-              return axiosInstance(originalRequest)
-            } else {
-              // Nếu updateSession không trả về token mới, refresh đã thất bại.
-              // Lúc này callback `jwt` có thể đã đánh dấu session.error
-              console.error('[AXIOS HOOK] ❌ Không nhận được session mới. Đăng xuất...')
-              await signOut() // Đăng xuất người dùng
-
-              return Promise.reject(error)
-            }
-          } catch (refreshError) {
-            console.error('[AXIOS HOOK] ❌ Refresh token thất bại hoàn toàn. Đăng xuất...', refreshError)
-            await signOut() // Đăng xuất người dùng
-
-            return Promise.reject(error)
-          }
+        // Xử lý lỗi 401 (Unauthorized) - logout ngay lập tức
+        if (error.response?.status === 401) {
+          console.log('[AXIOS HOOK] ❌ Token hết hạn hoặc không hợp lệ, đang logout...')
+          await signOut() // Đăng xuất người dùng ngay lập tức
         }
 
         return Promise.reject(error)

@@ -13,16 +13,12 @@ const AuthRedirect = ({ lang, children }: { lang: Locale; children: React.ReactN
   const { data: session, status } = useSession()
   const router = useRouter()
 
-  console.log('session:', session)
-
-  console.log('status:', status)
-
   useEffect(() => {
-    // Nếu đã có session thì chuyển hướng về proxy-tinh
+    // Nếu đã có session thì chuyển hướng về overview
     if (status === 'authenticated') {
-      router.push('/proxy-tinh')
+      router.push(`/${lang}/overview`)
     }
-  }, [status, router])
+  }, [status, router, lang])
 
   // Khi chưa xác định trạng thái, có thể hiển thị loading hoặc rỗng
   if (status === 'loading') {

@@ -23,7 +23,7 @@ const SessionCleanup = () => {
       const cleanupSession = async () => {
         try {
           // Kiểm tra nếu session có error
-          if (session?.error === 'RefreshAccessTokenError') {
+          if (session?.error === 'TokenExpiredError') {
             console.log('🧹 [SessionCleanup] Found invalid session with error, cleaning up...')
             await signOut({ redirect: false })
             const lang = pathname.split('/')[1] || 'vi'

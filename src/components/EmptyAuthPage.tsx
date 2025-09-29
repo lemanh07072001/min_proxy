@@ -57,24 +57,23 @@ const EmptyAuthPage = ({ lang }: EmptyAuthPageProps) => {
           Bạn cần đăng nhập để truy cập trang này.
         </p>
 
-        {/*<button*/}
-        {/*  onClick={() => router.push(`/${lang}`)}*/}
-        {/*  style={{*/}
-        {/*    background: 'var(--primary-gradient)',*/}
-        {/*    color: 'white',*/}
-        {/*    border: 'none',*/}
-        {/*    padding: '12px 24px',*/}
-        {/*    borderRadius: '8px',*/}
-        {/*    fontSize: '1rem',*/}
-        {/*    fontWeight: '500',*/}
-        {/*    cursor: 'pointer',*/}
-        {/*    transition: 'all 0.3s ease',*/}
-        {/*    boxShadow: '0 4px 15px rgba(59, 130, 246, 0.3)'*/}
-        {/*  }}*/}
-
-        {/*>*/}
-        {/*  Đến trang đăng nhập*/}
-        {/*</button>*/}
+        <button
+          onClick={() => router.push(`/${lang}`)}
+          style={{
+            background: 'var(--primary-gradient)',
+            color: 'white',
+            border: 'none',
+            padding: '12px 24px',
+            borderRadius: '8px',
+            fontSize: '1rem',
+            fontWeight: '500',
+            cursor: 'pointer',
+            transition: 'all 0.3s ease',
+            boxShadow: '0 4px 15px rgba(59, 130, 246, 0.3)'
+          }}
+        >
+          Đến trang chủ
+        </button>
 
 
       </div>

@@ -149,7 +149,7 @@ const updateHistory = [
 ]
 
 async function getUser(accessToken: string) {
-  const apiUrl = process.env.API_URL
+  const apiUrl = process.env.API_URL || 'https://api.minhan.online/api'
 
   // Đảm bảo bạn đã cấu hình API_URL trong file .env.local
   if (!apiUrl) {

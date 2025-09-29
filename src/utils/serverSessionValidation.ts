@@ -1,4 +1,4 @@
-import { getServerSession } from 'next-auth'
+import { getServerSession } from 'next-auth/next'
 
 import { authOptions } from '@/libs/auth'
 
@@ -7,7 +7,7 @@ import { authOptions } from '@/libs/auth'
  * Sử dụng cho các route cần xác thực chặt chẽ
  */
 export async function validateServerSessionWithAPI() {
-  const session = await getServerSession(authOptions)
+  const session = await getServerSession(authOptions as any) as any
 
   // Kiểm tra session cơ bản
   if (!session) {
@@ -15,7 +15,7 @@ export async function validateServerSessionWithAPI() {
   }
 
   // Kiểm tra nếu session có error
-  if (session.error === 'RefreshAccessTokenError') {
+  if (session.error === 'TokenExpiredError') {
     return null
   }
 
@@ -26,7 +26,7 @@ export async function validateServerSessionWithAPI() {
 
   // Kiểm tra token validity bằng cách gọi API
   try {
-    const response = await fetch(`${process.env.API_URL}/me`, {
+    const response = await fetch(`${process.env.API_URL || 'https://api.minhan.online/api'}/me`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -54,7 +54,7 @@ export async function validateServerSessionWithAPI() {
  * Sử dụng cho các route cần kiểm tra nhanh
  */
 export async function validateServerSessionBasic() {
-  const session = await getServerSession(authOptions)
+  const session = await getServerSession(authOptions as any) as any
 
   // Kiểm tra session cơ bản
   if (!session) {
@@ -62,7 +62,7 @@ export async function validateServerSessionBasic() {
   }
 
   // Kiểm tra nếu session có error
-  if (session.error === 'RefreshAccessTokenError') {
+  if (session.error === 'TokenExpiredError') {
     return null
   }
 
@@ -79,14 +79,14 @@ export async function validateServerSessionBasic() {
  * Sử dụng trong layout để pass user data xuống client
  */
 export async function getServerUserData() {
-  const session = await getServerSession(authOptions)
+  const session = await getServerSession(authOptions as any) as any
 
   try {
-    const response = await fetch(`${process.env.API_URL}/me`, {
+    const response = await fetch(`${process.env.API_URL || 'https://api.minhan.online/api'}/me`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${session.access_token}`
+        Authorization: `Bearer ${session?.access_token}`
       },
       cache: 'no-store'
     })

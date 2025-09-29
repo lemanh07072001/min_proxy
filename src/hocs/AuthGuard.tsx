@@ -6,11 +6,11 @@ import type { ChildrenType } from '@core/types'
 import AuthRedirect from '@/components/AuthRedirect'
 
 // Utils
-import { validateServerSessionWithAPI } from '@/utils/serverSessionValidation'
+import { validateServerSessionBasic } from '@/utils/serverSessionValidation'
 
 export default async function AuthGuard({ children, locale }: ChildrenType & { locale: Locale }) {
-  // Validate session với API check để đảm bảo token còn valid
-  const session = await validateServerSessionWithAPI()
+  // Validate session cơ bản (không gọi API) để test
+  const session = await validateServerSessionBasic()
 
   if (session) {
     return <>{children}</>

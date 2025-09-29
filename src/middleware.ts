@@ -5,8 +5,7 @@ import type { NextRequestWithAuth } from 'next-auth/middleware'
 const privateRoutes = ['/overview', '/proxy-tinh', '/order-rotating-proxy', '/order-proxy', '/history-order', '/affiliate', '/transaction-history']
 
 export default withAuth(
-  // Hàm này chạy cho người dùng đã được `authorized` thành công.
-  // Đây là nơi hoàn hảo để thêm logic mới.
+
   function middleware(req: NextRequestWithAuth) {
     const { pathname } = req.nextUrl
     const token = req.nextauth.token
@@ -23,8 +22,8 @@ export default withAuth(
 
     // Nếu người dùng ĐÃ ĐĂNG NHẬP (có token) và đang cố vào trang login/register
     if (token && isAuthRoute) {
-      // Chuyển hướng họ về trang proxy-tinh
-      return NextResponse.redirect(new URL(`/${lang}/proxy-tinh`, req.url))
+      // Chuyển hướng họ về trang overview
+      return NextResponse.redirect(new URL(`/${lang}/overview`, req.url))
     }
     // ⭐ KẾT THÚC LOGIC MỚI ⭐
 

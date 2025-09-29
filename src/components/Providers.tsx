@@ -10,7 +10,7 @@ import { ModalContextProvider } from '@/app/contexts/ModalContext'
 // Util Imports
 import { getMode, getSettingsFromCookie, getSystemMode } from '@core/utils/serverHelpers'
 import { NextAuthProvider } from '@/app/contexts/nextAuthProvider'
-import { getServerSession } from 'next-auth'
+import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/libs/auth'
 
 type Props = ChildrenType & {
@@ -26,7 +26,7 @@ const Providers = async (props: Props) => {
   const settingsCookie = await getSettingsFromCookie()
   const systemMode = await getSystemMode()
 
-  const session = await getServerSession(authOptions);
+  const session = await getServerSession(authOptions as any) as any;
 
   return (
     <NextAuthProvider session={session} basePath={process.env.NEXTAUTH_BASEPATH}>
