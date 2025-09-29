@@ -1,5 +1,5 @@
 // THÊM MỚI: Import useState và useEffect từ React
-import { useState, useEffect } from 'react'
+import { useState, useEffect, type MouseEvent } from 'react'
 
 import { useParams, usePathname } from 'next/navigation'
 
@@ -162,7 +162,7 @@ const VerticalMenu = ({ scrollMenu, dictionary }: Props) => {
     return pathname === fullPath ? { ...baseMenuItemStyles, ...activeMenuItemStyles } : baseMenuItemStyles
   }
 
-  const isProxySubMenuActive = pathname.startsWith(`/${locale}/proxy`)
+  const isProxySubMenuActive = true // Luôn mở submenu DỊCH VỤ proxy
 
   return (
     <ScrollWrapper
@@ -203,6 +203,11 @@ const VerticalMenu = ({ scrollMenu, dictionary }: Props) => {
             icon={<Globe size={20} strokeWidth={1.5} />}
             rootStyles={subMenuStyles}
             defaultOpen={isProxySubMenuActive}
+            onClick={(e: MouseEvent<HTMLAnchorElement>) => {
+              // Ngăn chặn việc đóng submenu khi click
+              e.preventDefault()
+              e.stopPropagation()
+            }}
           >
             <MenuItem rootStyles={getMenuItemStyles('proxy-tinh')} href={`/${locale}/proxy-tinh`}>
               {dictionary['navigation'].staticProxy}

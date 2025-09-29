@@ -77,18 +77,18 @@ const UserDropdown = () => {
       // Clear Redux store trước
       dispatch(clearUser())
       
-      // Clear session và redirect về trang chủ
+      // Clear session và redirect về trang proxy-tinh
       await signOut({ 
         redirect: false,
-        callbackUrl: `/${lang}`
+        callbackUrl: `/${lang}/proxy-tinh`
       })
       
       // Force reload để clear tất cả state
-      window.location.href = `/${lang}`
+      window.location.href = `/${lang}/proxy-tinh`
     } catch (error) {
-      // Nếu có lỗi, vẫn clear Redux và redirect về trang chủ
+      // Nếu có lỗi, vẫn clear Redux và redirect về trang proxy-tinh
       dispatch(clearUser())
-      window.location.href = `/${lang}`
+      window.location.href = `/${lang}/proxy-tinh`
     }
   }
 

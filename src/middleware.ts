@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { withAuth } from 'next-auth/middleware'
 import type { NextRequestWithAuth } from 'next-auth/middleware'
 
-const privateRoutes = ['/overview', '/proxy-tinh', '/order-rotating-proxy', '/order-proxy', '/history-order', '/affiliate', '/transaction-history']
+const privateRoutes = ['/overview', '/order-proxy', '/history-order', '/affiliate', '/transaction-history']
 
 export default withAuth(
 
