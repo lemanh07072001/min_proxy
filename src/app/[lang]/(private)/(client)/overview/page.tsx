@@ -19,7 +19,6 @@ import { authOptions } from '@/libs/auth'
 
 export const metadata: Metadata = {
   title: `${process.env.NEXT_PUBLIC_APP_NAME} | Trang chủ`,
-  description: 'Mô tả ngắn gọn về trang web.'
 }
 
 const vietnamProvinces = [

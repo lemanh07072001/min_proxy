@@ -1,6 +1,6 @@
 import React from 'react';
 import { Partner } from '../types/Partner';
-import Image from 'next/image'
+
 
 interface PartnerCardProps {
   partner: Partner;

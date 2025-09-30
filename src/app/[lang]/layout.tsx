@@ -55,36 +55,31 @@ const figtree = Figtree({
 })
 
 export const metadata: Metadata = {
-  title: process.env.NEXT_PUBLIC_APP_NAME,
-  icons: { icon: '/images/logo/MKT_PROXY_2.png' },
-  description: 'MKTProxy cung cấp giải pháp proxy IPV4 sạch, tốc độ cao, độ ổn định tuyệt đối. Chuyên dùng cho nuôi nick, marketing đa kênh, làm SEO và scraping dữ liệu.',
+  // 1. Tối ưu TITLE chính với các từ khóa quan trọng
+  title:  process.env.NEXT_PUBLIC_APP_NAME,
 
+  icons: { icon: '/images/logo/MKT_PROXY_2.png' },
+
+  // 2. Tối ưu META DESCRIPTION
+  description: 'MKTProxy: Mua Proxy Dân Dụng (Residential), Datacenter IPV4/IPV6 sạch, riêng tư. Tốc độ cực cao, Marketing & Nuôi nick.',
+
+  // 3. Open Graph (Cho Facebook, Zalo...)
   openGraph: {
-    title: `MKTProxy - Proxy Dân Cư & Datacenter Tốc Độ Cao, Giá Rẻ`,
-    description: 'Giải pháp proxy tốc độ cao, IP sạch cho các chiến dịch marketing, SEO và nuôi tài khoản. Bảo mật tuyệt đối. Dùng thử ngay!',
-    url: 'https://mktproxy.com', // Thay bằng domain chính thức của bạn
+    title: 'MKTProxy | Mua Proxy Dân Dụng, 4G/5G, Datacenter Tốc Độ Cao, Giá Rẻ',
+    description: 'Giải pháp Proxy IP sạch, tốc độ cao cho marketing, SEO và nuôi tài khoản mạng xã hội. Hỗ trợ 24/7. Bắt đầu dùng thử tại MKTProxy.com!',
+    url: 'https://mktproxy.com',
     siteName: process.env.NEXT_PUBLIC_APP_NAME,
-    images: [
-      {
-        url: '/images/social-og-image.jpg', // Tạo một ảnh đẹp (1200x630px)
-        width: 1200,
-        height: 630,
-        alt: 'MKTProxy - Proxy Dân Cư Giá Rẻ',
-      },
-    ],
     locale: 'vi_VN',
     type: 'website',
   },
 
-  // Cấu hình Twitter Card (quan trọng cho Twitter)
+  // 4. Twitter Card
   twitter: {
     card: 'summary_large_image',
-    title: `MKTProxy - Proxy Dân Cư & Datacenter Tốc Độ Cao, Giá Rẻ`,
-    description: 'Proxy IPV4/IPV6 sạch cho marketing và SEO. Tốc độ cao, giá rẻ.',
-
-    images: ['/images/social-og-image.jpg'],
+    title: 'MKTProxy | Mua Proxy Dân Dụng, 4G/5G, Datacenter Tốc Độ Cao, Giá Rẻ',
+    description: 'Proxy IPV4/IPV6 sạch cho marketing, nuôi nick. Tốc độ cao, giá rẻ tại MKTProxy.com.',
   },
-}
+};
 
 export const revalidate = 0 //
 

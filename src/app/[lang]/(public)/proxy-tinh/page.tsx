@@ -7,7 +7,6 @@ import axiosInstance from '@/libs/axios'
 
 export const metadata: Metadata = {
   title: `${process.env.NEXT_PUBLIC_APP_NAME} | Proxy Tĩnh`,
-  description: 'Mô tả ngắn gọn về trang web.'
 }
 
 export default async function StaticProxy() {

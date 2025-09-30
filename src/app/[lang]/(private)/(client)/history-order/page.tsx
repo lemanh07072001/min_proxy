@@ -7,7 +7,6 @@ import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: `${process.env.NEXT_PUBLIC_APP_NAME} | Lịch sử đơn hàng`,
-  description: 'Mô tả ngắn gọn về trang web.'
 }
 
 export default function HistoryOrder() {
