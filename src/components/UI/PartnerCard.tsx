@@ -40,7 +40,7 @@ export const PartnerCard: React.FC<PartnerCardProps> = ({ partner }) => {
         {/* HẾT KHỐI MỚI */}
 
 
-        <p style={{ whiteSpace: 'pre-wrap' }} className="text-gray-600 text-sm leading-relaxed text-center"> {/* Thêm text-center cho đoạn mô tả */}
+        <p style={{ whiteSpace: 'pre-wrap' }} className="text-gray-600 leading-relaxed text-center font-semibold text-[15px]"> {/* Thêm text-center cho đoạn mô tả */}
           {partner.note}
         </p>
 
