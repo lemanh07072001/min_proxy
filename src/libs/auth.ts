@@ -100,10 +100,10 @@ export const authOptions = {
         return token // Token còn hạn
       }
 
-      // 4. Nếu token đã hết hạn, đánh dấu lỗi để client logout
+      // 4. Nếu token đã hết hạn, trả về token với error thay vì null
       return {
         ...token,
-        error: 'TokenExpiredError' // Đánh dấu lỗi để client xử lý logout
+        error: 'TokenExpiredError'
       }
     },
 
@@ -112,13 +112,16 @@ export const authOptions = {
      * Nó nhận dữ liệu từ callback `jwt` để xây dựng object session cho client.
      */
     async session({ session, token }: any) {
-      // Gửi các thông tin cần thiết về cho client
-      if (token) {
-        (session as any).user = token.userData || (session as any).user;
-        (session as any).access_token = token.access_token;
-        (session as any).role = (token as any).role;
-        (session as any).error = token.error;
+      // Nếu token null (đã hết hạn), trả về null để xóa session
+      if (!token) {
+        return null
       }
+
+      // Gửi các thông tin cần thiết về cho client
+      (session as any).user = token.userData || (session as any).user;
+      (session as any).access_token = token.access_token;
+      (session as any).role = (token as any).role;
+      (session as any).error = token.error;
 
       return session
     }
