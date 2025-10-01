@@ -93,7 +93,7 @@ const AuthModal: React.FC = () => {
                     }}
                     onClick={() => setAuthModalMode('register')}
                   >
-                    {t('auth.buttons.loginNow')}
+                    {t('auth.buttons.registerNow')}
                   </button>
                 </div>
               ) : (

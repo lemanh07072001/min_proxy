@@ -1,34 +1,33 @@
 import { Eye, MousePointer, UserPlus, Users, DollarSign, TrendingUp, Target } from 'lucide-react'
 
+import { getServerSession } from 'next-auth'
+
 import AffiliatePage from '@/views/Client/Affiliate/AffiliatePage'
 import BoxCustom from '@/components/UI/BoxCustom'
-import { getServerSession } from 'next-auth'
 import { authOptions } from '@/libs/auth'
 
-
-
-export  default async function Affiliate() {
+export default async function Affiliate() {
   const session = await getServerSession(authOptions)
-  let affiliateData = [];
+  let affiliateData = []
+
   try {
     const res = await fetch(`${process.env.API_URL}/get-affiliate`, {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${session.access_token}`, // Thêm backendToken vào header
-        'Content-Type': 'application/json',
+        Authorization: `Bearer ${session.access_token}`, // Thêm backendToken vào header
+        'Content-Type': 'application/json'
       },
       cache: 'no-store'
-    });
-    affiliateData = await res.json();
+    })
+
+    affiliateData = await res.json()
     console.log(affiliateData)
 
     if (!res.ok) {
-      throw new Error(`Lỗi API: ${res}`);
+      throw new Error(`Lỗi API: ${res}`)
     }
-
   } catch (err) {
-    console.error("Fetch error on server:", err);
-
+    console.error('Fetch error on server:', err)
   }
 
   return (
@@ -47,7 +46,9 @@ export  default async function Affiliate() {
           <div className='flex items-center justify-between'>
             <div>
               <p className='text-sm text-gray-500 mb-1'>Thu nhập tháng này</p>
-              <p className='text-2xl font-bold text-gray-900'>{new Intl.NumberFormat('vi-VN').format(affiliateData.total) + ' đ'}</p>
+              <p className='text-2xl font-bold text-gray-900'>
+                {new Intl.NumberFormat('vi-VN').format(affiliateData.total) + ' đ' ?? 0}
+              </p>
             </div>
             <div className='w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center'>
               <DollarSign className='w-6 h-6 text-green-500' />
@@ -59,7 +60,7 @@ export  default async function Affiliate() {
           <div className='flex items-center justify-between'>
             <div>
               <p className='text-sm text-gray-500 mb-1'>Hoa Hồng Giới Thiệu</p>
-              <p className='text-2xl font-bold text-gray-900'>{affiliateData.affiliate_percent}</p>
+              <p className='text-2xl font-bold text-gray-900'>{affiliateData.affiliate_percent ?? 0}</p>
             </div>
             <div className='w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center'>
               <MousePointer className='w-6 h-6 text-blue-500' />

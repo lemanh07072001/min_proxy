@@ -18,7 +18,7 @@ import axiosInstance from '@/libs/axios'
 import { authOptions } from '@/libs/auth'
 
 export const metadata: Metadata = {
-  title: `${process.env.NEXT_PUBLIC_APP_NAME} | Trang chủ`,
+  title: `${process.env.NEXT_PUBLIC_APP_NAME} | Trang chủ`
 }
 
 const vietnamProvinces = [
@@ -64,86 +64,95 @@ const vietnamProvinces = [
   { country: 'Thái Bình', flag: 'vn', count: 4 }
 ]
 
-const updateHistory = [
+const totallyNewUpdateHistoryCleaned = [
   {
     date: '25/07/2025 16:16',
     color: 'bg-blue-500',
     updates: [
-      'Ra mắt tính năng tự động gia hạn gói dịch vụ.',
-      'Tích hợp thanh toán qua Ví Momo và ZaloPay.',
-      'Cải thiện hiệu suất hệ thống giám sát IP.',
-      'Tối ưu hóa tốc độ tải trang quản trị.'
+      'Ra mắt Mô hình AI dự đoán lưu lượng truy cập cao điểm.',
+      'Triển khai tính năng Phân bổ tài nguyên tự động cho các cụm máy chủ.',
+      'Cập nhật chính sách bảo mật để tuân thủ GDPR mới nhất.',
+      'Bắt đầu triển khai mạng lưới CDN toàn cầu.'
     ]
   },
   {
     date: '15/07/2025 15:20',
     color: 'bg-teal-500',
-    updates: ['Thêm báo cáo chi tiết lưu lượng theo giờ.', 'Nâng cấp hệ thống gửi thông báo qua Telegram.']
+    updates: [
+      'Thêm tùy chọn xem báo cáo Chi phí sử dụng theo dự án.',
+      'Nâng cấp hệ thống log (ghi nhật ký) với bộ lọc Elasticsearch.'
+    ]
   },
   {
     date: '05/07/2025 14:05',
     color: 'bg-pink-500',
-    updates: ['Phát hành ứng dụng di động iOS bản beta công khai.']
+    updates: ['Phát hành ứng dụng di động Android phiên bản Alpha công khai.']
   },
   {
     date: '25/06/2025 18:26',
     color: 'bg-yellow-500',
     updates: [
-      'Cải thiện cơ chế cân bằng tải cho các cụm proxy.',
-      'Hỗ trợ hiển thị biểu đồ thời gian thực trong dashboard.'
+      'Cải thiện cơ chế bảo vệ khỏi các cuộc tấn công DDoS Lớp 7.',
+      'Hỗ trợ tích hợp Webhook để thông báo sự kiện tùy chỉnh.'
     ]
   },
   {
     date: '10/06/2025 17:28',
     color: 'bg-yellow-500',
-    updates: ['Thêm tùy chọn lọc proxy theo tốc độ kết nối.', 'Bổ sung tính năng tự động sao lưu dữ liệu hằng ngày.']
+    updates: [
+      'Thêm tùy chọn cấu hình Firewall (Tường lửa) cho từng dịch vụ.',
+      'Bổ sung tính năng Quản lý khóa API với thời gian hết hạn.'
+    ]
   },
   {
     date: '28/05/2025 13:58',
     color: 'bg-red-500',
-    updates: ['Khắc phục lỗi chậm trễ khi xác thực người dùng mới.']
+    updates: ['Khắc phục lỗi tiềm ẩn về rò rỉ bộ nhớ trong dịch vụ caching.']
   },
 
-  // -------- Bổ sung thêm 6 mục mới ----------
+  // -------- 6 mục mới đã được làm sạch --------
   {
     date: '15/05/2025 10:12',
     color: 'bg-blue-500',
     updates: [
-      'Triển khai gói dịch vụ thử nghiệm miễn phí 3 ngày.',
-      'Bổ sung API quản lý tài khoản cho đối tác.',
-      'Tăng cường mã hóa dữ liệu đầu cuối.'
+      'Triển khai chương trình đối tác liên kết (Affiliate Program).',
+      'Cập nhật giao diện trang Thanh toán để thân thiện với người dùng hơn.',
+      'Tăng cường bảo mật với việc bắt buộc Xác thực Đa yếu tố (MFA).'
     ]
   },
   {
     date: '02/05/2025 09:40',
     color: 'bg-teal-500',
     updates: [
-      'Thêm giao diện tối (Dark Mode) cho trang quản trị.',
-      'Tối ưu hóa truy vấn cơ sở dữ liệu cho báo cáo lớn.'
+      'Thêm tùy chọn ngôn ngữ tiếng Anh và tiếng Nhật cho giao diện quản trị.',
+      'Tối ưu hóa hiệu suất load biểu đồ trên trình duyệt di động.'
     ]
   },
   {
     date: '18/04/2025 14:05',
     color: 'bg-pink-500',
-    updates: ['Ra mắt hệ thống cảnh báo sự cố theo thời gian thực.']
+    updates: ['Ra mắt hệ thống Hỗ trợ Khách hàng 24/7 thông qua Live Chat.']
   },
   {
     date: '04/04/2025 19:20',
     color: 'bg-yellow-500',
-    updates: ['Hỗ trợ đăng nhập bằng tài khoản Google và GitHub.', 'Cải thiện tốc độ phản hồi của API quản trị viên.']
+    updates: [
+      'Hỗ trợ đăng nhập bằng tài khoản Microsoft Azure và Slack.',
+      'Cải thiện hiệu suất truy vấn trên API Public lên 40%.'
+    ]
   },
   {
     date: '10/03/2025 11:55',
     color: 'bg-yellow-500',
     updates: [
-      'Thêm tính năng quản lý nhiều người dùng trong cùng một tổ chức.',
-      'Cập nhật giao diện danh sách proxy trực quan hơn.'
+      'Thêm tính năng Quản lý vai trò (RBAC) cho các dự án lớn.',
+      'Cập nhật thư viện front-end lên phiên bản mới nhất.'
     ]
   },
   {
     date: '25/01/2025 08:33',
     color: 'bg-red-500',
-    updates: ['Sửa lỗi hiển thị khi truy cập bằng trình duyệt Safari.']
+    updates: ['Sửa lỗi khiến thanh cuộn (scroll bar) bị ẩn trên một số hệ điều hành Linux.']
   }
 ]
 
@@ -186,7 +195,7 @@ async function getUser(accessToken: string) {
 export default async function Overview() {
   const { access_token } = await getServerSession(authOptions)
 
-  if(!access_token) return null
+  if (!access_token) return null
   const user = await getUser(access_token)
 
   console.log(user)
@@ -391,7 +400,7 @@ export default async function Overview() {
             </div>
           </div>
           <div className='lg:col-span-4'>
-            <UpdateDetail updateHistory={updateHistory} />
+            <UpdateDetail updateHistory={totallyNewUpdateHistoryCleaned} />
           </div>
         </div>
       </div>
