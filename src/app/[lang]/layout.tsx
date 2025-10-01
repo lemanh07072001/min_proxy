@@ -48,6 +48,8 @@ import I18nextProvider from '@/app/i18n-provider'
 import StoreProvider from '@/components/StoreProvider'
 import { setUser, addBalance } from '@/store/userSlice'
 import ReferralHandler from '@/components/ReferralHandler'
+import { NextAuthProvider } from '@/app/contexts/nextAuthProvider'
+import { getServerSession } from 'next-auth/next'
 
 const figtree = Figtree({
   subsets: ['latin'],
@@ -135,6 +137,9 @@ const RootLayout = async (props: ChildrenType & { params: Promise<{ lang: Locale
 
   // ✅ Sử dụng server-side utility để lấy user data
   const user = await getServerUserData()
+  
+  // ✅ Lấy session cho NextAuth
+  const session = await getServerSession(authOptions as any) as any
 
   return (
     <TranslationWrapper headersList={headersList} lang={params.lang}>
@@ -206,15 +211,17 @@ const RootLayout = async (props: ChildrenType & { params: Promise<{ lang: Locale
         </head>
         <body className='flex is-full min-bs-full flex-auto flex-col'>
           <I18nextProvider locale={params.lang}>
-            <TanstackProvider>
-              <InitColorSchemeScript attribute='data' defaultMode={systemMode} />
-              <StoreProvider initialUser={user}>
-                <ModalContextProvider>
-                  <ReferralHandler />
-                  {children}
-                </ModalContextProvider>
-              </StoreProvider>
-            </TanstackProvider>
+            <NextAuthProvider session={session as any} basePath={process.env.NEXTAUTH_BASEPATH}>
+              <TanstackProvider>
+                <InitColorSchemeScript attribute='data' defaultMode={systemMode} />
+                <StoreProvider initialUser={user}>
+                  <ModalContextProvider>
+                    <ReferralHandler />
+                    {children}
+                  </ModalContextProvider>
+                </StoreProvider>
+              </TanstackProvider>
+            </NextAuthProvider>
           </I18nextProvider>
         </body>
       </html>
