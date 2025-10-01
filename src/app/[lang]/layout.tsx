@@ -99,6 +99,14 @@ const RootLayout = async (props: ChildrenType & { params: Promise<{ lang: Locale
   return (
     <TranslationWrapper headersList={headersList} lang={params.lang}>
       <html id='__next' lang={params.lang} dir={direction} className={figtree.variable} suppressHydrationWarning>
+        <head>
+          <meta charSet="utf-8" />
+          <meta name="viewport" content="width=device-width, initial-scale=1" />
+          <meta name="robots" content="index, follow" />
+          <meta name="googlebot" content="index, follow" />
+          <link rel="icon" href="/images/logo/MKT_PROXY_2.png" />
+          <link rel="apple-touch-icon" href="/images/logo/MKT_PROXY_2.png" />
+        </head>
         <body className='flex is-full min-bs-full flex-auto flex-col'>
           <I18nextProvider locale={params.lang}>
             <TanstackProvider>
