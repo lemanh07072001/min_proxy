@@ -1,12 +1,6 @@
 User-agent: *
 Allow: /
 
-# Sitemap
-Sitemap: https://mktproxy.com/sitemap.xml
-
-# Crawl-delay
-Crawl-delay: 1
-
 # Disallow admin and private areas
 Disallow: /admin/
 Disallow: /api/
@@ -14,9 +8,13 @@ Disallow: /_next/
 Disallow: /private/
 
 # Allow important pages
-Allow: /
 Allow: /vi/
 Allow: /en/
-Allow: /cn/
 Allow: /ja/
 Allow: /ko/
+
+# Crawl-delay
+Crawl-delay: 1
+
+# Sitemap
+Sitemap: https://mktproxy.com/sitemap.xml

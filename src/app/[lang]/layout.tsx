@@ -18,11 +18,11 @@ import { headers } from 'next/headers'
 import { usePathname } from 'next/navigation'
 
 // Utils
-import { getServerUserData } from '@/utils/serverSessionValidation'
-
 import type { Metadata } from 'next'
 
 import InitColorSchemeScript from '@mui/material/InitColorSchemeScript'
+
+import { getServerUserData } from '@/utils/serverSessionValidation'
 
 // import { getServerSession } from 'next-auth' // Removed unused import
 
@@ -49,6 +49,7 @@ import StoreProvider from '@/components/StoreProvider'
 import { setUser, addBalance } from '@/store/userSlice'
 import ReferralHandler from '@/components/ReferralHandler'
 import { NextAuthProvider } from '@/app/contexts/nextAuthProvider'
+
 import { getServerSession } from 'next-auth/next'
 
 const figtree = Figtree({
@@ -57,12 +58,17 @@ const figtree = Figtree({
   display: 'swap'
 })
 
-export const metadata: Metadata = {
+export async function generateMetadata({ params }: { params: Promise<{ lang: Locale }> }): Promise<Metadata> {
+  const resolvedParams = await params
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://mktproxy.com'
+  
+  return {
   title: {
     default: 'MKT Proxy - Dịch vụ Proxy Chất Lượng Cao',
     template: '%s | MKT Proxy'
   },
-  description: 'Dịch vụ proxy bảo mật, tốc độ cao với hỗ trợ đa quốc gia. Giải pháp mạng riêng ảo tin cậy cho doanh nghiệp và cá nhân.',
+  description:
+    'Dịch vụ proxy bảo mật, tốc độ cao với hỗ trợ đa quốc gia. Giải pháp mạng riêng ảo tin cậy cho doanh nghiệp và cá nhân.',
   keywords: ['proxy', 'vpn', 'mạng', 'bảo mật', 'proxy Việt Nam', 'proxy quốc tế', 'mạng riêng ảo', 'bảo mật internet'],
   authors: [{ name: 'MKT Proxy' }],
   creator: 'MKT Proxy',
@@ -70,11 +76,11 @@ export const metadata: Metadata = {
   formatDetection: {
     email: false,
     address: false,
-    telephone: false,
+    telephone: false
   },
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://mktproxy.com'),
   alternates: {
-    canonical: '/',
+    canonical: `/${resolvedParams.lang}`,
     languages: {
       'vi': '/vi',
       'en': '/en',
@@ -84,25 +90,26 @@ export const metadata: Metadata = {
   },
   openGraph: {
     type: 'website',
-    locale: 'vi_VN',
-    url: process.env.NEXT_PUBLIC_APP_URL || 'https://mktproxy.com',
+    locale: resolvedParams.lang === 'vi' ? 'vi_VN' : resolvedParams.lang === 'en' ? 'en_US' : 'vi_VN',
+    url: `${baseUrl}/${resolvedParams.lang}`,
     title: 'MKT Proxy - Dịch vụ Proxy Chất Lượng Cao',
-    description: 'Dịch vụ proxy bảo mật, tốc độ cao với hỗ trợ đa quốc gia. Giải pháp mạng riêng ảo tin cậy cho doanh nghiệp và cá nhân.',
+    description:
+      'Dịch vụ proxy bảo mật, tốc độ cao với hỗ trợ đa quốc gia. Giải pháp mạng riêng ảo tin cậy cho doanh nghiệp và cá nhân.',
     siteName: 'MKT Proxy',
     images: [
       {
         url: '/images/logo/MKT_PROXY_2.png',
         width: 1200,
         height: 630,
-        alt: 'MKT Proxy Logo',
-      },
-    ],
+        alt: 'MKT Proxy Logo'
+      }
+    ]
   },
   twitter: {
     card: 'summary_large_image',
     title: 'MKT Proxy - Dịch vụ Proxy Chất Lượng Cao',
     description: 'Dịch vụ proxy bảo mật, tốc độ cao với hỗ trợ đa quốc gia.',
-    images: ['/images/logo/MKT_PROXY_2.png'],
+    images: ['/images/logo/MKT_PROXY_2.png']
   },
   robots: {
     index: true,
@@ -112,15 +119,16 @@ export const metadata: Metadata = {
       follow: true,
       'max-video-preview': -1,
       'max-image-preview': 'large',
-      'max-snippet': -1,
-    },
+      'max-snippet': -1
+    }
   },
   icons: {
     icon: '/images/logo/MKT_PROXY_2.png',
     shortcut: '/images/logo/MKT_PROXY_2.png',
-    apple: '/images/logo/MKT_PROXY_2.png',
+    apple: '/images/logo/MKT_PROXY_2.png'
   },
-  manifest: '/manifest.json',
+  manifest: '/manifest.json'
+  }
 }
 
 export const revalidate = 0 //
@@ -137,78 +145,13 @@ const RootLayout = async (props: ChildrenType & { params: Promise<{ lang: Locale
 
   // ✅ Sử dụng server-side utility để lấy user data
   const user = await getServerUserData()
-  
+
   // ✅ Lấy session cho NextAuth
-  const session = await getServerSession(authOptions as any) as any
+  const session = (await getServerSession(authOptions as any)) as any
 
   return (
     <TranslationWrapper headersList={headersList} lang={params.lang}>
       <html id='__next' lang={params.lang} dir={direction} className={figtree.variable} suppressHydrationWarning>
-        <head>
-          <meta charSet="utf-8" />
-          <meta name="viewport" content="width=device-width, initial-scale=1" />
-          <meta name="description" content="MKT Proxy - Dịch vụ proxy chất lượng cao, bảo mật tuyệt đối. Hỗ trợ đa quốc gia, tốc độ nhanh, giá cả hợp lý." />
-          <meta name="keywords" content="proxy, vpn, mạng, bảo mật, proxy Việt Nam, proxy quốc tế, mạng riêng ảo, bảo mật internet" />
-          <meta name="author" content="MKT Proxy" />
-          <meta name="robots" content="index, follow" />
-          <meta name="googlebot" content="index, follow" />
-          <meta name="theme-color" content="#1976d2" />
-          
-          {/* Open Graph Meta Tags */}
-          <meta property="og:type" content="website" />
-          <meta property="og:title" content="MKT Proxy - Dịch vụ Proxy Chất Lượng Cao" />
-          <meta property="og:description" content="Dịch vụ proxy bảo mật, tốc độ cao với hỗ trợ đa quốc gia. Giải pháp mạng riêng ảo tin cậy cho doanh nghiệp và cá nhân." />
-          <meta property="og:image" content="/images/logo/MKT_PROXY_2.png" />
-          <meta property="og:url" content={process.env.NEXT_PUBLIC_APP_URL || 'https://mktproxy.com'} />
-          <meta property="og:site_name" content="MKT Proxy" />
-          <meta property="og:locale" content={params.lang === 'vi' ? 'vi_VN' : params.lang === 'en' ? 'en_US' : 'vi_VN'} />
-          
-          {/* Twitter Card Meta Tags */}
-          <meta name="twitter:card" content="summary_large_image" />
-          <meta name="twitter:title" content="MKT Proxy - Dịch vụ Proxy Chất Lượng Cao" />
-          <meta name="twitter:description" content="Dịch vụ proxy bảo mật, tốc độ cao với hỗ trợ đa quốc gia." />
-          <meta name="twitter:image" content="/images/logo/MKT_PROXY_2.png" />
-          
-          {/* Additional SEO Meta Tags */}
-          <meta name="format-detection" content="telephone=no" />
-          <meta name="mobile-web-app-capable" content="yes" />
-          <meta name="apple-mobile-web-app-capable" content="yes" />
-          <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-          <meta name="apple-mobile-web-app-title" content="MKT Proxy" />
-          
-          {/* Favicon and Icons */}
-          <link rel="icon" href="/images/logo/MKT_PROXY_2.png" />
-          <link rel="apple-touch-icon" href="/images/logo/MKT_PROXY_2.png" />
-          <link rel="manifest" href="/manifest.json" />
-          
-          {/* Preconnect to external domains for performance */}
-          <link rel="preconnect" href="https://fonts.googleapis.com" />
-          <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-          
-          {/* Structured Data - JSON-LD */}
-          <script
-            type="application/ld+json"
-            dangerouslySetInnerHTML={{
-              __html: JSON.stringify({
-                "@context": "https://schema.org",
-                "@type": "Organization",
-                "name": "MKT Proxy",
-                "description": "Dịch vụ proxy chất lượng cao, bảo mật tuyệt đối",
-                "url": process.env.NEXT_PUBLIC_APP_URL || "https://mktproxy.com",
-                "logo": "/images/logo/MKT_PROXY_2.png",
-                "contactPoint": {
-                  "@type": "ContactPoint",
-                  "contactType": "customer service",
-                  "availableLanguage": ["Vietnamese", "English"]
-                },
-                "sameAs": [
-                  "https://facebook.com/mktproxy",
-                  "https://twitter.com/mktproxy"
-                ]
-              })
-            }}
-          />
-        </head>
         <body className='flex is-full min-bs-full flex-auto flex-col'>
           <I18nextProvider locale={params.lang}>
             <NextAuthProvider session={session as any} basePath={process.env.NEXTAUTH_BASEPATH}>
