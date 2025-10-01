@@ -61,73 +61,81 @@ const figtree = Figtree({
 export async function generateMetadata({ params }: { params: Promise<{ lang: Locale }> }): Promise<Metadata> {
   const resolvedParams = await params
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://mktproxy.com'
-  
+
   return {
-  title: {
-    default: 'MKT Proxy - Dịch vụ Proxy Chất Lượng Cao',
-    template: '%s | MKT Proxy'
-  },
-  description:
-    'Dịch vụ proxy bảo mật, tốc độ cao với hỗ trợ đa quốc gia. Giải pháp mạng riêng ảo tin cậy cho doanh nghiệp và cá nhân.',
-  keywords: ['proxy', 'vpn', 'mạng', 'bảo mật', 'proxy Việt Nam', 'proxy quốc tế', 'mạng riêng ảo', 'bảo mật internet'],
-  authors: [{ name: 'MKT Proxy' }],
-  creator: 'MKT Proxy',
-  publisher: 'MKT Proxy',
-  formatDetection: {
-    email: false,
-    address: false,
-    telephone: false
-  },
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://mktproxy.com'),
-  alternates: {
-    canonical: `/${resolvedParams.lang}`,
-    languages: {
-      'vi': '/vi',
-      'en': '/en',
-      'ja': '/ja',
-      'ko': '/ko',
+    title: {
+      default: 'MKT Proxy - Dịch vụ Proxy Chất Lượng Cao'
     },
-  },
-  openGraph: {
-    type: 'website',
-    locale: resolvedParams.lang === 'vi' ? 'vi_VN' : resolvedParams.lang === 'en' ? 'en_US' : 'vi_VN',
-    url: `${baseUrl}/${resolvedParams.lang}`,
-    title: 'MKT Proxy - Dịch vụ Proxy Chất Lượng Cao',
     description:
       'Dịch vụ proxy bảo mật, tốc độ cao với hỗ trợ đa quốc gia. Giải pháp mạng riêng ảo tin cậy cho doanh nghiệp và cá nhân.',
-    siteName: 'MKT Proxy',
-    images: [
-      {
-        url: '/images/logo/MKT_PROXY_2.png',
-        width: 1200,
-        height: 630,
-        alt: 'MKT Proxy Logo'
+    keywords: [
+      'proxy',
+      'vpn',
+      'mạng',
+      'bảo mật',
+      'proxy Việt Nam',
+      'proxy quốc tế',
+      'mạng riêng ảo',
+      'bảo mật internet'
+    ],
+    authors: [{ name: 'MKT Proxy' }],
+    creator: 'MKT Proxy',
+    publisher: 'MKT Proxy',
+    formatDetection: {
+      email: false,
+      address: false,
+      telephone: false
+    },
+    metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://mktproxy.com'),
+    alternates: {
+      canonical: `/${resolvedParams.lang}`,
+      languages: {
+        vi: '/vi',
+        en: '/en',
+        ja: '/ja',
+        ko: '/ko'
       }
-    ]
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'MKT Proxy - Dịch vụ Proxy Chất Lượng Cao',
-    description: 'Dịch vụ proxy bảo mật, tốc độ cao với hỗ trợ đa quốc gia.',
-    images: ['/images/logo/MKT_PROXY_2.png']
-  },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
+    },
+    openGraph: {
+      type: 'website',
+      locale: resolvedParams.lang === 'vi' ? 'vi_VN' : resolvedParams.lang === 'en' ? 'en_US' : 'vi_VN',
+      url: `${baseUrl}/${resolvedParams.lang}`,
+      title: 'MKT Proxy - Dịch vụ Proxy Chất Lượng Cao',
+      description:
+        'Dịch vụ proxy bảo mật, tốc độ cao với hỗ trợ đa quốc gia. Giải pháp mạng riêng ảo tin cậy cho doanh nghiệp và cá nhân.',
+      siteName: 'MKT Proxy',
+      images: [
+        {
+          url: '/images/logo/MKT_PROXY_2.png',
+          width: 1200,
+          height: 630,
+          alt: 'MKT Proxy Logo'
+        }
+      ]
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: 'MKT Proxy - Dịch vụ Proxy Chất Lượng Cao',
+      description: 'Dịch vụ proxy bảo mật, tốc độ cao với hỗ trợ đa quốc gia.',
+      images: ['/images/logo/MKT_PROXY_2.png']
+    },
+    robots: {
       index: true,
       follow: true,
-      'max-video-preview': -1,
-      'max-image-preview': 'large',
-      'max-snippet': -1
-    }
-  },
-  icons: {
-    icon: '/images/logo/MKT_PROXY_2.png',
-    shortcut: '/images/logo/MKT_PROXY_2.png',
-    apple: '/images/logo/MKT_PROXY_2.png'
-  },
-  manifest: '/manifest.json'
+      googleBot: {
+        index: true,
+        follow: true,
+        'max-video-preview': -1,
+        'max-image-preview': 'large',
+        'max-snippet': -1
+      }
+    },
+    icons: {
+      icon: '/images/logo/MKT_PROXY_2.png',
+      shortcut: '/images/logo/MKT_PROXY_2.png',
+      apple: '/images/logo/MKT_PROXY_2.png'
+    },
+    manifest: '/manifest.json'
   }
 }
 

@@ -21,7 +21,6 @@ export default async function Affiliate() {
     })
 
     affiliateData = await res.json()
-    console.log(affiliateData)
 
     if (!res.ok) {
       throw new Error(`Lỗi API: ${res}`)
