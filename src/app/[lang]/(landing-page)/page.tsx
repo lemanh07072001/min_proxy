@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   description: 'Mô tả ngắn gọn về trang web.'
 }
 
-export default async function Page({ params }: { params: { lang: string } }) {
+export default async function Page({ params }: { params: Promise<{ lang: string }> }) {
   const { lang } = await params
 
   return (

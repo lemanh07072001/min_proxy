@@ -5,8 +5,8 @@ import Hero from '../components/cooperate/Hero'
 import Agency from '../components/cooperate/Agency'
 import About from '../components/cooperate/About'
 
-export async function generateMetadata({ params }: { params: { lang: string } }): Promise<Metadata> {
-  const { lang } = params
+export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }): Promise<Metadata> {
+  const { lang } = await params
 
   console.log(lang)
 

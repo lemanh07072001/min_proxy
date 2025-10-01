@@ -278,7 +278,7 @@ const VerticalMenu = ({ scrollMenu, dictionary }: Props) => {
             href={`/${locale}/docs`}
             target='_blank'
           >
-            {dictionary['navigation'].docsApi}
+            {dictionary['navigation'].docsApi || 'API Docs'}
           </MenuItem>
         </MenuSection>
 
