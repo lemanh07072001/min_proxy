@@ -1,4 +1,4 @@
-import '@/app/globals.css'
+import './style.css'
 
 export const metadata = {
   title: '404',
