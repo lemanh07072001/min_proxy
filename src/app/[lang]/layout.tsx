@@ -96,6 +96,7 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: Loc
         ko: '/ko'
       }
     },
+
     openGraph: {
       type: 'website',
       locale: resolvedParams.lang === 'vi' ? 'vi_VN' : resolvedParams.lang === 'en' ? 'en_US' : 'vi_VN',

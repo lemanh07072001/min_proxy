@@ -2,11 +2,23 @@ name: Build and Deploy to Server
 
 on:
   push:
-    branches: ['main']
+    branches:
+      - 'main' # Kích hoạt cho nhánh Production
+      - 'test' # Kích hoạt cho nhánh Testing
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+
+    env:
+      # 1. Thư mục triển khai (TARGET_DIR cho main, TARGET_TEST_DIR cho test)
+      TARGET_DEPLOY_DIR: ${{ github.ref_name == 'test' && secrets.TARGET_TEST_DIR || secrets.TARGET_DIR }}
+
+      # 2. Tên tiến trình PM2 (test-mktproxy cho test, mktproxy cho main)
+      TARGET_PM2_NAME: ${{ github.ref_name == 'test' && 'test-mktproxy' || 'mktproxy' }}
+
+      # 3. Cổng ứng dụng (3001 cho test để tránh xung đột, 3000 cho main)
+      APP_PORT: ${{ github.ref_name == 'test' && 3001 || 3000 }}
 
     steps:
       - name: Checkout Source Code
@@ -27,15 +39,18 @@ jobs:
       - name: Clean up node_modules for production
         run: npm prune --production
 
+      # ------------------- BƯỚC 1: TRIỂN KHAI CODE (RSYNC) -------------------
       - name: Deploy to Server via rsync
         uses: easingthemes/ssh-deploy@main
         with:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           REMOTE_HOST: ${{ secrets.SERVER_HOST }}
           REMOTE_USER: ${{ secrets.SERVER_USERNAME }}
-          TARGET: ${{ secrets.TARGET_DIR }}
+          # Sử dụng TARGET_DEPLOY_DIR động
+          TARGET: ${{ env.TARGET_DEPLOY_DIR }}
           EXCLUDE: '/.git/, /.github/, .env'
 
+      # ------------------- BƯỚC 2: KHỞI ĐỘNG LẠI ỨNG DỤNG (SSH) -------------------
       - name: Restart Application on Server
         uses: appleboy/ssh-action@v0.1.10
         with:
@@ -43,18 +58,18 @@ jobs:
           username: ${{ secrets.SERVER_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            # Nếu Node cài bằng nvm, load nvm
+            # 1. Load môi trường Node/NVM
             export NVM_DIR="$HOME/.nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-
-            # Thêm path cho npm & pm2 nếu cần
             export PATH=$PATH:/usr/local/bin
 
-            cd ${{ secrets.TARGET_DIR }}
-            echo "Restarting the application with PM2..."
+            # 2. Chuyển đến thư mục triển khai chính xác
+            cd ${{ env.TARGET_DEPLOY_DIR }}
+            echo "Restarting ${{ env.TARGET_PM2_NAME }} on port ${{ env.APP_PORT }}..."
 
-            # Cài pm2 nếu chưa có
+            # 3. Cài pm2 nếu cần (cho lần chạy đầu)
             command -v pm2 >/dev/null 2>&1 || npm install -g pm2
 
-            # Restart hoặc start ứng dụng
-             pm2 restart mktproxy || pm2 start npm --name "mktproxy" -- run start
+            # 4. Restart hoặc Start ứng dụng với tên và cổng chính xác
+            pm2 restart ${{ env.TARGET_PM2_NAME }} || \
+            pm2 start npm --name "${{ env.TARGET_PM2_NAME }}" -- start -- --port ${{ env.APP_PORT }}
