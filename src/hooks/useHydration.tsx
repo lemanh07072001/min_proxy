@@ -74,3 +74,4 @@ export const useLocalStorage = (key: string, initialValue?: string) => {
 
   return [storedValue, setValue, removeValue] as const
 }
+

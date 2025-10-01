@@ -3,6 +3,8 @@
 // Next Imports
 import Link from 'next/link'
 
+import { Home, Compass, MapPin, Cloud } from 'lucide-react'
+
 // MUI Imports
 import useMediaQuery from '@mui/material/useMediaQuery'
 import { styled, useTheme } from '@mui/material/styles'
@@ -39,31 +41,48 @@ const NotFound = ({ mode }: { mode: SystemMode }) => {
   const miscBackground = useImageVariant(mode, lightImg, darkImg)
 
   return (
-    <div className='flex items-center justify-center min-bs-[100dvh] relative p-6 overflow-x-hidden'>
-      <div className='flex items-center flex-col text-center'>
-        <div className='flex flex-col gap-2 is-[90vw] sm:is-[unset] mbe-6'>
-          <Typography className='font-medium text-8xl' color='text.primary'>
-            404
-          </Typography>
-          <Typography variant='h4'>Page Not Found ⚠️</Typography>
-          <Typography>we couldn&#39;t find the page you are looking for.</Typography>
-        </div>
-        <Button href='/' component={Link} variant='contained'>
-          Back To Home
-        </Button>
-        <img
-          alt='error-404-illustration'
-          src='/images/illustrations/characters/1.png'
-          className='object-cover bs-[400px] md:bs-[450px] lg:bs-[500px] mbs-10 md:mbs-14 lg:mbs-20'
-        />
+    <div className='error-page'>
+      <div className='stars'>
+        <div className='star star-1'></div>
+        <div className='star star-2'></div>
+        <div className='star star-3'></div>
+        <div className='star star-4'></div>
+        <div className='star star-5'></div>
       </div>
-      {!hidden && (
-        <MaskImg
-          alt='mask'
-          src={miscBackground}
-          className={classnames({ 'scale-x-[-1]': theme.direction === 'rtl' })}
-        />
-      )}
+
+      <div className='cloud cloud-1'>
+        <div className='cloud-part'></div>
+        <div className='cloud-part'></div>
+        <div className='cloud-part'></div>
+      </div>
+      <div className='cloud cloud-2'>
+        <div className='cloud-part'></div>
+        <div className='cloud-part'></div>
+        <div className='cloud-part'></div>
+      </div>
+
+      <div className='content'>
+        <div className='error-number'>
+          <div className='glow-effect'></div>
+          <span className='number'>4</span>
+          <div className='compass-wrapper'>
+            <svg className='compass' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2'>
+              <circle cx='12' cy='12' r='10'></circle>
+              <polygon points='16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76'></polygon>
+            </svg>
+            <svg className='map-pin' viewBox='0 0 24 24' fill='currentColor'>
+              <path d='M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z'></path>
+              <circle cx='12' cy='10' r='3'></circle>
+            </svg>
+          </div>
+          <span className='number'>4</span>
+        </div>
+
+        <div className='error-code'>
+          <div className='pulse-dot'></div>
+          <span>ERROR_CODE: 404_NOT_FOUND</span>
+        </div>
+      </div>
     </div>
   )
 }
