@@ -6,6 +6,7 @@ import PartnersSection from '@/app/[lang]/(landing-page)/components/PartnersSect
 
 export const metadata: Metadata = {
   title: `Trang chủ`,
+  description: 'Mô tả ngắn gọn về trang web.'
 }
 
 export default async function Page({ params }: { params: { lang: string } }) {
@@ -16,7 +17,7 @@ export default async function Page({ params }: { params: { lang: string } }) {
       <Hero />
 
       <ProductsSection local={lang} />
-      <PartnersSection local={lang} />
+      <PartnersSection />
     </div>
   )
 }

@@ -24,7 +24,7 @@ import type { Metadata } from 'next'
 
 import InitColorSchemeScript from '@mui/material/InitColorSchemeScript'
 
-import { getServerSession } from 'next-auth'
+// import { getServerSession } from 'next-auth' // Removed unused import
 
 import { i18n } from '@/configs/configi18n'
 
@@ -46,7 +46,8 @@ import { authOptions } from '@/libs/auth'
 import I18nextProvider from '@/app/i18n-provider'
 
 import StoreProvider from '@/components/StoreProvider'
-import { setUser, getUser, addBalance } from '@/store/userSlice'
+import { setUser, addBalance } from '@/store/userSlice'
+import ReferralHandler from '@/components/ReferralHandler'
 
 const figtree = Figtree({
   subsets: ['latin'],
@@ -55,31 +56,70 @@ const figtree = Figtree({
 })
 
 export const metadata: Metadata = {
-  // 1. Tối ưu TITLE chính với các từ khóa quan trọng
-  title:  process.env.NEXT_PUBLIC_APP_NAME,
-
-  icons: { icon: '/images/logo/MKT_PROXY_2.png' },
-
-  // 2. Tối ưu META DESCRIPTION
-  description: 'MKTProxy: Mua Proxy Dân Dụng (Residential), Datacenter IPV4/IPV6 sạch, riêng tư. Tốc độ cực cao, Marketing & Nuôi nick.',
-
-  // 3. Open Graph (Cho Facebook, Zalo...)
-  openGraph: {
-    title: 'MKTProxy | Mua Proxy Dân Dụng, 4G/5G, Datacenter Tốc Độ Cao, Giá Rẻ',
-    description: 'Giải pháp Proxy IP sạch, tốc độ cao cho marketing, SEO và nuôi tài khoản mạng xã hội. Hỗ trợ 24/7. Bắt đầu dùng thử tại MKTProxy.com!',
-    url: 'https://mktproxy.com',
-    siteName: process.env.NEXT_PUBLIC_APP_NAME,
-    locale: 'vi_VN',
-    type: 'website',
+  title: {
+    default: 'MKT Proxy - Dịch vụ Proxy Chất Lượng Cao',
+    template: '%s | MKT Proxy'
   },
-
-  // 4. Twitter Card
+  description: 'Dịch vụ proxy bảo mật, tốc độ cao với hỗ trợ đa quốc gia. Giải pháp mạng riêng ảo tin cậy cho doanh nghiệp và cá nhân.',
+  keywords: ['proxy', 'vpn', 'mạng', 'bảo mật', 'proxy Việt Nam', 'proxy quốc tế', 'mạng riêng ảo', 'bảo mật internet'],
+  authors: [{ name: 'MKT Proxy' }],
+  creator: 'MKT Proxy',
+  publisher: 'MKT Proxy',
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://mktproxy.com'),
+  alternates: {
+    canonical: '/',
+    languages: {
+      'vi': '/vi',
+      'en': '/en',
+      'ja': '/ja',
+      'ko': '/ko',
+    },
+  },
+  openGraph: {
+    type: 'website',
+    locale: 'vi_VN',
+    url: process.env.NEXT_PUBLIC_APP_URL || 'https://mktproxy.com',
+    title: 'MKT Proxy - Dịch vụ Proxy Chất Lượng Cao',
+    description: 'Dịch vụ proxy bảo mật, tốc độ cao với hỗ trợ đa quốc gia. Giải pháp mạng riêng ảo tin cậy cho doanh nghiệp và cá nhân.',
+    siteName: 'MKT Proxy',
+    images: [
+      {
+        url: '/images/logo/MKT_PROXY_2.png',
+        width: 1200,
+        height: 630,
+        alt: 'MKT Proxy Logo',
+      },
+    ],
+  },
   twitter: {
     card: 'summary_large_image',
-    title: 'MKTProxy | Mua Proxy Dân Dụng, 4G/5G, Datacenter Tốc Độ Cao, Giá Rẻ',
-    description: 'Proxy IPV4/IPV6 sạch cho marketing, nuôi nick. Tốc độ cao, giá rẻ tại MKTProxy.com.',
+    title: 'MKT Proxy - Dịch vụ Proxy Chất Lượng Cao',
+    description: 'Dịch vụ proxy bảo mật, tốc độ cao với hỗ trợ đa quốc gia.',
+    images: ['/images/logo/MKT_PROXY_2.png'],
   },
-};
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  icons: {
+    icon: '/images/logo/MKT_PROXY_2.png',
+    shortcut: '/images/logo/MKT_PROXY_2.png',
+    apple: '/images/logo/MKT_PROXY_2.png',
+  },
+  manifest: '/manifest.json',
+}
 
 export const revalidate = 0 //
 
@@ -102,17 +142,77 @@ const RootLayout = async (props: ChildrenType & { params: Promise<{ lang: Locale
         <head>
           <meta charSet="utf-8" />
           <meta name="viewport" content="width=device-width, initial-scale=1" />
+          <meta name="description" content="MKT Proxy - Dịch vụ proxy chất lượng cao, bảo mật tuyệt đối. Hỗ trợ đa quốc gia, tốc độ nhanh, giá cả hợp lý." />
+          <meta name="keywords" content="proxy, vpn, mạng, bảo mật, proxy Việt Nam, proxy quốc tế, mạng riêng ảo, bảo mật internet" />
+          <meta name="author" content="MKT Proxy" />
           <meta name="robots" content="index, follow" />
           <meta name="googlebot" content="index, follow" />
+          <meta name="theme-color" content="#1976d2" />
+          
+          {/* Open Graph Meta Tags */}
+          <meta property="og:type" content="website" />
+          <meta property="og:title" content="MKT Proxy - Dịch vụ Proxy Chất Lượng Cao" />
+          <meta property="og:description" content="Dịch vụ proxy bảo mật, tốc độ cao với hỗ trợ đa quốc gia. Giải pháp mạng riêng ảo tin cậy cho doanh nghiệp và cá nhân." />
+          <meta property="og:image" content="/images/logo/MKT_PROXY_2.png" />
+          <meta property="og:url" content={process.env.NEXT_PUBLIC_APP_URL || 'https://mktproxy.com'} />
+          <meta property="og:site_name" content="MKT Proxy" />
+          <meta property="og:locale" content={params.lang === 'vi' ? 'vi_VN' : params.lang === 'en' ? 'en_US' : 'vi_VN'} />
+          
+          {/* Twitter Card Meta Tags */}
+          <meta name="twitter:card" content="summary_large_image" />
+          <meta name="twitter:title" content="MKT Proxy - Dịch vụ Proxy Chất Lượng Cao" />
+          <meta name="twitter:description" content="Dịch vụ proxy bảo mật, tốc độ cao với hỗ trợ đa quốc gia." />
+          <meta name="twitter:image" content="/images/logo/MKT_PROXY_2.png" />
+          
+          {/* Additional SEO Meta Tags */}
+          <meta name="format-detection" content="telephone=no" />
+          <meta name="mobile-web-app-capable" content="yes" />
+          <meta name="apple-mobile-web-app-capable" content="yes" />
+          <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+          <meta name="apple-mobile-web-app-title" content="MKT Proxy" />
+          
+          {/* Favicon and Icons */}
           <link rel="icon" href="/images/logo/MKT_PROXY_2.png" />
           <link rel="apple-touch-icon" href="/images/logo/MKT_PROXY_2.png" />
+          <link rel="manifest" href="/manifest.json" />
+          
+          {/* Preconnect to external domains for performance */}
+          <link rel="preconnect" href="https://fonts.googleapis.com" />
+          <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+          
+          {/* Structured Data - JSON-LD */}
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify({
+                "@context": "https://schema.org",
+                "@type": "Organization",
+                "name": "MKT Proxy",
+                "description": "Dịch vụ proxy chất lượng cao, bảo mật tuyệt đối",
+                "url": process.env.NEXT_PUBLIC_APP_URL || "https://mktproxy.com",
+                "logo": "/images/logo/MKT_PROXY_2.png",
+                "contactPoint": {
+                  "@type": "ContactPoint",
+                  "contactType": "customer service",
+                  "availableLanguage": ["Vietnamese", "English"]
+                },
+                "sameAs": [
+                  "https://facebook.com/mktproxy",
+                  "https://twitter.com/mktproxy"
+                ]
+              })
+            }}
+          />
         </head>
         <body className='flex is-full min-bs-full flex-auto flex-col'>
           <I18nextProvider locale={params.lang}>
             <TanstackProvider>
               <InitColorSchemeScript attribute='data' defaultMode={systemMode} />
               <StoreProvider initialUser={user}>
-                {children}
+                <ModalContextProvider>
+                  <ReferralHandler />
+                  {children}
+                </ModalContextProvider>
               </StoreProvider>
             </TanstackProvider>
           </I18nextProvider>
