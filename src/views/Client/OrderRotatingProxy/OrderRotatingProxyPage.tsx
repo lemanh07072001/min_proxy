@@ -77,7 +77,7 @@ export default function OrderRotatingProxyPage() {
   const [, copy] = useCopy()
 
   const { data: dataOrders = [], isLoading } = useQuery({
-    queryKey: ['orderProxyRotating'],
+    queryKey: ['proxyData'],
     queryFn: async () => {
       const res = await axiosAuth.get('/get-order-proxy-rotating')
 
@@ -106,7 +106,6 @@ export default function OrderRotatingProxyPage() {
         setSelectedProxy(res.data.data)
         setModalOpen(true)
       } else {
-        console.log(res)
         toast.error(res.data.message)
       }
     } catch (error) {

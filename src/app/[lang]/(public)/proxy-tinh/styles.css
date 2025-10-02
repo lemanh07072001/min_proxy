@@ -35,7 +35,6 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 24px;
-  padding-block-start: 32px;
 }
 
 /* Header section */

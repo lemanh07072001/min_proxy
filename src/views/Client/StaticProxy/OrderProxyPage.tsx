@@ -187,7 +187,7 @@ export default function OrderProxyPage() {
       {
         accessorKey: 'proxy',
         header: 'Proxy',
-        cell: ({ row }) => {
+        cell: ({ row }: { row: any }) => {
           const proxys = row.original.proxys || {}
 
           const proxyValues = Object.entries(proxys)
@@ -212,7 +212,7 @@ export default function OrderProxyPage() {
       {
         accessorKey: 'protocol',
         header: 'Loại',
-        cell: ({ row }) => {
+        cell: ({ row }: { row: any }) => {
           const proxys = row.original.proxys || {} // nếu null hoặc undefined, fallback thành {}
           const keys = Object.keys(proxys)
 
@@ -223,7 +223,7 @@ export default function OrderProxyPage() {
       {
         accessorKey: 'buyDate',
         header: 'Ngày mua',
-        cell: ({ row }) => {
+        cell: ({ row }: { row: any }) => {
           return (
             <>
               <div className='d-flex align-items-center  gap-1 '>
@@ -238,7 +238,7 @@ export default function OrderProxyPage() {
       {
         accessorKey: 'expiryDate',
         header: 'Ngày hết hạn',
-        cell: ({ row }) => {
+        cell: ({ row }: { row: any }) => {
           return (
             <>
               <div className='d-flex align-items-center  gap-1 '>
@@ -253,7 +253,7 @@ export default function OrderProxyPage() {
       {
         accessorKey: 'status',
         header: 'Trạng thái',
-        cell: ({ row }) => {
+        cell: ({ row }: { row: any }) => {
           return getStatusBadge(row.original.status)
         },
         size: 150

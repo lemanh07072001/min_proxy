@@ -123,7 +123,7 @@ const SwitchFeatureRow = ({ feature, control, planId }) => (
 )
 
 // --- CUSTOM HOOK FOR API CALL ---
-const useBuyProxy = () => {
+const useBuyProxy = (onPurchaseSuccess: () => void) => {
   const queryClient = useQueryClient()
   const session = useSession()
   const dispatch = useDispatch<AppDispatch>()
@@ -142,7 +142,7 @@ const useBuyProxy = () => {
 
       return api.post('/buy-proxy', orderData)
     },
-    onSuccess: (data, variables) => {
+    onSuccess: async (data, variables) => {
       // Xử lý khi request thành công
       if (data.data.success == false) {
         toast.error('Lỗi hệ thông xin vui lòng liên hệ Admin.  ')
@@ -151,10 +151,14 @@ const useBuyProxy = () => {
 
         dispatch(subtractBalance(total))
         toast.success(data.data.message)
-      }
 
-      // Bạn có thể vô hiệu hóa cache hoặc cập nhật dữ liệu khác ở đây
-      queryClient.invalidateQueries({ queryKey: ['proxyData'] })
+        // Invalidate và refetch query trước khi chuyển tab
+        await queryClient.invalidateQueries({ queryKey: ['proxyData'] })
+        await queryClient.refetchQueries({ queryKey: ['proxyData'] })
+
+        // Gọi callback để chuyển sang table sau khi đã refresh data
+        onPurchaseSuccess()
+      }
     },
     onError: error => {
       toast.error(error.response?.data.message || 'Lỗi không xác định')
@@ -167,8 +171,8 @@ const useBuyProxy = () => {
 }
 
 // Component chính cho mỗi thẻ plan, giờ đây gọn gàng hơn.
-const PlanCard = ({ plan }) => {
-  const { mutate, isPending, isError, isSuccess, error } = useBuyProxy()
+const PlanCard = ({ plan, onPurchaseSuccess }) => {
+  const { mutate, isPending, isError, isSuccess, error } = useBuyProxy(onPurchaseSuccess)
   const [openConfirm, setOpenConfirm] = useState(false)
   const [formData, setFormData] = useState()
   const { openAuthModal } = useModalContext()
@@ -314,13 +318,14 @@ const PlanCard = ({ plan }) => {
 
 interface RotatingProxyPageProps {
   data: any
+  onPurchaseSuccess: () => void
 }
 
-export default function RotatingProxyPage({ data }: RotatingProxyPageProps) {
+export default function RotatingProxyPage({ data, onPurchaseSuccess }: RotatingProxyPageProps) {
   return (
     <>
       {data.map((plan: any) => (
-        <PlanCard key={plan.id} plan={plan} />
+        <PlanCard key={plan.id} plan={plan} onPurchaseSuccess={onPurchaseSuccess} />
       ))}
     </>
   )

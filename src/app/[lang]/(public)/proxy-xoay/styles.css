@@ -35,7 +35,6 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 24px;
-  padding-block-start: 32px;
 }
 
 /* Tablet & Small Desktops */
@@ -43,7 +42,6 @@
   .plans-container {
     grid-template-columns: repeat(2, 1fr);
   }
-
 }
 
 /* Mobile */
