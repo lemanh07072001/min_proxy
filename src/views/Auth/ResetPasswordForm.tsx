@@ -66,12 +66,12 @@ export default function ResetPasswordForm() {
     // Đóng modal reset password
     closeAuthModal()
     
-    // Mở modal login
-    openAuthModal('login')
-    
-    // Reload trang
+    // Redirect về trang empty và reload
+    router.push('/')
     window.location.reload()
   }
+    
+   
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className='space-y-6'>
