@@ -86,18 +86,19 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onClose }) 
 
   const onSubmit = (data: { password: string; confirmPassword: string }) => {
     return new Promise<void>(resolve => {
-      setTimeout(() => {
-        console.log('Dữ liệu form hợp lệ:', data)
-        alert('Đổi mật khẩu thành công!')
-        
-        // Đóng modal profile
-        onClose()
-        
-        // Mở modal login
-        openAuthModal('login')
-        
-        resolve()
-      }, 1000)
+      console.log('Dữ liệu form hợp lệ:', data)
+      alert('Đổi mật khẩu thành công!')
+      
+      // Đóng modal profile ngay lập tức
+      onClose()
+      
+      // Mở modal login
+      openAuthModal('login')
+      
+      // Reload trang
+      window.location.reload()
+      
+      resolve()
     })
   }
 
