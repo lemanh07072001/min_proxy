@@ -15,7 +15,8 @@ import {
   Key,
   Clock,
   Clock3,
-  List
+  List,
+  Download
 } from 'lucide-react'
 
 import Button from '@mui/material/Button'
@@ -30,10 +31,10 @@ import {
   getFacetedUniqueValues,
   getSortedRowModel // Thêm để lọc hàng đã chọn
 } from '@tanstack/react-table'
-
+import MenuItem from '@mui/material/MenuItem'
 import Chip from '@mui/material/Chip'
 
-import './styles.css'
+import './stylesOrder.css'
 import Pagination from '@mui/material/Pagination'
 
 import Checkbox from '@mui/material/Checkbox'
@@ -46,15 +47,16 @@ import CustomIconButton from '@core/components/mui/IconButton'
 import { formatDateTimeLocal } from '@/utils/formatDate'
 import { useCopy } from '@/app/hooks/useCopy'
 
-import { ChangePassword } from './ChangePassword'
-
 import useAxiosAuth from '@/hocs/useAxiosAuth'
+import CustomTextField from '@/@core/components/mui/TextField'
 
 export default function OrderProxyPage() {
-  const [columnFilters, setColumnFilters] = useState([])
+  const [columnFilters, setColumnFilters] = useState<any[]>([])
   const [rowSelection, setRowSelection] = useState({}) // State để lưu các hàng được chọn
-  const [sorting, setSorting] = useState([])
+  const [sorting, setSorting] = useState<any[]>([])
   const [changePassword, setChangePassword] = useState(false)
+  const [statusFilter, setStatusFilter] = useState<string>('all') // State để lọc theo status
+  const [typeFilter, setTypeFilter] = useState<string>('all') // State để lọc theo loại
 
   const [pagination, setPagination] = useState({
     pageIndex: 0,
@@ -62,7 +64,7 @@ export default function OrderProxyPage() {
   })
 
   const axiosAuth = useAxiosAuth()
-  const [, copy] = useCopy()
+  const [isCopied, copy] = useCopy()
 
   const { data: dataOrders = [], isLoading } = useQuery({
     queryKey: ['orderProxyStatic'],
@@ -71,11 +73,45 @@ export default function OrderProxyPage() {
 
       return res.data.data
     },
-    staleTime: 10 * 60 * 1000, // 10 phút - data không bị coi là stale trong 10 phút
-    gcTime: 10 * 60 * 1000, // 10 phút - cache data trong 10 phút (thay thế cacheTime)
-    refetchOnWindowFocus: false, // Không refetch khi focus vào window
-    refetchOnMount: false // Không refetch khi component mount lại
+    staleTime: 30 * 1000, // 30 giây - data không bị coi là stale trong 30 giây
+    gcTime: 5 * 60 * 1000, // 5 phút - cache data trong 5 phút
+    refetchOnWindowFocus: true, // Refetch khi focus vào window để đảm bảo data mới nhất
+    refetchOnMount: true // Refetch khi component mount lại để hiển thị đơn hàng mới
   })
+
+  // Lọc dữ liệu theo status và loại
+  const filteredData = useMemo(() => {
+    let filtered = dataOrders
+
+    // Filter theo status
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter((item: any) => item.status === statusFilter)
+    }
+
+    // Filter theo loại
+    if (typeFilter !== 'all') {
+      filtered = filtered.filter((item: any) => {
+        const proxys = item.proxys || {}
+        const keys = Object.keys(proxys)
+        const firstKey = keys[0]?.toLowerCase()
+
+        return firstKey === typeFilter.toLowerCase()
+      })
+    }
+
+    return filtered
+  }, [dataOrders, statusFilter, typeFilter])
+
+  // Reset row selection khi filter thay đổi
+  const handleStatusFilterChange = (value: string) => {
+    setStatusFilter(value)
+    setRowSelection({}) // Reset selection khi filter thay đổi
+  }
+
+  const handleTypeFilterChange = (value: string) => {
+    setTypeFilter(value)
+    setRowSelection({}) // Reset selection khi filter thay đổi
+  }
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -92,7 +128,7 @@ export default function OrderProxyPage() {
     () => [
       {
         id: 'select',
-        header: ({ table }) => (
+        header: ({ table }: { table: any }) => (
           <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
             <FormControlLabel
               sx={{
@@ -111,7 +147,7 @@ export default function OrderProxyPage() {
             />
           </div>
         ),
-        cell: ({ row }) => (
+        cell: ({ row }: { row: any }) => (
           <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
             <FormControlLabel
               sx={{
@@ -140,9 +176,9 @@ export default function OrderProxyPage() {
       {
         accessorKey: 'provider',
         header: 'Nhà mạng',
-        cell: ({ row }) => {
+        cell: ({ row }: { row: any }) => {
           const proxys = row.original.proxys || {} // fallback nếu null
-          const loaiproxy = proxys.loaiproxy || '-' // fallback nếu không tồn tại
+          const loaiproxy = (proxys as any).loaiproxy || '-' // fallback nếu không tồn tại
 
           return <span className='text-red'>{loaiproxy}</span>
         },
@@ -158,11 +194,13 @@ export default function OrderProxyPage() {
             .filter(([key]) => key !== 'loaiproxy')
             .map(([_, value]) => value)
 
+          const firstProxy = proxyValues[0] as string | undefined
+
           return (
             <div className='proxy-cell'>
-              <span className='proxy-label'>{proxyValues[0] || '-'}</span>
-              {proxyValues[0] && (
-                <button className='icon-button' onClick={() => copy(proxyValues[0])}>
+              <span className='proxy-label'>{firstProxy || '-'}</span>
+              {firstProxy && firstProxy !== '-' && (
+                <button className='icon-button' onClick={() => copy(firstProxy)}>
                   <Copy size={14} />
                 </button>
               )}
@@ -225,7 +263,7 @@ export default function OrderProxyPage() {
   )
 
   const table = useReactTable({
-    data: dataOrders,
+    data: filteredData,
     columns,
     state: {
       rowSelection,
@@ -252,12 +290,59 @@ export default function OrderProxyPage() {
   const startRow = pageIndex * pageSize + 1
   const endRow = Math.min(startRow + pageSize - 1, totalRows)
 
-  const handleChangePassword = () => {
-    setChangePassword(true)
+  // Function để lấy tất cả proxy đã được checked
+  const getSelectedProxies = () => {
+    const selectedRows = table.getFilteredSelectedRowModel().rows
+
+    return selectedRows.map(row => {
+      const proxys = row.original.proxys || {}
+
+      const proxyValues = Object.entries(proxys)
+        .filter(([key]) => key !== 'loaiproxy')
+        .map(([_, value]) => value)
+
+      return {
+        id: row.original.id,
+        proxy: proxyValues[0] || '-',
+        provider: (proxys as any).loaiproxy || '-',
+        status: row.original.status
+      }
+    })
   }
 
-  const handleCloseChangePassword = () => {
-    setChangePassword(false)
+  // Function để copy tất cả proxy đã chọn
+  const copySelectedProxies = () => {
+    const selectedProxies = getSelectedProxies()
+    const proxyList = selectedProxies.map(item => item.proxy).join('\n')
+
+    copy(proxyList)
+  }
+
+  // Function để tải xuống proxy đã chọn dưới dạng file .txt
+  const downloadSelectedProxies = () => {
+    const selectedProxies = getSelectedProxies()
+
+    if (selectedProxies.length === 0) {
+      alert('Vui lòng chọn ít nhất một proxy để tải xuống!')
+
+      return
+    }
+
+    const proxyList = selectedProxies.map(item => item.proxy).join('\n')
+    const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-')
+    const filename = `proxy-list-${timestamp}.txt`
+
+    // Tạo blob và tải xuống
+    const blob = new Blob([proxyList], { type: 'text/plain;charset=utf-8' })
+    const url = window.URL.createObjectURL(blob)
+    const link = document.createElement('a')
+
+    link.href = url
+    link.download = filename
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    window.URL.revokeObjectURL(url)
   }
 
   return (
@@ -272,42 +357,78 @@ export default function OrderProxyPage() {
               <div className='page-icon'>
                 <List size={17} />
               </div>
-              <div>
+              {/* <div>
                 <h5 className='mb-0 font-semibold'>Danh sách proxy</h5>
-              </div>
+              </div> */}
             </div>
-            <div className='d-flex gap-2'>
-              {/* Đổi password */}
-              <Button onClick={handleChangePassword} variant='outlined' startIcon={<RotateCcwKey size={16} />}>
-                Đổi password
-              </Button>
+            <div className='d-flex gap-2 align-items-center'>
+              {/* Hiển thị số proxy đã chọn */}
+              {Object.keys(rowSelection).length > 0 && (
+                <span className='text-sm text-gray-600'>Đã chọn: {Object.keys(rowSelection).length} proxy</span>
+              )}
+              {/* Filter by Status */}
+              <div className='status-filter'>
+                <CustomTextField
+                  select
+                  fullWidth
+                  defaultValue='all'
+                  size='small'
+                  sx={{
+                    width: '200px'
+                  }}
+                  onChange={e => handleStatusFilterChange(e.target.value)}
+                >
+                  <MenuItem value={'all'}>Tất cả trạng thái</MenuItem>
+                  <MenuItem value={'ACTIVE'}>Đang hoạt động</MenuItem>
+                  <MenuItem value={'EXPRIRED'}>Hết hạn</MenuItem>
+                </CustomTextField>
+              </div>
 
-              {/* Gia hạn */}
-              <Button variant='outlined' startIcon={<Calendar size={16} />}>
-                Gia hạn
-              </Button>
-
-              {/* Đổi bảo mật */}
-              <Button variant='outlined' startIcon={<Key size={16} />}>
-                Đổi bảo mật
-              </Button>
-
-              {/* Đổi proxy */}
-              <Button variant='contained' color='error' disabled>
-                Đổi proxy
-              </Button>
+              {/* Filter by Type */}
+              <div className='type-filter'>
+                <CustomTextField
+                  select
+                  fullWidth
+                  defaultValue='all'
+                  size='small'
+                  sx={{
+                    width: '200px'
+                  }}
+                  onChange={e => handleTypeFilterChange(e.target.value)}
+                >
+                  <MenuItem value={'all'}>Tất cả loại</MenuItem>
+                  <MenuItem value={'http'}>HTTP</MenuItem>
+                  <MenuItem value={'socks5'}>SOCKS5</MenuItem>
+                </CustomTextField>
+              </div>
 
               {/* Copy all */}
-              <CustomIconButton aria-label='capture screenshot' variant='outlined'>
-                <Copy size={16} />
-              </CustomIconButton>
+              <Button
+                variant='outlined'
+                startIcon={<Copy size={16} />}
+                onClick={copySelectedProxies}
+                sx={{ minWidth: 'auto' }}
+              >
+                Copy đã chọn
+              </Button>
+
+              {/* Download as TXT */}
+              <Button
+                variant='contained'
+                startIcon={<Download size={16} />}
+                onClick={downloadSelectedProxies}
+                sx={{ minWidth: 'auto', color: '#fff' }}
+                disabled={Object.keys(rowSelection).length === 0}
+              >
+                Tải xuống .txt
+              </Button>
             </div>
           </div>
 
           <div className='table-container'>
             {/* Table */}
             <div className='table-wrapper'>
-              <table className='data-table' style={isLoading || dataOrders.length === 0 ? { height: '100%' } : {}}>
+              <table className='data-table' style={isLoading || filteredData.length === 0 ? { height: '100%' } : {}}>
                 <thead className='table-header'>
                   {table.getHeaderGroups().map(headerGroup => (
                     <tr key={headerGroup.id}>
@@ -411,9 +532,6 @@ export default function OrderProxyPage() {
           </div>
         </div>
       </div>
-
-      {/* Modal Change Password Proxy */}
-      <ChangePassword open={changePassword} onClose={handleCloseChangePassword} />
     </>
   )
 }

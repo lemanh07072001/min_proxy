@@ -6,7 +6,7 @@ import StaticProxyPage from '@views/Client/StaticProxy/StaticProxyPage'
 import axiosInstance from '@/libs/axios'
 
 export const metadata: Metadata = {
-  title: `${process.env.NEXT_PUBLIC_APP_NAME} | Proxy Tĩnh`,
+  title: `${process.env.NEXT_PUBLIC_APP_NAME} | Proxy Tĩnh`
 }
 
 export default async function StaticProxy() {
@@ -53,7 +53,7 @@ export default async function StaticProxy() {
   return (
     <div className='main-content-modern'>
       {/* Proxy Cards */}
-      <div className='proxy-grid'>
+      <div className=''>
         <StaticProxyPage data={mergedPlans} />
       </div>
     </div>

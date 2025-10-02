@@ -1,52 +1,74 @@
 // FILE: hooks/useCopy.ts
 
-import { useState, useEffect } from 'react';
-import { toast } from 'react-toastify';
+import { useState, useEffect } from 'react'
+
+import { toast } from 'react-toastify'
 
 export function useCopy(timeout = 2000) {
-  const [isCopied, setIsCopied] = useState(false);
+  const [isCopied, setIsCopied] = useState(false)
 
   const copy = async (text: string, successMessage?: string) => {
-    if (!navigator?.clipboard) {
-      console.warn('Clipboard not supported');
+    let copySuccessful = false
 
-      toast.error('Trình duyệt không hỗ trợ sao chép!');
-
-      return false;
+    // 1. THỬ DÙNG CLIPBOARD API (Hiện đại, cần HTTPS/Secure Context)
+    if (navigator?.clipboard) {
+      try {
+        await navigator.clipboard.writeText(text)
+        copySuccessful = true
+      } catch (error) {
+        console.warn('Clipboard API failed (likely due to insecure context or permissions). Trying fallback.', error)
+      }
     }
 
-    try {
-      await navigator.clipboard.writeText(text);
-      setIsCopied(true);
+    // 2. THỬ PHƯƠNG PHÁP FALLBACK (document.execCommand)
+    if (!copySuccessful) {
+      try {
+        const textArea = document.createElement('textarea')
 
-      // ✅ Code của bạn đã đúng ở đây
-      // ✨ Gợi ý: Sử dụng message tùy chỉnh hoặc một message mặc định
-      toast.success(successMessage || 'Đã sao chép vào clipboard!');
+        textArea.value = text
 
-      return true;
-    } catch (error) {
-      console.warn('Copy failed', error);
-      setIsCopied(false);
+        // Cần thiết lập vị trí để không ảnh hưởng đến layout
+        textArea.style.position = 'fixed'
+        textArea.style.opacity = '0'
 
-      toast.error('Sao chép thất bại!');
+        document.body.appendChild(textArea)
+        textArea.focus()
+        textArea.select()
 
-      return false;
+        copySuccessful = document.execCommand('copy')
+        document.body.removeChild(textArea)
+
+        if (!copySuccessful) {
+          throw new Error('execCommand failed')
+        }
+      } catch (error) {
+        console.warn('Fallback copy method failed', error)
+        copySuccessful = false
+      }
     }
-  };
+
+    // 3. XỬ LÝ KẾT QUẢ
+    setIsCopied(copySuccessful)
+
+    if (copySuccessful) {
+      toast.success(successMessage || 'Đã sao chép vào clipboard!')
+    } else {
+      toast.error('Sao chép thất bại! Vui lòng thử lại. Lỗi: Clipboard not supported.')
+    }
+
+    return copySuccessful
+  }
 
   useEffect(() => {
+    // ... (Logic timer giữ nguyên)
     if (isCopied) {
       const timer = setTimeout(() => {
-        setIsCopied(false);
-      }, timeout);
+        setIsCopied(false)
+      }, timeout)
 
-      return () => clearTimeout(timer);
+      return () => clearTimeout(timer)
     }
-  }, [isCopied, timeout]);
+  }, [isCopied, timeout])
 
-  return [isCopied, copy] as const;
+  return [isCopied, copy] as const
 }
-
-// Cách dùng nâng cao trong component:
-// const [, copy] = useCopy();
-// copy("0123456789", "Đã sao chép số tài khoản!");

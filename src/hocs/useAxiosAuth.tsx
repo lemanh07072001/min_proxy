@@ -1,85 +1,62 @@
-// hooks/useAxiosAuth.ts
-import { useSession, signOut } from 'next-auth/react'
 import { useEffect } from 'react'
-import axios from 'axios'
-import axiosInstance from '@/libs/axios' // Import instance axios singleton
 
-// Biến cờ để đảm bảo chỉ có một request refresh được gửi đi
-let isRefreshing = false
+import { useSession, signOut } from 'next-auth/react'
+
+import axiosInstance from '@/libs/axios' // Import instance axios singleton
 
 /**
  * Hook tùy chỉnh để tích hợp Axios với NextAuth.
  * Tự động đính kèm token vào request và logout khi token hết hạn.
  */
 const useAxiosAuth = () => {
-  const { data: session, update } = useSession();
+  const { data: session, update: updateSession } = useSession()
 
   useEffect(() => {
-    const requestIntercept = axiosInstance.interceptors.request.use(
-      async (config) => {
-        if (!(session as any)?.accessToken) return config;
-
-        // Đặt buffer time (ví dụ: 1 phút) để refresh trước khi token hết hạn
-        const bufferTime = 60 * 1000;
-        const now = Date.now();
-        const tokenExpires = (session as any).accessTokenExpires as number;
-
-        const isTokenExpiring = now > tokenExpires - bufferTime;
-
-        if (isTokenExpiring && !isRefreshing) {
-          isRefreshing = true;
-          try {
-            console.log('🔄 Token is expiring, attempting to refresh...');
-            // Dùng axios gốc để tránh interceptor loop
-            const response = await axios.post(
-              `${process.env.NEXT_PUBLIC_API_URL}/refresh`,
-              {},
-              { headers: { Authorization: `Bearer ${(session as any).accessToken}` } }
-            );
-            
-            const newAccessToken = response.data.access_token;
-            const newExpiresIn = response.data.expires_in;
-
-            // Cập nhật session với token mới
-            await update({
-              ...session,
-              accessToken: newAccessToken,
-              accessTokenExpires: Date.now() + newExpiresIn * 1000,
-            });
-            
-            console.log('✅ Token refreshed successfully.');
-
-            // Cập nhật header cho request hiện tại và các request sau
-            config.headers.Authorization = `Bearer ${newAccessToken}`;
-            axiosInstance.defaults.headers.common.Authorization = `Bearer ${newAccessToken}`;
-
-          } catch (error) {
-            console.error('❌ Could not refresh token.', error);
-            // Xử lý lỗi refresh, ví dụ: signOut();
-          } finally {
-            isRefreshing = false;
-          }
+    // === 1. Request Interceptor ===
+    // Mục đích: Gắn token vào header của mọi request gửi đi.
+    const requestInterceptor = axiosInstance.interceptors.request.use(
+      config => {
+        // Không ghi đè header Authorization nếu nó đã tồn tại.
+        if ((session as any)?.access_token && !config.headers.Authorization) {
+          config.headers.Authorization = `Bearer ${(session as any).access_token}`
         }
-        
-        // Luôn gán token mới nhất vào header
-        if (!config.headers.Authorization) {
-            config.headers.Authorization = `Bearer ${(session as any).accessToken}`;
-        }
-        
-        return config;
+
+        return config
       },
-      (error) => Promise.reject(error)
-    );
+      error => Promise.reject(error)
+    )
+
+    // === 2. Response Interceptor ===
+    // Mục đích: Xử lý các response trả về, logout ngay khi gặp lỗi 401.
+    const responseInterceptor = axiosInstance.interceptors.response.use(
+      // Trường hợp response thành công (status 2xx)
+      response => {
+        // Không cần làm gì thêm, chỉ cần trả về response
+        return response
+      },
+
+      // Trường hợp response bị lỗi
+      async error => {
+        // Xử lý lỗi 401 (Unauthorized) - logout ngay lập tức
+        if (error.response?.status === 401) {
+          console.log('[AXIOS HOOK] ❌ Token hết hạn hoặc không hợp lệ, đang logout...')
+          await signOut() // Đăng xuất người dùng ngay lập tức
+        }
+
+        return Promise.reject(error)
+      }
+    )
 
     // === 3. Cleanup Function ===
     // Hàm này sẽ được gọi khi component unmount.
     // Rất quan trọng để tránh memory leak và việc đăng ký interceptor nhiều lần.
     return () => {
-      axiosInstance.interceptors.request.eject(requestIntercept);
-    };
-  }, [session, update]);
+      axiosInstance.interceptors.request.eject(requestInterceptor)
+      axiosInstance.interceptors.response.eject(responseInterceptor)
+    }
+  }, [session, updateSession]) // Effect sẽ chạy lại nếu session thay đổi
 
-  return axiosInstance;
-};
+  return axiosInstance // Trả về instance của axios đã được "tăng cường"
+}
 
-export default useAxiosAuth;
+export default useAxiosAuth

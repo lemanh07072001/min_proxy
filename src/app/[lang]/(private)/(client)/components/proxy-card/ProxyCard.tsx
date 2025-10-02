@@ -52,6 +52,7 @@ interface ProxyCardProps {
   price: string
   features: string[]
   timeOptions?: Array<{ value: number; label: string }>
+  onPurchaseSuccess: () => void
 }
 
 const createProxySchema = isSelectMode =>
@@ -80,7 +81,7 @@ const createProxySchema = isSelectMode =>
     .required()
 
 // --- CUSTOM HOOK FOR API CALL ---
-const useBuyProxy = () => {
+const useBuyProxy = (onSuccessCallback: () => void) => {
   const queryClient = useQueryClient()
   const session = useSession()
   const router = useRouter()
@@ -100,7 +101,7 @@ const useBuyProxy = () => {
 
       return api.post('/proxy-static', orderData)
     },
-    onSuccess: (data, variables) => {
+    onSuccess: async (data, variables) => {
       if (data.data.success == false) {
         toast.error('Lỗi hệ thông xin vui lòng liên hệ Admin.')
         router.push('/order-proxy')
@@ -109,10 +110,14 @@ const useBuyProxy = () => {
 
         dispatch(subtractBalance(total))
         toast.success('Mua proxy thành công.')
-      }
 
-      // Bạn có thể vô hiệu hóa cache hoặc cập nhật dữ liệu khác ở đây
-      queryClient.invalidateQueries({ queryKey: ['proxyData'] })
+        // Invalidate và refetch query trước khi chuyển tab
+        await queryClient.invalidateQueries({ queryKey: ['orderProxyStatic'] })
+        await queryClient.refetchQueries({ queryKey: ['orderProxyStatic'] })
+
+        // Gọi callback để chuyển sang table sau khi đã refresh data
+        onSuccessCallback()
+      }
     },
     onError: error => {
       toast.error(error.response?.data.message || 'Lỗi không xác định')
@@ -124,9 +129,17 @@ const useBuyProxy = () => {
   return mutation
 }
 
-const ProxyCard: React.FC<ProxyCardProps> = ({ provider, logo, color, price, features, timeOptions = [] }) => {
+const ProxyCard: React.FC<ProxyCardProps> = ({
+  provider,
+  logo,
+  color,
+  price,
+  features,
+  timeOptions = [],
+  onPurchaseSuccess
+}) => {
   const params = useParams()
-  const { mutate, isPending } = useBuyProxy()
+  const { mutate, isPending } = useBuyProxy(onPurchaseSuccess)
   const session = useSession()
   const { openAuthModal } = useModalContext()
   const { lang: locale } = params
@@ -137,7 +150,6 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, logo, color, price, fea
   // Xác định chế độ select
   const isSelectMode = provider.show_time == 1
 
-  console.log(provider)
   // Tạo schema dựa trên chế độ
   const proxySchema = createProxySchema(isSelectMode)
 
@@ -158,13 +170,9 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, logo, color, price, fea
     mode: 'onChange'
   })
 
-
-
   const watchedQuantity = watch('quantity')
   const watchedDays = watch('days')
   const watchedProrocol = watch('protocol')
-
-
 
   let daysInNumber = 0
 
