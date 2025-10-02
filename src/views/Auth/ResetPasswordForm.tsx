@@ -68,6 +68,9 @@ export default function ResetPasswordForm() {
     
     // Mở modal login
     openAuthModal('login')
+    
+    // Reload trang
+    window.location.reload()
   }
 
   return (
