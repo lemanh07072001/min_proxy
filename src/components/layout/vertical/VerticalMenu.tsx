@@ -227,20 +227,6 @@ const VerticalMenu = ({ scrollMenu, dictionary }: Props) => {
             {dictionary['navigation'].checkProxy}
           </MenuItem>
           <MenuItem
-            icon={<ReceiptText size={20} strokeWidth={1.5} />}
-            rootStyles={getMenuItemStyles('order-proxy')}
-            href={`/${locale}/order-proxy`}
-          >
-            {dictionary['navigation'].proxyOrders}
-          </MenuItem>
-          <MenuItem
-            icon={<PackagePlus size={20} strokeWidth={1.5} />}
-            rootStyles={getMenuItemStyles('order-rotating-proxy')}
-            href={`/${locale}/order-rotating-proxy`}
-          >
-            {dictionary['navigation'].rotatingProxyOrders}
-          </MenuItem>
-          <MenuItem
             icon={<History size={20} strokeWidth={1.5} />}
             rootStyles={getMenuItemStyles('history-order')}
             href={`/${locale}/history-order`}
