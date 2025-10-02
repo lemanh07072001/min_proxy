@@ -26,7 +26,7 @@ export default function ResetPasswordForm() {
   const [showConfirm, setShowConfirm] = useState(false)
   const { t } = useTranslation()
 
-  const { resetToken, resetEmail, closeAuthModal } = useModalContext()
+  const { resetToken, resetEmail, closeAuthModal, openAuthModal } = useModalContext()
   const router = useRouter()
 
   const resetSchema = yup.object({
@@ -61,11 +61,13 @@ export default function ResetPasswordForm() {
 
     toast.success('Đổi mật khẩu thành công!')
 
-    setTimeout(() => {
-      setIsLoading(false)
-      router.push('/overview')
-      closeAuthModal()
-    }, 2500)
+    setIsLoading(false)
+    
+    // Đóng modal reset password
+    closeAuthModal()
+    
+    // Mở modal login
+    openAuthModal('login')
   }
 
   return (
