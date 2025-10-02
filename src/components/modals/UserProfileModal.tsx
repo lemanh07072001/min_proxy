@@ -23,6 +23,7 @@ import { useSelector } from 'react-redux'
 
 import CustomTextField from '@core/components/mui/TextField'
 import DialogCloseButton from '@/components/modals/DialogCloseButton'
+import { useModalContext } from '@/app/contexts/ModalContext'
 
 import type { RootState } from '@/store'
 
@@ -54,7 +55,7 @@ const changePasswordSchema = yup
     confirmPassword: yup
       .string()
       .required('Vui lòng xác nhận mật khẩu')
-      .oneOf([yup.ref('password'), null], 'Mật khẩu xác nhận không khớp')
+      .oneOf([yup.ref('password')], 'Mật khẩu xác nhận không khớp')
   })
   .required()
 
@@ -62,6 +63,7 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onClose }) 
   const [activeTab, setActiveTab] = useState('info')
 
   const { user } = useSelector((state: RootState) => state.user)
+  const { openAuthModal } = useModalContext()
 
 
   const handleChange = (event: SyntheticEvent, newValue: string) => {
@@ -82,11 +84,18 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onClose }) 
     mode: 'onTouched'
   })
 
-  const onSubmit = data => {
-    return new Promise(resolve => {
+  const onSubmit = (data: { password: string; confirmPassword: string }) => {
+    return new Promise<void>(resolve => {
       setTimeout(() => {
         console.log('Dữ liệu form hợp lệ:', data)
         alert('Đổi mật khẩu thành công!')
+        
+        // Đóng modal profile
+        onClose()
+        
+        // Mở modal login
+        openAuthModal('login')
+        
         resolve()
       }, 1000)
     })
