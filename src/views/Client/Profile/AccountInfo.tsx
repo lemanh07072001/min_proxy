@@ -1,29 +1,122 @@
-import { useState } from 'react'
+import { use, useEffect, useState } from 'react'
+
+import { useRouter } from 'next/navigation'
 
 import { Mail, Phone, MapPin, Calendar, CreditCard as Edit2, Save, X } from 'lucide-react'
 
-const AccountInfo = () => {
+import InputAdornment from '@mui/material/InputAdornment'
+
+import * as yup from 'yup'
+import { yupResolver } from '@hookform/resolvers/yup'
+import { useForm, Controller } from 'react-hook-form'
+
+import { useMutation } from '@tanstack/react-query'
+import { toast } from 'react-toastify'
+
+import { formatDateTimeLocal } from '@/utils/formatDate'
+import CustomTextField from '@/@core/components/mui/TextField'
+import useAxiosAuth from '@/hocs/useAxiosAuth'
+
+interface Profile {
+  id: string
+  email: string
+  name: string
+  phone?: string
+  address?: string
+  avatar?: string
+  role: string
+  created_at: string
+}
+interface ProfileProps {
+  dataProfile: Profile
+}
+
+const profileSchema = yup
+  .object({
+    fullName: yup.string().required('Họ và tên không được để trống.').min(3, 'Tối thiểu 3 ký tự.'),
+    email: yup.string().email('Email không hợp lệ.').required('Email không được để trống.'),
+    phone: yup
+      .string()
+      .matches(/^[0-9+ ]+$/, 'Số điện thoại không hợp lệ.')
+      .nullable()
+      .optional(),
+    address: yup
+      .string()
+      .nullable() // Cho phép giá trị null/undefined
+      .optional()
+  })
+  .required()
+
+type ProfileFormData = yup.InferType<typeof profileSchema>
+
+const AccountInfo = ({ dataUser }: ProfileProps) => {
   const [isEditing, setIsEditing] = useState(false)
 
-  const [formData, setFormData] = useState({
-    fullName: 'Nguyễn Văn Admin',
-    email: 'admin@mktproxy.com',
-    phone: '+84 987 654 321',
-    address: 'Hà Nội, Việt Nam',
-    dateOfBirth: '1990-01-01',
-    company: 'MKT Proxy Solutions'
+  const axiosAuth = useAxiosAuth()
+  const router = useRouter()
+
+  const {
+    control,
+    handleSubmit,
+    reset, // Dùng để reset form khi Hủy
+    formState: { errors }
+  } = useForm<ProfileFormData>({
+    resolver: yupResolver(profileSchema),
+    defaultValues: {
+      fullName: dataUser?.name || '',
+      email: dataUser?.email || '',
+      phone: dataUser?.phone || '',
+      address: dataUser?.address || ''
+    },
+    mode: 'onChange'
   })
+
+  useEffect(() => {
+    reset({
+      fullName: dataUser?.name || '',
+      email: dataUser?.email || '',
+      phone: dataUser?.phone || '',
+      address: dataUser?.address || ''
+    })
+  }, [dataUser, reset])
+
+  const { mutate, isPending } = useMutation({
+    mutationFn: (data: ProfileFormData) => {
+      const payload = {
+        name: data.fullName,
+        email: data.email,
+        phone: data.phone,
+        address: data.address
+      }
+
+      const res = axiosAuth.post('/profile', payload)
+    },
+    onSuccess: () => {
+      toast.success('Cập nhật thông tin thành công!')
+      setIsEditing(false)
+
+      router.refresh()
+    },
+    onError: err => {
+      toast.error('Lỗi khi lưu: Vui lòng thử lại.')
+    }
+  })
+
+  const handleFormSubmit = (data: ProfileFormData) => {
+    mutate(data)
+  }
+
+  const handleCancel = () => {
+    reset() // Reset form về dữ liệu ban đầu
+    setIsEditing(false)
+  }
 
   const handleSave = () => {
     setIsEditing(false)
   }
 
-  const handleCancel = () => {
-    setIsEditing(false)
-  }
-
   return (
-    <div className='bg-white rounded-2xl shadow-sm border border-gray-100'>
+    <div className='bg-white rounded-2xl shadow-sm border border-gray-100 h-100'>
       <div className='p-6 border-b border-gray-100'>
         <div className='flex items-center justify-between'>
           <div>
@@ -48,7 +141,9 @@ const AccountInfo = () => {
                 <span>Hủy</span>
               </button>
               <button
-                onClick={handleSave}
+                type='submit'
+                form='profile-form'
+                disabled={isPending}
                 className='flex items-center space-x-2 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors'
               >
                 <Save className='w-4 h-4' />
@@ -59,105 +154,138 @@ const AccountInfo = () => {
         </div>
       </div>
 
-      <div className='p-6'>
-        <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
-          <div>
-            <label className='block text-sm font-medium text-gray-700 mb-2'>Họ và tên</label>
-            <input
-              type='text'
-              value={formData.fullName}
-              onChange={e => setFormData({ ...formData, fullName: e.target.value })}
-              disabled={!isEditing}
-              className='w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-600'
+      <form id='profile-form' onSubmit={handleSubmit(handleFormSubmit)}>
+        <div className='p-6'>
+          <div className='grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8'>
+            {/* 1. Họ và tên */}
+            <Controller
+              name='fullName'
+              control={control}
+              render={({ field }) => (
+                <CustomTextField
+                  {...field}
+                  fullWidth
+                  label='Họ và tên'
+                  placeholder='Nhập họ tên...'
+                  disabled={!isEditing || isPending}
+                  size='medium'
+                  error={!!errors.fullName}
+                  helperText={errors.fullName?.message}
+                  slotProps={{
+                    input: {
+                      startAdornment: (
+                        <InputAdornment position='start'>
+                          <i className='tabler-user-circle' />
+                        </InputAdornment>
+                      )
+                    }
+                  }}
+                />
+              )}
+            />
+
+            {/* 2. Email - Read Only */}
+            <Controller
+              name='email'
+              control={control}
+              render={({ field }) => (
+                <CustomTextField
+                  {...field}
+                  fullWidth
+                  label='Email'
+                  placeholder='Email không thể chỉnh sửa'
+                  disabled={true}
+                  size='medium'
+                  error={!!errors.email}
+                  helperText={errors.email?.message}
+                  slotProps={{
+                    input: {
+                      style: { backgroundColor: '#f5f5f5' },
+                      startAdornment: (
+                        <InputAdornment position='start'>
+                          <Mail size={16} />
+                        </InputAdornment>
+                      )
+                    }
+                  }}
+                />
+              )}
+            />
+
+            {/* 3. Số điện thoại */}
+            <Controller
+              name='phone'
+              control={control}
+              render={({ field }) => (
+                <CustomTextField
+                  {...field}
+                  fullWidth
+                  label='Số điện thoại'
+                  placeholder='Nhập số điện thoại...'
+                  disabled={!isEditing || isPending}
+                  size='medium'
+                  error={!!errors.phone}
+                  helperText={errors.phone?.message}
+                  slotProps={{
+                    input: {
+                      startAdornment: (
+                        <InputAdornment position='start'>
+                          <Phone size={16} />
+                        </InputAdornment>
+                      )
+                    }
+                  }}
+                />
+              )}
+            />
+
+            {/* 4. Địa chỉ */}
+            <Controller
+              name='address'
+              control={control}
+              render={({ field }) => (
+                <CustomTextField
+                  {...field}
+                  fullWidth
+                  label='Địa chỉ'
+                  placeholder='Nhập địa chỉ...'
+                  disabled={!isEditing || isPending}
+                  size='medium'
+                  error={!!errors.address}
+                  helperText={errors.address?.message}
+                  slotProps={{
+                    input: {
+                      startAdornment: (
+                        <InputAdornment position='start'>
+                          <MapPin size={16} />
+                        </InputAdornment>
+                      )
+                    }
+                  }}
+                />
+              )}
             />
           </div>
 
-          <div>
-            <label className='block text-sm font-medium text-gray-700 mb-2'>Email</label>
-            <div className='relative'>
-              <Mail className='absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400' />
-              <input
-                type='email'
-                value={formData.email}
-                onChange={e => setFormData({ ...formData, email: e.target.value })}
-                disabled={!isEditing}
-                className='w-full pl-11 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-600'
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className='block text-sm font-medium text-gray-700 mb-2'>Số điện thoại</label>
-            <div className='relative'>
-              <Phone className='absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400' />
-              <input
-                type='tel'
-                value={formData.phone}
-                onChange={e => setFormData({ ...formData, phone: e.target.value })}
-                disabled={!isEditing}
-                className='w-full pl-11 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-600'
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className='block text-sm font-medium text-gray-700 mb-2'>Ngày sinh</label>
-            <div className='relative'>
-              <Calendar className='absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400' />
-              <input
-                type='date'
-                value={formData.dateOfBirth}
-                onChange={e => setFormData({ ...formData, dateOfBirth: e.target.value })}
-                disabled={!isEditing}
-                className='w-full pl-11 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-600'
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className='block text-sm font-medium text-gray-700 mb-2'>Công ty</label>
-            <input
-              type='text'
-              value={formData.company}
-              onChange={e => setFormData({ ...formData, company: e.target.value })}
-              disabled={!isEditing}
-              className='w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-600'
-            />
-          </div>
-
-          <div>
-            <label className='block text-sm font-medium text-gray-700 mb-2'>Địa chỉ</label>
-            <div className='relative'>
-              <MapPin className='absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400' />
-              <input
-                type='text'
-                value={formData.address}
-                onChange={e => setFormData({ ...formData, address: e.target.value })}
-                disabled={!isEditing}
-                className='w-full pl-11 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-600'
-              />
+          <div className='mt-8 p-4 bg-gradient-to-r from-orange-50 to-orange-100 rounded-xl border border-orange-200'>
+            <h3 className='font-semibold text-gray-900 mb-2'>Thông tin tài khoản</h3>
+            <div className='grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm'>
+              <div>
+                <span className='text-gray-600'>Ngày tạo:</span>
+                <p className='font-medium text-gray-900'>{formatDateTimeLocal(dataUser?.created_at)}</p>
+              </div>
+              <div>
+                <span className='text-gray-600'>Phân quyền:</span>
+                <p className='font-medium text-gray-900'>{dataUser?.role === 'admin' ? 'Admin' : 'User'}</p>
+              </div>
+              <div>
+                <span className='text-gray-600'>Trạng thái:</span>
+                <p className='font-medium text-green-600'>Đang hoạt động</p>
+              </div>
             </div>
           </div>
         </div>
-
-        <div className='mt-8 p-4 bg-gradient-to-r from-orange-50 to-orange-100 rounded-xl border border-orange-200'>
-          <h3 className='font-semibold text-gray-900 mb-2'>Thông tin tài khoản</h3>
-          <div className='grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm'>
-            <div>
-              <span className='text-gray-600'>Ngày tạo:</span>
-              <p className='font-medium text-gray-900'>01/01/2024</p>
-            </div>
-            <div>
-              <span className='text-gray-600'>Loại tài khoản:</span>
-              <p className='font-medium text-gray-900'>Premium</p>
-            </div>
-            <div>
-              <span className='text-gray-600'>Trạng thái:</span>
-              <p className='font-medium text-green-600'>Đang hoạt động</p>
-            </div>
-          </div>
-        </div>
-      </div>
+      </form>
     </div>
   )
 }

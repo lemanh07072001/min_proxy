@@ -1,203 +1,228 @@
-import { useState } from 'react'
+import React from 'react'
 
-import { Lock, Eye, EyeOff, CheckCircle2, XCircle } from 'lucide-react'
+import { useForm, Controller } from 'react-hook-form'
+import * as yup from 'yup'
+import { yupResolver } from '@hookform/resolvers/yup'
+
+import InputAdornment from '@mui/material/InputAdornment'
+import IconButton from '@mui/material/IconButton'
+import Button from '@mui/material/Button'
+import { Eye, EyeOff } from 'lucide-react'
+
+import { useMutation } from '@tanstack/react-query'
+
+import { toast } from 'react-toastify'
+
+import CustomTextField from '@core/components/mui/TextField'
+import useAxiosAuth from '@/hocs/useAxiosAuth'
+
+interface ChangePasswordFormData {
+  currentPassword: string
+  newPassword: string
+  confirmPassword: string
+}
+
+const passwordSchema = yup.object().shape({
+  currentPassword: yup.string().required('Mật khẩu hiện tại là bắt buộc.'),
+  newPassword: yup.string().min(8, 'Mật khẩu mới phải có ít nhất 8 ký tự.').required('Mật khẩu mới là bắt buộc.'),
+  confirmPassword: yup
+    .string()
+    .oneOf([yup.ref('newPassword'), null], 'Mật khẩu xác nhận không khớp.')
+    .required('Vui lòng xác nhận mật khẩu mới.')
+})
 
 const ChangePassword = () => {
-  const [showPasswords, setShowPasswords] = useState({
+  const [showPassword, setShowPassword] = React.useState({
     current: false,
     new: false,
     confirm: false
   })
 
-  const [passwords, setPasswords] = useState({
-    current: '',
-    new: '',
-    confirm: ''
+  const axiosAuth = useAxiosAuth()
+
+  const {
+    control,
+    handleSubmit,
+    setError,
+    reset,
+    formState: { errors, isSubmitting }
+  } = useForm({
+    resolver: yupResolver(passwordSchema),
+    defaultValues: {
+      currentPassword: '',
+      newPassword: '',
+      confirmPassword: ''
+    },
+    mode: 'onChange'
   })
 
-  const [passwordStrength, setPasswordStrength] = useState(0)
-
-  const checkPasswordStrength = (password: string) => {
-    let strength = 0
-
-    if (password.length >= 8) strength++
-    if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++
-    if (/\d/.test(password)) strength++
-    if (/[^a-zA-Z\d]/.test(password)) strength++
-    setPasswordStrength(strength)
+  const onSubmit = (data: ChangePasswordFormData) => {
+    mutate(data)
   }
 
-  const handleNewPasswordChange = (value: string) => {
-    setPasswords({ ...passwords, new: value })
-    checkPasswordStrength(value)
+  const { mutate, isPending } = useMutation({
+    mutationFn: (data: ChangePasswordFormData) => {
+      const payload = {
+        currentPassword: data.currentPassword,
+        newPassword: data.newPassword,
+        confirmPassword: data.confirmPassword
+      }
+
+      return axiosAuth.post('/change-password', payload)
+    },
+    onSuccess: () => {
+      toast.success('Cập nhật mật khẩu thành công!')
+      reset() // Reset form về trạng thái ban đầu
+    },
+    onError: error => {
+      if (error.response && error.response.status === 422 && error.response.data && error.response.data.errors) {
+        const serverErrors = error.response.data.errors
+
+        // Lặp qua các lỗi từ server và set vào form
+        Object.entries(serverErrors).forEach(([key, value]) => {
+          setError(key, {
+            type: 'server',
+            message: Array.isArray(value) ? value[0] : value // Lấy message lỗi đầu tiên
+          })
+        })
+      } else if (error.response && error.response.status === 422) {
+        // Xử lý trường hợp lỗi 422 nhưng không có cấu trúc errors
+        toast.error(error.response.data.message || 'Có lỗi xảy ra khi xử lý dữ liệu')
+      } else {
+        // Nếu có lỗi khác không phải validation
+        toast.error('Lỗi khi lưu: Vui lòng thử lại.')
+      }
+    }
+  })
+
+  const handleClickShowPassword = field => () => {
+    setShowPassword(prev => ({ ...prev, [field]: !prev[field] }))
   }
 
-  const getStrengthColor = () => {
-    if (passwordStrength <= 1) return 'bg-red-500'
-    if (passwordStrength === 2) return 'bg-yellow-500'
-    if (passwordStrength === 3) return 'bg-blue-500'
-
-    return 'bg-green-500'
+  const handleMouseDownPassword = event => {
+    event.preventDefault()
   }
-
-  const getStrengthText = () => {
-    if (passwordStrength <= 1) return 'Yếu'
-    if (passwordStrength === 2) return 'Trung bình'
-    if (passwordStrength === 3) return 'Khá'
-
-    return 'Mạnh'
-  }
-
-  const requirements = [
-    { text: 'Ít nhất 8 ký tự', met: passwords.new.length >= 8 },
-    { text: 'Chữ hoa và chữ thường', met: /[a-z]/.test(passwords.new) && /[A-Z]/.test(passwords.new) },
-    { text: 'Ít nhất một số', met: /\d/.test(passwords.new) },
-    { text: 'Ký tự đặc biệt', met: /[^a-zA-Z\d]/.test(passwords.new) }
-  ]
 
   return (
-    <div className='bg-white rounded-2xl shadow-sm border border-gray-100'>
+    <div className='bg-white rounded-2xl shadow-sm border border-gray-100 h-100'>
       <div className='p-6 border-b border-gray-100'>
         <h2 className='text-xl font-bold text-gray-900'>Đổi mật khẩu</h2>
         <p className='text-sm text-gray-600 mt-1'>Cập nhật mật khẩu để bảo mật tài khoản</p>
       </div>
+      <form onSubmit={handleSubmit(onSubmit)} className='flex flex-col gap-4 p-6 '>
+        {/* Mật khẩu hiện tại */}
+        <Controller
+          name='currentPassword'
+          control={control}
+          render={({ field }) => (
+            <CustomTextField
+              {...field}
+              fullWidth
+              size='medium'
+              label='Mật khẩu hiện tại'
+              id='current-password'
+              type={showPassword.current ? 'text' : 'password'}
+              error={!!errors.currentPassword}
+              helperText={errors.currentPassword?.message}
+              slotProps={{
+                input: {
+                  endAdornment: (
+                    <InputAdornment position='end'>
+                      <IconButton
+                        edge='end'
+                        // SỬA Ở ĐÂY
+                        onClick={handleClickShowPassword('current')}
+                        onMouseDown={handleMouseDownPassword}
+                        aria-label='toggle current password visibility'
+                      >
+                        {showPassword.current ? <EyeOff size={20} /> : <Eye size={20} />}
+                      </IconButton>
+                    </InputAdornment>
+                  )
+                }
+              }}
+            />
+          )}
+        />
 
-      <div className='p-6'>
-        <div className='max-w-2xl space-y-6'>
-          <div>
-            <label className='block text-sm font-medium text-gray-700 mb-2'>Mật khẩu hiện tại</label>
-            <div className='relative'>
-              <Lock className='absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400' />
-              <input
-                type={showPasswords.current ? 'text' : 'password'}
-                value={passwords.current}
-                onChange={e => setPasswords({ ...passwords, current: e.target.value })}
-                className='w-full pl-11 pr-11 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent'
-                placeholder='Nhập mật khẩu hiện tại'
-              />
-              <button
-                type='button'
-                onClick={() => setShowPasswords({ ...showPasswords, current: !showPasswords.current })}
-                className='absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600'
-              >
-                {showPasswords.current ? <EyeOff className='w-5 h-5' /> : <Eye className='w-5 h-5' />}
-              </button>
-            </div>
-          </div>
+        {/* Mật khẩu mới - (Phần này đã đúng) */}
+        <Controller
+          name='newPassword'
+          control={control}
+          render={({ field }) => (
+            <CustomTextField
+              {...field}
+              fullWidth
+              label='Mật khẩu mới'
+              size='medium'
+              id='new-password'
+              type={showPassword.new ? 'text' : 'password'}
+              error={!!errors.newPassword}
+              helperText={errors.newPassword?.message}
+              slotProps={{
+                input: {
+                  endAdornment: (
+                    <InputAdornment position='end'>
+                      <IconButton
+                        edge='end'
+                        onClick={handleClickShowPassword('new')}
+                        onMouseDown={handleMouseDownPassword}
+                        aria-label='toggle new password visibility'
+                      >
+                        {showPassword.new ? <EyeOff size={20} /> : <Eye size={20} />}
+                      </IconButton>
+                    </InputAdornment>
+                  )
+                }
+              }}
+            />
+          )}
+        />
 
-          <div>
-            <label className='block text-sm font-medium text-gray-700 mb-2'>Mật khẩu mới</label>
-            <div className='relative'>
-              <Lock className='absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400' />
-              <input
-                type={showPasswords.new ? 'text' : 'password'}
-                value={passwords.new}
-                onChange={e => handleNewPasswordChange(e.target.value)}
-                className='w-full pl-11 pr-11 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent'
-                placeholder='Nhập mật khẩu mới'
-              />
-              <button
-                type='button'
-                onClick={() => setShowPasswords({ ...showPasswords, new: !showPasswords.new })}
-                className='absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600'
-              >
-                {showPasswords.new ? <EyeOff className='w-5 h-5' /> : <Eye className='w-5 h-5' />}
-              </button>
-            </div>
+        {/* Xác nhận mật khẩu mới */}
+        <Controller
+          name='confirmPassword'
+          control={control}
+          render={({ field }) => (
+            <CustomTextField
+              {...field}
+              fullWidth
+              label='Xác nhận mật khẩu mới'
+              size='medium'
+              id='confirm-password'
+              type={showPassword.confirm ? 'text' : 'password'}
+              error={!!errors.confirmPassword}
+              helperText={errors.confirmPassword?.message}
+              slotProps={{
+                input: {
+                  endAdornment: (
+                    <InputAdornment position='end'>
+                      <IconButton
+                        edge='end'
+                        onClick={handleClickShowPassword('confirm')}
+                        onMouseDown={handleMouseDownPassword}
+                        aria-label='toggle confirm password visibility'
+                      >
+                        {showPassword.confirm ? <EyeOff size={20} /> : <Eye size={20} />}
+                      </IconButton>
+                    </InputAdornment>
+                  )
+                }
+              }}
+            />
+          )}
+        />
 
-            {passwords.new && (
-              <div className='mt-3'>
-                <div className='flex items-center justify-between mb-2'>
-                  <span className='text-sm text-gray-600'>Độ mạnh mật khẩu:</span>
-                  <span
-                    className={`text-sm font-medium ${
-                      passwordStrength <= 1
-                        ? 'text-red-600'
-                        : passwordStrength === 2
-                          ? 'text-yellow-600'
-                          : passwordStrength === 3
-                            ? 'text-blue-600'
-                            : 'text-green-600'
-                    }`}
-                  >
-                    {getStrengthText()}
-                  </span>
-                </div>
-                <div className='h-2 bg-gray-200 rounded-full overflow-hidden'>
-                  <div
-                    className={`h-full transition-all duration-300 ${getStrengthColor()}`}
-                    style={{ width: `${(passwordStrength / 4) * 100}%` }}
-                  />
-                </div>
-              </div>
-            )}
-          </div>
-
-          <div>
-            <label className='block text-sm font-medium text-gray-700 mb-2'>Xác nhận mật khẩu mới</label>
-            <div className='relative'>
-              <Lock className='absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400' />
-              <input
-                type={showPasswords.confirm ? 'text' : 'password'}
-                value={passwords.confirm}
-                onChange={e => setPasswords({ ...passwords, confirm: e.target.value })}
-                className='w-full pl-11 pr-11 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent'
-                placeholder='Nhập lại mật khẩu mới'
-              />
-              <button
-                type='button'
-                onClick={() => setShowPasswords({ ...showPasswords, confirm: !showPasswords.confirm })}
-                className='absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600'
-              >
-                {showPasswords.confirm ? <EyeOff className='w-5 h-5' /> : <Eye className='w-5 h-5' />}
-              </button>
-            </div>
-            {passwords.confirm && passwords.new !== passwords.confirm && (
-              <p className='mt-2 text-sm text-red-600 flex items-center'>
-                <XCircle className='w-4 h-4 mr-1' />
-                Mật khẩu không khớp
-              </p>
-            )}
-            {passwords.confirm && passwords.new === passwords.confirm && (
-              <p className='mt-2 text-sm text-green-600 flex items-center'>
-                <CheckCircle2 className='w-4 h-4 mr-1' />
-                Mật khẩu khớp
-              </p>
-            )}
-          </div>
-
-          <div className='p-4 bg-gray-50 rounded-xl'>
-            <h4 className='text-sm font-medium text-gray-900 mb-3'>Yêu cầu mật khẩu:</h4>
-            <div className='space-y-2'>
-              {requirements.map((req, index) => (
-                <div key={index} className='flex items-center space-x-2'>
-                  {req.met ? (
-                    <CheckCircle2 className='w-4 h-4 text-green-500 flex-shrink-0' />
-                  ) : (
-                    <XCircle className='w-4 h-4 text-gray-300 flex-shrink-0' />
-                  )}
-                  <span className={`text-sm ${req.met ? 'text-green-700' : 'text-gray-600'}`}>{req.text}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className='flex justify-end space-x-3 pt-4'>
-            <button
-              type='button'
-              className='px-6 py-3 border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium'
-            >
-              Hủy
-            </button>
-            <button
-              type='submit'
-              className='px-6 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg hover:from-orange-600 hover:to-orange-700 transition-all shadow-sm hover:shadow-md font-medium'
-            >
-              Cập nhật mật khẩu
-            </button>
-          </div>
-        </div>
-      </div>
+        <Button
+          type='submit'
+          variant='contained'
+          color='primary'
+          className='mt-2 text-white'
+          disabled={isSubmitting || isPending}
+        >
+          {isSubmitting || isPending ? 'Đang xử lý...' : 'Cập nhật mật khẩu'}
+        </Button>
+      </form>
     </div>
   )
 }

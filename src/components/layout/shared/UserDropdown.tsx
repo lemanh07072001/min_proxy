@@ -153,7 +153,13 @@ const UserDropdown = () => {
                       <i className='tabler-user' />
                       <Typography color='text.primary'>My Profile</Typography>
                     </MenuItem> */}
-                    <MenuItem className='mli-2 gap-3'>
+                    <MenuItem 
+                      className='mli-2 gap-3'
+                      onClick={() => {
+                        const { lang } = params
+                        router.push(`/${lang}/profile`)
+                      }}
+                    >
                       <i className='tabler-user' />
                       <Typography color='text.primary'>My Profile</Typography>
                     </MenuItem>

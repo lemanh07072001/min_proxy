@@ -10,7 +10,21 @@ import SettingsPanel from './SettingsPanel'
 
 type TabType = 'account' | 'password' | 'settings'
 
-export default function ProfilePage() {
+interface Profile {
+  id: string
+  email: string
+  name: string
+  phone?: string
+  address?: string
+  avatar?: string
+  role: string
+  created_at: string
+}
+interface ProfileProps {
+  dataProfile: Profile
+}
+
+export default function ProfilePage({ dataProfile }: ProfileProps) {
   const [activeTab, setActiveTab] = useState<TabType>('account')
   const [avatar, setAvatar] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -42,14 +56,9 @@ export default function ProfilePage() {
   return (
     <div className=''>
       <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8'>
-        <div className='mb-8'>
-          <h1 className='text-3xl font-bold text-gray-900'>Hồ sơ cá nhân</h1>
-          <p className='text-gray-600 mt-2'>Quản lý thông tin tài khoản và cài đặt của bạn</p>
-        </div>
-
         <div className='grid grid-cols-1 lg:grid-cols-4 gap-6'>
           <div className='lg:col-span-1'>
-            <div className='bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden'>
+            <div className='bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden h-100'>
               <div className='p-6 bg-gradient-to-br from-orange-500 to-orange-600'>
                 <div className='flex flex-col items-center'>
                   <div className='relative group'>
@@ -74,8 +83,8 @@ export default function ProfilePage() {
                       className='hidden'
                     />
                   </div>
-                  <h3 className='mt-4 text-lg font-bold text-white'>Admin</h3>
-                  <p className='text-orange-100 text-sm'>admin@mktproxy.com</p>
+                  <h3 className='mt-4 text-lg font-bold text-white'>{dataProfile?.name}</h3>
+                  <p className='text-orange-100 text-sm'>{dataProfile?.email}</p>
                 </div>
               </div>
 
@@ -85,7 +94,9 @@ export default function ProfilePage() {
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
                     className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition-all mb-2 ${
-                      activeTab === tab.id ? 'bg-orange-50 text-orange-600 shadow-sm' : 'text-gray-700 hover:bg-gray-50'
+                      activeTab === tab.id
+                        ? 'bg-orange-50 text-orange-600 shadow-sm'
+                        : 'text-gray-700  bg-white  hover:bg-gray-50'
                     }`}
                   >
                     <tab.icon className='w-5 h-5' />
@@ -97,7 +108,7 @@ export default function ProfilePage() {
           </div>
 
           <div className='lg:col-span-3'>
-            {activeTab === 'account' && <AccountInfo />}
+            {activeTab === 'account' && <AccountInfo dataUser={dataProfile} />}
             {activeTab === 'password' && <ChangePassword />}
             {activeTab === 'settings' && <SettingsPanel />}
           </div>
