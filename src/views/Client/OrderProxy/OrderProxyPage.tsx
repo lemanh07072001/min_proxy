@@ -15,7 +15,8 @@ import {
   Key,
   Clock,
   Clock3,
-  List
+  List,
+  Loader
 } from 'lucide-react'
 
 import Button from '@mui/material/Button'
@@ -160,7 +161,9 @@ export default function OrderProxyPage() {
 
           return (
             <div className='proxy-cell'>
-              <span className='proxy-label'>{proxyValues[0] || '-'}</span>
+              <span className='proxy-label'>
+                {proxyValues[0] || <Loader className='animate-spin text-gray-400' size={18} />}
+              </span>
               {proxyValues[0] && (
                 <button className='icon-button' onClick={() => copy(proxyValues[0])}>
                   <Copy size={14} />
