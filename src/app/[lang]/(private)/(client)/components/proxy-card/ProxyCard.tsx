@@ -183,7 +183,6 @@ const ProxyCard: React.FC<ProxyCardProps> = ({
     if (isSelectMode) {
       // daysInNumber = DURATION_MAP[watchedDays] || 0
       daysInNumber = parseInt(1, 10) || 0
-      console.log(daysInNumber)
     } else {
       daysInNumber = parseInt(watchedDays, 10) || 0
     }
@@ -208,7 +207,8 @@ const ProxyCard: React.FC<ProxyCardProps> = ({
       ip_version: provider.ip_version,
       username: data.username === 'random' ? randomString() : data.username,
       password: data.password === 'random' ? randomString() : data.password,
-      total
+      total,
+      isPrivate: 'true'
     }
 
     setFormData(itemData) // Lưu dữ liệu vào state

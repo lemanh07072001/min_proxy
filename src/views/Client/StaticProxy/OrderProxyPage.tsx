@@ -16,7 +16,8 @@ import {
   Clock,
   Clock3,
   List,
-  Download
+  Download,
+  Loader
 } from 'lucide-react'
 
 import Button from '@mui/material/Button'
@@ -178,7 +179,7 @@ export default function OrderProxyPage() {
         header: 'Nhà mạng',
         cell: ({ row }: { row: any }) => {
           const proxys = row.original.proxys || {} // fallback nếu null
-          const loaiproxy = (proxys as any).loaiproxy || '-' // fallback nếu không tồn tại
+          const loaiproxy = (proxys as any).loaiproxy || <Loader className='animate-spin text-gray-400' size={18} /> // fallback nếu không tồn tại
 
           return <span className='text-red'>{loaiproxy}</span>
         },
