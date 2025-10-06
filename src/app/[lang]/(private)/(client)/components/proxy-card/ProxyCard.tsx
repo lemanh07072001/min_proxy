@@ -205,6 +205,7 @@ const ProxyCard: React.FC<ProxyCardProps> = ({
       ...data,
       serviceTypeId: provider.id,
       price: price,
+      ip_version: provider.ip_version,
       username: data.username === 'random' ? randomString() : data.username,
       password: data.password === 'random' ? randomString() : data.password,
       total
