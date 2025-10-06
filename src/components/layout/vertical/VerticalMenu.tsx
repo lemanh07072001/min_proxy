@@ -5,8 +5,9 @@ import { useParams, usePathname } from 'next/navigation'
 
 import {
   ChartColumn,
-  Globe,
+  RotateCw,
   CircleSmall,
+  House,
   ShoppingBag,
   History,
   FileText,
@@ -203,8 +204,26 @@ const VerticalMenu = ({ scrollMenu, dictionary }: Props) => {
           </MenuItem>
         </MenuSection>
 
+        <MenuSection label='Proxy' rootStyles={menuSectionHeaderStyles}>
+          <MenuItem
+            icon={<House size={20} strokeWidth={1.5} />}
+            rootStyles={getMenuItemStyles('proxy-tinh')}
+            href={`/${locale}/proxy-tinh`}
+          >
+            {dictionary['navigation'].staticProxy}
+          </MenuItem>
+
+          <MenuItem
+            icon={<RotateCw size={20} strokeWidth={1.5} />}
+            rootStyles={getMenuItemStyles('proxy-xoay')}
+            href={`/${locale}/proxy-xoay`}
+          >
+            {dictionary['navigation'].rotatingProxy}
+          </MenuItem>
+        </MenuSection>
+
         <MenuSection label='Dịch vụ' rootStyles={menuSectionHeaderStyles}>
-          <SubMenu
+          {/* <SubMenu
             label={dictionary['navigation'].proxy}
             icon={<Globe size={20} strokeWidth={1.5} />}
             rootStyles={subMenuStyles}
@@ -221,7 +240,7 @@ const VerticalMenu = ({ scrollMenu, dictionary }: Props) => {
             <MenuItem rootStyles={getMenuItemStyles('proxy-xoay')} href={`/${locale}/proxy-xoay`}>
               {dictionary['navigation'].rotatingProxy}
             </MenuItem>
-          </SubMenu>
+          </SubMenu> */}
 
           {/* Các MenuItem khác giữ nguyên */}
           <MenuItem
