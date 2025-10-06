@@ -168,7 +168,7 @@ export default function OrderRotatingProxyPage() {
       accessorKey: 'api_key',
       header: 'Api key',
       cell: ({ row }) => {
-        const api_key = row.original.api_key || '-'
+        const api_key = row.original.api_key || <Loader className='animate-spin text-gray-400' size={18} />
 
         return <span className='text-red'>{api_key}</span>
       },
@@ -318,7 +318,7 @@ export default function OrderRotatingProxyPage() {
                         currentView === 'api' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
                       }`}
                     >
-                      Api
+                      API
                     </button>
                   </div>
                 </div>

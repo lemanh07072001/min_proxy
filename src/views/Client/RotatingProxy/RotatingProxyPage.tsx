@@ -143,6 +143,8 @@ const useBuyProxy = (onPurchaseSuccess: () => void) => {
       return api.post('/buy-proxy', orderData)
     },
     onSuccess: async (data, variables) => {
+      console.log(data)
+
       // Xử lý khi request thành công
       if (data.data.success == false) {
         toast.error('Lỗi hệ thông xin vui lòng liên hệ Admin.  ')
@@ -152,12 +154,12 @@ const useBuyProxy = (onPurchaseSuccess: () => void) => {
         dispatch(subtractBalance(total))
         toast.success(data.data.message)
 
-        // Invalidate và refetch query trước khi chuyển tab
-        await queryClient.invalidateQueries({ queryKey: ['proxyData'] })
-        await queryClient.refetchQueries({ queryKey: ['proxyData'] })
-
-        // Gọi callback để chuyển sang table sau khi đã refresh data
+        // Gọi callback để chuyển sang table ngay lập tức
         onPurchaseSuccess()
+
+        // Invalidate và refetch query sau khi đã chuyển tab (không cần await)
+        queryClient.invalidateQueries({ queryKey: ['proxyData'] })
+        queryClient.refetchQueries({ queryKey: ['proxyData'] })
       }
     },
     onError: error => {
