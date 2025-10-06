@@ -45,6 +45,8 @@ import { ConfirmDialogOrder } from '@/components/confirm-modal/ConfirmDialogOrde
 import { subtractBalance } from '@/store/userSlice'
 import type { AppDispatch } from '@/store'
 
+import { log } from 'console'
+
 interface ProxyCardProps {
   provider: string
   logo: string
@@ -163,7 +165,7 @@ const ProxyCard: React.FC<ProxyCardProps> = ({
     defaultValues: {
       days: isSelectMode ? (provider.date_mapping?.[0]?.key ?? '') : 1,
       quantity: 1,
-      protocol: 'HTTP',
+      protocol: 'http',
       username: 'random',
       password: 'random'
     },
@@ -245,6 +247,8 @@ const ProxyCard: React.FC<ProxyCardProps> = ({
         return `${days} ngày`
     }
   }
+
+  console.log(provider)
 
   return (
     <>
