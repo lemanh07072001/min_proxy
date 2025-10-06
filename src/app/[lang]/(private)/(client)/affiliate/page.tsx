@@ -54,7 +54,7 @@ export default async function Affiliate() {
               <div className='flex items-center justify-between'>
                 <div>
                   <p className='text-sm text-gray-500 mb-1'>Hoa Hồng Giới Thiệu</p>
-                  <p className='text-2xl font-bold text-gray-900'>{affiliateData.affiliate_percent ?? 0}</p>
+                  <p className='text-2xl font-bold text-gray-900'>{affiliateData.affiliate_percent ?? 0} %</p>
                 </div>
                 <div className='w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center'>
                   <MousePointer className='w-6 h-6 text-blue-500' />

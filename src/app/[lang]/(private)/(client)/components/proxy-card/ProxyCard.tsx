@@ -248,8 +248,6 @@ const ProxyCard: React.FC<ProxyCardProps> = ({
     }
   }
 
-  console.log(provider)
-
   return (
     <>
       <form
