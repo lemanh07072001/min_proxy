@@ -246,7 +246,7 @@ export default function OrderProxyPage() {
           )
         },
         size: 350
-      }
+      },
       {
         accessorKey: 'protocol',
         header: 'Loại',
