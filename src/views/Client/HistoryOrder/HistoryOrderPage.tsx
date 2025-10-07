@@ -1,6 +1,7 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 import Image from 'next/image'
 
@@ -22,7 +23,7 @@ import {
 import Chip from '@mui/material/Chip'
 
 import Pagination from '@mui/material/Pagination'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 import CustomIconButton from '@core/components/mui/IconButton'
 
@@ -30,6 +31,7 @@ import useAxiosAuth from '@/hocs/useAxiosAuth'
 import { useCopy } from '@/app/hooks/useCopy'
 import { formatDateTimeLocal } from '@/utils/formatDate'
 import OrderDetail from './OrderDetail'
+import { io } from 'socket.io-client'
 
 export default function HistoryOrderPage() {
   const [columnFilters, setColumnFilters] = useState<any[]>([])
@@ -43,11 +45,13 @@ export default function HistoryOrderPage() {
     pageIndex: 0,
     pageSize: 10
   }) // State để lưu các hàng được chọn
+  const queryClient = useQueryClient()
+
 
   const axiosAuth = useAxiosAuth()
   const [, copy] = useCopy()
 
-  const { data: dataOrders = [], isLoading } = useQuery({
+  const { data: dataOrders = [], isLoading, refetch } = useQuery({
     queryKey: ['orderProxyStatic'],
     queryFn: async () => {
       const res = await axiosAuth.get('/get-order')
@@ -56,18 +60,7 @@ export default function HistoryOrderPage() {
     }
   })
 
-  const getProviderColor = (provider: string) => {
-    switch (provider.toLowerCase()) {
-      case 'viettel':
-        return 'text-red-600 bg-red-50'
-      case 'fpt':
-        return 'text-orange-600 bg-orange-50'
-      case 'vnpt':
-        return 'text-blue-600 bg-blue-50'
-      default:
-        return 'text-gray-600 bg-gray-50'
-    }
-  }
+
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -196,6 +189,29 @@ export default function HistoryOrderPage() {
   const totalRows = table.getFilteredRowModel().rows.length
   const startRow = pageIndex * pageSize + 1
   const endRow = Math.min(startRow + pageSize - 1, totalRows)
+
+  // Socket: lắng nghe sự kiện để refetch bảng
+  useEffect(() => {
+    const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || 'https://socket.mktproxy.com'
+
+    const socket = io(socketUrl, {
+      transports: ['websocket'],
+      secure: true
+    })
+
+    socket.on('connect', () => console.log('✅ Connected to socket:', socket.id))
+    socket.on('order_completed', data => {
+
+      queryClient.invalidateQueries({ queryKey: ['orderProxyStatic'] })
+      setTimeout(() => {
+        void refetch()
+      }, 600)
+    })
+
+    return () => {
+      socket.disconnect()
+    }
+  }, [refetch, queryClient])
 
   return (
     <>
