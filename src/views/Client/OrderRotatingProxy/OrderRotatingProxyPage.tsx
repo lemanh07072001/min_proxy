@@ -295,7 +295,7 @@ export default function OrderRotatingProxyPage() {
 
     socket.on('connect', () => console.log('✅ Connected to socket:', socket.id))
     socket.on('order_completed', data => {
-      console.log('📦 Nhận event:', data)
+
       queryClient.invalidateQueries({ queryKey: ['proxyData'] })
       setTimeout(() => {
         void refetch()
