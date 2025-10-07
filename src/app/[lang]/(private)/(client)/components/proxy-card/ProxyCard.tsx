@@ -103,7 +103,7 @@ const useBuyProxy = (onSuccessCallback: () => void) => {
 
       return api.post('/proxy-static', orderData)
     },
-    onSuccess: async (data, variables) => {
+    onSuccess: (data, variables) => {
       if (data.data.success == false) {
         toast.error('Lỗi hệ thông xin vui lòng liên hệ Admin.')
         router.push('/order-proxy')
@@ -113,12 +113,12 @@ const useBuyProxy = (onSuccessCallback: () => void) => {
         dispatch(subtractBalance(total))
         toast.success('Mua proxy thành công.')
 
-        // Invalidate và refetch query trước khi chuyển tab
-        await queryClient.invalidateQueries({ queryKey: ['orderProxyStatic'] })
-        await queryClient.refetchQueries({ queryKey: ['orderProxyStatic'] })
-
-        // Gọi callback để chuyển sang table sau khi đã refresh data
+        // Chuyển view ngay lập tức để dừng trạng thái loading của nút
         onSuccessCallback()
+
+        // Làm tươi dữ liệu ở hậu cảnh, không chặn UI
+        queryClient.invalidateQueries({ queryKey: ['orderProxyStatic'] })
+        queryClient.refetchQueries({ queryKey: ['orderProxyStatic'] })
       }
     },
     onError: error => {
