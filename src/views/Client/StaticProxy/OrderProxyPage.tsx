@@ -84,7 +84,7 @@ export default function OrderProxyPage() {
   // Socket: lắng nghe sự kiện để refetch bảng
   useEffect(() => {
     const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:4000'
-    const socket = io(socketUrl, {
+    const socket = io(`${socketUrl}/update_order`, {
       transports: ['websocket'],
       secure: true
     })
