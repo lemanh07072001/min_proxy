@@ -44,7 +44,7 @@ import { FormControlLabel } from '@mui/material'
 
 import Checkbox from '@mui/material/Checkbox'
 
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { toast } from 'react-toastify'
 
@@ -60,9 +60,9 @@ import ApiUsage from './ApiUsage'
 import { io } from 'socket.io-client'
 
 export default function OrderRotatingProxyPage() {
-  const [columnFilters, setColumnFilters] = useState([])
+  const [columnFilters, setColumnFilters] = useState<any[]>([])
   const [rowSelection, setRowSelection] = useState({}) // State để lưu các hàng được chọn
-  const [sorting, setSorting] = useState([])
+  const [sorting, setSorting] = useState<any[]>([])
 
   const [pagination, setPagination] = useState({
     pageIndex: 0,
@@ -74,6 +74,7 @@ export default function OrderRotatingProxyPage() {
   const [loadingId, setLoadingId] = useState<string | null>(null)
   const [currentView, setCurrentView] = useState<'table' | 'api'>('table')
   const axiosAuth = useAxiosAuth()
+  const queryClient = useQueryClient()
 
   const [, copy] = useCopy()
 
@@ -109,18 +110,18 @@ export default function OrderRotatingProxyPage() {
       } else {
         toast.error(res.data.message)
       }
-    } catch (error) {
-      toast.error(error.response.data.message)
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || 'Có lỗi xảy ra')
     } finally {
       setLoadingId(null)
     }
   }
 
-  const columns = useMemo(() => [
+  const columns = useMemo(
+    () => [
     {
       id: 'select',
-      size: 20,
-      header: ({ table }) => (
+      header: ({ table }: { table: any }) => (
         <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
           <FormControlLabel
             sx={{
@@ -139,7 +140,7 @@ export default function OrderRotatingProxyPage() {
           />
         </div>
       ),
-      cell: ({ row }) => (
+      cell: ({ row }: { row: any }) => (
         <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
           <FormControlLabel
             sx={{
@@ -168,7 +169,7 @@ export default function OrderRotatingProxyPage() {
     {
       accessorKey: 'api_key',
       header: 'Api key',
-      cell: ({ row }) => {
+      cell: ({ row }: { row: any }) => {
         const api_key = row.original.api_key || <Loader className='animate-spin text-gray-400' size={18} />
 
         return <span className='text-red'>{api_key}</span>
@@ -178,7 +179,7 @@ export default function OrderRotatingProxyPage() {
     {
       accessorKey: 'protocol',
       header: 'Loại',
-      cell: ({ row }) => {
+      cell: ({ row }: { row: any }) => {
         const keys = row.original.plan_type || '-'
 
         return <div className='font-bold'>{keys}</div>
@@ -187,7 +188,7 @@ export default function OrderRotatingProxyPage() {
     },
     {
       header: 'Ip Version',
-      cell: ({ row }) => {
+      cell: ({ row }: { row: any }) => {
         const ip_version = row.original.type_service?.ip_version ?? '-'
 
         return <div className='font-bold'>{ip_version}</div>
@@ -197,7 +198,7 @@ export default function OrderRotatingProxyPage() {
     {
       accessorKey: 'buyDate',
       header: 'Ngày mua',
-      cell: ({ row }) => {
+      cell: ({ row }: { row: any }) => {
         return (
           <>
             <div className='d-flex align-items-center  gap-1 '>
@@ -212,7 +213,7 @@ export default function OrderRotatingProxyPage() {
     {
       accessorKey: 'expiryDate',
       header: 'Ngày hết hạn',
-      cell: ({ row }) => {
+      cell: ({ row }: { row: any }) => {
         return (
           <>
             <div className='d-flex align-items-center  gap-1 '>
@@ -227,14 +228,14 @@ export default function OrderRotatingProxyPage() {
     {
       accessorKey: 'status',
       header: 'Trạng thái',
-      cell: ({ row }) => {
+      cell: ({ row }: { row: any }) => {
         return getStatusBadge(row.original.status)
       },
       size: 150
     },
     {
       header: 'Action',
-      cell: ({ row }) => {
+      cell: ({ row }: { row: any }) => {
         const isRowLoading = loadingId === row.original.api_key
 
         if (row.original.status === 'ACTIVE') {
@@ -253,7 +254,7 @@ export default function OrderRotatingProxyPage() {
       },
       size: 120
     }
-  ])
+  ], []) as any[]
 
   const table = useReactTable({
     data: dataOrders,
@@ -295,11 +296,16 @@ export default function OrderRotatingProxyPage() {
     socket.on('connect', () => console.log('✅ Connected to socket:', socket.id))
     socket.on('order_completed', data => {
       console.log('📦 Nhận event:', data)
-      void refetch()
+      queryClient.invalidateQueries({ queryKey: ['proxyData'] })
+      setTimeout(() => {
+        void refetch()
+      }, 600)
     })
 
-    return () => socket.disconnect()
-  }, [refetch])
+    return () => {
+      socket.disconnect()
+    }
+  }, [refetch, queryClient])
   return (
     <>
       <div className='orders-content'>

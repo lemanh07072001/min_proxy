@@ -42,7 +42,7 @@ import Checkbox from '@mui/material/Checkbox'
 
 import { FormControlLabel } from '@mui/material'
 
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 import CustomIconButton from '@core/components/mui/IconButton'
 import { formatDateTimeLocal } from '@/utils/formatDate'
@@ -67,6 +67,7 @@ export default function OrderProxyPage() {
 
   const axiosAuth = useAxiosAuth()
   const [isCopied, copy] = useCopy()
+  const queryClient = useQueryClient()
 
   const { data: dataOrders = [], isLoading, refetch } = useQuery({
     queryKey: ['orderProxyStatic'],
@@ -93,11 +94,17 @@ export default function OrderProxyPage() {
     socket.on('connect', () => console.log('✅ Connected to socket:', socket.id))
     socket.on('order_completed', data => {
       console.log('📦 Nhận event:', data)
-      void refetch()
+      // Invalidate và refetch có độ trễ nhỏ để chờ backend cập nhật xong
+      queryClient.invalidateQueries({ queryKey: ['orderProxyStatic'] })
+      setTimeout(() => {
+        void refetch()
+      }, 600)
     })
 
-    return () => socket.disconnect()
-  }, [refetch])
+    return () => {
+      socket.disconnect()
+    }
+  }, [refetch, queryClient])
 
   // Lọc dữ liệu theo status và loại
   const filteredData = useMemo(() => {
