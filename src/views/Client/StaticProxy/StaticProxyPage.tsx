@@ -18,14 +18,6 @@ export default function StaticProxyPage({ data }: StaticProxyPageProps) {
   const [currentView, setCurrentView] = useState<'form' | 'table'>('form')
   const { data: session, status } = useSession()
   const queryClient = useQueryClient()
-  const router = useRouter()
-  const params = useParams()
-
-  // Hàm xử lý chuyển tab sau khi mua hàng
-  const handlePurchaseSuccess = () => {
-    const { lang } = params as { lang: string }
-    router.push(`/${lang}/history-order`)
-  }
 
   // Refetch data khi chuyển sang tab table để đảm bảo hiển thị đơn hàng mới nhất
   useEffect(() => {
@@ -66,7 +58,7 @@ export default function StaticProxyPage({ data }: StaticProxyPageProps) {
           {data?.map((provider: any, index: any) => {
             return (
               <ProxyCard
-                onPurchaseSuccess={handlePurchaseSuccess}
+
                 key={index}
                 provider={provider}
                 logo={provider.logo}

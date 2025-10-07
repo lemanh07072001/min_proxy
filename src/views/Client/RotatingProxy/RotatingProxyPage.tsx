@@ -28,6 +28,7 @@ import CustomTextField from '@core/components/mui/TextField'
 import { subtractBalance } from '@/store/userSlice'
 import type { AppDispatch } from '@/store'
 import './styles.css'
+import { useRouter } from 'next/navigation'
 
 // Định nghĩa schema validation chung cho các gói proxy.
 const proxyPlanSchema = yup.object({
@@ -123,10 +124,11 @@ const SwitchFeatureRow = ({ feature, control, planId }) => (
 )
 
 // --- CUSTOM HOOK FOR API CALL ---
-const useBuyProxy = (onPurchaseSuccess: () => void) => {
+const useBuyProxy = () => {
   const queryClient = useQueryClient()
   const session = useSession()
   const dispatch = useDispatch<AppDispatch>()
+  const router = useRouter()
 
   const mutation = useMutation({
     mutationFn: orderData => {
@@ -143,7 +145,6 @@ const useBuyProxy = (onPurchaseSuccess: () => void) => {
       return api.post('/buy-proxy', orderData)
     },
     onSuccess: async (data, variables) => {
-      console.log(data)
 
       // Xử lý khi request thành công
       if (data.data.success == false) {
@@ -154,8 +155,7 @@ const useBuyProxy = (onPurchaseSuccess: () => void) => {
         dispatch(subtractBalance(total))
         toast.success(data.data.message)
 
-        // Gọi callback để chuyển sang table ngay lập tức
-        onPurchaseSuccess()
+        router.push('/history-order')
 
         // Invalidate và refetch query sau khi đã chuyển tab (không cần await)
         queryClient.invalidateQueries({ queryKey: ['proxyData'] })
@@ -173,8 +173,8 @@ const useBuyProxy = (onPurchaseSuccess: () => void) => {
 }
 
 // Component chính cho mỗi thẻ plan, giờ đây gọn gàng hơn.
-const PlanCard = ({ plan, onPurchaseSuccess }) => {
-  const { mutate, isPending, isError, isSuccess, error } = useBuyProxy(onPurchaseSuccess)
+const PlanCard = ({ plan }) => {
+  const { mutate, isPending, isError, isSuccess, error } = useBuyProxy()
   const [openConfirm, setOpenConfirm] = useState(false)
   const [formData, setFormData] = useState()
   const { openAuthModal } = useModalContext()
@@ -320,14 +320,14 @@ const PlanCard = ({ plan, onPurchaseSuccess }) => {
 
 interface RotatingProxyPageProps {
   data: any
-  onPurchaseSuccess: () => void
+
 }
 
-export default function RotatingProxyPage({ data, onPurchaseSuccess }: RotatingProxyPageProps) {
+export default function RotatingProxyPage({ data,  }: RotatingProxyPageProps) {
   return (
     <>
       {data.map((plan: any) => (
-        <PlanCard key={plan.id} plan={plan} onPurchaseSuccess={onPurchaseSuccess} />
+        <PlanCard key={plan.id} plan={plan} />
       ))}
     </>
   )

@@ -17,8 +17,7 @@ export default function ProxyPlansClient({ data }: ProxyPlansClientProps) {
   const [currentView, setCurrentView] = useState<'form' | 'table'>('form')
   const { data: session, status } = useSession()
   const queryClient = useQueryClient()
-  const router = useRouter()
-  const params = useParams()
+
 
   // Refetch data khi chuyển sang tab table để đảm bảo hiển thị đơn hàng mới nhất
   useEffect(() => {
@@ -28,11 +27,6 @@ export default function ProxyPlansClient({ data }: ProxyPlansClientProps) {
     }
   }, [currentView, status, queryClient])
 
-  // Hàm xử lý chuyển tab sau khi mua hàng
-  const handlePurchaseSuccess = () => {
-    const { lang } = params as { lang: string }
-    router.push(`/${lang}/history-order`)
-  }
 
   return (
     <>
@@ -63,7 +57,7 @@ export default function ProxyPlansClient({ data }: ProxyPlansClientProps) {
       {currentView === 'form' && (
         <div className='proxy-xoay-page'>
           <div className='plans-container'>
-            <RotatingProxyPage data={data} onPurchaseSuccess={handlePurchaseSuccess} />
+            <RotatingProxyPage data={data}  />
           </div>
         </div>
       )}

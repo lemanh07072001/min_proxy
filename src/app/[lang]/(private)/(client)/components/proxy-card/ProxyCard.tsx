@@ -83,7 +83,7 @@ const createProxySchema = isSelectMode =>
     .required()
 
 // --- CUSTOM HOOK FOR API CALL ---
-const useBuyProxy = (onSuccessCallback: () => void) => {
+const useBuyProxy = () => {
   const queryClient = useQueryClient()
   const session = useSession()
   const router = useRouter()
@@ -113,8 +113,7 @@ const useBuyProxy = (onSuccessCallback: () => void) => {
         dispatch(subtractBalance(total))
         toast.success('Mua proxy thành công.')
 
-        // Chuyển view ngay lập tức để dừng trạng thái loading của nút
-        onSuccessCallback()
+        router.push('/history-order')
 
         // Làm tươi dữ liệu ở hậu cảnh, không chặn UI
         queryClient.invalidateQueries({ queryKey: ['orderProxyStatic'] })
@@ -138,10 +137,9 @@ const ProxyCard: React.FC<ProxyCardProps> = ({
   price,
   features,
   timeOptions = [],
-  onPurchaseSuccess
 }) => {
   const params = useParams()
-  const { mutate, isPending } = useBuyProxy(onPurchaseSuccess)
+  const { mutate, isPending } = useBuyProxy()
   const session = useSession()
   const { openAuthModal } = useModalContext()
   const { lang: locale } = params
