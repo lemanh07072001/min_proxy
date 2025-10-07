@@ -1,5 +1,6 @@
 'use client'
 import React, { useEffect, useState } from 'react'
+import { useParams, useRouter } from 'next/navigation'
 
 import { useSession } from 'next-auth/react'
 
@@ -16,6 +17,8 @@ export default function ProxyPlansClient({ data }: ProxyPlansClientProps) {
   const [currentView, setCurrentView] = useState<'form' | 'table'>('form')
   const { data: session, status } = useSession()
   const queryClient = useQueryClient()
+  const router = useRouter()
+  const params = useParams()
 
   // Refetch data khi chuyển sang tab table để đảm bảo hiển thị đơn hàng mới nhất
   useEffect(() => {
@@ -27,8 +30,8 @@ export default function ProxyPlansClient({ data }: ProxyPlansClientProps) {
 
   // Hàm xử lý chuyển tab sau khi mua hàng
   const handlePurchaseSuccess = () => {
-    // Chuyển từ tab mua hàng sang tab danh sách đơn hàng
-    setCurrentView('table')
+    const { lang } = params as { lang: string }
+    router.push(`/${lang}/history-order`)
   }
 
   return (

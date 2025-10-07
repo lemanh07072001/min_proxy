@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useParams, useRouter } from 'next/navigation'
 import './styles.css'
 
 import { useSession } from 'next-auth/react'
@@ -17,11 +18,13 @@ export default function StaticProxyPage({ data }: StaticProxyPageProps) {
   const [currentView, setCurrentView] = useState<'form' | 'table'>('form')
   const { data: session, status } = useSession()
   const queryClient = useQueryClient()
+  const router = useRouter()
+  const params = useParams()
 
   // Hàm xử lý chuyển tab sau khi mua hàng
   const handlePurchaseSuccess = () => {
-    // Chuyển từ tab mua hàng sang tab danh sách đơn hàng
-    setCurrentView('table')
+    const { lang } = params as { lang: string }
+    router.push(`/${lang}/history-order`)
   }
 
   // Refetch data khi chuyển sang tab table để đảm bảo hiển thị đơn hàng mới nhất
