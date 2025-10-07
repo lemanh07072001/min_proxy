@@ -84,10 +84,11 @@ export default function OrderProxyPage() {
   // Socket: lắng nghe sự kiện để refetch bảng
   useEffect(() => {
     const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:4000'
-    const socket = io(`${socketUrl}/update_order`, {
+    const socket = io(socketUrl, {
       transports: ['websocket'],
       secure: true
     })
+
 
     socket.on('connect', () => console.log('✅ Connected to socket'))
     socket.on('order_completed', () => {
