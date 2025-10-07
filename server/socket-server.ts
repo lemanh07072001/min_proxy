@@ -14,7 +14,7 @@ const httpsServer = https.createServer({
 // ✅ Cấu hình Socket.io
 const io = new Server(httpsServer, {
   cors: {
-    origin: '*', // hoặc 'https://app.mktproxy.com' nếu bạn muốn chặt chẽ hơn
+    origin: '*',
     methods: ['GET', 'POST']
   }
 })
