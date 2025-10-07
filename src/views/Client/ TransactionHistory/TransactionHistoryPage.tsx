@@ -60,7 +60,7 @@ export default function TransactionHistoryPage() {
                 <span className='font-sm ms-2'>Nạp tiền thành công!</span>
               </div>
             )
-          } else if (row.original.type === 'TRUTIEN') {
+          } else if (row.original.type === 'REFUND') {
             return (
               <div>
                 <Chip label='Tiêu' size='small' color='primary' style={{ color: '#fff' }} />
