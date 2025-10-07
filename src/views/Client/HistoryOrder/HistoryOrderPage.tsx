@@ -58,7 +58,10 @@ export default function HistoryOrderPage() {
       const res = await axiosAuth.get('/get-order')
 
       return res.data.data
-    }
+    },
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
+    staleTime: 0
   })
 
 
@@ -193,6 +196,9 @@ export default function HistoryOrderPage() {
 
   // Socket: lắng nghe sự kiện để refetch bảng
   useEffect(() => {
+    // Bảo đảm lần đầu vào trang sẽ làm tươi dữ liệu
+    queryClient.invalidateQueries({ queryKey: ['orderProxyStatic'] })
+
     const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || 'https://socket.mktproxy.com'
 
     const socket = io(socketUrl, {
