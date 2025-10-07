@@ -90,7 +90,7 @@ export default function OrderProxyPage() {
     })
 
     socket.on('connect', () => console.log('✅ Connected to socket'))
-    socket.on('order_updated', () => {
+    socket.on('order_completed', () => {
       // Khi nhận event thì refetch lại dữ liệu bảng
       void refetch()
     })
