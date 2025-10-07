@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import Image from 'next/image'
 
@@ -50,6 +50,7 @@ import { useCopy } from '@/app/hooks/useCopy'
 
 import useAxiosAuth from '@/hocs/useAxiosAuth'
 import CustomTextField from '@/@core/components/mui/TextField'
+import { io } from 'socket.io-client'
 
 export default function OrderProxyPage() {
   const [columnFilters, setColumnFilters] = useState<any[]>([])
@@ -67,7 +68,7 @@ export default function OrderProxyPage() {
   const axiosAuth = useAxiosAuth()
   const [isCopied, copy] = useCopy()
 
-  const { data: dataOrders = [], isLoading } = useQuery({
+  const { data: dataOrders = [], isLoading, refetch } = useQuery({
     queryKey: ['orderProxyStatic'],
     queryFn: async () => {
       const res = await axiosAuth.get('/get-order-proxy-static')
@@ -79,6 +80,22 @@ export default function OrderProxyPage() {
     refetchOnWindowFocus: true, // Refetch khi focus vào window để đảm bảo data mới nhất
     refetchOnMount: true // Refetch khi component mount lại để hiển thị đơn hàng mới
   })
+
+  // Socket: lắng nghe sự kiện để refetch bảng
+  useEffect(() => {
+    const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:4000'
+    const socket = io(socketUrl)
+
+    socket.on('connect', () => console.log('✅ Connected to socket'))
+    socket.on('order_updated', () => {
+      // Khi nhận event thì refetch lại dữ liệu bảng
+      void refetch()
+    })
+
+    return () => {
+      socket.disconnect()
+    }
+  }, [refetch])
 
   // Lọc dữ liệu theo status và loại
   const filteredData = useMemo(() => {
