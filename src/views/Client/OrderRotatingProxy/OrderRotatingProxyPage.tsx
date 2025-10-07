@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import { headers } from 'next/headers'
 
@@ -57,6 +57,7 @@ import useAxiosAuth from '@/hocs/useAxiosAuth'
 import ProxyDetailModal from './ProxyDetailModal'
 import axiosInstance from '@/libs/axios'
 import ApiUsage from './ApiUsage'
+import { io } from 'socket.io-client'
 
 export default function OrderRotatingProxyPage() {
   const [columnFilters, setColumnFilters] = useState([])
@@ -76,7 +77,7 @@ export default function OrderRotatingProxyPage() {
 
   const [, copy] = useCopy()
 
-  const { data: dataOrders = [], isLoading } = useQuery({
+  const { data: dataOrders = [], isLoading, refetch } = useQuery({
     queryKey: ['proxyData'],
     queryFn: async () => {
       const res = await axiosAuth.get('/get-order-proxy-rotating')
@@ -282,6 +283,23 @@ export default function OrderRotatingProxyPage() {
   const startRow = pageIndex * pageSize + 1
   const endRow = Math.min(startRow + pageSize - 1, totalRows)
 
+  // Socket: lắng nghe sự kiện để refetch bảng
+  useEffect(() => {
+    const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || 'https://socket.mktproxy.com'
+
+    const socket = io(socketUrl, {
+      transports: ['websocket'],
+      secure: true
+    })
+
+    socket.on('connect', () => console.log('✅ Connected to socket:', socket.id))
+    socket.on('order_completed', data => {
+      console.log('📦 Nhận event:', data)
+      void refetch()
+    })
+
+    return () => socket.disconnect()
+  }, [refetch])
   return (
     <>
       <div className='orders-content'>
