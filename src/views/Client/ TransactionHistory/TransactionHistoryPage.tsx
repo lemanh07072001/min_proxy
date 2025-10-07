@@ -60,7 +60,7 @@ export default function TransactionHistoryPage() {
                 <span className='font-sm ms-2'>Nạp tiền thành công!</span>
               </div>
             )
-          } else if (row.original.type === 'REFUND') {
+          } else if (row.original.type === 'TRUTIEN') {
             return (
               <div>
                 <Chip label='Tiêu' size='small' color='primary' style={{ color: '#fff' }} />
@@ -71,6 +71,13 @@ export default function TransactionHistoryPage() {
             return (
               <div>
                 <Chip label='Mua' size='small' color='primary' style={{ color: '#fff' }} />
+                <span className='font-sm ms-2'>{row.original.noidung}</span>
+              </div>
+            )
+          }else if (row.original.type === 'REFUND') {
+            return (
+              <div>
+                <Chip label='Tiêu' size='small' color='primary' style={{ color: '#fff' }} />
                 <span className='font-sm ms-2'>{row.original.noidung}</span>
               </div>
             )
