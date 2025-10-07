@@ -166,16 +166,23 @@ export default function OrderRotatingProxyPage() {
       header: 'ID',
       size: 60
     },
-    {
-      accessorKey: 'api_key',
-      header: 'Api key',
-      cell: ({ row }: { row: any }) => {
-        const api_key = row.original.api_key || <Loader className='animate-spin text-gray-400' size={18} />
+      {
+        accessorKey: 'api_key',
+        header: 'Api key',
+        cell: ({ row }: { row: any }) => {
+          const api_key = row.original.api_key
 
-        return <span className='text-red'>{api_key}</span>
+          return api_key ? (
+            <span className='text-red-600 font-medium'>{api_key}</span>
+          ) : (
+            <div className='flex items-center gap-1 text-gray-500'>
+              <Loader className='animate-spin text-gray-400' size={18} />
+              <span className='text-sm italic'>Vui lòng đợi...</span>
+            </div>
+          )
+        },
+        size: 300
       },
-      size: 300
-    },
     {
       accessorKey: 'protocol',
       header: 'Loại',

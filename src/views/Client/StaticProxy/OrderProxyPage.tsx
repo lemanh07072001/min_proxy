@@ -205,7 +205,7 @@ export default function OrderProxyPage() {
         header: 'Nhà mạng',
         cell: ({ row }: { row: any }) => {
           const proxys = row.original.proxys || {} // fallback nếu null
-          const loaiproxy = (proxys as any).loaiproxy || <Loader className='animate-spin text-gray-400' size={18} /> // fallback nếu không tồn tại
+          const loaiproxy = (proxys as any).loaiproxy || <Loader className='animate-spin text-gray-400' size={18} />
 
           return <span className='text-red'>{loaiproxy}</span>
         },
@@ -223,19 +223,30 @@ export default function OrderProxyPage() {
 
           const firstProxy = proxyValues[0] as string | undefined
 
+          if (!firstProxy) {
+            return (
+              <div className='flex items-center gap-1 text-gray-500'>
+                <Loader className='animate-spin text-gray-400' size={16} />
+                <span className='text-sm italic'>Vui lòng đợi...</span>
+              </div>
+            )
+          }
+
           return (
-            <div className='proxy-cell'>
-              <span className='proxy-label'>{firstProxy || '-'}</span>
-              {firstProxy && firstProxy !== '-' && (
-                <button className='icon-button' onClick={() => copy(firstProxy)}>
-                  <Copy size={14} />
-                </button>
-              )}
+            <div className='proxy-cell flex items-center gap-1'>
+              <span className='proxy-label text-red-600'>{firstProxy}</span>
+              <button
+                className='icon-button hover:text-blue-500 transition'
+                onClick={() => copy(firstProxy)}
+                title='Sao chép proxy'
+              >
+                <Copy size={14} />
+              </button>
             </div>
           )
         },
         size: 350
-      },
+      }
       {
         accessorKey: 'protocol',
         header: 'Loại',
