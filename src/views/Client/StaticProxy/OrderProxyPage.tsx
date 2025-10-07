@@ -83,23 +83,20 @@ export default function OrderProxyPage() {
 
   // Socket: lắng nghe sự kiện để refetch bảng
   useEffect(() => {
-    const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:4000'
+    const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || 'https://socket.mktproxy.com'
 
     const socket = io(socketUrl, {
       transports: ['websocket'],
-      secure: true,
-      path: '/socket.io'
+      secure: true
     })
 
-    socket.on('connect', () => console.log('✅ Connected to socket'))
-    socket.on('order_completed', () => {
-      // Khi nhận event thì refetch lại dữ liệu bảng
+    socket.on('connect', () => console.log('✅ Connected to socket:', socket.id))
+    socket.on('order_completed', data => {
+      console.log('📦 Nhận event:', data)
       void refetch()
     })
 
-    return () => {
-      socket.disconnect()
-    }
+    return () => socket.disconnect()
   }, [refetch])
 
   // Lọc dữ liệu theo status và loại
