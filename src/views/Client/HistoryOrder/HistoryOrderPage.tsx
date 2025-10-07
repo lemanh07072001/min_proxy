@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+
 
 import Image from 'next/image'
 
@@ -23,6 +23,7 @@ import {
 import Chip from '@mui/material/Chip'
 
 import Pagination from '@mui/material/Pagination'
+
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 import CustomIconButton from '@core/components/mui/IconButton'
@@ -45,8 +46,8 @@ export default function HistoryOrderPage() {
     pageIndex: 0,
     pageSize: 10
   }) // State để lưu các hàng được chọn
-  const queryClient = useQueryClient()
 
+  const queryClient = useQueryClient()
 
   const axiosAuth = useAxiosAuth()
   const [, copy] = useCopy()
