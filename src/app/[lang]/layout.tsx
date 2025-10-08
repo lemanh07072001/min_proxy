@@ -107,7 +107,7 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: Loc
       siteName: 'MKT Proxy',
       images: [
         {
-          url: '/images/logo/MKT_PROXY_2.png',
+          url: '/images/logo/image.png',
           width: 1200,
           height: 630,
           alt: 'MKT Proxy Logo'
