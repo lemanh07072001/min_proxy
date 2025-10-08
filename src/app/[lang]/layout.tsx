@@ -118,7 +118,7 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: Loc
       card: 'summary_large_image',
       title: 'MKT Proxy - Dịch vụ Proxy Chất Lượng Cao',
       description: 'Dịch vụ proxy bảo mật, tốc độ cao với hỗ trợ đa quốc gia.',
-      images: ['/images/logo/MKT_PROXY_2.png']
+      images: ['/images/logo/image.png']
     },
     robots: {
       index: true,
