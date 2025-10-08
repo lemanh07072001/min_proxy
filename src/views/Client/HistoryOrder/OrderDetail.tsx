@@ -32,12 +32,14 @@ import {
   BadgeMinus,
   CircleQuestionMark,
   X,
+  Eye,
   FileDown
 } from 'lucide-react'
 
 import { formatDateTimeLocal } from '@/utils/formatDate'
 import { useCopy } from '@/app/hooks/useCopy'
 import CustomIconButton from '@core/components/mui/IconButton'
+import DetailProxy from './DetaiProxy'
 
 // Badge trạng thái
 const getStatusBadge = (status: string) => {
@@ -242,6 +244,27 @@ const OrderDetail: React.FC<OrderDetailProps> = ({ open, onClose, order }) => {
           </div>
         ),
         size: 200
+      },
+      {
+        header: 'Action',
+        cell: ({ row }: { row: any }) => {
+          return (
+            <>
+              <CustomIconButton
+                aria-label='capture screenshot'
+                color='info'
+                variant='tonal'
+                onClick={() => {
+                  // setSelectedOrder(row.original) // lưu dữ liệu dòng hiện tại
+                  // setOpen(true) // mở modal
+                }}
+              >
+                <Eye size={16} />
+              </CustomIconButton>
+            </>
+          )
+        },
+        size: 100
       }
     ],
     [order, copy]
@@ -367,198 +390,202 @@ const OrderDetail: React.FC<OrderDetailProps> = ({ open, onClose, order }) => {
   }
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth='xl' aria-labelledby='order-detail-dialog'>
-      <DialogTitle
-        id='customized-dialog-title'
-        sx={{
-          display: 'flex',
-          width: '100%',
-          justifyContent: 'space-between',
-          position: 'relative',
-          alignItems: 'center',
-          padding: '8px 16px'
-        }}
-      >
-        {order ? `Chi tiết đơn hàng #${order.order_code}` : 'Không có dữ liệu'}
-        <Button
-          onClick={onClose}
-          disableRipple
-          sx={{
-            fontSize: '20px'
-          }}
-        >
-          <i className='tabler-x' />
-        </Button>
-      </DialogTitle>
-
-      <DialogContent dividers>
-        {order ? (
-          <>
-            {/* Order Information */}
-            <Box sx={{ mb: 3, p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
-              <Typography variant='h6' sx={{ mb: 2 }}>
-                Thông tin đơn hàng
-              </Typography>
-              <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 2 }}>
-                <Box>
-                  <Typography variant='body2' color='text.secondary'>
-                    Mã đơn hàng:
-                  </Typography>
-                  <Typography variant='body1' fontWeight='bold'>
-                    {order.order_code}
-                  </Typography>
-                </Box>
-                <Box sx={{ minWidth: '120px' }}>
-                  <Typography variant='body2' color='text.secondary'>
-                    Tổng tiền:
-                  </Typography>
-                  <Typography variant='body1' fontWeight='bold' color='primary'>
-                    {new Intl.NumberFormat('vi-VN').format(order.total_amount)} đ
-                  </Typography>
-                </Box>
-                <Box sx={{ minWidth: '80px' }}>
-                  <Typography variant='body2' color='text.secondary'>
-                    Số lượng:
-                  </Typography>
-                  <Typography variant='body1' fontWeight='bold'>
-                    {order.quantity}
-                  </Typography>
-                </Box>
-                <Box>
-                  <Typography variant='body2' color='text.secondary'>
-                    Trạng thái:
-                  </Typography>
-                  {getStatusBadge(order.status)}
-                </Box>
-                <Box>
-                  <Typography variant='body2' color='text.secondary'>
-                    Ngày mua:
-                  </Typography>
-                  <Typography variant='body1'>{formatDateTimeLocal(order.buy_at)}</Typography>
-                </Box>
-                <Box>
-                  <Typography variant='body2' color='text.secondary'>
-                    Ngày hết hạn:
-                  </Typography>
-                  <Typography variant='body1'>{formatDateTimeLocal(order.expired_at)}</Typography>
-                </Box>
-              </Box>
-            </Box>
-
-            {/* Proxy List */}
-            <Box
-              sx={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                paddingY: '10px'
-              }}
-            >
-              <Typography variant='h6' sx={{ mb: 2 }}>
-                Danh sách proxy ({totalRows} proxy)
-              </Typography>
-              {selectedCount > 0 && (
-                <Box sx={{ display: 'flex', gap: '10px' }}>
-                  <Typography sx={{ fontSize: '12px', display: 'flex', alignItems: 'center' }}>
-                    Số lượng: {selectedCount}
-                  </Typography>
-                  <CustomIconButton
-                    aria-label='copy selected'
-                    size='small'
-                    color='success'
-                    variant='outlined'
-                    sx={{ fontSize: '14px', gap: '5px' }}
-                    onClick={handleCopySelected}
-                  >
-                    <Copy size={16} /> Copy
-                  </CustomIconButton>
-                  <CustomIconButton
-                    aria-label='download selected'
-                    size='small'
-                    color='warning'
-                    variant='outlined'
-                    sx={{ fontSize: '14px', gap: '5px' }}
-                    onClick={handleDownloadSelected}
-                  >
-                    <FileDown size={16} /> Download
-                  </CustomIconButton>
-                </Box>
-              )}
-            </Box>
-
-            {dataOrder.length > 0 ? (
-              <>
-                <div className='table-wrapper' style={{ maxHeight: '400px', overflow: 'auto' }}>
-                  <table className='table-auto w-full border-collapse border border-gray-200 text-sm'>
-                    <thead className='sticky top-0 bg-white'>
-                      {table.getHeaderGroups().map(headerGroup => (
-                        <tr key={headerGroup.id}>
-                          {headerGroup.headers.map(header => (
-                            <th
-                              key={header.id}
-                              className='border border-gray-200 px-3 py-2 text-left bg-gray-50 font-semibold'
-                              style={{ width: header.column.columnDef.size }}
-                            >
-                              {flexRender(header.column.columnDef.header, header.getContext())}
-                            </th>
-                          ))}
-                        </tr>
-                      ))}
-                    </thead>
-                    <tbody>
-                      {table.getRowModel().rows.map(row => (
-                        <tr key={row.id} className='hover:bg-gray-50'>
-                          {row.getVisibleCells().map(cell => (
-                            <td key={cell.id} className='border border-gray-200 px-3 py-2'>
-                              {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                            </td>
-                          ))}
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-
-                <Typography variant='caption' display='block' sx={{ mt: 1, textAlign: 'center' }}>
-                  Hiển thị {startRow}-{endRow} / {totalRows} proxy
-                </Typography>
-              </>
-            ) : (
-              <Box sx={{ textAlign: 'center', py: 4 }}>
-                <Typography variant='body1' color='text.secondary'>
-                  Đơn hàng này chưa có proxy nào
-                </Typography>
-              </Box>
-            )}
-          </>
-        ) : (
-          <Box sx={{ textAlign: 'center', py: 4 }}>
-            <Typography variant='body1' color='text.secondary'>
-              Không có dữ liệu đơn hàng
-            </Typography>
-          </Box>
-        )}
-
-        <Box
+    <>
+      <Dialog open={open} onClose={onClose} fullWidth maxWidth='xl' aria-labelledby='order-detail-dialog'>
+        <DialogTitle
+          id='customized-dialog-title'
           sx={{
             display: 'flex',
-            justifyContent: 'end'
+            width: '100%',
+            justifyContent: 'space-between',
+            position: 'relative',
+            alignItems: 'center',
+            padding: '8px 16px'
           }}
         >
-          <Pagination
-            count={table.getPageCount()}
-            shape='rounded'
-            variant='outlined'
-            color='primary'
-            size={'small'}
-            page={table.getState().pagination.pageIndex + 1}
-            onChange={(event, page) => {
-              table.setPageIndex(page - 1)
+          {order ? `Chi tiết đơn hàng #${order.order_code}` : 'Không có dữ liệu'}
+          <Button
+            onClick={onClose}
+            disableRipple
+            sx={{
+              fontSize: '20px'
             }}
-          />
-        </Box>
-      </DialogContent>
-    </Dialog>
+          >
+            <i className='tabler-x' />
+          </Button>
+        </DialogTitle>
+
+        <DialogContent dividers>
+          {order ? (
+            <>
+              {/* Order Information */}
+              <Box sx={{ mb: 3, p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
+                <Typography variant='h6' sx={{ mb: 2 }}>
+                  Thông tin đơn hàng
+                </Typography>
+                <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 2 }}>
+                  <Box>
+                    <Typography variant='body2' color='text.secondary'>
+                      Mã đơn hàng:
+                    </Typography>
+                    <Typography variant='body1' fontWeight='bold'>
+                      {order.order_code}
+                    </Typography>
+                  </Box>
+                  <Box sx={{ minWidth: '120px' }}>
+                    <Typography variant='body2' color='text.secondary'>
+                      Tổng tiền:
+                    </Typography>
+                    <Typography variant='body1' fontWeight='bold' color='primary'>
+                      {new Intl.NumberFormat('vi-VN').format(order.total_amount)} đ
+                    </Typography>
+                  </Box>
+                  <Box sx={{ minWidth: '80px' }}>
+                    <Typography variant='body2' color='text.secondary'>
+                      Số lượng:
+                    </Typography>
+                    <Typography variant='body1' fontWeight='bold'>
+                      {order.quantity}
+                    </Typography>
+                  </Box>
+                  <Box>
+                    <Typography variant='body2' color='text.secondary'>
+                      Trạng thái:
+                    </Typography>
+                    {getStatusBadge(order.status)}
+                  </Box>
+                  <Box>
+                    <Typography variant='body2' color='text.secondary'>
+                      Ngày mua:
+                    </Typography>
+                    <Typography variant='body1'>{formatDateTimeLocal(order.buy_at)}</Typography>
+                  </Box>
+                  <Box>
+                    <Typography variant='body2' color='text.secondary'>
+                      Ngày hết hạn:
+                    </Typography>
+                    <Typography variant='body1'>{formatDateTimeLocal(order.expired_at)}</Typography>
+                  </Box>
+                </Box>
+              </Box>
+
+              {/* Proxy List */}
+              <Box
+                sx={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  paddingY: '10px'
+                }}
+              >
+                <Typography variant='h6' sx={{ mb: 2 }}>
+                  Danh sách proxy ({totalRows} proxy)
+                </Typography>
+                {selectedCount > 0 && (
+                  <Box sx={{ display: 'flex', gap: '10px' }}>
+                    <Typography sx={{ fontSize: '12px', display: 'flex', alignItems: 'center' }}>
+                      Số lượng: {selectedCount}
+                    </Typography>
+                    <CustomIconButton
+                      aria-label='copy selected'
+                      size='small'
+                      color='success'
+                      variant='outlined'
+                      sx={{ fontSize: '14px', gap: '5px' }}
+                      onClick={handleCopySelected}
+                    >
+                      <Copy size={16} /> Copy
+                    </CustomIconButton>
+                    <CustomIconButton
+                      aria-label='download selected'
+                      size='small'
+                      color='warning'
+                      variant='outlined'
+                      sx={{ fontSize: '14px', gap: '5px' }}
+                      onClick={handleDownloadSelected}
+                    >
+                      <FileDown size={16} /> Download
+                    </CustomIconButton>
+                  </Box>
+                )}
+              </Box>
+
+              {dataOrder.length > 0 ? (
+                <>
+                  <div className='table-wrapper' style={{ maxHeight: '400px', overflow: 'auto' }}>
+                    <table className='table-auto w-full border-collapse border border-gray-200 text-sm'>
+                      <thead className='sticky top-0 bg-white'>
+                        {table.getHeaderGroups().map(headerGroup => (
+                          <tr key={headerGroup.id}>
+                            {headerGroup.headers.map(header => (
+                              <th
+                                key={header.id}
+                                className='border border-gray-200 px-3 py-2 text-left bg-gray-50 font-semibold'
+                                style={{ width: header.column.columnDef.size }}
+                              >
+                                {flexRender(header.column.columnDef.header, header.getContext())}
+                              </th>
+                            ))}
+                          </tr>
+                        ))}
+                      </thead>
+                      <tbody>
+                        {table.getRowModel().rows.map(row => (
+                          <tr key={row.id} className='hover:bg-gray-50'>
+                            {row.getVisibleCells().map(cell => (
+                              <td key={cell.id} className='border border-gray-200 px-3 py-2'>
+                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                              </td>
+                            ))}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <Typography variant='caption' display='block' sx={{ mt: 1, textAlign: 'center' }}>
+                    Hiển thị {startRow}-{endRow} / {totalRows} proxy
+                  </Typography>
+                </>
+              ) : (
+                <Box sx={{ textAlign: 'center', py: 4 }}>
+                  <Typography variant='body1' color='text.secondary'>
+                    Đơn hàng này chưa có proxy nào
+                  </Typography>
+                </Box>
+              )}
+            </>
+          ) : (
+            <Box sx={{ textAlign: 'center', py: 4 }}>
+              <Typography variant='body1' color='text.secondary'>
+                Không có dữ liệu đơn hàng
+              </Typography>
+            </Box>
+          )}
+
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'end'
+            }}
+          >
+            <Pagination
+              count={table.getPageCount()}
+              shape='rounded'
+              variant='outlined'
+              color='primary'
+              size={'small'}
+              page={table.getState().pagination.pageIndex + 1}
+              onChange={(event, page) => {
+                table.setPageIndex(page - 1)
+              }}
+            />
+          </Box>
+        </DialogContent>
+      </Dialog>
+
+      <DetailProxy isOpen={false} />
+    </>
   )
 }
 
