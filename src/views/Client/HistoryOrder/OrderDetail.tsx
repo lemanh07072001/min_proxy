@@ -27,11 +27,9 @@ import {
   Clock,
   Clock3,
   BadgeCheck,
-  TriangleAlert,
   BadgeAlert,
   BadgeMinus,
   CircleQuestionMark,
-  X,
   Eye,
   FileDown
 } from 'lucide-react'
@@ -82,6 +80,7 @@ interface OrderDetailProps {
       type: string
       name: string
       price: number
+      ip_version?: string
     }
   } | null
 }
@@ -91,6 +90,8 @@ const OrderDetail: React.FC<OrderDetailProps> = ({ open, onClose, order }) => {
   const [columnFilters, setColumnFilters] = useState<any[]>([])
   const [rowSelection, setRowSelection] = useState({})
   const [sorting, setSorting] = useState<any[]>([])
+  const [isOpen, setIsOpen] = useState(false)
+  const [dataApiKey, setDataApiKey] = useState()
   const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 })
   const [, copy] = useCopy()
 
@@ -103,7 +104,7 @@ const OrderDetail: React.FC<OrderDetailProps> = ({ open, onClose, order }) => {
     () => [
       {
         id: 'select',
-        header: ({ table }) => (
+        header: ({ table }: { table: any }) => (
           <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
             <FormControlLabel
               sx={{
@@ -122,7 +123,7 @@ const OrderDetail: React.FC<OrderDetailProps> = ({ open, onClose, order }) => {
             />
           </div>
         ),
-        cell: ({ row }) => (
+        cell: ({ row }: { row: any }) => (
           <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
             <FormControlLabel
               sx={{
@@ -204,10 +205,11 @@ const OrderDetail: React.FC<OrderDetailProps> = ({ open, onClose, order }) => {
         accessorKey: 'protocol',
         header: 'Loại',
         cell: ({ row }: { row: any }) => {
-          const proxys = row.original.proxys || {}
-          const keys = Object.keys(proxys).filter(k => k !== 'loaiproxy')
+          // const proxys = row.original.proxys || {}
+          // const keys = Object.keys(proxys).filter(k => k !== 'loaiproxy')
 
-          return <b>{keys[0]?.toUpperCase() || '-'}</b>
+          // return <b>{keys[0]?.toUpperCase() || '-'}</b>
+          return 'HTTP/SOCKS5'
         },
         size: 80
       },
@@ -224,17 +226,6 @@ const OrderDetail: React.FC<OrderDetailProps> = ({ open, onClose, order }) => {
         size: 200
       },
       {
-        accessorKey: 'buy_at',
-        header: 'Ngày mua',
-        cell: ({ row }: { row: any }) => (
-          <div className='flex items-center gap-1'>
-            <Clock3 size={14} />
-            <span>{formatDateTimeLocal(row.original.buy_at)}</span>
-          </div>
-        ),
-        size: 200
-      },
-      {
         accessorKey: 'expired_at',
         header: 'Ngày hết hạn',
         cell: ({ row }: { row: any }) => (
@@ -248,6 +239,8 @@ const OrderDetail: React.FC<OrderDetailProps> = ({ open, onClose, order }) => {
       {
         header: 'Action',
         cell: ({ row }: { row: any }) => {
+          console.log(row.original)
+
           return (
             <>
               <CustomIconButton
@@ -255,8 +248,8 @@ const OrderDetail: React.FC<OrderDetailProps> = ({ open, onClose, order }) => {
                 color='info'
                 variant='tonal'
                 onClick={() => {
-                  // setSelectedOrder(row.original) // lưu dữ liệu dòng hiện tại
-                  // setOpen(true) // mở modal
+                  setDataApiKey(row.original.api_key) // lưu dữ liệu dòng hiện tại
+                  setIsOpen(true) // mở modal
                 }}
               >
                 <Eye size={16} />
@@ -584,7 +577,7 @@ const OrderDetail: React.FC<OrderDetailProps> = ({ open, onClose, order }) => {
         </DialogContent>
       </Dialog>
 
-      <DetailProxy isOpen={false} />
+      <DetailProxy isOpen={isOpen} handleClose={() => setIsOpen(false)} apiKey={dataApiKey as any} />
     </>
   )
 }
