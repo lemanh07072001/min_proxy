@@ -2,12 +2,21 @@
 
 import { useEffect, useMemo, useState } from 'react'
 
-
 import Image from 'next/image'
 
 import { Button } from '@mui/material'
 
-import { TriangleAlert, CircleQuestionMark, BadgeCheck, BadgeMinus, List, Clock3, Clock, Eye } from 'lucide-react'
+import {
+  TriangleAlert,
+  CircleQuestionMark,
+  BadgeCheck,
+  BadgeMinus,
+  List,
+  Clock3,
+  Clock,
+  Eye,
+  BadgeAlert
+} from 'lucide-react'
 
 import {
   useReactTable,
@@ -26,13 +35,14 @@ import Pagination from '@mui/material/Pagination'
 
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 
+import { io } from 'socket.io-client'
+
 import CustomIconButton from '@core/components/mui/IconButton'
 
 import useAxiosAuth from '@/hocs/useAxiosAuth'
 import { useCopy } from '@/app/hooks/useCopy'
 import { formatDateTimeLocal } from '@/utils/formatDate'
 import OrderDetail from './OrderDetail'
-import { io } from 'socket.io-client'
 
 export default function HistoryOrderPage() {
   const [columnFilters, setColumnFilters] = useState<any[]>([])
@@ -52,7 +62,11 @@ export default function HistoryOrderPage() {
   const axiosAuth = useAxiosAuth()
   const [, copy] = useCopy()
 
-  const { data: dataOrders = [], isLoading, refetch } = useQuery({
+  const {
+    data: dataOrders = [],
+    isLoading,
+    refetch
+  } = useQuery({
     queryKey: ['orderProxyStatic'],
     queryFn: async () => {
       const res = await axiosAuth.get('/get-order')
@@ -64,14 +78,12 @@ export default function HistoryOrderPage() {
     staleTime: 0
   })
 
-
-
   const getStatusBadge = (status: string) => {
     switch (status) {
       case '0':
-        return <Chip label='Chờ xử lý' size='small' icon={<BadgeCheck />} color='warning' />
+        return <Chip label='Chờ xử lý' size='small' icon={<BadgeAlert />} color='warning' />
       case '2':
-        return <Chip label='Hoàn thành' size='small' icon={<TriangleAlert />} color='success' />
+        return <Chip label='Hoàn thành' size='small' icon={<BadgeCheck />} color='success' />
       case '3':
         return <Chip label='Thất bại' size='small' icon={<BadgeMinus />} color='error' />
       default:
@@ -208,7 +220,6 @@ export default function HistoryOrderPage() {
 
     socket.on('connect', () => console.log('✅ Connected to socket:', socket.id))
     socket.on('order_completed', data => {
-
       queryClient.invalidateQueries({ queryKey: ['orderProxyStatic'] })
       setTimeout(() => {
         void refetch()

@@ -6,7 +6,7 @@ import { Globe } from 'lucide-react'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: `${process.env.NEXT_PUBLIC_APP_NAME} | Lịch sử đơn hàng`,
+  title: `${process.env.NEXT_PUBLIC_APP_NAME} | Lịch sử đơn hàng`
 }
 
 export default function HistoryOrder() {

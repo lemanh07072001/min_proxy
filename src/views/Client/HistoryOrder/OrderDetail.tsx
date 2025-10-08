@@ -6,14 +6,13 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
-  DialogActions,
   Button,
   Typography,
   Box,
   Chip,
-  Pagination
+  Pagination,
+  FormControlLabel
 } from '@mui/material'
-
 import {
   useReactTable,
   getCoreRowModel,
@@ -22,19 +21,31 @@ import {
   getPaginationRowModel,
   getSortedRowModel
 } from '@tanstack/react-table'
-
-import { Copy, Clock, Clock3, BadgeCheck, TriangleAlert, BadgeMinus, CircleQuestionMark, X } from 'lucide-react'
+import Checkbox from '@mui/material/Checkbox'
+import {
+  Copy,
+  Clock,
+  Clock3,
+  BadgeCheck,
+  TriangleAlert,
+  BadgeAlert,
+  BadgeMinus,
+  CircleQuestionMark,
+  X,
+  FileDown
+} from 'lucide-react'
 
 import { formatDateTimeLocal } from '@/utils/formatDate'
 import { useCopy } from '@/app/hooks/useCopy'
+import CustomIconButton from '@core/components/mui/IconButton'
 
 // Badge trạng thái
 const getStatusBadge = (status: string) => {
   switch (status) {
     case '0':
-      return <Chip label='Chờ xử lý' size='small' icon={<BadgeCheck />} color='warning' />
+      return <Chip label='Chờ xử lý' size='small' icon={<BadgeAlert />} color='warning' />
     case '2':
-      return <Chip label='Hoàn thành' size='small' icon={<TriangleAlert />} color='success' />
+      return <Chip label='Hoàn thành' size='small' icon={<BadgeCheck />} color='success' />
     case '5':
       return <Chip label='Hết hạn' size='small' icon={<BadgeMinus />} color='error' />
     default:
@@ -89,10 +100,48 @@ const OrderDetail: React.FC<OrderDetailProps> = ({ open, onClose, order }) => {
   const columns = useMemo(
     () => [
       {
-        accessorKey: 'id',
-        header: 'ID',
+        id: 'select',
+        header: ({ table }) => (
+          <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+            <FormControlLabel
+              sx={{
+                '&.MuiFormControlLabel-root': {
+                  margin: 0
+                }
+              }}
+              control={
+                <Checkbox
+                  checked={table.getIsAllRowsSelected()}
+                  indeterminate={table.getIsSomeRowsSelected()}
+                  onChange={table.getToggleAllRowsSelectedHandler()}
+                />
+              }
+              label=''
+            />
+          </div>
+        ),
+        cell: ({ row }) => (
+          <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+            <FormControlLabel
+              sx={{
+                '&.MuiFormControlLabel-root': {
+                  margin: 0
+                }
+              }}
+              control={
+                <Checkbox
+                  checked={row.getIsSelected()}
+                  disabled={!row.getCanSelect()}
+                  onChange={row.getToggleSelectedHandler()}
+                />
+              }
+              label=''
+            />
+          </div>
+        ),
         size: 60
       },
+
       {
         accessorKey: 'proxy',
         header: order?.type_servi?.type === '0' ? 'Proxy' : 'Proxy API',
@@ -145,8 +194,6 @@ const OrderDetail: React.FC<OrderDetailProps> = ({ open, onClose, order }) => {
       {
         header: 'Tên',
         cell: ({ row }: { row: any }) => {
-          console.log(order)
-
           return <span className='text-red'>{order?.type_servi?.name}</span>
         },
         size: 150
@@ -221,7 +268,104 @@ const OrderDetail: React.FC<OrderDetailProps> = ({ open, onClose, order }) => {
   const startRow = totalRows ? pageIndex * pageSize + 1 : 0
   const endRow = Math.min(startRow + pageSize - 1, totalRows)
 
-  // ----------------- Render -----------------
+  const selectedCount = table.getFilteredSelectedRowModel().rows.length
+
+  // Function to copy all selected API keys
+  const handleCopySelected = () => {
+    const selectedRows = table.getFilteredSelectedRowModel().rows
+
+    if (selectedRows.length === 0) return
+
+    let textToCopy = ''
+
+    if (order?.type_servi?.type === '0') {
+      // For regular proxies
+      selectedRows.forEach((row, index) => {
+        const proxys = row.original.proxys || {}
+
+        const proxyValues = Object.entries(proxys)
+          .filter(([key]) => key !== 'loaiproxy')
+          .map(([_, value]) => value)
+
+        const firstProxy = proxyValues[0]
+
+        if (firstProxy && firstProxy !== '-') {
+          textToCopy += firstProxy
+          if (index < selectedRows.length - 1) textToCopy += '\n'
+        }
+      })
+    } else {
+      // For API keys
+      selectedRows.forEach((row, index) => {
+        const apiKey = row.original?.api_key
+
+        if (apiKey && apiKey !== '-') {
+          textToCopy += apiKey
+          if (index < selectedRows.length - 1) textToCopy += '\n'
+        }
+      })
+    }
+
+    if (textToCopy) {
+      copy(textToCopy, `Đã copy ${selectedCount} ${order?.type_servi?.type === '0' ? 'proxy' : 'API key'}!`)
+    }
+  }
+
+  // Function to download selected API keys as .txt file
+  const handleDownloadSelected = () => {
+    const selectedRows = table.getFilteredSelectedRowModel().rows
+
+    if (selectedRows.length === 0) return
+
+    let content = ''
+    const itemType = order?.type_servi?.type === '0' ? 'proxy' : 'api_key'
+
+    if (order?.type_servi?.type === '0') {
+      // For regular proxies
+      selectedRows.forEach((row, index) => {
+        const proxys = row.original.proxys || {}
+
+        const proxyValues = Object.entries(proxys)
+          .filter(([key]) => key !== 'loaiproxy')
+          .map(([_, value]) => value)
+
+        const firstProxy = proxyValues[0]
+
+        if (firstProxy && firstProxy !== '-') {
+          content += firstProxy
+          if (index < selectedRows.length - 1) content += '\n'
+        }
+      })
+    } else {
+      // For API keys
+      selectedRows.forEach((row, index) => {
+        const apiKey = row.original?.api_key
+
+        if (apiKey && apiKey !== '-') {
+          content += apiKey
+          if (index < selectedRows.length - 1) content += '\n'
+        }
+      })
+    }
+
+    if (content) {
+      // Create blob and download
+      const blob = new Blob([content], { type: 'text/plain;charset=utf-8' })
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+
+      link.href = url
+      link.download = `${order?.order_code || 'order'}_${itemType}s_${new Date().toISOString().split('T')[0]}.txt`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(url)
+
+      // Show success message
+      copy('', `Đã tải xuống ${selectedCount} key`)
+    }
+  }
+
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth='xl' aria-labelledby='order-detail-dialog'>
       <DialogTitle
@@ -302,9 +446,45 @@ const OrderDetail: React.FC<OrderDetailProps> = ({ open, onClose, order }) => {
             </Box>
 
             {/* Proxy List */}
-            <Typography variant='h6' sx={{ mb: 2 }}>
-              Danh sách proxy ({totalRows} proxy)
-            </Typography>
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                paddingY: '10px'
+              }}
+            >
+              <Typography variant='h6' sx={{ mb: 2 }}>
+                Danh sách proxy ({totalRows} proxy)
+              </Typography>
+              {selectedCount > 0 && (
+                <Box sx={{ display: 'flex', gap: '10px' }}>
+                  <Typography sx={{ fontSize: '12px', display: 'flex', alignItems: 'center' }}>
+                    Số lượng: {selectedCount}
+                  </Typography>
+                  <CustomIconButton
+                    aria-label='copy selected'
+                    size='small'
+                    color='success'
+                    variant='outlined'
+                    sx={{ fontSize: '14px', gap: '5px' }}
+                    onClick={handleCopySelected}
+                  >
+                    <Copy size={16} /> Copy
+                  </CustomIconButton>
+                  <CustomIconButton
+                    aria-label='download selected'
+                    size='small'
+                    color='warning'
+                    variant='outlined'
+                    sx={{ fontSize: '14px', gap: '5px' }}
+                    onClick={handleDownloadSelected}
+                  >
+                    <FileDown size={16} /> Download
+                  </CustomIconButton>
+                </Box>
+              )}
+            </Box>
 
             {dataOrder.length > 0 ? (
               <>
