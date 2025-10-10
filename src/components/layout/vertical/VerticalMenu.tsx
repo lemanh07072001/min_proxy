@@ -296,7 +296,11 @@ const VerticalMenu = ({ scrollMenu, dictionary }: Props) => {
           <MenuItem icon={<User size={20} strokeWidth={1.5} />} rootStyles={baseMenuItemStyles}>
             {dictionary['navigation'].guide}
           </MenuItem>
-          <MenuItem icon={<MessageCircleQuestionMark size={20} strokeWidth={1.5} />} rootStyles={baseMenuItemStyles}>
+          <MenuItem
+            icon={<MessageCircleQuestionMark size={20} strokeWidth={1.5} />}
+            rootStyles={baseMenuItemStyles}
+            href={`/${locale}/contact`}
+          >
             {dictionary['navigation'].support}
           </MenuItem>
         </MenuSection>
