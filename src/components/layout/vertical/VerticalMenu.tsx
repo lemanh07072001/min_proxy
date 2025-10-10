@@ -328,6 +328,16 @@ const VerticalMenu = ({ scrollMenu, dictionary }: Props) => {
               </MenuItem>
             )}
 
+            {hasPermission('admin.users') && (
+              <MenuItem
+                icon={<User size={20} strokeWidth={1.5} />}
+                rootStyles={getMenuItemStyles('admin/users')}
+                href={`/${locale}/admin/users`}
+              >
+                Quản lý tài khoản
+              </MenuItem>
+            )}
+
             {/* <SubMenu
               label='Quản lý User'
               icon={<Users size={20} strokeWidth={1.5} />}

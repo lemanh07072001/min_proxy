@@ -47,6 +47,8 @@ export default function UserWithdrawalTable() {
     }
   })
 
+  console.log(dataWithdrawal)
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 1:
@@ -68,7 +70,7 @@ export default function UserWithdrawalTable() {
             <>
               <div className='d-flex align-items-center  gap-1 '>
                 <Clock3 size={14} />
-                <div style={{ marginTop: '2px' }}>{formatDateTimeLocal(row.original?.created_at)}</div>
+                <div style={{ marginTop: '2px' }}>{formatDateTimeLocal(row.original?.thoigian)}</div>
               </div>
             </>
           )
@@ -79,7 +81,7 @@ export default function UserWithdrawalTable() {
         accessorKey: 'email',
         header: 'Email',
         cell: ({ row }) => {
-          return row.original.user?.email
+          return row.original.email
         },
         size: 60
       },
@@ -88,34 +90,35 @@ export default function UserWithdrawalTable() {
         cell: ({ row }) => {
           return (
             <span className='text-red'>
-              {new Intl.NumberFormat('vi-VN').format(row.original.user?.sotiennap) + ' đ'}
+              {new Intl.NumberFormat('vi-VN').format(row.original.sotienthaydoi) + ' đ' ?? 0}
             </span>
           )
         },
         size: 10
-      },
-      {
-        header: 'Thu nhập',
-        cell: ({ row }) => {
-          // 1. Tính toán giá trị cần hiển thị (phần trăm hoa hồng)
-          const incomeValue = (row.original?.sotienthaydoi * session.user.affiliate_percent) / 100
-
-          // 2. Định dạng số theo chuẩn Việt Nam (ví dụ: 100.000)
-          const formattedValue = new Intl.NumberFormat('vi-VN').format(incomeValue)
-
-          // 3. Hiển thị kết quả bằng cách nối chuỗi đơn vị tiền tệ
-          return <span className='text-red'>{formattedValue} đ</span>
-        },
-        size: 10
-      },
-
-      {
-        header: 'Trạng thái',
-        cell: ({ row }) => {
-          return getStatusBadge(row.original?.is_payment_affiliate)
-        },
-        size: 10
       }
+
+      // {
+      //   header: 'Thu nhập',
+      //   cell: ({ row }) => {
+      //     // 1. Tính toán giá trị cần hiển thị (phần trăm hoa hồng)
+      //     const incomeValue = (row.original?.sotienthaydoi * session.user.affiliate_percent) / 100
+
+      //     // 2. Định dạng số theo chuẩn Việt Nam (ví dụ: 100.000)
+      //     const formattedValue = new Intl.NumberFormat('vi-VN').format(incomeValue)
+
+      //     // 3. Hiển thị kết quả bằng cách nối chuỗi đơn vị tiền tệ
+      //     return <span className='text-red'>{formattedValue} đ</span>
+      //   },
+      //   size: 10
+      // },
+
+      // {
+      //   header: 'Trạng thái',
+      //   cell: ({ row }) => {
+      //     return getStatusBadge(row.original?.is_payment_affiliate)
+      //   },
+      //   size: 10
+      // }
     ],
     []
   )
