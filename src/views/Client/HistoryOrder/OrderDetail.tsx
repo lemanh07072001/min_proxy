@@ -239,8 +239,6 @@ const OrderDetail: React.FC<OrderDetailProps> = ({ open, onClose, order }) => {
       {
         header: 'Action',
         cell: ({ row }: { row: any }) => {
-          console.log(row.original)
-
           return (
             <>
               <CustomIconButton

@@ -15,6 +15,9 @@ import { Box } from '@mui/material'
 
 import { CheckCheck, Copy } from 'lucide-react'
 
+import TimeProxyRotating from './TimeProxyRotating'
+import TimeProxyDie from './TimeProxyDie'
+
 import DialogCloseButton from '@components/modals/DialogCloseButton'
 import useAxiosAuth from '@/hocs/useAxiosAuth'
 import { useCopy } from '@/app/hooks/useCopy'
@@ -51,6 +54,8 @@ const DetailProxy = ({ isOpen, handleClose, apiKey }: DetailModalProps) => {
       setIsLoading(false)
     }
   }
+
+  console.log(proxyData)
 
   useEffect(() => {
     if (!isOpen || !apiKey) return
@@ -174,6 +179,58 @@ const DetailProxy = ({ isOpen, handleClose, apiKey }: DetailModalProps) => {
                   </div>
                 </div>
               </Box>
+
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <div className='group w-full'>
+                  <label className='flex items-center gap-2 text-sm font-semibold text-slate-700 mb-3'>Vị Trí</label>
+                  <div className='relative'>
+                    <input
+                      type='text'
+                      value={proxyData[0]['location'] ?? '-'}
+                      readOnly
+                      className='w-full px-4 py-3.5 pr-12 bg-slate-50 border-2 border-slate-200 rounded-xl text-slate-700 font-mono text-sm focus:outline-none focus:border-emerald-500 focus:bg-white transition-all'
+                    />
+                    <button
+                      onClick={() => copyIp(String(proxyData[0]['location'] ?? ''))}
+                      className='absolute right-2 top-1/2 -translate-y-1/2 p-2.5 hover:bg-slate-200 rounded-lg transition-colors group'
+                      title='Copy to clipboard'
+                    >
+                      {isIpCopied ? (
+                        <CheckCheck className='w-4 h-4 text-emerald-600' />
+                      ) : (
+                        <Copy className='w-4 h-4 text-slate-500 group-hover:text-slate-700' />
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </Box>
+
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <div className='group w-full'>
+                  <label className='flex items-center gap-2 text-sm font-semibold text-slate-700 mb-3'>Nhà mạng</label>
+                  <div className='relative'>
+                    <input
+                      type='text'
+                      value={proxyData[0]['network'] ?? '-'}
+                      readOnly
+                      className='w-full px-4 py-3.5 pr-12 bg-slate-50 border-2 border-slate-200 rounded-xl text-slate-700 font-mono text-sm focus:outline-none focus:border-emerald-500 focus:bg-white transition-all'
+                    />
+                    <button
+                      onClick={() => copyIp(String(proxyData[0]['network'] ?? ''))}
+                      className='absolute right-2 top-1/2 -translate-y-1/2 p-2.5 hover:bg-slate-200 rounded-lg transition-colors group'
+                      title='Copy to clipboard'
+                    >
+                      {isIpCopied ? (
+                        <CheckCheck className='w-4 h-4 text-emerald-600' />
+                      ) : (
+                        <Copy className='w-4 h-4 text-slate-500 group-hover:text-slate-700' />
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </Box>
+              <TimeProxyRotating expiresAt={proxyData[0]['time_rotating'] ?? 0} />
+              <TimeProxyDie expiresAt={proxyData[0]['time_die'] ?? 0} />
             </Box>
           ) : (
             !isLoading && !error && <Typography>Không có dữ liệu</Typography>
