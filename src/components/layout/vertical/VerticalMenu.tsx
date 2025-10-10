@@ -298,7 +298,7 @@ const VerticalMenu = ({ scrollMenu, dictionary }: Props) => {
           </MenuItem>
           <MenuItem
             icon={<MessageCircleQuestionMark size={20} strokeWidth={1.5} />}
-            rootStyles={baseMenuItemStyles}
+            rootStyles={getMenuItemStyles('contact')}
             href={`/${locale}/contact`}
           >
             {dictionary['navigation'].support}
