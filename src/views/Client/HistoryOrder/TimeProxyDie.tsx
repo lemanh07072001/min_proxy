@@ -39,9 +39,7 @@ export default function ProxyDie({ expiresAt }: CountdownProps) {
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
       <div className='group w-full'>
-        <label className='flex items-center gap-2 text-sm font-semibold text-slate-700 mb-3'>
-          ⏳ Thời gian còn lại
-        </label>
+        <label className='flex items-center gap-2 text-sm font-semibold text-slate-700 mb-3'>Thời gian còn lại</label>
         <div className='relative'>
           <input
             type='text'
