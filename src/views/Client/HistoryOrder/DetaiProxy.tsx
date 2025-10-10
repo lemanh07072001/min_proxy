@@ -229,7 +229,6 @@ const DetailProxy = ({ isOpen, handleClose, apiKey }: DetailModalProps) => {
                   </div>
                 </div>
               </Box>
-              <TimeProxyRotating expiresAt={proxyData[0]['time_rotating'] ?? 0} />
               <TimeProxyDie expiresAt={proxyData[0]['time_die'] ?? 0} />
             </Box>
           ) : (
