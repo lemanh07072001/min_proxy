@@ -7,7 +7,8 @@ import type { MouseEvent } from 'react'
 import { useRouter } from 'next/navigation'
 
 // Next Imports
-import { useParams } from 'next/navigation';
+import { useParams } from 'next/navigation'
+
 // MUI Imports
 import Badge from '@mui/material/Badge'
 import Avatar from '@mui/material/Avatar'
@@ -26,8 +27,9 @@ import { signOut, useSession } from 'next-auth/react'
 
 import Box from '@mui/material/Box'
 
-import { useSettings } from '@core/hooks/useSettings'
 import { useDispatch } from 'react-redux'
+
+import { useSettings } from '@core/hooks/useSettings'
 import { clearUser } from '@/store/userSlice'
 
 import ConfirmDialog from '@components/confirm-modal/ConfirmDialog'
@@ -46,8 +48,9 @@ const UserDropdown = () => {
 
   // Fallback to useSession nếu không có session từ props (backward compatibility)
   const session = useSession()
-  const params = useParams();
-  const lang = params.lang || 'vi';
+  const params = useParams()
+  const lang = params.lang || 'vi'
+
   // Hooks
   const router = useRouter()
   const dispatch = useDispatch()
@@ -76,13 +79,13 @@ const UserDropdown = () => {
     try {
       // Clear Redux store trước
       dispatch(clearUser())
-      
+
       // Clear session và redirect về trang proxy-tinh
-      await signOut({ 
+      await signOut({
         redirect: false,
         callbackUrl: `/${lang}/proxy-tinh`
       })
-      
+
       // Force reload để clear tất cả state
       window.location.href = `/${lang}/proxy-tinh`
     } catch (error) {
@@ -105,7 +108,7 @@ const UserDropdown = () => {
             <Avatar
               ref={anchorRef}
               alt='John Doe'
-              src='/images/avatars/1.png'
+              src={session?.data?.user?.avatar ? session?.data?.user?.avatar : '/images/avatars/1.png'}
               className='cursor-pointer bs-[24px] is-[24px]'
             />
             <Typography
@@ -140,7 +143,10 @@ const UserDropdown = () => {
                 <ClickAwayListener onClickAway={e => handleDropdownClose(e as MouseEvent | TouchEvent)}>
                   <MenuList>
                     <div className='flex items-center plb-2 pli-6 gap-2' tabIndex={-1}>
-                      <Avatar alt='John Doe' src='/images/avatars/1.png' />
+                      <Avatar
+                        alt='John Doe'
+                        src={session?.data?.user?.avatar ? session?.data?.user?.avatar : '/images/avatars/1.png'}
+                      />
                       <div className='flex items-start flex-col'>
                         <Typography className='font-medium' color='text.primary'>
                           {session?.data?.user?.name}
@@ -153,10 +159,11 @@ const UserDropdown = () => {
                       <i className='tabler-user' />
                       <Typography color='text.primary'>My Profile</Typography>
                     </MenuItem> */}
-                    <MenuItem 
+                    <MenuItem
                       className='mli-2 gap-3'
                       onClick={() => {
                         const { lang } = params
+
                         router.push(`/${lang}/profile`)
                       }}
                     >

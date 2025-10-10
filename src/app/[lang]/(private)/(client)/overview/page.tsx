@@ -193,12 +193,10 @@ async function getUser(accessToken: string) {
 }
 
 export default async function Overview() {
-  const { access_token } = await getServerSession(authOptions)
+  const session = await getServerSession(authOptions)
 
-  if (!access_token) return null
-  const user = await getUser(access_token)
-
-  console.log(user)
+  if (!session.access_token) return null
+  const user = await getUser(session.access_token)
 
   return (
     <>
@@ -207,7 +205,10 @@ export default async function Overview() {
           <div className='lg:col-span-7'>
             <BoxCustom>
               <div className='flex items-center h-full'>
-                <Avatar src='/images/avatars/1.png' alt='Victor Anderson' />
+                <Avatar
+                  src={session?.user?.avatar ? session?.user?.avatar : '/images/avatars/1.png'}
+                  alt='Victor Anderson'
+                />
                 <div className='ms-3'>
                   <Typography
                     sx={{

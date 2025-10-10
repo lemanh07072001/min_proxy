@@ -4,9 +4,13 @@ import { useState, useRef } from 'react'
 
 import { User, Lock, Settings, Camera } from 'lucide-react'
 
+import { useSession } from 'next-auth/react'
+import Alert from '@mui/material/Alert'
+
 import AccountInfo from './AccountInfo'
 import ChangePassword from './ChangePassword'
 import SettingsPanel from './SettingsPanel'
+import useAxiosAuth from '@/hocs/useAxiosAuth'
 
 type TabType = 'account' | 'password' | 'settings'
 
@@ -27,23 +31,42 @@ interface ProfileProps {
 export default function ProfilePage({ dataProfile }: ProfileProps) {
   const [activeTab, setActiveTab] = useState<TabType>('account')
   const [avatar, setAvatar] = useState<string | null>(null)
+  const [message, setMessage] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const axiosAuth = useAxiosAuth()
+  const { data: session, status } = useSession()
 
   const handleAvatarClick = () => {
     fileInputRef.current?.click()
   }
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
 
-    if (file) {
-      const reader = new FileReader()
+    if (!file) return
 
-      reader.onloadend = () => {
-        setAvatar(reader.result as string)
-      }
+    // Hiển thị preview
+    const reader = new FileReader()
 
-      reader.readAsDataURL(file)
+    reader.onloadend = () => setAvatar(reader.result as string)
+    reader.readAsDataURL(file)
+
+    // 🔹 Gửi API upload
+    const formData = new FormData()
+
+    formData.append('avatar', file)
+
+    try {
+      const res = await axiosAuth.post('/user/avatar', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      })
+
+      setMessage('Đổi ảnh thành công! Vui lòng đăng xuất để cập nhật.')
+      console.log('Avatar uploaded:', res.data)
+    } catch (error: any) {
+      console.error('❌ Upload failed:', error.response?.data || error.message)
     }
   }
 
@@ -55,6 +78,12 @@ export default function ProfilePage({ dataProfile }: ProfileProps) {
 
   return (
     <div className=''>
+      {message && (
+        <Alert severity='success' sx={{ textAlign: 'center' }}>
+          {message}
+        </Alert>
+      )}
+
       <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8'>
         <div className='grid grid-cols-1 lg:grid-cols-4 gap-6'>
           <div className='lg:col-span-1'>
@@ -64,9 +93,16 @@ export default function ProfilePage({ dataProfile }: ProfileProps) {
                   <div className='relative group'>
                     <div className='w-24 h-24 bg-white rounded-full flex items-center justify-center shadow-lg overflow-hidden'>
                       {avatar ? (
-                        <img src={avatar} alt='Avatar' className='w-full h-full object-cover' />
+                        // 👉 Ảnh xem trước (base64 hoặc URL blob)
+                        <img src={avatar} alt='Preview Avatar' className='w-full h-full object-cover' />
+                      ) : session?.user?.avatar ? (
+                        // 👉 Ảnh avatar hiện tại từ session
+                        <img src={session.user.avatar} alt='Avatar' className='w-full h-full object-cover' />
                       ) : (
-                        <span className='text-4xl font-bold text-orange-600'>A</span>
+                        // 👉 Chưa có ảnh => hiển thị ký tự đầu tên
+                        <span className='text-4xl font-bold text-orange-600'>
+                          {session?.user?.name?.charAt(0)?.toUpperCase() || 'A'}
+                        </span>
                       )}
                     </div>
                     <button
