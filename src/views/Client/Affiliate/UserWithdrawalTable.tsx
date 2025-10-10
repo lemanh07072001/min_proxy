@@ -47,8 +47,6 @@ export default function UserWithdrawalTable() {
     }
   })
 
-  console.log(dataWithdrawal)
-
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 1:
@@ -70,7 +68,7 @@ export default function UserWithdrawalTable() {
             <>
               <div className='d-flex align-items-center  gap-1 '>
                 <Clock3 size={14} />
-                <div style={{ marginTop: '2px' }}>{formatDateTimeLocal(row.original?.thoigian)}</div>
+                <div style={{ marginTop: '2px' }}>{formatDateTimeLocal(row.original?.created_at)}</div>
               </div>
             </>
           )
@@ -86,13 +84,20 @@ export default function UserWithdrawalTable() {
         size: 60
       },
       {
-        header: 'Số tiền nạp',
+        header: 'Tổng số tiền nạp',
         cell: ({ row }) => {
           return (
             <span className='text-red'>
               {new Intl.NumberFormat('vi-VN').format(row.original.sotienthaydoi) + ' đ' ?? 0}
             </span>
           )
+        },
+        size: 10
+      },
+      {
+        header: 'Tổng số giao dịch',
+        cell: ({ row }) => {
+          return <span className='text-red'>{row.original.tonggiaodich}</span>
         },
         size: 10
       }
