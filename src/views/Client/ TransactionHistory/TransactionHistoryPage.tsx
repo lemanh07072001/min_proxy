@@ -70,14 +70,14 @@ export default function TransactionHistoryPage() {
           } else if (row.original.type === 'BUY') {
             return (
               <div>
-                <Chip label='Mua' size='small' color='primary' style={{ color: '#fff' }} />
+                <Chip label='Mua' size='small' color='info' style={{ color: '#fff' }} />
                 <span className='font-sm ms-2'>{row.original.noidung}</span>
               </div>
             )
-          }else if (row.original.type === 'REFUND') {
+          } else if (row.original.type === 'REFUND') {
             return (
               <div>
-                <Chip label='Tiêu' size='small' color='primary' style={{ color: '#fff' }} />
+                <Chip label='Hoàn' size='small' color='error' style={{ color: '#fff' }} />
                 <span className='font-sm ms-2'>{row.original.noidung}</span>
               </div>
             )
