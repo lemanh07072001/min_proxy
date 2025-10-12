@@ -70,7 +70,7 @@ export default function TransactionHistoryPage() {
           } else if (row.original.type === 'BUY') {
             return (
               <div>
-                <Chip  label='Mua' size='small' color='info' style={{ color: '#fff' }} />
+                <Chip label='Mua' size='small' color='info' style={{ color: '#fff' }} />
                 <span className='font-sm ms-2'>{row.original.noidung}</span>
               </div>
             )
