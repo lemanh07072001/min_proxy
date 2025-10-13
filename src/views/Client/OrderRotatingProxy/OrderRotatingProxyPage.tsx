@@ -329,7 +329,7 @@ export default function OrderRotatingProxyPage() {
                 <h5 className='mb-0 font-semibold'>Danh sách proxy xoay</h5>
               </div> */}
             </div>
-            <div>
+            {/* <div>
               <div className='bg-white'>
                 <div className='flex items-center justify-end'>
                   <div className='flex bg-gray-100 rounded-lg p-1'>
@@ -354,12 +354,10 @@ export default function OrderRotatingProxyPage() {
                   </div>
                 </div>
               </div>
-            </div>
+            </div> */}
           </div>
 
-          {/* Table */}
-          {currentView === 'table' && (
-            <div className='table-container'>
+          <div className='table-container'>
               {/* Table */}
               <div className='table-wrapper'>
                 <table className='data-table' style={isLoading || dataOrders.length === 0 ? { height: '100%' } : {}}>
@@ -464,9 +462,6 @@ export default function OrderRotatingProxyPage() {
                 </div>
               </div>
             </div>
-          )}
-
-          {currentView === 'api' && <ApiUsage />}
         </div>
       </div>
 

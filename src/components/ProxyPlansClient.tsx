@@ -8,13 +8,14 @@ import { useQueryClient } from '@tanstack/react-query'
 
 import RotatingProxyPage from '@views/Client/RotatingProxy/RotatingProxyPage'
 import OrderRotatingProxyPage from '@/views/Client/OrderRotatingProxy/OrderRotatingProxyPage'
+import ApiUsage from '@/views/Client/OrderRotatingProxy/ApiUsage'
 
 interface ProxyPlansClientProps {
   data: any[]
 }
 
 export default function ProxyPlansClient({ data }: ProxyPlansClientProps) {
-  const [currentView, setCurrentView] = useState<'form' | 'table'>('form')
+  const [currentView, setCurrentView] = useState<'form' | 'table' | 'api'>('form')
   const { data: session, status } = useSession()
   const queryClient = useQueryClient()
 
@@ -39,7 +40,7 @@ export default function ProxyPlansClient({ data }: ProxyPlansClientProps) {
                 currentView === 'form' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
               }`}
             >
-              Mua hàng
+              Tạo Order
             </button>
             <button
               disabled={status === 'unauthenticated'}
@@ -49,6 +50,15 @@ export default function ProxyPlansClient({ data }: ProxyPlansClientProps) {
               }`}
             >
               Danh sách
+            </button>
+            <button
+              disabled={status === 'unauthenticated'}
+              onClick={() => setCurrentView('api')}
+              className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${status === 'unauthenticated' ? 'cursor-not-allowed' : ''} ${
+                currentView === 'api' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              API
             </button>
           </div>
         </div>
@@ -63,6 +73,8 @@ export default function ProxyPlansClient({ data }: ProxyPlansClientProps) {
       )}
 
       {currentView === 'table' && <OrderRotatingProxyPage />}
+      
+      {currentView === 'api' && <ApiUsage />}
     </>
   )
 }

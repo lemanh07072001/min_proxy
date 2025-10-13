@@ -117,7 +117,7 @@ export default function ApiUsage() {
   }
 
   return (
-    <div className='flex h-screen bg-gray-50'>
+    <div className='flex  bg-gray-50'>
       {/* API Sidebar */}
       <div className='w-80 bg-white border-r border-gray-200 flex flex-col'>
         {/* API List */}
@@ -143,7 +143,7 @@ export default function ApiUsage() {
 
       {/* Main Content */}
       <div className='flex-1 flex flex-col'>
-        <div className='flex-1 overflow-y-auto p-6'>
+        <div className='flex-1  p-6'>
           <div className='max-w-4xl mx-auto space-y-6'>
             {/* API Endpoint */}
             <div className='bg-white rounded-xl shadow-sm border border-gray-200 p-6'>

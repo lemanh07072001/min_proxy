@@ -81,8 +81,11 @@ export default function UnverifiedEmailModal({
         <div className='space-y-3 pt-2'>
           <button
             onClick={handleResendEmail}
+            style={{
+              background: 'var(--primary-gradient)'
+            }}
             disabled={isResending}
-            className='w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 disabled:from-gray-400 disabled:to-gray-400 text-white font-semibold py-3.5 px-6 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-blue-600/25 hover:shadow-xl hover:shadow-blue-600/30 hover:scale-105 disabled:scale-100 disabled:cursor-not-allowed'
+            className='w-full  disabled:from-gray-400 disabled:to-gray-400 text-white font-semibold py-3.5 px-6 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-blue-600/25 hover:shadow-xl hover:shadow-blue-600/30 hover:scale-105 disabled:scale-100 disabled:cursor-not-allowed'
           >
             {isResending ? (
               <>
