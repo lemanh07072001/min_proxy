@@ -4,9 +4,7 @@ import { useEffect, useState } from 'react'
 
 import { useSearchParams } from 'next/navigation'
 
-import { CheckCircle, Mail, ArrowRight } from 'lucide-react'
-
-import axios from 'axios'
+import { CheckCircle } from 'lucide-react'
 
 export default function VerifyEmailPage() {
   const searchParams = useSearchParams()
