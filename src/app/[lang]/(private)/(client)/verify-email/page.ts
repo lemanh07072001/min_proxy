@@ -1,3 +1,3 @@
 export default function VerifyEmail() {
-  return 'dsa'
+  return 'dsas'
 }
