@@ -4,72 +4,6 @@ import CredentialsProvider from 'next-auth/providers/credentials'
 // import type { NextAuthOptions } from 'next-auth'
 import type { JWT } from 'next-auth/jwt'
 
-// Biến này sẽ lưu trữ promise của lần refresh đang diễn ra.
-let refreshTokenPromise: Promise<JWT | null> | null = null
-
-async function refreshToken(token: JWT): Promise<JWT> {
-  if (refreshTokenPromise) {
-    console.log('🔄 [Server Debounce] Một lần refresh khác đang chạy, đang chờ kết quả...')
-
-    const result = await refreshTokenPromise
-    return result || token
-  }
-
-  // Nếu không có promise nào, tạo một promise mới và gán vào biến toàn cục.
-  refreshTokenPromise = (async () => {
-    console.log('▶️ [Server Refresh] Bắt đầu quá trình làm mới token...')
-
-    try {
-      const res = await fetch(`${process.env.API_URL}/refresh`, {
-        // Dùng API_URL cho server
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token.access_token}`
-        }
-      })
-
-      const refreshedTokens = await res.json()
-
-      console.log(refreshedTokens)
-
-      if (!res.ok) {
-        throw refreshedTokens
-      }
-
-      console.log('✅ [Server Refresh] Token refreshed successfully.')
-
-      const newToken = {
-        ...token,
-        access_token: refreshedTokens.access_token,
-        accessTokenExpires: Date.now() + (refreshedTokens.expires_in || 3600) * 1000,
-        error: undefined
-      }
-
-      console.log('🔄 [Server Refresh] Token mới sẽ hết hạn vào:', new Date(newToken.accessTokenExpires))
-
-      return newToken
-    } catch (error) {
-      console.error('❌ [Server Refresh] Thất bại khi làm mới token:', error)
-
-      return {
-        ...token,
-        error: 'RefreshAccessTokenError'
-      }
-    }
-  })()
-
-  try {
-    // Đợi promise hoàn thành và trả về kết quả
-    const result = await refreshTokenPromise
-    return result || token
-  } finally {
-    // Dọn dẹp promise sau khi nó đã hoàn thành (dù thành công hay thất bại)
-    // để các lần refresh sau có thể được thực hiện.
-    refreshTokenPromise = null
-  }
-}
-
 export const authOptions = {
   providers: [
     CredentialsProvider({
@@ -90,8 +24,17 @@ export const authOptions = {
           const data = await res.json()
 
           // Nếu login thất bại hoặc không có data user -> trả về null
-          if (!res.ok || !data.user) {
-            return null
+          if (!res.ok) {
+            // Laravel gửi về message + type
+            const msg = data?.message || 'Đăng nhập thất bại'
+            const type = data?.type || 'unknown_error'
+
+            // Gắn message + type trong Error
+            const err = new Error(msg)
+
+            // @ts-ignore
+            err.type = type
+            throw err
           }
 
           // Dữ liệu trả về từ authorize sẽ được truyền vào callback `jwt` thông qua tham số `user`
@@ -103,7 +46,7 @@ export const authOptions = {
             userData: data.user
           } as any
         } catch (error) {
-          return null
+          throw new Error(JSON.stringify({ message: error.message, type: error.type || 'unknown_error' }))
         }
       }
     })
@@ -114,7 +57,7 @@ export const authOptions = {
   },
 
   pages: {
-    signIn: '/login',
+    signIn: '/login'
   },
 
   callbacks: {
@@ -141,7 +84,6 @@ export const authOptions = {
     async jwt({ token, user, account, trigger, session }: any) {
       // 1. Khi user đăng nhập lần đầu
       if (user && account) {
-
         return {
           ...token,
           access_token: (user as any).access_token,
@@ -153,7 +95,6 @@ export const authOptions = {
 
       // 2. Khi client gọi `updateSession` để đồng bộ token mới
       if (trigger === 'update' && session?.access_token) {
-
         return {
           ...token,
           access_token: session.access_token,
@@ -185,10 +126,10 @@ export const authOptions = {
       }
 
       // Gửi các thông tin cần thiết về cho client
-      (session as any).user = token.userData || (session as any).user;
-      (session as any).access_token = token.access_token;
-      (session as any).role = (token as any).role;
-      (session as any).error = token.error;
+      ;(session as any).user = token.userData || (session as any).user
+      ;(session as any).access_token = token.access_token
+      ;(session as any).role = (token as any).role
+      ;(session as any).error = token.error
 
       return session
     }
