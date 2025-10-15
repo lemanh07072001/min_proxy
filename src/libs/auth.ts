@@ -120,11 +120,12 @@ export const authOptions = {
 
     async session({ session, token }: any) {
 
+      console.log('token',token)
       session.access_token = token.access_token
       session.refresh_token = token.refresh_token
       session.role = token.role
       session.error = token.error
-
+      console.log('session',session)
       return session
     }
   }

@@ -83,6 +83,7 @@ export async function getServerUserData() {
 
   // Kiểm tra session và access_token trước khi gọi API
   if (!session || !session.access_token) {
+    console.log('⚠️ [getServerUserData] Không có session hoặc access_token')
     return null
   }
 
@@ -97,9 +98,15 @@ export async function getServerUserData() {
     })
 
     if (response.ok) {
-      return await response.json()
+      const userData = await response.json()
+      console.log('✅ [getServerUserData] Lấy user data thành công:', userData)
+      return userData
+    } else {
+      console.log('❌ [getServerUserData] API trả về lỗi:', response.status)
     }
-  } catch (error) {}
+  } catch (error) {
+    console.error('❌ [getServerUserData] Lỗi khi gọi API:', error)
+  }
 
   return null
 }
