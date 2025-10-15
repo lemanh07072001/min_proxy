@@ -125,6 +125,7 @@ export const authOptions = {
       ;(session as any).role = token.role
       ;(session as any).error = token.error
 
+      console.log(session)
       return session
     }
   }
