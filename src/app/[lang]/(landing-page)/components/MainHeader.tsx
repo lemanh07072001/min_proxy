@@ -31,7 +31,6 @@ const MainHeader = () => {
   const { scrollY } = useScroll()
   const { isMobile } = useResponsive()
   const { openAuthModal } = useModalContext()
-  const { data } = useContext(SessionContext)
   const session = useSession()
 
   console.log(session)
@@ -124,7 +123,7 @@ const MainHeader = () => {
               }}
             >
               <LanguageDropdown />
-              {session ? (
+              {session.status === 'authenticated' && session.data ? (
                 <UserDropdown />
               ) : (
                 <CustomIconButton
