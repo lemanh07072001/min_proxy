@@ -97,8 +97,9 @@ export const authOptions = {
   },
 
   callbacks: {
-    async jwt({ token, user, account }: any) {
-      if (user && account) {
+    async jwt({ token, user }: any) {
+      console.log('user',user)
+      if (user ) {
         return {
           ...token,
           access_token: (user as any).access_token,
