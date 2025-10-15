@@ -40,6 +40,7 @@ interface TransactionData {
 const NavbarContent = () => {
   // Log session để debug
   const { data } = useContext(SessionContext)
+
   const session = useSession()
   const { openAuthModal } = useModalContext()
   const [isInputOpen, setIsInputOpen] = useState(false)
@@ -72,7 +73,7 @@ const NavbarContent = () => {
         {session && (
           <div className='hidden md:flex items-center gap-2 px-3 py-1 bg-gray-100 rounded-lg text-sm'>
             <span className='text-green-600'>●</span>
-            <span className='text-gray-700'>{data.user?.name || data.user?.email || 'User'}</span>
+            <span className='text-gray-700'>{data?.user?.name || data?.user?.email || 'User'}</span>
           </div>
         )}
       </div>

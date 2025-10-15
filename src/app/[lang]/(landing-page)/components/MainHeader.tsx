@@ -31,9 +31,9 @@ const MainHeader = () => {
   const { scrollY } = useScroll()
   const { isMobile } = useResponsive()
   const { openAuthModal } = useModalContext()
+  const { data } = useContext(SessionContext)
   const session = useSession()
 
-  console.log(session)
   // 1. ĐÃ XÓA: state `scrolled` và useEffect theo dõi scroll thủ công.
   //    Tất cả hiệu ứng scroll giờ đây đều do Framer Motion xử lý.
 
@@ -123,7 +123,7 @@ const MainHeader = () => {
               }}
             >
               <LanguageDropdown />
-              {session.status === 'authenticated' && session.data ? (
+              {session ? (
                 <UserDropdown />
               ) : (
                 <CustomIconButton
