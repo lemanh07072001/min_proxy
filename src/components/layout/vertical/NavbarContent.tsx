@@ -42,6 +42,7 @@ const NavbarContent = () => {
   const { data } = useContext(SessionContext)
 
   const session = useSession()
+  console.log(session)
   const { openAuthModal } = useModalContext()
   const [isInputOpen, setIsInputOpen] = useState(false)
   const [isQrOpen, setIsQrOpen] = useState(false)
@@ -78,7 +79,7 @@ const NavbarContent = () => {
         )}
       </div>
       <div className='flex items-center gap-2'>
-        {session ? (
+        {session && session.status === 'authenticated' ? (
           <Button
             variant='outlined'
             onClick={() => setIsInputOpen(true)}
@@ -97,7 +98,7 @@ const NavbarContent = () => {
         <LanguageDropdown />
 
         {/* Hiển thị UserDropdown nếu đã đăng nhập, button đăng nhập nếu chưa */}
-        {session ? (
+        {session && session.status === 'authenticated' ? (
           <UserDropdown session={data} />
         ) : (
           <Button
