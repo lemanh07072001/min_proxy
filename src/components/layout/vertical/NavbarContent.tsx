@@ -39,10 +39,10 @@ interface TransactionData {
 
 const NavbarContent = () => {
   // Log session để debug
-  const { data } = useContext(SessionContext)
+  const data = null
 
   const session = useSession()
-  console.log(session)
+
   const { openAuthModal } = useModalContext()
   const [isInputOpen, setIsInputOpen] = useState(false)
   const [isQrOpen, setIsQrOpen] = useState(false)

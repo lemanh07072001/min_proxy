@@ -123,7 +123,7 @@ const MainHeader = () => {
               }}
             >
               <LanguageDropdown />
-              {session ? (
+              {session && session.status === 'authenticated' ? (
                 <UserDropdown />
               ) : (
                 <CustomIconButton

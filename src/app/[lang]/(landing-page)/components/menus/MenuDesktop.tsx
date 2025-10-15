@@ -4,7 +4,7 @@ import { useContext } from 'react'
 
 import { useParams, usePathname } from 'next/navigation'
 
-import { SessionContext } from 'next-auth/react'
+import { SessionContext, useSession } from 'next-auth/react'
 
 import { useTranslation } from 'react-i18next'
 
@@ -23,6 +23,7 @@ export default function MenuDesktop() {
   const params = useParams()
   const { openAuthModal } = useModalContext()
   const { data } = useContext(SessionContext)
+  const session = useSession()
   const { t } = useTranslation()
   const MenuLandingPage = useMenuLandingPage()
 
@@ -60,7 +61,7 @@ export default function MenuDesktop() {
       <div className='flex items-center gap-2'>
         <LanguageDropdown />
 
-        {data ? (
+        {session && session.status === 'authenticated' ? (
           // <UserDropdown session={data} />
           <Link
             className='btn btn-gradient-primary me-2'
