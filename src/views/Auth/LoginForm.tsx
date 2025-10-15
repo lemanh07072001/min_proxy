@@ -19,9 +19,7 @@ import * as yup from 'yup'
 import { useTranslation } from 'react-i18next'
 
 import { useModalContext } from '@/app/contexts/ModalContext'
-import axiosInstance from '@/libs/axios'
-import { store } from '@/store'
-import { setUser } from '@/store/userSlice'
+
 
 type LoginFormInputs = {
   email: string
@@ -35,7 +33,7 @@ export default function LoginForm() {
 
   const router = useRouter()
   const params = useParams()
-  const pathname = usePathname()
+
   const { closeAuthModal, setAuthModalMode, referralCode } = useModalContext()
 
   const { lang: locale } = params
@@ -74,8 +72,6 @@ export default function LoginForm() {
       toast.success(t('auth.loginSuccess'))
       closeAuthModal()
 
-      // Chuyển hướng về overview và reload trang để cập nhật Redux store
-      // Sử dụng window.location.href để force reload và sync session
       router.push(`/${locale}/overview`)
 
     } else {
