@@ -73,7 +73,6 @@ export default function LoginForm() {
       closeAuthModal()
 
       router.push(`/${locale}/overview`)
-
     } else {
       setLoading(false)
       toast.error(t('auth.loginError'))
