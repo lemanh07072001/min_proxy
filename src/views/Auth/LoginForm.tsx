@@ -76,8 +76,8 @@ export default function LoginForm() {
 
       // Chuyển hướng về overview và reload trang để cập nhật Redux store
       // Sử dụng window.location.href để force reload và sync session
-      router.push(`/${locale}/overview`)
-
+      // router.push(`/${locale}/overview`)
+      window.location.href = `/${locale}/overview`;
     } else {
       setLoading(false)
       toast.error(t('auth.loginError'))
