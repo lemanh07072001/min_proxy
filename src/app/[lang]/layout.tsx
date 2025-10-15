@@ -155,6 +155,8 @@ const RootLayout = async (props: ChildrenType & { params: Promise<{ lang: Locale
   // ✅ Sử dụng server-side utility để lấy user data
   const user = await getServerUserData()
 
+  console.log(user)
+
   // ✅ Lấy session cho NextAuth
   const session = (await getServerSession(authOptions as any)) as any
 

@@ -81,12 +81,17 @@ export async function validateServerSessionBasic() {
 export async function getServerUserData() {
   const session = await getServerSession(authOptions as any) as any
 
+  // Kiểm tra session và access_token trước khi gọi API
+  if (!session || !session.access_token) {
+    return null
+  }
+
   try {
     const response = await fetch(`${process.env.API_URL || 'https://api.minhan.online/api'}/me`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${session?.access_token}`
+        Authorization: `Bearer ${session.access_token}`
       },
       cache: 'no-store'
     })
