@@ -43,7 +43,7 @@ export default function VerifyEmailPage() {
 
           setStatus('success')
 
-          router.push('/overview')
+          router.replace('/overview')
         }
       } catch (error) {
         console.error('❌ Verify error:', error)

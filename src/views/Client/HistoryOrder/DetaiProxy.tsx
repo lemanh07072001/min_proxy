@@ -55,8 +55,6 @@ const DetailProxy = ({ isOpen, handleClose, apiKey }: DetailModalProps) => {
     }
   }
 
-  console.log(proxyData)
-
   useEffect(() => {
     if (!isOpen || !apiKey) return
     fetchProxyData()

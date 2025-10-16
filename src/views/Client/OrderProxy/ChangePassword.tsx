@@ -37,7 +37,6 @@ export function ChangePassword({ open, onClose, title = 'Cập nhật thông tin
   })
 
   const onSubmit = (data: FormValues) => {
-    console.log('Form data:', data)
     onClose()
   }
 

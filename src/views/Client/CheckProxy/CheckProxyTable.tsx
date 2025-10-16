@@ -1,9 +1,19 @@
-"use client"
+'use client'
 
 import './styles.css'
 import { useMemo, useState } from 'react'
 
-import { BadgeCheck, CheckCircle, Copy, Download, Loader, RefreshCw, BadgeMinus, BadgeAlert, AlertTriangle } from 'lucide-react'
+import {
+  BadgeCheck,
+  CheckCircle,
+  Copy,
+  Download,
+  Loader,
+  RefreshCw,
+  BadgeMinus,
+  BadgeAlert,
+  AlertTriangle
+} from 'lucide-react'
 
 import Chip from '@mui/material/Chip'
 
@@ -18,34 +28,36 @@ import {
   getPaginationRowModel,
   useReactTable
 } from '@tanstack/react-table'
-import { useCopy } from '@/app/hooks/useCopy'
+
 import { FormControlLabel } from '@mui/material'
 import Checkbox from '@mui/material/Checkbox'
 
+import { useCopy } from '@/app/hooks/useCopy'
+
 interface ProxyData {
-  proxy: string;
-  ip: string;
-  protocol: string;
-  status: string;
-  responseTime: string;
+  proxy: string
+  ip: string
+  protocol: string
+  status: string
+  responseTime: string
   type: string
 }
 
 interface CheckProxyTableProps {
-  data: ProxyData;
+  data: ProxyData
   checkedProxy: any
 }
 
-export default function CheckProxyTable({ data, checkedProxy } : CheckProxyTableProps) {
+export default function CheckProxyTable({ data, checkedProxy }: CheckProxyTableProps) {
   const [rowSelection, setRowSelection] = useState({}) // State để lưu các hàng được chọn
-  const [columnFilters, setColumnFilters] = useState([]);
+  const [columnFilters, setColumnFilters] = useState([])
 
   const [pagination, setPagination] = useState({
     pageIndex: 0,
-    pageSize: 10,
-  });
+    pageSize: 10
+  })
 
-  const [isCopied, copy] = useCopy();
+  const [isCopied, copy] = useCopy()
 
   const columns = useMemo(
     () => [
@@ -61,7 +73,7 @@ export default function CheckProxyTable({ data, checkedProxy } : CheckProxyTable
                   onChange={table.getToggleAllRowsSelectedHandler()}
                 />
               }
-              label="" // bỏ label để không chiếm chỗ
+              label='' // bỏ label để không chiếm chỗ
             />
           </div>
         ),
@@ -75,21 +87,20 @@ export default function CheckProxyTable({ data, checkedProxy } : CheckProxyTable
                   onChange={row.getToggleSelectedHandler()}
                 />
               }
-              label=""
+              label=''
             />
           </div>
         ),
-        size: 40,
+        size: 40
       },
       {
         accessorKey: 'proxy',
         header: 'Proxy',
-        cell: ({ row } :any) => {
-          console.log(row.original)
+        cell: ({ row }: any) => {
           return (
             <>
               <div className='proxy-text'>{row.original.proxy}</div>
-              <button className='copy-icon-btn' onClick={()=>copy(row.original.proxy)}>
+              <button className='copy-icon-btn' onClick={() => copy(row.original.proxy)}>
                 <Copy size={14} />
               </button>
             </>
@@ -99,15 +110,11 @@ export default function CheckProxyTable({ data, checkedProxy } : CheckProxyTable
       {
         accessorKey: 'protocol',
         header: 'Loại',
-        cell: ({ row } :any) => {
-          if(row.original.protocol === 'http') {
-            return (
-              <span>HTTP</span>
-            )
-          }else if(row.original.protocol === 'socks5') {
-            return (
-              <span>SOCKS5</span>
-            )
+        cell: ({ row }: any) => {
+          if (row.original.protocol === 'http') {
+            return <span>HTTP</span>
+          } else if (row.original.protocol === 'socks5') {
+            return <span>SOCKS5</span>
           }
         }
       },
@@ -115,9 +122,7 @@ export default function CheckProxyTable({ data, checkedProxy } : CheckProxyTable
         accessorKey: 'responseTime',
         header: 'Ping',
         cell: ({ row }) => {
-          const ping = row.original.responseTime;
-
-          console.log(ping)
+          const ping = row.original.responseTime
 
           if (ping === 'checking') {
             return (
@@ -126,32 +131,21 @@ export default function CheckProxyTable({ data, checkedProxy } : CheckProxyTable
                 color='secondary'
                 variant='tonal'
                 size='small'
-                icon={<Loader size={16} className="spinning-icon" />}
+                icon={<Loader size={16} className='spinning-icon' />}
               />
-            );
+            )
           }
+
           if (typeof ping !== 'number' || ping <= 0) {
-            return (
-              <Chip
-                label='Lỗi'
-                color='error'
-                variant='tonal'
-                size='small'
-                icon={<BadgeAlert size={16} />}
-              />
-            );
+            return <Chip label='Lỗi' color='error' variant='tonal' size='small' icon={<BadgeAlert size={16} />} />
           }
+
           if (ping < 300) {
             return (
-              <Chip
-                label={`${ping} ms`}
-                color='success'
-                variant='tonal'
-                size='small'
-                icon={<BadgeCheck size={16} />}
-              />
-            );
+              <Chip label={`${ping} ms`} color='success' variant='tonal' size='small' icon={<BadgeCheck size={16} />} />
+            )
           }
+
           if (ping < 800) {
             return (
               <Chip
@@ -161,39 +155,51 @@ export default function CheckProxyTable({ data, checkedProxy } : CheckProxyTable
                 size='small'
                 icon={<AlertTriangle size={16} />}
               />
-            );
+            )
           }
+
           return (
-            <Chip
-              label={`${ping} ms`}
-              color='error'
-              variant='tonal'
-              size='small'
-              icon={<BadgeMinus size={16} />}
-            />
-          );
+            <Chip label={`${ping} ms`} color='error' variant='tonal' size='small' icon={<BadgeMinus size={16} />} />
+          )
         }
       },
       {
         accessorKey: 'status',
         header: 'Trạng thái',
-        cell: ({ row } :any) => {
-          if(row.original.status === 'checking') {
+        cell: ({ row }: any) => {
+          if (row.original.status === 'checking') {
             return (
-              <Chip label='Đang chờ xử lý' color='secondary' variant='tonal' size='small' icon={<Loader size={16} className="spinning-icon"/>} />
+              <Chip
+                label='Đang chờ xử lý'
+                color='secondary'
+                variant='tonal'
+                size='small'
+                icon={<Loader size={16} className='spinning-icon' />}
+              />
             )
-          }else if(row.original.status === 'success') {
+          } else if (row.original.status === 'success') {
             return (
-              <Chip label='Đang hoạt động' color='success' variant='tonal' size='small' icon={<BadgeCheck  size={16} />} />
+              <Chip
+                label='Đang hoạt động'
+                color='success'
+                variant='tonal'
+                size='small'
+                icon={<BadgeCheck size={16} />}
+              />
             )
-          }else{
+          } else {
             return (
-              <Chip label='Ngưng hoạt động' color='error' variant='tonal' size='small' icon={<BadgeMinus size={16}/>} />
+              <Chip
+                label='Ngưng hoạt động'
+                color='error'
+                variant='tonal'
+                size='small'
+                icon={<BadgeMinus size={16} />}
+              />
             )
           }
         }
-      },
-
+      }
     ],
     []
   )
@@ -204,7 +210,7 @@ export default function CheckProxyTable({ data, checkedProxy } : CheckProxyTable
     state: {
       rowSelection,
       columnFilters,
-      pagination,
+      pagination
     },
     enableRowSelection: true, // Bật tính năng chọn hàng
     onColumnFiltersChange: setColumnFilters,
@@ -214,57 +220,59 @@ export default function CheckProxyTable({ data, checkedProxy } : CheckProxyTable
     getFilteredRowModel: getFilteredRowModel(), // Tùy chọn: cần thiết nếu có bộ lọc
     getPaginationRowModel: getPaginationRowModel(),
     getFacetedRowModel: getFacetedRowModel(),
-    getFacetedUniqueValues: getFacetedUniqueValues(),
-
+    getFacetedUniqueValues: getFacetedUniqueValues()
   })
 
   const hanldeExport = () => {
-    const selectedRowsModel = table.getSelectedRowModel();
+    const selectedRowsModel = table.getSelectedRowModel()
 
-    const selectedData = selectedRowsModel.rows.map(row => row.original);
+    const selectedData = selectedRowsModel.rows.map(row => row.original)
 
     if (selectedData.length === 0) {
-      alert('Vui lòng chọn ít nhất một hàng để xuất.');
-      return;
+      alert('Vui lòng chọn ít nhất một hàng để xuất.')
+
+      return
     }
 
-    const formattedArray = selectedData.map(row => row.proxy);
+    const formattedArray = selectedData.map(row => row.proxy)
 
-    const content = formattedArray.join('\n');
+    const content = formattedArray.join('\n')
 
     // --- Tạo tên file theo định dạng ngày-tháng-năm-3số-proxy ---
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, '0');
-    const day = String(today.getDate()).padStart(2, '0');
+    const today = new Date()
+    const year = today.getFullYear()
+    const month = String(today.getMonth() + 1).padStart(2, '0')
+    const day = String(today.getDate()).padStart(2, '0')
 
     // Tạo 3 số ngẫu nhiên
-    const randomNumber = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+    const randomNumber = Math.floor(Math.random() * 1000)
+      .toString()
+      .padStart(3, '0')
 
-    const filename = `${day}_${month}_${year}_${randomNumber}_proxy.txt`;
+    const filename = `${day}_${month}_${year}_${randomNumber}_proxy.txt`
 
+    const blob = new Blob([content], { type: 'text/plain' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
 
-    const blob = new Blob([content], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
+    a.href = url
+    a.download = filename
+    document.body.appendChild(a)
 
-    a.click();
+    a.click()
 
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  };
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  }
 
   // Tính toán các giá trị để hiển thị
-  const { pageIndex, pageSize } = table.getState().pagination;
-  const totalRows = table.getFilteredRowModel().rows.length;
-  const startRow = pageIndex * pageSize + 1;
-  const endRow = Math.min(startRow + pageSize - 1, totalRows);
+  const { pageIndex, pageSize } = table.getState().pagination
+  const totalRows = table.getFilteredRowModel().rows.length
+  const startRow = pageIndex * pageSize + 1
+  const endRow = Math.min(startRow + pageSize - 1, totalRows)
 
   // Lấy số lượng hàng đã chọn
-  const selectedCount = table.getSelectedRowModel().rows.length;
+  const selectedCount = table.getSelectedRowModel().rows.length
 
   return (
     <>
@@ -287,7 +295,6 @@ export default function CheckProxyTable({ data, checkedProxy } : CheckProxyTable
                 {/*</button>*/}
               </div>
             )}
-
           </div>
 
           {/* Results Table */}
@@ -297,26 +304,26 @@ export default function CheckProxyTable({ data, checkedProxy } : CheckProxyTable
               <div className='table-wrapper'>
                 <table className='data-table'>
                   <thead className='table-header'>
-                  {table.getHeaderGroups().map(headerGroup => (
-                    <tr key={headerGroup.id}>
-                      {headerGroup.headers.map(header => (
-                        <th className='table-header th' key={header.id}>
-                          {flexRender(header.column.columnDef.header, header.getContext())}
-                        </th>
-                      ))}
-                    </tr>
-                  ))}
+                    {table.getHeaderGroups().map(headerGroup => (
+                      <tr key={headerGroup.id}>
+                        {headerGroup.headers.map(header => (
+                          <th className='table-header th' key={header.id}>
+                            {flexRender(header.column.columnDef.header, header.getContext())}
+                          </th>
+                        ))}
+                      </tr>
+                    ))}
                   </thead>
                   <tbody>
-                  {table.getRowModel().rows.map(row => (
-                    <tr className='table-row' key={row.id}>
-                      {row.getVisibleCells().map(cell => (
-                        <td className='table-cell' key={cell.id}>
-                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
+                    {table.getRowModel().rows.map(row => (
+                      <tr className='table-row' key={row.id}>
+                        {row.getVisibleCells().map(cell => (
+                          <td className='table-cell' key={cell.id}>
+                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               </div>
@@ -331,9 +338,10 @@ export default function CheckProxyTable({ data, checkedProxy } : CheckProxyTable
                         <select
                           value={table.getState().pagination.pageSize}
                           onChange={e => {
-                            table.setPageSize(Number(e.target.value));
+                            table.setPageSize(Number(e.target.value))
                           }}
-                          className='page-size-select'>
+                          className='page-size-select'
+                        >
                           <option value='10'>10</option>
                           <option value='50'>50</option>
                           <option value='100'>100</option>
@@ -349,8 +357,8 @@ export default function CheckProxyTable({ data, checkedProxy } : CheckProxyTable
                     <div>
                       {totalRows > 0 ? (
                         <span>
-                      {startRow} - {endRow} của {totalRows} hàng
-                    </span>
+                          {startRow} - {endRow} của {totalRows} hàng
+                        </span>
                       ) : (
                         <span>Không có dữ liệu</span>
                       )}
@@ -358,14 +366,16 @@ export default function CheckProxyTable({ data, checkedProxy } : CheckProxyTable
                   </div>
 
                   <div className='pagination-buttons'>
-                    <Pagination count={table.getPageCount()}
-                                shape='rounded'
-                                variant='outlined'
-                                color='primary'
-                                page={table.getState().pagination.pageIndex + 1}
-                                onChange={(event, page) => {
-                                  table.setPageIndex(page - 1);
-                                }}/>
+                    <Pagination
+                      count={table.getPageCount()}
+                      shape='rounded'
+                      variant='outlined'
+                      color='primary'
+                      page={table.getState().pagination.pageIndex + 1}
+                      onChange={(event, page) => {
+                        table.setPageIndex(page - 1)
+                      }}
+                    />
                   </div>
                 </div>
               </div>

@@ -61,8 +61,6 @@ export default function RechargeInputDialog({ isOpen, handleClose, onGenerateQr 
     setIsGeneratingQR(true)
     const qrUrl = `https://img.vietqr.io/image/${BANK_INFO.bankCode}-${BANK_INFO.accountNumber}-compact2.png?amount=${amount}&addInfo=${encodeURIComponent(BANK_INFO.note)}`
 
-    console.log(qrUrl)
-
     // Giả lập thời gian chờ tạo QR
     setTimeout(() => {
       onGenerateQr({ qrUrl, amount, rechargeAmount })

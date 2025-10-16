@@ -57,8 +57,6 @@ export default function RegisterForm() {
   const { mutate, isPending } = useMutation({
     mutationFn: registerUser,
     onSuccess: data => {
-      console.log('Đăng ký thành công:', data)
-
       toast.success(data.message)
 
       reset()
@@ -83,6 +81,7 @@ export default function RegisterForm() {
 
   const onSubmit = (data: RegisterFormInputs) => {
     const payload: RegisterFormInputs = { ...data, ref: referralCode ?? undefined }
+
     console.log('Dữ liệu form:', payload)
     mutate(payload)
   }
