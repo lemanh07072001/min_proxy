@@ -119,8 +119,8 @@ export const authOptions = {
     },
 
     async session({ session, token }: any) {
-
-
+      console.log(token)
+      session.user = token.userData
       session.access_token = token.access_token
       session.refresh_token = token.refresh_token
       session.role = token.role
