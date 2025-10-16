@@ -119,11 +119,12 @@ export const authOptions = {
     },
 
     async session({ session, token }: any) {
-      if (!token) return (null(session as any).user = token.userData || (session as any).user)
-      ;(session as any).access_token = token.access_token
-      ;(session as any).refresh_token = token.refresh_token
-      ;(session as any).role = token.role
-      ;(session as any).error = token.error
+
+
+      session.access_token = token.access_token
+      session.refresh_token = token.refresh_token
+      session.role = token.role
+      session.error = token.error
 
       return session
     }

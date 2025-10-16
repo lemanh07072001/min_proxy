@@ -8,7 +8,7 @@ import { motion, useScroll, useTransform } from 'framer-motion'
 
 import Box from '@mui/material/Box'
 
-import { SessionContext } from 'next-auth/react'
+import { SessionContext, useSession } from 'next-auth/react'
 
 import { User } from 'lucide-react'
 
@@ -32,6 +32,7 @@ const MainHeader = () => {
   const { isMobile } = useResponsive()
   const { openAuthModal } = useModalContext()
   const { data } = useContext(SessionContext)
+  const session = useSession()
 
   // 1. ĐÃ XÓA: state `scrolled` và useEffect theo dõi scroll thủ công.
   //    Tất cả hiệu ứng scroll giờ đây đều do Framer Motion xử lý.
@@ -122,7 +123,7 @@ const MainHeader = () => {
               }}
             >
               <LanguageDropdown />
-              {data ? (
+              {session && session.status === 'authenticated' ? (
                 <UserDropdown />
               ) : (
                 <CustomIconButton

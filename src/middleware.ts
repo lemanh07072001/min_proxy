@@ -10,6 +10,8 @@ export default withAuth(
     const { pathname } = req.nextUrl
     const token = req.nextauth.token
 
+    console.log(token)
+
     // Lấy mã ngôn ngữ từ URL (ví dụ: /vi/login -> 'vi')
     const lang = pathname.split('/')[1] || 'vi'
 
