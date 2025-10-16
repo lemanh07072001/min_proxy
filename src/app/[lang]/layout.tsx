@@ -155,7 +155,6 @@ const RootLayout = async (props: ChildrenType & { params: Promise<{ lang: Locale
   // ✅ Sử dụng server-side utility để lấy user data
   const user = await getServerUserData()
 
-
   // ✅ Lấy session cho NextAuth
   const session = (await getServerSession(authOptions as any)) as any
 
@@ -164,7 +163,12 @@ const RootLayout = async (props: ChildrenType & { params: Promise<{ lang: Locale
       <html id='__next' lang={params.lang} dir={direction} className={figtree.variable} suppressHydrationWarning>
         <body className='flex is-full min-bs-full flex-auto flex-col'>
           <I18nextProvider locale={params.lang}>
-            <NextAuthProvider session={session as any} basePath={process.env.NEXTAUTH_BASEPATH}>
+            <NextAuthProvider
+              refetchInterval={10}
+              refetchOnWindowFocus={true}
+              session={session as any}
+              basePath={process.env.NEXTAUTH_BASEPATH}
+            >
               <TanstackProvider>
                 <InitColorSchemeScript attribute='data' defaultMode={systemMode} />
                 <StoreProvider initialUser={user}>

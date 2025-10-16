@@ -20,7 +20,6 @@ import { useTranslation } from 'react-i18next'
 
 import { useModalContext } from '@/app/contexts/ModalContext'
 
-
 type LoginFormInputs = {
   email: string
   password: string

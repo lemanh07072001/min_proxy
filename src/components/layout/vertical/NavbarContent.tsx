@@ -9,7 +9,7 @@ import { createPortal } from 'react-dom'
 import classnames from 'classnames'
 
 // Component Imports
-import { SessionContext } from 'next-auth/react'
+import { SessionContext, useSession } from 'next-auth/react'
 
 import Button from '@mui/material/Button'
 
@@ -40,6 +40,10 @@ interface TransactionData {
 const NavbarContent = () => {
   // Log session để debug
   const { data } = useContext(SessionContext)
+  const session = useSession()
+
+  console.log(session)
+
   const { openAuthModal } = useModalContext()
   const [isInputOpen, setIsInputOpen] = useState(false)
   const [isQrOpen, setIsQrOpen] = useState(false)
@@ -49,7 +53,6 @@ const NavbarContent = () => {
     amount: '',
     rechargeAmount: ''
   })
-
 
   const handleGenerateQr = (data: { qrUrl: string; amount: string; rechargeAmount: string }) => {
     setTransactionData(data)
@@ -68,7 +71,7 @@ const NavbarContent = () => {
         <ModeDropdown />
 
         {/* Hiển thị thông tin user khi đã đăng nhập - KHÔNG flicker */}
-        {data && (
+        {session.status === 'authenticated' && (
           <div className='hidden md:flex items-center gap-2 px-3 py-1 bg-gray-100 rounded-lg text-sm'>
             <span className='text-green-600'>●</span>
             <span className='text-gray-700'>{data.user?.name || data.user?.email || 'User'}</span>
@@ -76,7 +79,7 @@ const NavbarContent = () => {
         )}
       </div>
       <div className='flex items-center gap-2'>
-        {data ? (
+        {session.status === 'authenticated' ? (
           <Button
             variant='outlined'
             onClick={() => setIsInputOpen(true)}
@@ -95,7 +98,7 @@ const NavbarContent = () => {
         <LanguageDropdown />
 
         {/* Hiển thị UserDropdown nếu đã đăng nhập, button đăng nhập nếu chưa */}
-        {data ? (
+        {session.status === 'authenticated' ? (
           <UserDropdown session={data} />
         ) : (
           <Button
