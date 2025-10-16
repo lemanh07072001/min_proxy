@@ -34,9 +34,10 @@ import { useForm, Controller } from 'react-hook-form'
 import * as yup from 'yup'
 import { yupResolver } from '@hookform/resolvers/yup'
 
+import { LoadingButton } from '@mui/lab'
+
 import CustomTextField from '@core/components/mui/TextField'
 import CustomIconButton from '@core/components/mui/IconButton'
-import { LoadingButton } from '@mui/lab'
 import { useCopy } from '@/app/hooks/useCopy'
 
 // Tạo schema validation bằng Yup
@@ -53,70 +54,73 @@ const checkProxyApi = async (proxyData: any) => {
 }
 
 interface CheckProxyFormProps {
-  onItemListChange: (items: string[]) => void;
-  onCheckedProxy: (items: string[]) => void;
+  onItemListChange: (items: string[]) => void
+  onCheckedProxy: (items: string[]) => void
 }
 
-export default function CheckProxyForm({onItemListChange, onCheckedProxy } : CheckProxyFormProps) {
-  const [successProxies, setSuccessProxies] = useState([]);
-  const [errorProxies, setErrorProxies] = useState([]);
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [currentProgress, setCurrentProgress] = useState({ current: 0, total: 0 });
+export default function CheckProxyForm({ onItemListChange, onCheckedProxy }: CheckProxyFormProps) {
+  const [successProxies, setSuccessProxies] = useState([])
+  const [errorProxies, setErrorProxies] = useState([])
+  const [isProcessing, setIsProcessing] = useState(false)
+  const [currentProgress, setCurrentProgress] = useState({ current: 0, total: 0 })
 
-  const [, copy] = useCopy();
-  const queueRef = useRef([]);
-  const activeChecksRef = useRef(0);
-  const maxConcurrentChecks = 20;
+  const [, copy] = useCopy()
+  const queueRef = useRef([])
+  const activeChecksRef = useRef(0)
+  const maxConcurrentChecks = 20
 
   const handleCopyProxysError = () => {
-    const formattedData = successProxies.join('\n');
-    copy(formattedData,'Đã sao chép danh sách proxy bị lỗi!')
+    const formattedData = successProxies.join('\n')
+
+    copy(formattedData, 'Đã sao chép danh sách proxy bị lỗi!')
   }
 
   const handleCopyProxysSuccess = () => {
-    const formattedData = errorProxies.join('\n');
-    copy(formattedData,'Đã sao chép danh sách proxy thành công!')
+    const formattedData = errorProxies.join('\n')
+
+    copy(formattedData, 'Đã sao chép danh sách proxy thành công!')
   }
 
   const theme = useTheme()
 
   // Đếm số lượng mutation có key là ['check-proxy'] đang chạy
-  const pendingMutations = useIsMutating({ mutationKey: ['check-proxy'] });
+  const pendingMutations = useIsMutating({ mutationKey: ['check-proxy'] })
 
   // isLoading sẽ là true nếu có ít nhất 1 mutation đang chạy
-  const isLoading = pendingMutations > 0 || isProcessing;
+  const isLoading = pendingMutations > 0 || isProcessing
 
   const mutation = useMutation({
     mutationKey: ['check-proxy'],
     mutationFn: checkProxyApi,
-    onSuccess: (dataFromApi) => {
+    onSuccess: dataFromApi => {
       // Khi một proxy được check thành công, `dataFromApi` là kết quả trả về.
       // Bây giờ, chúng ta gọi callback để báo cho component cha.
-      onCheckedProxy(dataFromApi);
+      onCheckedProxy(dataFromApi)
       handleProxyChecked(dataFromApi)
-      processNextInQueue();
+      processNextInQueue()
     },
     onError: (error, variables) => {
       const failedProxyData = {
         proxy: variables.list_proxy,
         responseTime: -1,
-        status: 'error',
-      };
+        status: 'error'
+      }
 
-      onCheckedProxy(failedProxyData);
+      onCheckedProxy(failedProxyData)
       handleProxyChecked(failedProxyData)
-      processNextInQueue();
+      processNextInQueue()
     }
   })
 
   const processNextInQueue = () => {
-    activeChecksRef.current--;
-    
+    activeChecksRef.current--
+
     if (queueRef.current.length > 0 && activeChecksRef.current < maxConcurrentChecks) {
-      const nextProxy = queueRef.current.shift();
+      const nextProxy = queueRef.current.shift()
+
       if (nextProxy) {
-        activeChecksRef.current++;
-        mutation.mutate(nextProxy);
+        activeChecksRef.current++
+        mutation.mutate(nextProxy)
       }
     }
 
@@ -125,17 +129,18 @@ export default function CheckProxyForm({onItemListChange, onCheckedProxy } : Che
       const newProgress = {
         ...prev,
         current: prev.current + 1
-      };
-      
+      }
+
       // Kiểm tra nếu đã hoàn thành tất cả
       if (newProgress.current >= newProgress.total && queueRef.current.length === 0 && activeChecksRef.current === 0) {
-        setIsProcessing(false);
-        return { current: 0, total: 0 };
+        setIsProcessing(false)
+
+        return { current: 0, total: 0 }
       }
-      
-      return newProgress;
-    });
-  };
+
+      return newProgress
+    })
+  }
 
   const {
     control,
@@ -160,12 +165,12 @@ export default function CheckProxyForm({onItemListChange, onCheckedProxy } : Che
     const filteredLines = list_proxy.split('\n').filter(line => line.trim() !== '')
 
     // Reset các state và refs trước khi bắt đầu
-    setSuccessProxies([]);
-    setErrorProxies([]);
-    setIsProcessing(true);
-    setCurrentProgress({ current: 0, total: filteredLines.length });
-    queueRef.current = [];
-    activeChecksRef.current = 0;
+    setSuccessProxies([])
+    setErrorProxies([])
+    setIsProcessing(true)
+    setCurrentProgress({ current: 0, total: filteredLines.length })
+    queueRef.current = []
+    activeChecksRef.current = 0
 
     // Cập nhật state để hiển thị trên UI
     const proxyObjectsArray = filteredLines.map((proxyString, index) => {
@@ -173,14 +178,14 @@ export default function CheckProxyForm({onItemListChange, onCheckedProxy } : Che
 
       return {
         id: index + 1,
-        proxy : proxyString,
-        ip : host,
+        proxy: proxyString,
+        ip: host,
         protocol: protocol,
-        status : 'checking',
+        status: 'checking',
         responseTime: 'checking',
-        type : format_proxy
-      };
-    });
+        type: format_proxy
+      }
+    })
 
     // Gọi callback để báo cho component cha
     onItemListChange(proxyObjectsArray)
@@ -190,28 +195,29 @@ export default function CheckProxyForm({onItemListChange, onCheckedProxy } : Che
       protocol,
       format_proxy,
       list_proxy: proxy
-    }));
+    }))
 
     // Bắt đầu check với số lượng tối đa 5 luồng
-    const initialBatch = Math.min(maxConcurrentChecks, filteredLines.length);
-    
+    const initialBatch = Math.min(maxConcurrentChecks, filteredLines.length)
+
     for (let i = 0; i < initialBatch; i++) {
       if (queueRef.current.length > 0) {
-        const proxyData = queueRef.current.shift();
-        activeChecksRef.current++;
-        mutation.mutate(proxyData);
+        const proxyData = queueRef.current.shift()
+
+        activeChecksRef.current++
+        mutation.mutate(proxyData)
       }
     }
   }
 
-  const handleProxyChecked = (checkedProxyResult) => {
+  const handleProxyChecked = checkedProxyResult => {
     // Phân loại vào danh sách success hoặc error
     if (checkedProxyResult.status === 'success') {
-      setSuccessProxies(prev => [...prev, checkedProxyResult.proxy]);
+      setSuccessProxies(prev => [...prev, checkedProxyResult.proxy])
     } else {
-      setErrorProxies(prev => [...prev, checkedProxyResult.proxy]);
+      setErrorProxies(prev => [...prev, checkedProxyResult.proxy])
     }
-  };
+  }
 
   const dataLocation = [
     {
@@ -228,19 +234,20 @@ export default function CheckProxyForm({onItemListChange, onCheckedProxy } : Che
     {
       value: 'host:port:username:password',
       label: 'host:port:username:password'
-    },
-    {
-      value: 'username:password@host:port',
-      label: 'username:password@host:port'
-    },
-    {
-      value: 'host:port@username:password',
-      label: 'host:port@username:password'
-    },
-    {
-      value: 'host:port',
-      label: 'host:port'
     }
+
+    // {
+    //   value: 'username:password@host:port',
+    //   label: 'username:password@host:port'
+    // },
+    // {
+    //   value: 'host:port@username:password',
+    //   label: 'host:port@username:password'
+    // },
+    // {
+    //   value: 'host:port',
+    //   label: 'host:port'
+    // }
   ]
 
   return (
@@ -376,7 +383,7 @@ export default function CheckProxyForm({onItemListChange, onCheckedProxy } : Che
             type='submit'
             fullWidth
             loading={isLoading}
-            loadingIndicator={<Loader size={25} className="spinning-icon spinning-icon-loading " />}
+            loadingIndicator={<Loader size={25} className='spinning-icon spinning-icon-loading ' />}
             sx={{
               background: 'var(--mui-palette-customCssVars-bgButtonPrimary)',
               padding: '16px 24px',
@@ -395,22 +402,26 @@ export default function CheckProxyForm({onItemListChange, onCheckedProxy } : Che
           {isProcessing && currentProgress.total > 0 && (
             <div className='form-group-check'>
               <div style={{ marginBottom: '8px', fontSize: '14px', color: '#4a5568' }}>
-                Tiến trình: {currentProgress.current}/{currentProgress.total} 
+                Tiến trình: {currentProgress.current}/{currentProgress.total}
                 {/*(Giới hạn: {maxConcurrentChecks} luồng cùng lúc)*/}
               </div>
-              <div style={{ 
-                width: '100%', 
-                height: '8px', 
-                backgroundColor: '#e2e8f0', 
-                borderRadius: '4px',
-                overflow: 'hidden'
-              }}>
-                <div style={{
-                  width: `${(currentProgress.current / currentProgress.total) * 100}%`,
-                  height: '100%',
-                  backgroundColor: '#22c55e',
-                  transition: 'width 0.3s ease'
-                }} />
+              <div
+                style={{
+                  width: '100%',
+                  height: '8px',
+                  backgroundColor: '#e2e8f0',
+                  borderRadius: '4px',
+                  overflow: 'hidden'
+                }}
+              >
+                <div
+                  style={{
+                    width: `${(currentProgress.current / currentProgress.total) * 100}%`,
+                    height: '100%',
+                    backgroundColor: '#22c55e',
+                    transition: 'width 0.3s ease'
+                  }}
+                />
               </div>
             </div>
           )}
@@ -444,11 +455,7 @@ export default function CheckProxyForm({onItemListChange, onCheckedProxy } : Che
                 }
               }}
             />
-            <button
-              type="button"
-              className='copy-btn'
-              onClick={handleCopyProxysSuccess}
-            >
+            <button type='button' className='copy-btn' onClick={handleCopyProxysSuccess}>
               <Copy size={14} />
             </button>
           </div>
@@ -483,7 +490,7 @@ export default function CheckProxyForm({onItemListChange, onCheckedProxy } : Che
               }}
             />
             <CustomIconButton
-              type="button"
+              type='button'
               aria-label='capture screenshot'
               color='success'
               variant='contained'
