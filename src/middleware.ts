@@ -1,16 +1,14 @@
 import { NextResponse } from 'next/server'
+
 import { withAuth } from 'next-auth/middleware'
 import type { NextRequestWithAuth } from 'next-auth/middleware'
 
 const privateRoutes = ['/overview', '/order-proxy', '/history-order', '/affiliate', '/transaction-history']
 
 export default withAuth(
-
   function middleware(req: NextRequestWithAuth) {
     const { pathname } = req.nextUrl
     const token = req.nextauth.token
-
-    console.log(token)
 
     // Lấy mã ngôn ngữ từ URL (ví dụ: /vi/login -> 'vi')
     const lang = pathname.split('/')[1] || 'vi'
@@ -27,6 +25,7 @@ export default withAuth(
       // Chuyển hướng họ về trang overview
       return NextResponse.redirect(new URL(`/${lang}/overview`, req.url))
     }
+
     // ⭐ KẾT THÚC LOGIC MỚI ⭐
 
     // Nếu không thuộc trường hợp trên, cho phép request tiếp tục
@@ -38,9 +37,7 @@ export default withAuth(
       authorized: ({ token, req }) => {
         const { pathname } = req.nextUrl
 
-        const isPrivateRoute = privateRoutes.some(route =>
-          pathname.includes(route)
-        )
+        const isPrivateRoute = privateRoutes.some(route => pathname.includes(route))
 
         // Nếu không phải trang private, luôn cho phép
         if (!isPrivateRoute) {

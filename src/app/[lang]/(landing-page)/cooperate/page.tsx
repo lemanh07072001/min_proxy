@@ -6,10 +6,6 @@ import Agency from '../components/cooperate/Agency'
 import About from '../components/cooperate/About'
 
 export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }): Promise<Metadata> {
-  const { lang } = await params
-
-  console.log(lang)
-
   const dictionary = await import(`@/locales/${lang}.json`).then(m => m.default)
 
   return {

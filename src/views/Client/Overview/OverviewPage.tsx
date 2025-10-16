@@ -14,6 +14,7 @@ import { formatDateTimeLocal } from '@/utils/formatDate'
 
 import { useModalContext } from '@/app/contexts/ModalContext'
 import HistoryLoginPage from '../HistoryLogin/HistoryLoginPage'
+import AutoLoginHandler from '@/components/AutoLoginHandler'
 
 export function OverviewPage() {
   const { openAuthModal } = useModalContext()
@@ -50,6 +51,7 @@ export function OverviewPage() {
 
   return (
     <>
+      <AutoLoginHandler />
       <div className='flex-1 p-6 space-y-6'>
         {/* Thông tin tài khoản */}
         <div className='grid gap-4 md:grid-cols-3'>

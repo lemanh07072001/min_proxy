@@ -43,13 +43,40 @@ export const authOptions = {
   providers: [
     CredentialsProvider({
       name: 'Credentials',
-      credentials: {},
+      credentials: {
+        email: { label: 'Email', type: 'text' },
+        password: { label: 'Password', type: 'password' },
+        token: { label: 'Token', type: 'text' }
+      },
       async authorize(credentials, req) {
-        const { email, password } = credentials as { email: string; password: string }
+        const { email, password, token = null } = credentials as { email?: string; password?: string; token?: string }
         const apiUrl = process.env.API_URL
         const userAgent = req.headers?.['user-agent'] || ''
 
         try {
+          if (token) {
+            const checkUser = await fetch(`${apiUrl}/me`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'User-Agent': userAgent, Authorization: `Bearer ${token}` }
+            })
+
+            const resUser = await checkUser.json()
+
+            if (!checkUser.ok || !resUser?.id) {
+              throw new Error('Token không hợp lệ hoặc người dùng không tồn tại')
+            }
+
+            // ✅ Trả dữ liệu cho NextAuth callback
+            return {
+              id: resUser.id,
+              access_token: token,
+              refresh_token: null,
+              accessTokenExpires: Date.now() + 60 * 60 * 1000, // 1 giờ
+              role: resUser.role || 'user',
+              userData: resUser
+            } as any
+          }
+
           const res = await fetch(`${apiUrl}/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'User-Agent': userAgent },
@@ -119,7 +146,6 @@ export const authOptions = {
     },
 
     async session({ session, token }: any) {
-      console.log(token)
       session.user = token.userData
       session.access_token = token.access_token
       session.refresh_token = token.refresh_token

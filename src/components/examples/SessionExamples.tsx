@@ -1,7 +1,8 @@
 'use client'
 
-import { useSession, signIn, signOut } from 'next-auth/react'
 import { useEffect } from 'react'
+
+import { useSession, signIn, signOut } from 'next-auth/react'
 
 // ===============================================
 // 1. CLIENT-SIDE: Sử dụng useSession hook
@@ -9,11 +10,7 @@ import { useEffect } from 'react'
 export function ClientSessionExample() {
   const { data: session, status } = useSession()
 
-  useEffect(() => {
-    // Log session khi có thay đổi
-    console.log('Client Session:', session)
-    console.log('Status:', status)
-  }, [session, status])
+  useEffect(() => {}, [session, status])
 
   if (status === 'loading') {
     return <div>Đang tải...</div>
@@ -32,10 +29,16 @@ export function ClientSessionExample() {
     return (
       <div>
         <h3>Thông tin session:</h3>
-        <p><strong>User:</strong> {JSON.stringify(session.user)}</p>
-        <p><strong>Access Token:</strong> {session.accessToken || 'Không có'}</p>
-        <p><strong>Expires:</strong> {session.expires}</p>
-        
+        <p>
+          <strong>User:</strong> {JSON.stringify(session.user)}
+        </p>
+        <p>
+          <strong>Access Token:</strong> {session.accessToken || 'Không có'}
+        </p>
+        <p>
+          <strong>Expires:</strong> {session.expires}
+        </p>
+
         <button onClick={() => signOut()}>Đăng xuất</button>
       </div>
     )
@@ -57,20 +60,32 @@ export function UserInfo() {
   const user = session.user
 
   return (
-    <div style={{ 
-      padding: '16px', 
-      border: '1px solid #e2e8f0', 
-      borderRadius: '8px',
-      margin: '10px 0'
-    }}>
+    <div
+      style={{
+        padding: '16px',
+        border: '1px solid #e2e8f0',
+        borderRadius: '8px',
+        margin: '10px 0'
+      }}
+    >
       <h4>Thông tin User:</h4>
-      <p><strong>Name:</strong> {user.name || 'Chưa có tên'}</p>
-      <p><strong>Email:</strong> {user.email || 'Chưa có email'}</p>
-      <p><strong>Image:</strong> {user.image || 'Chưa có avatar'}</p>
-      
+      <p>
+        <strong>Name:</strong> {user.name || 'Chưa có tên'}
+      </p>
+      <p>
+        <strong>Email:</strong> {user.email || 'Chưa có email'}
+      </p>
+      <p>
+        <strong>Image:</strong> {user.image || 'Chưa có avatar'}
+      </p>
+
       {/* Nếu bạn có custom fields trong session */}
-      <p><strong>ID:</strong> {user.id || 'Chưa có ID'}</p>
-      <p><strong>Role:</strong> {user.role || 'Chưa có role'}</p>
+      <p>
+        <strong>ID:</strong> {user.id || 'Chưa có ID'}
+      </p>
+      <p>
+        <strong>Role:</strong> {user.role || 'Chưa có role'}
+      </p>
     </div>
   )
 }
@@ -89,12 +104,14 @@ export function ProtectedContent() {
   // Nếu chưa đăng nhập
   if (!session) {
     return (
-      <div style={{ 
-        padding: '20px', 
-        background: '#fee2e2', 
-        borderRadius: '8px',
-        color: '#dc2626'
-      }}>
+      <div
+        style={{
+          padding: '20px',
+          background: '#fee2e2',
+          borderRadius: '8px',
+          color: '#dc2626'
+        }}
+      >
         <p>⚠️ Bạn cần đăng nhập để xem nội dung này</p>
         <button onClick={() => signIn()}>Đăng nhập ngay</button>
       </div>
@@ -103,12 +120,14 @@ export function ProtectedContent() {
 
   // Nội dung chỉ dành cho user đã đăng nhập
   return (
-    <div style={{ 
-      padding: '20px', 
-      background: '#dcfce7', 
-      borderRadius: '8px',
-      color: '#166534'
-    }}>
+    <div
+      style={{
+        padding: '20px',
+        background: '#dcfce7',
+        borderRadius: '8px',
+        color: '#166534'
+      }}
+    >
       <h4>🎉 Nội dung bảo mật</h4>
       <p>Xin chào {session.user?.name || session.user?.email}!</p>
       <p>Đây là nội dung chỉ dành cho thành viên đã đăng nhập.</p>
@@ -148,18 +167,24 @@ export function UserDashboard() {
   return (
     <div style={{ padding: '20px', border: '1px solid #d1d5db', borderRadius: '8px' }}>
       <h3>Dashboard của {user?.name || 'User'}</h3>
-      
+
       <div style={{ marginTop: '16px' }}>
         <h4>Thông tin chi tiết:</h4>
         <ul>
-          <li><strong>Email:</strong> {user?.email}</li>
-          <li><strong>Name:</strong> {user?.name}</li>
-          <li><strong>Has Access Token:</strong> {accessToken ? 'Có' : 'Không'}</li>
+          <li>
+            <strong>Email:</strong> {user?.email}
+          </li>
+          <li>
+            <strong>Name:</strong> {user?.name}
+          </li>
+          <li>
+            <strong>Has Access Token:</strong> {accessToken ? 'Có' : 'Không'}
+          </li>
         </ul>
       </div>
 
       <div style={{ marginTop: '16px' }}>
-        <button 
+        <button
           onClick={() => signOut()}
           style={{
             background: '#dc2626',

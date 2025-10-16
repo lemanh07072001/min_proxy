@@ -71,8 +71,6 @@ export default function LoginForm() {
       ref: referralCode ?? undefined
     })
 
-    console.log(res)
-
     let errorObj
 
     if (res?.error) {
