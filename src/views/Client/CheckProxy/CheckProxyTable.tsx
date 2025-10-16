@@ -91,7 +91,7 @@ export default function CheckProxyTable({ data, checkedProxy }: CheckProxyTableP
             />
           </div>
         ),
-        size: 40
+        size: 20
       },
       {
         accessorKey: 'proxy',
@@ -116,7 +116,8 @@ export default function CheckProxyTable({ data, checkedProxy }: CheckProxyTableP
           } else if (row.original.protocol === 'socks5') {
             return <span>SOCKS5</span>
           }
-        }
+        },
+        size: 40
       },
       {
         accessorKey: 'responseTime',
@@ -161,7 +162,8 @@ export default function CheckProxyTable({ data, checkedProxy }: CheckProxyTableP
           return (
             <Chip label={`${ping} ms`} color='error' variant='tonal' size='small' icon={<BadgeMinus size={16} />} />
           )
-        }
+        },
+        size: 40
       },
       {
         accessorKey: 'status',
@@ -198,7 +200,8 @@ export default function CheckProxyTable({ data, checkedProxy }: CheckProxyTableP
               />
             )
           }
-        }
+        },
+        size: 80
       }
     ],
     []
@@ -307,7 +310,7 @@ export default function CheckProxyTable({ data, checkedProxy }: CheckProxyTableP
                     {table.getHeaderGroups().map(headerGroup => (
                       <tr key={headerGroup.id}>
                         {headerGroup.headers.map(header => (
-                          <th className='table-header th' key={header.id}>
+                          <th style={{ width: header.getSize() }} className='table-header th' key={header.id}>
                             {flexRender(header.column.columnDef.header, header.getContext())}
                           </th>
                         ))}
