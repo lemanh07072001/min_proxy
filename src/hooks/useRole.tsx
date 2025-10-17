@@ -12,13 +12,24 @@ export type Permission =
   | 'admin.dashboard'
   | 'admin.users'
   | 'admin.partner'
+  | 'admin.transactionHistory'
+  | 'admin.depositHistory'
   | 'user.proxy'
   | 'user.orders'
   | 'user.profile'
 
 // Mapping role với các quyền
 const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
-  admin: ['admin.dashboard', 'admin.users', 'admin.partner', 'user.proxy', 'user.orders', 'user.profile'],
+  admin: [
+    'admin.dashboard',
+    'admin.users',
+    'admin.partner',
+    'user.proxy',
+    'user.orders',
+    'user.profile',
+    'admin.transactionHistory',
+    'admin.depositHistory'
+  ],
   manager: [
     // Manager sẽ có quyền hạn chế hơn admin, chỉ có một số quyền cơ bản
     // Có thể cấu hình sau khi bạn quyết định manager cần quyền gì

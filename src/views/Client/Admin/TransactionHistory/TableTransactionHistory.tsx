@@ -1,22 +1,10 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 
 import Image from 'next/image'
 
-import { Button } from '@mui/material'
-
-import {
-  TriangleAlert,
-  CircleQuestionMark,
-  BadgeCheck,
-  BadgeMinus,
-  List,
-  Clock3,
-  Clock,
-  Eye,
-  BadgeAlert
-} from 'lucide-react'
+import { CircleQuestionMark, BadgeCheck, BadgeMinus, List, Clock3 } from 'lucide-react'
 
 import {
   useReactTable,
@@ -33,43 +21,27 @@ import Chip from '@mui/material/Chip'
 
 import Pagination from '@mui/material/Pagination'
 
-import { useQuery, useQueryClient } from '@tanstack/react-query'
-
-import { io } from 'socket.io-client'
-
-import CustomIconButton from '@core/components/mui/IconButton'
+import { useQuery } from '@tanstack/react-query'
 
 import useAxiosAuth from '@/hocs/useAxiosAuth'
-import { useCopy } from '@/app/hooks/useCopy'
 import { formatDateTimeLocal } from '@/utils/formatDate'
-import OrderDetail from './OrderDetail'
 
-export default function HistoryOrderPage() {
+export default function TableTransactionHistory() {
   const [columnFilters, setColumnFilters] = useState<any[]>([])
   const [rowSelection, setRowSelection] = useState({}) // State để lưu các hàng được chọn
   const [sorting, setSorting] = useState<any[]>([])
-
-  const [open, setOpen] = useState(false)
-  const [selectedOrder, setSelectedOrder] = useState<any | null>(null)
 
   const [pagination, setPagination] = useState({
     pageIndex: 0,
     pageSize: 10
   }) // State để lưu các hàng được chọn
 
-  const queryClient = useQueryClient()
-
   const axiosAuth = useAxiosAuth()
-  const [, copy] = useCopy()
 
-  const {
-    data: dataOrders = [],
-    isLoading,
-    refetch
-  } = useQuery({
+  const { data: dataOrders = [], isLoading } = useQuery({
     queryKey: ['orderProxyStatic'],
     queryFn: async () => {
-      const res = await axiosAuth.get('/get-order')
+      const res = await axiosAuth.get('/transaction-history')
 
       return res.data.data
     },
@@ -80,12 +52,12 @@ export default function HistoryOrderPage() {
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case '0':
-        return <Chip label='Chờ xử lý' size='small' icon={<BadgeAlert />} color='warning' />
-      case '2':
-        return <Chip label='Hoàn thành' size='small' icon={<BadgeCheck />} color='success' />
-      case '3':
-        return <Chip label='Thất bại' size='small' icon={<BadgeMinus />} color='error' />
+      // case '':
+      //   return <Chip label='Chờ xử lý' size='small' icon={<BadgeAlert />} color='warning' />
+      case 'BUY':
+        return <Chip label='Thành công' size='small' icon={<BadgeCheck />} color='success' />
+      case 'REFUND':
+        return <Chip label='Hoàn' size='small' icon={<BadgeMinus />} color='error' />
       default:
         return <Chip label='Không xác định' size='small' icon={<CircleQuestionMark />} color='secondary' />
     }
@@ -94,34 +66,51 @@ export default function HistoryOrderPage() {
   const columns = useMemo(
     () => [
       {
-        accessorKey: 'order_code',
+        accessorKey: 'id',
         header: 'ID',
-        size: 170
+        size: 20
+      },
+      {
+        header: 'User',
+        cell: ({ row }: { row: any }) => (
+          <div>
+            <div className='font-bold'>{row.original?.user?.name}</div>
+          </div>
+        ),
+        size: 100
+      },
+
+      {
+        accessorKey: 'type',
+        header: 'Loai giao dịch',
+        cell: ({ row }: { row: any }) => {
+          return getStatusBadge(row.original.type)
+        },
+        size: 100
       },
       {
         header: 'Số tiền',
         cell: ({ row }: { row: any }) => (
           <div>
-            <div className='font-bold'>{new Intl.NumberFormat('vi-VN').format(row.original.total_amount) + ' đ'}</div>
             <span className='font-sm'>
-              Giá tiền: {new Intl.NumberFormat('vi-VN').format(row.original.price_per_unit) + ' đ'}
+              Giá tiền: {new Intl.NumberFormat('vi-VN').format(row.original.sotienthaydoi) + ' đ'}
             </span>
           </div>
         ),
         size: 150
       },
       {
-        accessorKey: 'quantity',
-        header: 'Số lượng',
-        size: 100
-      },
-      {
-        accessorKey: 'status',
-        header: 'Trạng thái',
+        header: 'Nội dung',
+        size: 250,
         cell: ({ row }: { row: any }) => {
-          return getStatusBadge(row.original.status)
-        },
-        size: 150
+          return (
+            <>
+              <div className='d-flex align-items-center  gap-1 '>
+                <div>{row.original.noidung}</div>
+              </div>
+            </>
+          )
+        }
       },
       {
         accessorKey: 'buy_at',
@@ -132,47 +121,11 @@ export default function HistoryOrderPage() {
             <>
               <div className='d-flex align-items-center  gap-1 '>
                 <Clock3 size={14} />
-                <div style={{ marginTop: '2px' }}>{formatDateTimeLocal(row.original.buy_at)}</div>
+                <div style={{ marginTop: '2px' }}>{formatDateTimeLocal(row.original.thoigian)}</div>
               </div>
             </>
           )
         }
-      },
-      {
-        accessorKey: 'expired_at',
-        header: 'Ngày hết hạn',
-        size: 200,
-        cell: ({ row }: { row: any }) => {
-          return (
-            <>
-              <div className='d-flex align-items-center  gap-1 '>
-                <Clock size={14} />
-                <div style={{ marginTop: '2px' }}>{formatDateTimeLocal(row.original.expired_at)}</div>
-              </div>
-            </>
-          )
-        }
-      },
-      {
-        header: 'Action',
-        cell: ({ row }: { row: any }) => {
-          return (
-            <>
-              <CustomIconButton
-                aria-label='capture screenshot'
-                color='info'
-                variant='tonal'
-                onClick={() => {
-                  setSelectedOrder(row.original) // lưu dữ liệu dòng hiện tại
-                  setOpen(true) // mở modal
-                }}
-              >
-                <Eye size={16} />
-              </CustomIconButton>
-            </>
-          )
-        },
-        size: 100
       }
     ],
     []
@@ -206,31 +159,6 @@ export default function HistoryOrderPage() {
   const startRow = pageIndex * pageSize + 1
   const endRow = Math.min(startRow + pageSize - 1, totalRows)
 
-  // Socket: lắng nghe sự kiện để refetch bảng
-  useEffect(() => {
-    // Bảo đảm lần đầu vào trang sẽ làm tươi dữ liệu
-    queryClient.invalidateQueries({ queryKey: ['orderProxyStatic'] })
-
-    const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || 'https://socket.mktproxy.com'
-
-    const socket = io(socketUrl, {
-      transports: ['websocket'],
-      secure: true
-    })
-
-    socket.on('connect', () => console.log('✅ Connected to socket:', socket.id))
-    socket.on('order_completed', data => {
-      queryClient.invalidateQueries({ queryKey: ['orderProxyStatic'] })
-      setTimeout(() => {
-        void refetch()
-      }, 600)
-    })
-
-    return () => {
-      socket.disconnect()
-    }
-  }, [refetch, queryClient])
-
   return (
     <>
       <div className='orders-content'>
@@ -244,7 +172,7 @@ export default function HistoryOrderPage() {
                 <List size={17} />
               </div>
               <div>
-                <h5 className='mb-0 font-semibold'>Lịch sử mua hàng</h5>
+                <h5 className='mb-0 font-semibold'>Lịch sử giao dịch</h5>
               </div>
             </div>
           </div>
@@ -353,17 +281,6 @@ export default function HistoryOrderPage() {
           </div>
         </div>
       </div>
-
-      {open && (
-        <OrderDetail
-          open={open}
-          onClose={() => {
-            setOpen(false)
-            setSelectedOrder(null)
-          }}
-          order={selectedOrder}
-        />
-      )}
     </>
   )
 }

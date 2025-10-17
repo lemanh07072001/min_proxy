@@ -45,6 +45,7 @@ import menuItemStyles from '@core/styles/vertical/menuItemStyles'
 import menuSectionStyles from '@core/styles/vertical/menuSectionStyles'
 import type { getDictionary } from '@/utils/getDictionary'
 import BalanceCard from '@/app/[lang]/(private)/(client)/components/wallet/BalanceCard'
+import { TransactionHistory } from '@/components/icons'
 
 type RenderExpandIconProps = {
   open?: boolean
@@ -167,9 +168,6 @@ const VerticalMenu = ({ scrollMenu, dictionary }: Props) => {
 
     return pathname === fullPath ? { ...baseMenuItemStyles, ...activeMenuItemStyles } : baseMenuItemStyles
   }
-
-  const isProxySubMenuActive = true // Luôn mở submenu DỊCH VỤ proxy
-  const isAdminSubMenuActive = true // Luôn mở submenu admin khi có quyền
 
   return (
     <ScrollWrapper
@@ -335,6 +333,16 @@ const VerticalMenu = ({ scrollMenu, dictionary }: Props) => {
                 href={`/${locale}/admin/users`}
               >
                 Quản lý tài khoản
+              </MenuItem>
+            )}
+
+            {hasPermission('admin.transactionHistory') && (
+              <MenuItem
+                icon={<TransactionHistory />}
+                rootStyles={getMenuItemStyles('admin/transaction-history')}
+                href={`/${locale}/admin/transaction-history`}
+              >
+                Lịch sử giao dịch
               </MenuItem>
             )}
 

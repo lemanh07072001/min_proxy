@@ -7,7 +7,7 @@ import { authOptions } from '@/libs/auth'
  * Sử dụng cho các route cần xác thực chặt chẽ
  */
 export async function validateServerSessionWithAPI() {
-  const session = await getServerSession(authOptions as any) as any
+  const session = (await getServerSession(authOptions as any)) as any
 
   // Kiểm tra session cơ bản
   if (!session) {
@@ -54,7 +54,7 @@ export async function validateServerSessionWithAPI() {
  * Sử dụng cho các route cần kiểm tra nhanh
  */
 export async function validateServerSessionBasic() {
-  const session = await getServerSession(authOptions as any) as any
+  const session = (await getServerSession(authOptions as any)) as any
 
   // Kiểm tra session cơ bản
   if (!session) {
@@ -79,11 +79,12 @@ export async function validateServerSessionBasic() {
  * Sử dụng trong layout để pass user data xuống client
  */
 export async function getServerUserData() {
-  const session = await getServerSession(authOptions as any) as any
+  const session = (await getServerSession(authOptions as any)) as any
 
   // Kiểm tra session và access_token trước khi gọi API
   if (!session || !session.access_token) {
     console.log('⚠️ [getServerUserData] Không có session hoặc access_token')
+
     return null
   }
 
@@ -99,7 +100,7 @@ export async function getServerUserData() {
 
     if (response.ok) {
       const userData = await response.json()
-      console.log('✅ [getServerUserData] Lấy user data thành công:', userData)
+
       return userData
     } else {
       console.log('❌ [getServerUserData] API trả về lỗi:', response.status)
