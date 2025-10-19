@@ -351,4 +351,8 @@ body {
     flex-direction: column;
     gap: 0.75rem;
   }
+
+  .proxy-grid {
+    grid-template-columns: 1fr;
+  }
 }

@@ -5,6 +5,12 @@
   gap: 20px;
 }
 
+@media (max-width: 768px) {
+  .proxy-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .proxy-card-column {
   background: white;
   border-radius: 16px;
