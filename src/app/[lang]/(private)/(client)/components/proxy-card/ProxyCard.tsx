@@ -130,14 +130,7 @@ const useBuyProxy = () => {
   return mutation
 }
 
-const ProxyCard: React.FC<ProxyCardProps> = ({
-  provider,
-  logo,
-  color,
-  price,
-  features,
-  timeOptions = [],
-}) => {
+const ProxyCard: React.FC<ProxyCardProps> = ({ provider, logo, color, price, features, timeOptions = [] }) => {
   const params = useParams()
   const { mutate, isPending } = useBuyProxy()
   const session = useSession()
@@ -431,7 +424,9 @@ const ProxyCard: React.FC<ProxyCardProps> = ({
           <div className='col-12 col-lg-12'>
             <div className='flex flex-row justify-between flex-lg-col gap-2 mb-2'>
               <span className='total-label'>Tổng cộng:</span>
-              <span className='total-price'>{calculateTotalFormat()}đ</span>
+              <div className='flex items-baseline gap-1'>
+                <span className='total-price'>{calculateTotalFormat()}đ</span>
+              </div>
             </div>
           </div>
           <div className='col-12 col-lg-12'>

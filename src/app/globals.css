@@ -5,6 +5,10 @@ body {
   margin: 0;
 }
 
+.main {
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+
 .Toastify__toast {
   min-block-size: auto !important;
   padding: 8px;

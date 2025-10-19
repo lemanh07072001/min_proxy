@@ -33,7 +33,7 @@ export default function TableTransactionHistory() {
 
   const [pagination, setPagination] = useState({
     pageIndex: 0,
-    pageSize: 10
+    pageSize: 13
   }) // State để lưu các hàng được chọn
 
   const axiosAuth = useAxiosAuth()

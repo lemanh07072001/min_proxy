@@ -52,6 +52,8 @@ import { NextAuthProvider } from '@/app/contexts/nextAuthProvider'
 
 import { getServerSession } from 'next-auth/next'
 
+import StarField from '@/components/StarField'
+
 const figtree = Figtree({
   subsets: ['latin'],
   variable: '--font-figtree',
@@ -174,7 +176,7 @@ const RootLayout = async (props: ChildrenType & { params: Promise<{ lang: Locale
                 <StoreProvider initialUser={user}>
                   <ModalContextProvider>
                     <ReferralHandler />
-                    {children}
+                    <div className='relative z-10 main'>{children}</div>
                   </ModalContextProvider>
                 </StoreProvider>
               </TanstackProvider>
