@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+
 import { useParams, useRouter } from 'next/navigation'
 import './styles.css'
 
@@ -58,7 +59,6 @@ export default function StaticProxyPage({ data }: StaticProxyPageProps) {
           {data?.map((provider: any, index: any) => {
             return (
               <ProxyCard
-
                 key={index}
                 provider={provider}
                 logo={provider.logo}
