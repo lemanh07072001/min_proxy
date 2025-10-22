@@ -282,6 +282,8 @@ const PlanCard = ({ plan }) => {
     }
   }
 
+
+
   return (
     <>
       <form onSubmit={handleSubmit(onSubmit)} className={`proxy-plan-card ${plan.color}`}>

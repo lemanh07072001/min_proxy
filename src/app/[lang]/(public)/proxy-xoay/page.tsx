@@ -42,6 +42,7 @@ export default async function RotatingProxy({ params }: { params: Promise<{ lang
   // Fetch data and dictionary in parallel
   const [proxyPlans, dictionary] = await Promise.all([getProxyPlans(), getDictionary(lang)])
 
+  console.log(dictionary)
   // Create proxy template using server-side translations
   const proxyTemplate = {
     features: [
@@ -93,7 +94,7 @@ export default async function RotatingProxy({ params }: { params: Promise<{ lang
     const protocolIndex = features.findIndex(f => f.label === dictionary.rotatingProxy.protocol)
 
     if (protocolIndex !== -1) {
-      if (plan.protocol === 1) {
+      if (plan.protocol_type === 1) {
         // ✅ Hiển thị select
         features[protocolIndex] = {
           ...features[protocolIndex],
