@@ -8,7 +8,7 @@ import { getDictionary } from '@/utils/getDictionary'
 import ProxyPlansClient from '@/components/ProxyPlansClient'
 
 export const metadata: Metadata = {
-  title: `${process.env.NEXT_PUBLIC_APP_NAME} | Proxy Xoay`,
+  title: `${process.env.NEXT_PUBLIC_APP_NAME} | Proxy Xoay`
 }
 
 // Fetch data on server-side
@@ -71,7 +71,8 @@ export default async function RotatingProxy({ params }: { params: Promise<{ lang
         min: 1,
         max: 100
       },
-      { label: dictionary.rotatingProxy.days, status: 'input', inputType: 'number', field: 'time', min: 1, max: 100 }
+      { label: dictionary.rotatingProxy.days, status: 'input', inputType: 'number', field: 'time', min: 1, max: 100 },
+      { label: dictionary.rotatingProxy.protocol_type, value: 'HTTP(S), SOCKS5', status: 'success' }
     ]
   }
 
@@ -88,6 +89,27 @@ export default async function RotatingProxy({ params }: { params: Promise<{ lang
       value: plan.ip_version,
       status: 'success'
     })
+
+    const protocolIndex = features.findIndex(f => f.label === dictionary.rotatingProxy.protocol_type)
+
+    if (protocolIndex !== -1) {
+      if (plan.protocol_type === 1) {
+        // ✅ Hiển thị select
+        features[protocolIndex] = {
+          ...features[protocolIndex],
+          label: 'Giao thức',
+          status: 'select',
+          options: [
+            { label: 'HTTP', value: 'http' },
+            { label: 'SOCKS5', value: 'socks5' }
+          ],
+          field: 'protocol_type' // để client biết field này là gì
+        }
+      } else {
+        // ❌ Không hiển thị gì — xóa dòng protocol_type khỏi danh sách
+        features.splice(protocolIndex, 1)
+      }
+    }
 
     // 👉 xử lý cột time: nếu time_type = 1 -> Ngày sử dụng, nếu = 7 -> Tuần sử dụng
     const timeIndex = features.findIndex(f => f.field === 'time')
@@ -114,6 +136,7 @@ export default async function RotatingProxy({ params }: { params: Promise<{ lang
       partner: plan.partner,
       ip_version: plan.ip_version,
       time_type: plan.time_type, // lưu nếu cần dùng nơi khác
+      protocol_type: plan.protocol_type,
       features
     }
   })
