@@ -49,5 +49,9 @@
     "customizer",
     "iconify",
     "tanstack"
+  ],
+  "i18n-ally.localesPaths": [
+    "src/locales",
+    "src/data/languages"
   ]
 }
