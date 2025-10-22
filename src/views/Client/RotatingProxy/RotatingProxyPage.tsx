@@ -2,6 +2,8 @@
 
 import React, { useState } from 'react'
 
+import { useRouter } from 'next/navigation'
+
 import { useTranslation } from 'react-i18next'
 
 import { useForm, Controller, useWatch } from 'react-hook-form'
@@ -9,7 +11,7 @@ import * as yup from 'yup'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { CheckCircle, ShoppingCart, User, Loader } from 'lucide-react'
 import Switch from '@mui/material/Switch'
-
+import MenuItem from '@mui/material/MenuItem'
 import { useSession } from 'next-auth/react'
 
 import axios from 'axios'
@@ -28,7 +30,6 @@ import CustomTextField from '@core/components/mui/TextField'
 import { subtractBalance } from '@/store/userSlice'
 import type { AppDispatch } from '@/store'
 import './styles.css'
-import { useRouter } from 'next/navigation'
 
 // Định nghĩa schema validation chung cho các gói proxy.
 const proxyPlanSchema = yup.object({
@@ -45,8 +46,45 @@ const proxyPlanSchema = yup.object({
     .required('Vui lòng nhập thời gian')
     .integer('Thời gian phải là số nguyên')
     .min(1, 'Tối thiểu là 1 ngày')
-    .max(365, 'Tối đa là 365 ngày')
+    .max(365, 'Tối đa là 365 ngày'),
+  protocol_type: yup.string().required('Vui lòng chọn giao thức').oneOf(['http', 'socks5'], 'Giao thức không hợp lệ')
 })
+
+// Component này render một dòng feature có select (dropdown)
+const SelectFeatureRow = ({ feature, control, planId }) => (
+  <>
+    <Controller
+      name={feature.field}
+      control={control}
+      render={({ field }) => (
+        <div className='feature-row'>
+          <div className='feature-icons'>
+            <CheckCircle size={16} className='text-green-500' />
+          </div>
+
+          <div className='feature-content '>
+            <label className={`feature-label `} htmlFor={`${planId}-${feature.label}`}>
+              {feature.label}:
+            </label>
+            <CustomTextField
+              select
+              size='small'
+              id={`${planId}-${field.name}`}
+              value={field.value || ''}
+              onChange={e => field.onChange(e.target.value)}
+            >
+              {feature.options?.map((opt: any) => (
+                <MenuItem key={opt.value} value={opt.value}>
+                  {opt.label}
+                </MenuItem>
+              ))}
+            </CustomTextField>
+          </div>
+        </div>
+      )}
+    />
+  </>
+)
 
 // Component này render một dòng feature tĩnh (chỉ hiển thị thông tin)
 const StaticFeatureRow = ({ feature }) => (
@@ -145,7 +183,6 @@ const useBuyProxy = () => {
       return api.post('/buy-proxy', orderData)
     },
     onSuccess: async (data, variables) => {
-
       // Xử lý khi request thành công
       if (data.data.success == false) {
         toast.error('Lỗi hệ thông xin vui lòng liên hệ Admin.  ')
@@ -187,7 +224,8 @@ const PlanCard = ({ plan }) => {
   } = useForm({
     defaultValues: {
       quantity: 1,
-      time: 1
+      time: 1,
+      protocol_type: 'http'
     },
     mode: 'onChange',
     resolver: yupResolver(proxyPlanSchema)
@@ -273,6 +311,8 @@ const PlanCard = ({ plan }) => {
                 )
               case 'checkbox':
                 return <SwitchFeatureRow key={index} feature={feature} control={control} planId={plan.id} />
+              case 'select':
+                return <SelectFeatureRow key={index} feature={feature} control={control} planId={plan.id} />
               default:
                 return null
             }
@@ -320,10 +360,9 @@ const PlanCard = ({ plan }) => {
 
 interface RotatingProxyPageProps {
   data: any
-
 }
 
-export default function RotatingProxyPage({ data,  }: RotatingProxyPageProps) {
+export default function RotatingProxyPage({ data }: RotatingProxyPageProps) {
   return (
     <>
       {data.map((plan: any) => (
