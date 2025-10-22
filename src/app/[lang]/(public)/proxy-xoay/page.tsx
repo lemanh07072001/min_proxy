@@ -72,7 +72,7 @@ export default async function RotatingProxy({ params }: { params: Promise<{ lang
         max: 100
       },
       { label: dictionary.rotatingProxy.days, status: 'input', inputType: 'number', field: 'time', min: 1, max: 100 },
-      { label: dictionary.rotatingProxy.protocol_type, value: 'HTTP(S), SOCKS5', status: 'success' }
+      { label: dictionary.rotatingProxy.protocol, value: 'HTTP(S), SOCKS5', status: 'success' }
     ]
   }
 
@@ -90,10 +90,10 @@ export default async function RotatingProxy({ params }: { params: Promise<{ lang
       status: 'success'
     })
 
-    const protocolIndex = features.findIndex(f => f.label === dictionary.rotatingProxy.protocol_type)
+    const protocolIndex = features.findIndex(f => f.label === dictionary.rotatingProxy.protocol)
 
     if (protocolIndex !== -1) {
-      if (plan.protocol_type === 1) {
+      if (plan.protocol === 1) {
         // ✅ Hiển thị select
         features[protocolIndex] = {
           ...features[protocolIndex],
@@ -103,10 +103,10 @@ export default async function RotatingProxy({ params }: { params: Promise<{ lang
             { label: 'HTTP', value: 'http' },
             { label: 'SOCKS5', value: 'socks5' }
           ],
-          field: 'protocol_type' // để client biết field này là gì
+          field: 'protocol' // để client biết field này là gì
         }
       } else {
-        // ❌ Không hiển thị gì — xóa dòng protocol_type khỏi danh sách
+        // ❌ Không hiển thị gì — xóa dòng protocol khỏi danh sách
         features.splice(protocolIndex, 1)
       }
     }
@@ -136,7 +136,7 @@ export default async function RotatingProxy({ params }: { params: Promise<{ lang
       partner: plan.partner,
       ip_version: plan.ip_version,
       time_type: plan.time_type, // lưu nếu cần dùng nơi khác
-      protocol_type: plan.protocol_type,
+      protocol: plan.protocol,
       features
     }
   })
