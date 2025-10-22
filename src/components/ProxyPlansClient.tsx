@@ -1,5 +1,6 @@
 'use client'
 import React, { useEffect, useState } from 'react'
+
 import { useParams, useRouter } from 'next/navigation'
 
 import { useSession } from 'next-auth/react'
@@ -19,7 +20,6 @@ export default function ProxyPlansClient({ data }: ProxyPlansClientProps) {
   const { data: session, status } = useSession()
   const queryClient = useQueryClient()
 
-
   // Refetch data khi chuyển sang tab table để đảm bảo hiển thị đơn hàng mới nhất
   useEffect(() => {
     if (currentView === 'table' && status === 'authenticated') {
@@ -27,7 +27,6 @@ export default function ProxyPlansClient({ data }: ProxyPlansClientProps) {
       queryClient.invalidateQueries({ queryKey: ['proxyData'] })
     }
   }, [currentView, status, queryClient])
-
 
   return (
     <>
@@ -67,13 +66,13 @@ export default function ProxyPlansClient({ data }: ProxyPlansClientProps) {
       {currentView === 'form' && (
         <div className='proxy-xoay-page'>
           <div className='plans-container'>
-            <RotatingProxyPage data={data}  />
+            <RotatingProxyPage data={data} />
           </div>
         </div>
       )}
 
       {currentView === 'table' && <OrderRotatingProxyPage />}
-      
+
       {currentView === 'api' && <ApiUsage />}
     </>
   )
