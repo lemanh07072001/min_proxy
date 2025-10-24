@@ -19,7 +19,7 @@ export async function POST(request) {
       // Dùng axios với proxy agent để gọi ra ngoài
       const response = await axios.get('https://cloudflare.com/cdn-cgi/trace', {
         httpsAgent,
-        timeout: 10000 // Timeout 10 giây
+
       })
 
       const endTime = performance.now();
