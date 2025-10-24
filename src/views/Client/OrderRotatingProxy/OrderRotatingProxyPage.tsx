@@ -2,14 +2,11 @@
 
 import { useEffect, useMemo, useState } from 'react'
 
-import { headers } from 'next/headers'
-
 import Image from 'next/image'
 
-import ToggleButton from '@mui/material/ToggleButton'
-import ToggleButtonGroup from '@mui/material/ToggleButtonGroup'
+import MenuItem from '@mui/material/MenuItem'
+
 import {
-  TriangleAlert,
   Copy,
   CircleQuestionMark,
   BadgeCheck,
@@ -48,6 +45,10 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { toast } from 'react-toastify'
 
+import { io } from 'socket.io-client'
+
+import CustomTextField from '@/@core/components/mui/TextField'
+
 import CustomIconButton from '@core/components/mui/IconButton'
 
 import { useCopy } from '@/app/hooks/useCopy'
@@ -55,14 +56,13 @@ import { formatDateTimeLocal } from '@/utils/formatDate'
 
 import useAxiosAuth from '@/hocs/useAxiosAuth'
 import ProxyDetailModal from './ProxyDetailModal'
-import axiosInstance from '@/libs/axios'
-import ApiUsage from './ApiUsage'
-import { io } from 'socket.io-client'
 
 export default function OrderRotatingProxyPage() {
   const [columnFilters, setColumnFilters] = useState<any[]>([])
   const [rowSelection, setRowSelection] = useState({}) // State để lưu các hàng được chọn
   const [sorting, setSorting] = useState<any[]>([])
+  const [statusFilter, setStatusFilter] = useState<string>('all') // State để lọc theo status
+  const [typeFilter, setTypeFilter] = useState<string>('all') // State để lọc theo loại
 
   const [pagination, setPagination] = useState({
     pageIndex: 0,
@@ -72,13 +72,16 @@ export default function OrderRotatingProxyPage() {
   const [modalOpen, setModalOpen] = useState(false)
   const [selectedProxy, setSelectedProxy] = useState<any | null>(null)
   const [loadingId, setLoadingId] = useState<string | null>(null)
-  const [currentView, setCurrentView] = useState<'table' | 'api'>('table')
   const axiosAuth = useAxiosAuth()
   const queryClient = useQueryClient()
 
   const [, copy] = useCopy()
 
-  const { data: dataOrders = [], isLoading, refetch } = useQuery({
+  const {
+    data: dataOrders = [],
+    isLoading,
+    refetch
+  } = useQuery({
     queryKey: ['proxyData'],
     queryFn: async () => {
       const res = await axiosAuth.get('/get-order-proxy-rotating')
@@ -96,6 +99,40 @@ export default function OrderRotatingProxyPage() {
       default:
         return <Chip label='Không xác định' size='small' icon={<CircleQuestionMark />} color='secondary' />
     }
+  }
+
+  // Lọc dữ liệu theo status và loại
+  const filteredData = useMemo(() => {
+    let filtered = dataOrders
+
+    // Filter theo status
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter((item: any) => item.status === statusFilter)
+    }
+
+    // Filter theo loại
+    if (typeFilter !== 'all') {
+      filtered = filtered.filter((item: any) => {
+        const proxys = item.proxys || {}
+        const keys = Object.keys(proxys)
+        const firstKey = keys[0]?.toLowerCase()
+
+        return firstKey === typeFilter.toLowerCase()
+      })
+    }
+
+    return filtered
+  }, [dataOrders, statusFilter, typeFilter])
+
+  // Reset row selection khi filter thay đổi
+  const handleStatusFilterChange = (value: string) => {
+    setStatusFilter(value)
+    setRowSelection({}) // Reset selection khi filter thay đổi
+  }
+
+  const handleTypeFilterChange = (value: string) => {
+    setTypeFilter(value)
+    setRowSelection({}) // Reset selection khi filter thay đổi
   }
 
   const handleOpenModal = async (key: string) => {
@@ -119,53 +156,53 @@ export default function OrderRotatingProxyPage() {
 
   const columns = useMemo(
     () => [
-    {
-      id: 'select',
-      header: ({ table }: { table: any }) => (
-        <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-          <FormControlLabel
-            sx={{
-              '&.MuiFormControlLabel-root': {
-                margin: 0
+      {
+        id: 'select',
+        header: ({ table }: { table: any }) => (
+          <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+            <FormControlLabel
+              sx={{
+                '&.MuiFormControlLabel-root': {
+                  margin: 0
+                }
+              }}
+              control={
+                <Checkbox
+                  checked={table.getIsAllRowsSelected()}
+                  indeterminate={table.getIsSomeRowsSelected()}
+                  onChange={table.getToggleAllRowsSelectedHandler()}
+                />
               }
-            }}
-            control={
-              <Checkbox
-                checked={table.getIsAllRowsSelected()}
-                indeterminate={table.getIsSomeRowsSelected()}
-                onChange={table.getToggleAllRowsSelectedHandler()}
-              />
-            }
-            label='' // bỏ label để không chiếm chỗ
-          />
-        </div>
-      ),
-      cell: ({ row }: { row: any }) => (
-        <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-          <FormControlLabel
-            sx={{
-              '&.MuiFormControlLabel-root': {
-                margin: 0
+              label='' // bỏ label để không chiếm chỗ
+            />
+          </div>
+        ),
+        cell: ({ row }: { row: any }) => (
+          <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+            <FormControlLabel
+              sx={{
+                '&.MuiFormControlLabel-root': {
+                  margin: 0
+                }
+              }}
+              control={
+                <Checkbox
+                  checked={row.getIsSelected()}
+                  disabled={!row.getCanSelect()}
+                  onChange={row.getToggleSelectedHandler()}
+                />
               }
-            }}
-            control={
-              <Checkbox
-                checked={row.getIsSelected()}
-                disabled={!row.getCanSelect()}
-                onChange={row.getToggleSelectedHandler()}
-              />
-            }
-            label=''
-          />
-        </div>
-      ),
-      size: 60
-    },
-    {
-      accessorKey: 'id',
-      header: 'ID',
-      size: 60
-    },
+              label=''
+            />
+          </div>
+        ),
+        size: 60
+      },
+      {
+        accessorKey: 'id',
+        header: 'ID',
+        size: 60
+      },
       {
         accessorKey: 'api_key',
         header: 'Api key',
@@ -183,85 +220,87 @@ export default function OrderRotatingProxyPage() {
         },
         size: 300
       },
-    {
-      accessorKey: 'protocol',
-      header: 'Loại',
-      cell: ({ row }: { row: any }) => {
-        const keys = row.original.plan_type || '-'
+      {
+        accessorKey: 'protocol',
+        header: 'Loại',
+        cell: ({ row }: { row: any }) => {
+          const keys = row.original.plan_type || '-'
 
-        return <div className='font-bold'>{keys}</div>
+          return <div className='font-bold'>{keys}</div>
+        },
+        size: 100
       },
-      size: 100
-    },
-    {
-      header: 'Ip Version',
-      cell: ({ row }: { row: any }) => {
-        const ip_version = row.original.type_service?.ip_version ?? '-'
+      {
+        header: 'Ip Version',
+        cell: ({ row }: { row: any }) => {
+          const ip_version = row.original.type_service?.ip_version ?? '-'
 
-        return <div className='font-bold'>{ip_version}</div>
+          return <div className='font-bold'>{ip_version}</div>
+        },
+        size: 100
       },
-      size: 100
-    },
-    {
-      accessorKey: 'buyDate',
-      header: 'Ngày mua',
-      cell: ({ row }: { row: any }) => {
-        return (
-          <>
-            <div className='d-flex align-items-center  gap-1 '>
-              <Clock3 size={14} />
-              <div style={{ marginTop: '2px' }}>{formatDateTimeLocal(row.original.buy_at)}</div>
-            </div>
-          </>
-        )
-      },
-      size: 200
-    },
-    {
-      accessorKey: 'expiryDate',
-      header: 'Ngày hết hạn',
-      cell: ({ row }: { row: any }) => {
-        return (
-          <>
-            <div className='d-flex align-items-center  gap-1 '>
-              <Clock size={14} />
-              <div style={{ marginTop: '2px' }}>{formatDateTimeLocal(row.original.expired_at)}</div>
-            </div>
-          </>
-        )
-      },
-      size: 200
-    },
-    {
-      accessorKey: 'status',
-      header: 'Trạng thái',
-      cell: ({ row }: { row: any }) => {
-        return getStatusBadge(row.original.status)
-      },
-      size: 150
-    },
-    {
-      header: 'Action',
-      cell: ({ row }: { row: any }) => {
-        const isRowLoading = loadingId === row.original.api_key
-
-        if (row.original.status === 'ACTIVE') {
+      {
+        accessorKey: 'buyDate',
+        header: 'Ngày mua',
+        cell: ({ row }: { row: any }) => {
           return (
-            <CustomIconButton
-              aria-label='capture screenshot'
-              color='info'
-              variant='tonal'
-              disabled={isRowLoading}
-              onClick={() => handleOpenModal(row.original?.api_key)}
-            >
-              {isRowLoading ? <Loader size={16} /> : <RefreshCcw size={16} />}
-            </CustomIconButton>
+            <>
+              <div className='d-flex align-items-center  gap-1 '>
+                <Clock3 size={14} />
+                <div style={{ marginTop: '2px' }}>{formatDateTimeLocal(row.original.buy_at)}</div>
+              </div>
+            </>
           )
-        }
+        },
+        size: 200
       },
-      size: 120
-    }
-  ], []) as any[]
+      {
+        accessorKey: 'expiryDate',
+        header: 'Ngày hết hạn',
+        cell: ({ row }: { row: any }) => {
+          return (
+            <>
+              <div className='d-flex align-items-center  gap-1 '>
+                <Clock size={14} />
+                <div style={{ marginTop: '2px' }}>{formatDateTimeLocal(row.original.expired_at)}</div>
+              </div>
+            </>
+          )
+        },
+        size: 200
+      },
+      {
+        accessorKey: 'status',
+        header: 'Trạng thái',
+        cell: ({ row }: { row: any }) => {
+          return getStatusBadge(row.original.status)
+        },
+        size: 150
+      },
+      {
+        header: 'Action',
+        cell: ({ row }: { row: any }) => {
+          const isRowLoading = loadingId === row.original.api_key
+
+          if (row.original.status === 'ACTIVE') {
+            return (
+              <CustomIconButton
+                aria-label='capture screenshot'
+                color='info'
+                variant='tonal'
+                disabled={isRowLoading}
+                onClick={() => handleOpenModal(row.original?.api_key)}
+              >
+                {isRowLoading ? <Loader size={16} /> : <RefreshCcw size={16} />}
+              </CustomIconButton>
+            )
+          }
+        },
+        size: 120
+      }
+    ],
+    []
+  ) as any[]
 
   const table = useReactTable({
     data: dataOrders,
@@ -302,7 +341,6 @@ export default function OrderRotatingProxyPage() {
 
     socket.on('connect', () => console.log('✅ Connected to socket:', socket.id))
     socket.on('order_completed', data => {
-
       queryClient.invalidateQueries({ queryKey: ['proxyData'] })
       setTimeout(() => {
         void refetch()
@@ -313,6 +351,58 @@ export default function OrderRotatingProxyPage() {
       socket.disconnect()
     }
   }, [refetch, queryClient])
+
+  // Function để lấy tất cả proxy đã được checked
+  const getSelectedProxies = () => {
+    const selectedRows = table.getFilteredSelectedRowModel().rows
+
+    return selectedRows.map(row => {
+      const api_key = row.original.api_key || {}
+
+      return {
+        id: row.original.id,
+        api_key: api_key || '-',
+        status: row.original.status
+      }
+    })
+  }
+
+  // Function để copy tất cả proxy đã chọn
+  const copySelectedProxies = () => {
+    const selectedProxies = getSelectedProxies()
+
+    const proxyList = selectedProxies.map(item => item.api_key).join('\n')
+
+    copy(proxyList)
+  }
+
+  // Function để tải xuống proxy đã chọn dưới dạng file .txt
+  const downloadSelectedProxies = () => {
+    const selectedProxies = getSelectedProxies()
+
+    if (selectedProxies.length === 0) {
+      alert('Vui lòng chọn ít nhất một proxy để tải xuống!')
+
+      return
+    }
+
+    const proxyList = selectedProxies.map(item => item.api_key).join('\n')
+    const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-')
+    const filename = `proxy-list-${timestamp}.txt`
+
+    // Tạo blob và tải xuống
+    const blob = new Blob([proxyList], { type: 'text/plain;charset=utf-8' })
+    const url = window.URL.createObjectURL(blob)
+    const link = document.createElement('a')
+
+    link.href = url
+    link.download = filename
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    window.URL.revokeObjectURL(url)
+  }
+
   return (
     <>
       <div className='orders-content'>
@@ -329,139 +419,175 @@ export default function OrderRotatingProxyPage() {
                 <h5 className='mb-0 font-semibold'>Danh sách proxy xoay</h5>
               </div> */}
             </div>
-            {/* <div>
-              <div className='bg-white'>
-                <div className='flex items-center justify-end'>
-                  <div className='flex bg-gray-100 rounded-lg p-1'>
-                    <button
-                      onClick={() => setCurrentView('table')}
-                      className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-                        currentView === 'table'
-                          ? 'bg-white text-gray-900 shadow-sm'
-                          : 'text-gray-500 hover:text-gray-700'
-                      }`}
-                    >
-                      Danh sách
-                    </button>
-                    <button
-                      onClick={() => setCurrentView('api')}
-                      className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-                        currentView === 'api' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
-                      }`}
-                    >
-                      API
-                    </button>
-                  </div>
-                </div>
+            <div className='d-flex gap-2 align-items-center'>
+              {/* Hiển thị số proxy đã chọn */}
+              {Object.keys(rowSelection).length > 0 && (
+                <span className='text-sm text-gray-600'>Đã chọn: {Object.keys(rowSelection).length} proxy</span>
+              )}
+              {/* Filter by Status */}
+              <div className='status-filter'>
+                <CustomTextField
+                  select
+                  fullWidth
+                  defaultValue='all'
+                  size='small'
+                  sx={{
+                    width: '200px'
+                  }}
+                  onChange={e => handleStatusFilterChange(e.target.value)}
+                >
+                  <MenuItem value={'all'}>Tất cả trạng thái</MenuItem>
+                  <MenuItem value={'ACTIVE'}>Đang hoạt động</MenuItem>
+                  <MenuItem value={'EXPRIRED'}>Hết hạn</MenuItem>
+                </CustomTextField>
               </div>
-            </div> */}
+
+              {/* Filter by Type */}
+              <div className='type-filter'>
+                <CustomTextField
+                  select
+                  fullWidth
+                  defaultValue='all'
+                  size='small'
+                  sx={{
+                    width: '200px'
+                  }}
+                  onChange={e => handleTypeFilterChange(e.target.value)}
+                >
+                  <MenuItem value={'all'}>Tất cả loại</MenuItem>
+                  <MenuItem value={'http'}>HTTP</MenuItem>
+                  <MenuItem value={'socks5'}>SOCKS5</MenuItem>
+                </CustomTextField>
+              </div>
+
+              {/* Copy all */}
+              <Button
+                variant='outlined'
+                startIcon={<Copy size={16} />}
+                onClick={copySelectedProxies}
+                sx={{ minWidth: 'auto' }}
+              >
+                Copy đã chọn
+              </Button>
+
+              {/* Download as TXT */}
+              <Button
+                variant='contained'
+                startIcon={<Download size={16} />}
+                onClick={downloadSelectedProxies}
+                sx={{ minWidth: 'auto', color: '#fff' }}
+                disabled={Object.keys(rowSelection).length === 0}
+              >
+                Tải xuống .txt
+              </Button>
+            </div>
           </div>
 
           <div className='table-container'>
-              {/* Table */}
-              <div className='table-wrapper'>
-                <table className='data-table' style={isLoading || dataOrders.length === 0 ? { height: '100%' } : {}}>
-                  <thead className='table-header'>
-                    {table.getHeaderGroups().map(headerGroup => (
-                      <tr key={headerGroup.id}>
-                        {headerGroup.headers.map(header => (
-                          <th style={{ width: header.getSize() }} className='table-header th' key={header.id}>
-                            {flexRender(header.column.columnDef.header, header.getContext())}
-                          </th>
+            {/* Table */}
+            <div className='table-wrapper'>
+              <table className='data-table' style={isLoading || dataOrders.length === 0 ? { height: '100%' } : {}}>
+                <thead className='table-header'>
+                  {table.getHeaderGroups().map(headerGroup => (
+                    <tr key={headerGroup.id}>
+                      {headerGroup.headers.map(header => (
+                        <th style={{ width: header.getSize() }} className='table-header th' key={header.id}>
+                          {flexRender(header.column.columnDef.header, header.getContext())}
+                        </th>
+                      ))}
+                    </tr>
+                  ))}
+                </thead>
+                <tbody>
+                  {isLoading ? (
+                    <tr>
+                      <td colSpan={columns.length} className='py-10 text-center'>
+                        <div className='loader-wrapper'>
+                          <div className='loader'>
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                          </div>
+                          <p className='loading-text'>Đang tải dữ liệu...</p>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : table.getRowModel().rows.length === 0 ? (
+                    <tr>
+                      <td colSpan={columns.length} className='py-10 text-center'>
+                        <div className='flex flex-col items-center justify-center'>
+                          <Image src='/images/no-data.png' alt='No data' width={160} height={160} />
+                          <p className='mt-4 text-gray-500'>Không có dữ liệu</p>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : (
+                    table.getRowModel().rows.map(row => (
+                      <tr className='table-row' key={row.id}>
+                        {row.getVisibleCells().map(cell => (
+                          <td className='table-cell' key={cell.id}>
+                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                          </td>
                         ))}
                       </tr>
-                    ))}
-                  </thead>
-                  <tbody>
-                    {isLoading ? (
-                      <tr>
-                        <td colSpan={columns.length} className='py-10 text-center'>
-                          <div className='loader-wrapper'>
-                            <div className='loader'>
-                              <span></span>
-                              <span></span>
-                              <span></span>
-                            </div>
-                            <p className='loading-text'>Đang tải dữ liệu...</p>
-                          </div>
-                        </td>
-                      </tr>
-                    ) : table.getRowModel().rows.length === 0 ? (
-                      <tr>
-                        <td colSpan={columns.length} className='py-10 text-center'>
-                          <div className='flex flex-col items-center justify-center'>
-                            <Image src='/images/no-data.png' alt='No data' width={160} height={160} />
-                            <p className='mt-4 text-gray-500'>Không có dữ liệu</p>
-                          </div>
-                        </td>
-                      </tr>
-                    ) : (
-                      table.getRowModel().rows.map(row => (
-                        <tr className='table-row' key={row.id}>
-                          {row.getVisibleCells().map(cell => (
-                            <td className='table-cell' key={cell.id}>
-                              {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                            </td>
-                          ))}
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
 
-              {/* Pagination */}
-              <div className='pagination-container'>
-                <div className='pagination-wrapper'>
-                  <div className='pagination-info'>
-                    <div className='page-size-select'>
-                      <span className='text-sm text-gray'>Kích cỡ trang linh</span>
-                      <div className='page-size-select-wrapper'>
-                        <select
-                          value={table.getState().pagination.pageSize}
-                          onChange={e => {
-                            table.setPageSize(Number(e.target.value))
-                          }}
-                          className='page-size-select'
-                        >
-                          <option value='10'>10</option>
-                          <option value='50'>50</option>
-                          <option value='100'>100</option>
-                        </select>
-                        <div className='select-arrow'>
-                          <svg className='h-4 w-4' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'>
-                            <path d='M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z' />
-                          </svg>
-                        </div>
+            {/* Pagination */}
+            <div className='pagination-container'>
+              <div className='pagination-wrapper'>
+                <div className='pagination-info'>
+                  <div className='page-size-select'>
+                    <span className='text-sm text-gray'>Kích cỡ trang linh</span>
+                    <div className='page-size-select-wrapper'>
+                      <select
+                        value={table.getState().pagination.pageSize}
+                        onChange={e => {
+                          table.setPageSize(Number(e.target.value))
+                        }}
+                        className='page-size-select'
+                      >
+                        <option value='10'>10</option>
+                        <option value='50'>50</option>
+                        <option value='100'>100</option>
+                      </select>
+                      <div className='select-arrow'>
+                        <svg className='h-4 w-4' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'>
+                          <path d='M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z' />
+                        </svg>
                       </div>
                     </div>
-                    {/* --- Hiển thị số hàng trên trang hiện tại --- */}
-                    <div>
-                      {totalRows > 0 ? (
-                        <span>
-                          {startRow} - {endRow} của {totalRows} hàng
-                        </span>
-                      ) : (
-                        <span>Không có dữ liệu</span>
-                      )}
-                    </div>
                   </div>
+                  {/* --- Hiển thị số hàng trên trang hiện tại --- */}
+                  <div>
+                    {totalRows > 0 ? (
+                      <span>
+                        {startRow} - {endRow} của {totalRows} hàng
+                      </span>
+                    ) : (
+                      <span>Không có dữ liệu</span>
+                    )}
+                  </div>
+                </div>
 
-                  <div className='pagination-buttons'>
-                    <Pagination
-                      count={table.getPageCount()}
-                      shape='rounded'
-                      variant='outlined'
-                      color='primary'
-                      page={table.getState().pagination.pageIndex + 1}
-                      onChange={(event, page) => {
-                        table.setPageIndex(page - 1)
-                      }}
-                    />
-                  </div>
+                <div className='pagination-buttons'>
+                  <Pagination
+                    count={table.getPageCount()}
+                    shape='rounded'
+                    variant='outlined'
+                    color='primary'
+                    page={table.getState().pagination.pageIndex + 1}
+                    onChange={(event, page) => {
+                      table.setPageIndex(page - 1)
+                    }}
+                  />
                 </div>
               </div>
             </div>
+          </div>
         </div>
       </div>
 

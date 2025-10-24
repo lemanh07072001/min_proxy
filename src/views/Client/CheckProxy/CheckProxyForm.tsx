@@ -67,7 +67,7 @@ export default function CheckProxyForm({ onItemListChange, onCheckedProxy }: Che
   const [, copy] = useCopy()
   const queueRef = useRef([])
   const activeChecksRef = useRef(0)
-  const maxConcurrentChecks = 20
+  const maxConcurrentChecks = 1
 
   const handleCopyProxysError = () => {
     const formattedData = successProxies.join('\n')
@@ -197,7 +197,7 @@ export default function CheckProxyForm({ onItemListChange, onCheckedProxy }: Che
       list_proxy: proxy
     }))
 
-    // Bắt đầu check với số lượng tối đa 5 luồng
+    // Bắt đầu check với số lượng tối đa 1 luồng
     const initialBatch = Math.min(maxConcurrentChecks, filteredLines.length)
 
     for (let i = 0; i < initialBatch; i++) {

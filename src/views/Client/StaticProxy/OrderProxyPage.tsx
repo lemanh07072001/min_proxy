@@ -4,21 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 
 import Image from 'next/image'
 
-import {
-  TriangleAlert,
-  Copy,
-  RotateCcwKey,
-  CircleQuestionMark,
-  BadgeCheck,
-  BadgeMinus,
-  Calendar,
-  Key,
-  Clock,
-  Clock3,
-  List,
-  Download,
-  Loader
-} from 'lucide-react'
+import { Copy, CircleQuestionMark, BadgeCheck, BadgeMinus, Clock, Clock3, List, Download, Loader } from 'lucide-react'
 
 import Button from '@mui/material/Button'
 
@@ -44,19 +30,18 @@ import { FormControlLabel } from '@mui/material'
 
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 
-import CustomIconButton from '@core/components/mui/IconButton'
+import { io } from 'socket.io-client'
+
 import { formatDateTimeLocal } from '@/utils/formatDate'
 import { useCopy } from '@/app/hooks/useCopy'
 
 import useAxiosAuth from '@/hocs/useAxiosAuth'
 import CustomTextField from '@/@core/components/mui/TextField'
-import { io } from 'socket.io-client'
 
 export default function OrderProxyPage() {
   const [columnFilters, setColumnFilters] = useState<any[]>([])
   const [rowSelection, setRowSelection] = useState({}) // State để lưu các hàng được chọn
   const [sorting, setSorting] = useState<any[]>([])
-  const [changePassword, setChangePassword] = useState(false)
   const [statusFilter, setStatusFilter] = useState<string>('all') // State để lọc theo status
   const [typeFilter, setTypeFilter] = useState<string>('all') // State để lọc theo loại
 
@@ -69,7 +54,11 @@ export default function OrderProxyPage() {
   const [isCopied, copy] = useCopy()
   const queryClient = useQueryClient()
 
-  const { data: dataOrders = [], isLoading, refetch } = useQuery({
+  const {
+    data: dataOrders = [],
+    isLoading,
+    refetch
+  } = useQuery({
     queryKey: ['orderProxyStatic'],
     queryFn: async () => {
       const res = await axiosAuth.get('/get-order-proxy-static')
@@ -93,7 +82,6 @@ export default function OrderProxyPage() {
 
     socket.on('connect', () => console.log('✅ Connected to socket:', socket.id))
     socket.on('order_completed', data => {
-
       // Invalidate và refetch có độ trễ nhỏ để chờ backend cập nhật xong
       queryClient.invalidateQueries({ queryKey: ['orderProxyStatic'] })
       setTimeout(() => {
