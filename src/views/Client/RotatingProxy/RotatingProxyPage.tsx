@@ -47,7 +47,7 @@ const proxyPlanSchema = yup.object({
     .integer('Thời gian phải là số nguyên')
     .min(1, 'Tối thiểu là 1 ngày')
     .max(365, 'Tối đa là 365 ngày'),
-  protocol_type: yup.string().required('Vui lòng chọn giao thức').oneOf(['http', 'socks5'], 'Giao thức không hợp lệ')
+  protocol: yup.string().required('Vui lòng chọn giao thức').oneOf(['http', 'socks5'], 'Giao thức không hợp lệ')
 })
 
 // Component này render một dòng feature có select (dropdown)
@@ -225,7 +225,7 @@ const PlanCard = ({ plan }) => {
     defaultValues: {
       quantity: 1,
       time: 1,
-      protocol_type: 'http'
+      protocol: 'http'
     },
     mode: 'onChange',
     resolver: yupResolver(proxyPlanSchema)
@@ -281,6 +281,8 @@ const PlanCard = ({ plan }) => {
       }
     }
   }
+
+
 
   return (
     <>
