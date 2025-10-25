@@ -1,11 +1,11 @@
 import type { Metadata } from 'next'
 
 import Services from '../components/cooperate/Services'
-import Hero from '../components/cooperate/Hero'
 import Agency from '../components/cooperate/Agency'
 import About from '../components/cooperate/About'
 
 export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }): Promise<Metadata> {
+  const { lang } = params
   const dictionary = await import(`@/locales/${lang}.json`).then(m => m.default)
 
   return {
