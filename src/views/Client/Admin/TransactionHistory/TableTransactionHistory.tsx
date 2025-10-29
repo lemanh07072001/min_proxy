@@ -27,12 +27,16 @@ import IconButton from '@mui/material/IconButton'
 import AppReactDatepicker from '@/components/AppReactDatepicker'
 
 import { formatDateTimeLocal } from '@/utils/formatDate'
-import DetailUserModal from '@/app/[lang]/(private)/(client)/admin/transaction-history/DetailUserModal'
+import DetailUserModal from '@/views/Client/Admin/TransactionHistory/DetailUserModal'
 import { useUserOrders } from '@/hooks/apis/useUserOrders'
 import { useOrders } from '@/hooks/apis/useOrders'
 import CustomTextField from '@/@core/components/mui/TextField'
+import useMediaQuery from '@/@menu/hooks/useMediaQuery'
 
 export default function TableTransactionHistory() {
+  const isMobile = useMediaQuery('768px') 
+
+  
   const [columnFilters, setColumnFilters] = useState<any[]>([])
   const [rowSelection, setRowSelection] = useState({})
   const [sorting, setSorting] = useState<any[]>([])
@@ -67,10 +71,11 @@ export default function TableTransactionHistory() {
         try {
           const rowDate = new Date(item?.thoigian)
           if (isNaN(rowDate.getTime())) return false
-          const toYmd = (d: Date) => `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d
-            .getDate()
-            .toString()
-            .padStart(2, '0')}`
+          const toYmd = (d: Date) =>
+            `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d
+              .getDate()
+              .toString()
+              .padStart(2, '0')}`
           return toYmd(rowDate) === toYmd(date as Date)
         } catch {
           return false
@@ -81,7 +86,7 @@ export default function TableTransactionHistory() {
     })
   }, [dataOrders, searchUser, statusFilter, date])
 
-  const { data: sampleUser = [], refetch } = useUserOrders(selectedUserId)
+  const { data: sampleUser = [], isLoading: loadingModal, refetch } = useUserOrders(selectedUserId)
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -101,27 +106,26 @@ export default function TableTransactionHistory() {
       {
         accessorKey: 'id',
         header: 'ID',
-        size: 20
+        size: isMobile ? 60 : 20,
       },
       {
         header: 'User',
         cell: ({ row }: { row: any }) => (
-          <div>
-            <div className='font-bold cursor-pointer' onClick={() => handleOpenModalUserDetail(row.original?.user?.id)}>
-              {row.original?.user?.name}
-            </div>
+          <div onClick={() => handleOpenModalUserDetail(row.original?.user?.id)} className='cursor-pointer'>
+            <div className='font-bold '>{row.original?.user?.name}</div>
+            <div className='text-gray-500'>{row.original?.user?.email}</div>
           </div>
         ),
-        size: 100
+        size: isMobile ? 250 : 150,
       },
 
       {
         accessorKey: 'type',
-        header: 'Loai giao dịch',
+        header: 'Loại',
         cell: ({ row }: { row: any }) => {
           return getStatusBadge(row.original.type)
         },
-        size: 100
+        ssize: isMobile ? 250 : 100,
       },
       {
         header: 'Số tiền',
@@ -152,6 +156,8 @@ export default function TableTransactionHistory() {
         header: 'Ngày mua',
         size: 200,
         cell: ({ row }: { row: any }) => {
+
+
           return (
             <>
               <div className='d-flex align-items-center  gap-1 '>
@@ -228,7 +234,7 @@ export default function TableTransactionHistory() {
               <div className='flex align-middle gap-2'>
                 <CustomTextField
                   fullWidth
-                  className='w-[320px]'
+                  className='lg:w-[320px]'
                   size='small'
                   placeholder='Nhập user...'
                   value={searchUser}
@@ -255,7 +261,7 @@ export default function TableTransactionHistory() {
                   fullWidth
                   select
                   value={statusFilter}
-                  className='w-[220px]'
+                  className='lg:w-[220px]'
                   id='select-without-label'
                   slotProps={{
                     select: { displayEmpty: true },
@@ -288,7 +294,7 @@ export default function TableTransactionHistory() {
                 </CustomTextField>
 
                 <AppReactDatepicker
-                  className='w-[180px]'
+                  className='lg:w-[180px]'
                   selected={date}
                   id='basic-input'
                   onChange={(date: Date | null) => setDate(date)}
@@ -428,6 +434,7 @@ export default function TableTransactionHistory() {
         isOpen={isModalDetailUserOpen}
         onClose={() => setIsModalDetailUserOpen(false)}
         data={sampleUser}
+        isLoading={loadingModal}
       />
     </>
   )

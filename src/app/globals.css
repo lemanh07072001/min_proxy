@@ -105,6 +105,7 @@ body {
 .orders-content {
   /* THÊM MỚI: Cho phép container này lớn lên để lấp đầy .app-container */
   display: flex;
+  block-size: 100% !important;
   flex-direction: column;
   flex: 1;
   overflow: hidden; /* Ngăn tràn layout */
@@ -354,5 +355,18 @@ body {
 
   .proxy-grid {
     grid-template-columns: 1fr;
+  }
+
+  /* Trên mobile: chia thanh tìm kiếm thành 3 hàng, full-width mỗi hàng */
+  .table-toolbar .header-right .flex {
+    flex-direction: column;
+    flex-wrap: nowrap;
+    overflow-x: visible;
+    gap: 8px;
+  }
+
+  .table-toolbar .header-right .flex > * {
+    flex: 0 0 auto;
+    inline-size: 100%;
   }
 }
