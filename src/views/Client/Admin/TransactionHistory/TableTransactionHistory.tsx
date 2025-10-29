@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 
 import Image from 'next/image'
 
-import { CircleQuestionMark, BadgeCheck, BadgeMinus, List, Clock3 } from 'lucide-react'
+import { CircleQuestionMark, BadgeCheck, BadgeMinus, List, Clock3, Search, Calendar, Filter, X } from 'lucide-react'
 
 import {
   useReactTable,
@@ -20,22 +20,27 @@ import {
 import Chip from '@mui/material/Chip'
 
 import Pagination from '@mui/material/Pagination'
+import MenuItem from '@mui/material/MenuItem'
+import InputAdornment from '@mui/material/InputAdornment'
+import IconButton from '@mui/material/IconButton'
 
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import AppReactDatepicker from '@/components/AppReactDatepicker'
 
-import useAxiosAuth from '@/hocs/useAxiosAuth'
 import { formatDateTimeLocal } from '@/utils/formatDate'
 import DetailUserModal from '@/app/[lang]/(private)/(client)/admin/transaction-history/DetailUserModal'
 import { useUserOrders } from '@/hooks/apis/useUserOrders'
 import { useOrders } from '@/hooks/apis/useOrders'
-
+import CustomTextField from '@/@core/components/mui/TextField'
 
 export default function TableTransactionHistory() {
   const [columnFilters, setColumnFilters] = useState<any[]>([])
-  const [rowSelection, setRowSelection] = useState({}) // State để lưu các hàng được chọn
+  const [rowSelection, setRowSelection] = useState({})
   const [sorting, setSorting] = useState<any[]>([])
-  const [isModalDetailUserOpen, setIsModalDetailUserOpen] = useState(false);
+  const [isModalDetailUserOpen, setIsModalDetailUserOpen] = useState(false)
   const [selectedUserId, setSelectedUserId] = useState<number | undefined>()
+  const [date, setDate] = useState<Date | null | undefined>(new Date())
+  const [searchUser, setSearchUser] = useState<string>('')
+  const [statusFilter, setStatusFilter] = useState<string>('')
 
   const [pagination, setPagination] = useState({
     pageIndex: 0,
@@ -44,9 +49,39 @@ export default function TableTransactionHistory() {
 
   const { data: dataOrders = [], isLoading } = useOrders()
 
+  const filteredOrders = useMemo(() => {
+    const normalize = (v: any) => (v ?? '').toString().toLowerCase()
+
+    return (dataOrders ?? []).filter((item: any) => {
+      // Filter by user name
+      const userName = normalize(item?.user?.name)
+      const matchesUser = !searchUser || userName.includes(searchUser.trim().toLowerCase())
+
+      // Filter by status/type
+      const type = (item?.type ?? '').toString()
+      const matchesStatus = !statusFilter || type === statusFilter
+
+      // Filter by date (compare date part only)
+      const matchesDate = (() => {
+        if (!date) return true
+        try {
+          const rowDate = new Date(item?.thoigian)
+          if (isNaN(rowDate.getTime())) return false
+          const toYmd = (d: Date) => `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d
+            .getDate()
+            .toString()
+            .padStart(2, '0')}`
+          return toYmd(rowDate) === toYmd(date as Date)
+        } catch {
+          return false
+        }
+      })()
+
+      return matchesUser && matchesStatus && matchesDate
+    })
+  }, [dataOrders, searchUser, statusFilter, date])
+
   const { data: sampleUser = [], refetch } = useUserOrders(selectedUserId)
-
-
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -72,7 +107,9 @@ export default function TableTransactionHistory() {
         header: 'User',
         cell: ({ row }: { row: any }) => (
           <div>
-            <div className='font-bold cursor-pointer'  onClick={() => handleOpenModalUserDetail(row.original?.user?.id)}>{row.original?.user?.name}</div>
+            <div className='font-bold cursor-pointer' onClick={() => handleOpenModalUserDetail(row.original?.user?.id)}>
+              {row.original?.user?.name}
+            </div>
           </div>
         ),
         size: 100
@@ -130,7 +167,7 @@ export default function TableTransactionHistory() {
   )
 
   const table = useReactTable({
-    data: dataOrders,
+    data: filteredOrders,
     columns,
     state: {
       rowSelection,
@@ -165,12 +202,10 @@ export default function TableTransactionHistory() {
     }
   }, [selectedUserId])
 
-  const handleOpenModalUserDetail = async  (userId: number) => {
+  const handleOpenModalUserDetail = async (userId: number) => {
     setSelectedUserId(userId)
     setIsModalDetailUserOpen(true)
   }
-
-  console.log(sampleUser)
 
   return (
     <>
@@ -179,13 +214,107 @@ export default function TableTransactionHistory() {
 
         {/* Proxy Table */}
         <div className='table-container'>
-          <div className='table-toolbar'>
+          <div className='table-toolbar w-full'>
             <div className='header-left'>
               <div className='page-icon'>
                 <List size={17} />
               </div>
-              <div>
+              <div className='flex justify-between align-middle'>
                 <h5 className='mb-0 font-semibold'>Lịch sử giao dịch</h5>
+              </div>
+            </div>
+
+            <div className='header-right'>
+              <div className='flex align-middle gap-2'>
+                <CustomTextField
+                  fullWidth
+                  className='w-[320px]'
+                  size='small'
+                  placeholder='Nhập user...'
+                  value={searchUser}
+                  onChange={e => setSearchUser(e.target.value)}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position='start'>
+                        <Search size={16} />
+                      </InputAdornment>
+                    ),
+                    endAdornment: (
+                      <InputAdornment position='end'>
+                        {searchUser ? (
+                          <IconButton aria-label='clear' size='small' onClick={() => setSearchUser('')}>
+                            <X size={16} />
+                          </IconButton>
+                        ) : null}
+                      </InputAdornment>
+                    )
+                  }}
+                />
+
+                <CustomTextField
+                  fullWidth
+                  select
+                  value={statusFilter}
+                  className='w-[220px]'
+                  id='select-without-label'
+                  slotProps={{
+                    select: { displayEmpty: true },
+                    htmlInput: { 'aria-label': 'Without label' }
+                  }}
+                  onChange={e => setStatusFilter(e.target.value)}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position='start'>
+                        <Filter size={16} />
+                      </InputAdornment>
+                    ),
+                    endAdornment: (
+                      <InputAdornment position='end'>
+                        {statusFilter ? (
+                          <IconButton aria-label='clear' size='small' onClick={() => setStatusFilter('')}>
+                            <X size={16} />
+                          </IconButton>
+                        ) : null}
+                      </InputAdornment>
+                    )
+                  }}
+                >
+                  <MenuItem value=''>
+                    <em>Chọn loại dịch vụ</em>
+                  </MenuItem>
+                  <MenuItem value={'BUY'}>Thành công</MenuItem>
+                  <MenuItem value={'REFUND'}>Hoàn tiền</MenuItem>
+                  <MenuItem value={'FAILED'}>Thất bại</MenuItem>
+                </CustomTextField>
+
+                <AppReactDatepicker
+                  className='w-[180px]'
+                  selected={date}
+                  id='basic-input'
+                  onChange={(date: Date | null) => setDate(date)}
+                  placeholderText='Chọn ngày'
+                  customInput={
+                    <CustomTextField
+                      fullWidth
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position='start'>
+                            <Calendar size={16} />
+                          </InputAdornment>
+                        ),
+                        endAdornment: (
+                          <InputAdornment position='end'>
+                            {date ? (
+                              <IconButton aria-label='clear' size='small' onClick={() => setDate(null)}>
+                                <X size={16} />
+                              </IconButton>
+                            ) : null}
+                          </InputAdornment>
+                        )
+                      }}
+                    />
+                  }
+                />
               </div>
             </div>
           </div>
