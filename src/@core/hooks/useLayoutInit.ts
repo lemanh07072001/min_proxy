@@ -32,7 +32,7 @@ const useLayoutInit = (colorSchemeFallback: 'light' | 'dark') => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isDark])
 
-  // This hook does not return anything as it is only used to initialize color preference cookie and settings context on first load
+  // This hooks does not return anything as it is only used to initialize color preference cookie and settings context on first load
 }
 
 export default useLayoutInit

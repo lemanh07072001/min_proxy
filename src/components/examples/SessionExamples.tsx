@@ -5,7 +5,7 @@ import { useEffect } from 'react'
 import { useSession, signIn, signOut } from 'next-auth/react'
 
 // ===============================================
-// 1. CLIENT-SIDE: Sử dụng useSession hook
+// 1. CLIENT-SIDE: Sử dụng useSession hooks
 // ===============================================
 export function ClientSessionExample() {
   const { data: session, status } = useSession()
@@ -151,7 +151,7 @@ export function useCurrentUser() {
 }
 
 // ===============================================
-// 5. Component sử dụng custom hook
+// 5. Component sử dụng custom hooks
 // ===============================================
 export function UserDashboard() {
   const { user, isLoading, isAuthenticated, accessToken } = useCurrentUser()

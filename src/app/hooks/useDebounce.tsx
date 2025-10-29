@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-// Custom hook để debounce giá trị
+// Custom hooks để debounce giá trị
 function useDebounce(value, delay) {
   const [debouncedValue, setDebouncedValue] = useState(value);
 

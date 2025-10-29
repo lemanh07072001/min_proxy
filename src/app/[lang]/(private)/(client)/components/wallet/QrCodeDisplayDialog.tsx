@@ -52,7 +52,7 @@ export default function QrCodeDisplayDialog({
     // Ghép các chuỗi lại theo đúng định dạng bạn muốn
     const textToCopy = `${BANK_INFO.accountNumber} - ${BANK_INFO.accountName} - ${amount} - ${BANK_INFO.note}`
 
-    // Gọi hàm copy từ hook
+    // Gọi hàm copy từ hooks
     copy(textToCopy)
   }
 

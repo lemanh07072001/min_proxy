@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 
 /**
- * Custom hook để đảm bảo component chỉ render sau khi đã hydrate
+ * Custom hooks để đảm bảo component chỉ render sau khi đã hydrate
  * Giúp tránh hydration mismatch errors
  */
 export const useHydration = () => {
@@ -17,7 +17,7 @@ export const useHydration = () => {
 }
 
 /**
- * Custom hook để safely access browser APIs
+ * Custom hooks để safely access browser APIs
  * Chỉ chạy trên client-side để tránh hydration issues
  */
 export const useClientOnly = () => {
@@ -31,7 +31,7 @@ export const useClientOnly = () => {
 }
 
 /**
- * Custom hook để safely access localStorage
+ * Custom hooks để safely access localStorage
  */
 export const useLocalStorage = (key: string, initialValue?: string) => {
   const [storedValue, setStoredValue] = useState<string | null>(initialValue || null)

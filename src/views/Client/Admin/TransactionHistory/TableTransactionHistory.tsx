@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import Image from 'next/image'
 
@@ -21,34 +21,32 @@ import Chip from '@mui/material/Chip'
 
 import Pagination from '@mui/material/Pagination'
 
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 import useAxiosAuth from '@/hocs/useAxiosAuth'
 import { formatDateTimeLocal } from '@/utils/formatDate'
+import DetailUserModal from '@/app/[lang]/(private)/(client)/admin/transaction-history/DetailUserModal'
+import { useUserOrders } from '@/hooks/apis/useUserOrders'
+import { useOrders } from '@/hooks/apis/useOrders'
+
 
 export default function TableTransactionHistory() {
   const [columnFilters, setColumnFilters] = useState<any[]>([])
   const [rowSelection, setRowSelection] = useState({}) // State để lưu các hàng được chọn
   const [sorting, setSorting] = useState<any[]>([])
+  const [isModalDetailUserOpen, setIsModalDetailUserOpen] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState<number | undefined>()
 
   const [pagination, setPagination] = useState({
     pageIndex: 0,
     pageSize: 13
   }) // State để lưu các hàng được chọn
 
-  const axiosAuth = useAxiosAuth()
+  const { data: dataOrders = [], isLoading } = useOrders()
 
-  const { data: dataOrders = [], isLoading } = useQuery({
-    queryKey: ['orderProxyStatic'],
-    queryFn: async () => {
-      const res = await axiosAuth.get('/transaction-history')
+  const { data: sampleUser = [], refetch } = useUserOrders(selectedUserId)
 
-      return res.data.data
-    },
-    refetchOnMount: 'always',
-    refetchOnWindowFocus: true,
-    staleTime: 0
-  })
+
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -74,7 +72,7 @@ export default function TableTransactionHistory() {
         header: 'User',
         cell: ({ row }: { row: any }) => (
           <div>
-            <div className='font-bold'>{row.original?.user?.name}</div>
+            <div className='font-bold cursor-pointer'  onClick={() => handleOpenModalUserDetail(row.original?.user?.id)}>{row.original?.user?.name}</div>
           </div>
         ),
         size: 100
@@ -158,6 +156,21 @@ export default function TableTransactionHistory() {
   const totalRows = table.getFilteredRowModel().rows.length
   const startRow = pageIndex * pageSize + 1
   const endRow = Math.min(startRow + pageSize - 1, totalRows)
+
+  // Detail User Modal
+
+  useEffect(() => {
+    if (selectedUserId) {
+      refetch()
+    }
+  }, [selectedUserId])
+
+  const handleOpenModalUserDetail = async  (userId: number) => {
+    setSelectedUserId(userId)
+    setIsModalDetailUserOpen(true)
+  }
+
+  console.log(sampleUser)
 
   return (
     <>
@@ -281,6 +294,12 @@ export default function TableTransactionHistory() {
           </div>
         </div>
       </div>
+
+      <DetailUserModal
+        isOpen={isModalDetailUserOpen}
+        onClose={() => setIsModalDetailUserOpen(false)}
+        data={sampleUser}
+      />
     </>
   )
 }

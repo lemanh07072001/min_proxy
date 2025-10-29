@@ -6,7 +6,7 @@ const StructuredData = () => {
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "Organization",
-    "name": "MKT Proxy",
+    "name": "Proxy for Marketing",
     "description": "Dịch vụ proxy chất lượng cao, bảo mật tuyệt đối",
     "url": process.env.NEXT_PUBLIC_APP_URL || "https://mktproxy.com",
     "logo": "/images/logo/MKT_PROXY_2.png",
