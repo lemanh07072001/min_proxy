@@ -33,7 +33,7 @@ import { useOrders } from '@/hooks/apis/useOrders'
 import CustomTextField from '@/@core/components/mui/TextField'
 import useMediaQuery from '@/@menu/hooks/useMediaQuery'
 
-export default function TableTransactionHistory() {
+export default function TableDepositHistory() {
   const isMobile = useMediaQuery('768px') 
 
   
