@@ -45,6 +45,11 @@ export default function OrderProxyPage() {
   const [statusFilter, setStatusFilter] = useState<string>('all') // State để lọc theo status
   const [typeFilter, setTypeFilter] = useState<string>('all') // State để lọc theo loại
 
+  // State cho selection với Shift/Ctrl và Drag
+  const [lastSelectedIndex, setLastSelectedIndex] = useState<number | null>(null)
+  const [isDragging, setIsDragging] = useState(false)
+  const [dragStartIndex, setDragStartIndex] = useState<number | null>(null)
+
   const [pagination, setPagination] = useState({
     pageIndex: 0,
     pageSize: 10
@@ -128,6 +133,73 @@ export default function OrderProxyPage() {
     setRowSelection({}) // Reset selection khi filter thay đổi
   }
 
+  // Xử lý khi bắt đầu mousedown
+  const handleMouseDown = (index: number, event: React.MouseEvent) => {
+    if (event.shiftKey && lastSelectedIndex !== null) {
+      // Shift + Click: Chọn liên tục từ lastSelectedIndex đến index hiện tại
+      const start = Math.min(lastSelectedIndex, index)
+      const end = Math.max(lastSelectedIndex, index)
+
+      const newSelection: Record<string, boolean> = { ...rowSelection }
+
+      for (let i = start; i <= end; i++) {
+        newSelection[i] = true
+      }
+
+      setRowSelection(newSelection)
+    } else if (event.ctrlKey || event.metaKey) {
+      // Ctrl/Cmd + Click: Toggle chọn/bỏ chọn hàng hiện tại
+      const newSelection = { ...rowSelection }
+
+      if (newSelection[index]) {
+        delete newSelection[index]
+      } else {
+        newSelection[index] = true
+      }
+
+      setRowSelection(newSelection)
+      setLastSelectedIndex(index)
+    } else {
+      // Click/Drag thường: Bắt đầu drag hoặc chọn hàng
+      setIsDragging(true)
+      setDragStartIndex(index)
+      setRowSelection({ [index]: true })
+      setLastSelectedIndex(index)
+    }
+  }
+
+  // Xử lý khi di chuyển chuột (drag selection)
+  const handleMouseEnter = (index: number) => {
+    if (isDragging && dragStartIndex !== null) {
+      const start = Math.min(dragStartIndex, index)
+      const end = Math.max(dragStartIndex, index)
+
+      const newSelection: Record<string, boolean> = {}
+
+      for (let i = start; i <= end; i++) {
+        newSelection[i] = true
+      }
+
+      setRowSelection(newSelection)
+      setLastSelectedIndex(index)
+    }
+  }
+
+  // Xử lý khi thả chuột
+  const handleMouseUp = () => {
+    setIsDragging(false)
+    setDragStartIndex(null)
+  }
+
+  // Thêm event listener cho mouseup
+  useEffect(() => {
+    document.addEventListener('mouseup', handleMouseUp)
+
+    return () => {
+      document.removeEventListener('mouseup', handleMouseUp)
+    }
+  }, [])
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'ACTIVE':
@@ -143,25 +215,49 @@ export default function OrderProxyPage() {
     () => [
       {
         id: 'select',
-        header: ({ table }: { table: any }) => (
-          <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-            <FormControlLabel
-              sx={{
-                '&.MuiFormControlLabel-root': {
-                  margin: 0
+        header: ({ table }: { table: any }) => {
+          const currentPageRows = table.getRowModel().rows
+          const allPageRowsSelected = currentPageRows.every((row: any) => row.getIsSelected())
+          const somePageRowsSelected = currentPageRows.some((row: any) => row.getIsSelected())
+
+          const handleToggleAllPageRows = () => {
+            if (allPageRowsSelected) {
+              // Bỏ chọn tất cả hàng trên trang hiện tại
+              const newSelection = { ...rowSelection }
+              currentPageRows.forEach((row: any) => {
+                delete newSelection[row.index]
+              })
+              setRowSelection(newSelection)
+            } else {
+              // Chọn tất cả hàng trên trang hiện tại
+              const newSelection = { ...rowSelection }
+              currentPageRows.forEach((row: any) => {
+                newSelection[row.index] = true
+              })
+              setRowSelection(newSelection)
+            }
+          }
+
+          return (
+            <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+              <FormControlLabel
+                sx={{
+                  '&.MuiFormControlLabel-root': {
+                    margin: 0
+                  }
+                }}
+                control={
+                  <Checkbox
+                    checked={allPageRowsSelected}
+                    indeterminate={!allPageRowsSelected && somePageRowsSelected}
+                    onChange={handleToggleAllPageRows}
+                  />
                 }
-              }}
-              control={
-                <Checkbox
-                  checked={table.getIsAllRowsSelected()}
-                  indeterminate={table.getIsSomeRowsSelected()}
-                  onChange={table.getToggleAllRowsSelectedHandler()}
-                />
-              }
-              label='' // bỏ label để không chiếm chỗ
-            />
-          </div>
-        ),
+                label='' // bỏ label để không chiếm chỗ
+              />
+            </div>
+          )
+        },
         cell: ({ row }: { row: any }) => (
           <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
             <FormControlLabel
@@ -490,8 +586,30 @@ export default function OrderProxyPage() {
                       </td>
                     </tr>
                   ) : (
-                    table.getRowModel().rows.map(row => (
-                      <tr className='table-row' key={row.id}>
+                    table.getRowModel().rows.map((row, index) => (
+                      <tr
+                        className='table-row'
+                        key={row.id}
+                        onMouseDown={e => {
+                          // Không trigger selection nếu click vào button, checkbox, hoặc các element tương tác khác
+                          const target = e.target as HTMLElement
+                          const isInteractiveElement =
+                            target.closest('button') ||
+                            target.closest('input') ||
+                            target.closest('.MuiCheckbox-root') ||
+                            target.closest('.MuiIconButton-root')
+
+                          if (!isInteractiveElement) {
+                            handleMouseDown(index, e)
+                          }
+                        }}
+                        onMouseEnter={() => handleMouseEnter(index)}
+                        style={{
+                          cursor: 'pointer',
+                          userSelect: 'none',
+                          backgroundColor: row.getIsSelected() ? 'rgba(25, 118, 210, 0.08)' : undefined
+                        }}
+                      >
                         {row.getVisibleCells().map(cell => (
                           <td className='table-cell' key={cell.id}>
                             {flexRender(cell.column.columnDef.cell, cell.getContext())}

@@ -346,6 +346,16 @@ const VerticalMenu = ({ scrollMenu, dictionary }: Props) => {
               </MenuItem>
             )}
 
+            {hasPermission('admin.depositHistory') && (
+              <MenuItem
+                icon={<TransactionHistory />}
+                rootStyles={getMenuItemStyles('admin/deposit-history')}
+                href={`/${locale}/admin/deposit-history`}
+              >
+                Lịch sử chuyển tiền
+              </MenuItem>
+            )}
+
             {/* <SubMenu
               label='Quản lý User'
               icon={<Users size={20} strokeWidth={1.5} />}
