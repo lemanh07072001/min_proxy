@@ -185,7 +185,7 @@ export default function OrderProxyPage() {
     }
   }
 
-  // Xử lý khi thả chuột
+  // Xử lý khi thả chuộts
   const handleMouseUp = () => {
     setIsDragging(false)
     setDragStartIndex(null)
