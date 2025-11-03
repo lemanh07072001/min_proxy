@@ -86,6 +86,8 @@ export default function HistoryOrderPage() {
         return <Chip label='Hoàn thành' size='small' icon={<BadgeCheck />} color='success' />
       case '3':
         return <Chip label='Thất bại' size='small' icon={<BadgeMinus />} color='error' />
+      case '5':
+        return <Chip label='Hết hạn' size='small' icon={<BadgeMinus />} color='error' />
       default:
         return <Chip label='Không xác định' size='small' icon={<CircleQuestionMark />} color='secondary' />
     }
