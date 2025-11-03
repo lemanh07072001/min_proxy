@@ -5,7 +5,7 @@ import ProductsSection from '@/app/[lang]/(landing-page)/components/ProductsSect
 import PartnersSection from '@/app/[lang]/(landing-page)/components/PartnersSection'
 
 export const metadata: Metadata = {
-  title: `Trang chủ`
+  title: `MKT Proxy - Dịch Vụ Proxy Dân Cư Chất Lượng Cao`
 }
 
 export default async function Page({ params }: { params: Promise<{ lang: string }> }) {
