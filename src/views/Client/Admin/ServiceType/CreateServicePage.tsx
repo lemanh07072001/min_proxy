@@ -4,7 +4,18 @@ import { useState } from 'react'
 
 import { useRouter, useParams } from 'next/navigation'
 
-import { Card, CardContent, CardHeader, Grid, TextField, MenuItem, Button, Typography } from '@mui/material'
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  Grid,
+  TextField,
+  MenuItem,
+  Button,
+  Typography,
+  FormControlLabel,
+  Switch
+} from '@mui/material'
 
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
@@ -29,7 +40,8 @@ export default function CreateServicePage() {
     status: 'active',
     partner_id: '',
     type: '',
-    ip_version: ''
+    ip_version: '',
+    api_type: 'buy_api'
   })
 
   const createMutation = useMutation({
@@ -94,63 +106,150 @@ export default function CreateServicePage() {
             </Grid>
 
             <Grid item xs={12} sm={6}>
-              <CustomTextField fullWidth type='number' label='Giá đối tốc' placeholder='Placeholder' />
+              <CustomTextField fullWidth type='number' label='Giá nhập' placeholder='Placeholder' />
             </Grid>
 
             <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label='Giá bán'
-                type='number'
-                value={formData.price}
-                onChange={e => handleChange('price', e.target.value)}
-                required
-              />
+              <CustomTextField fullWidth type='number' label='Giá bán' placeholder='Placeholder' />
             </Grid>
 
             <Grid item xs={12} sm={6}>
-              <TextField
+              <CustomTextField
                 fullWidth
                 select
-                label='Trạng thái'
-                value={formData.status}
-                onChange={e => handleChange('status', e.target.value)}
+                value={formData.api_type}
+                onChange={e => handleChange('api_type', e.target.value)}
+                id='select-type-api'
+                label='Loại Api'
+                slotProps={{
+                  select: { displayEmpty: true },
+                  htmlInput: { 'aria-label': 'Without label' }
+                }}
               >
-                <MenuItem value='active'>Active</MenuItem>
-                <MenuItem value='inactive'>Inactive</MenuItem>
-              </TextField>
+                <MenuItem value={'get_api'}>Get Api</MenuItem>
+                <MenuItem value={'buy_api'}>Buy Api</MenuItem>
+                <MenuItem value={'extend_api'}>Gia hạn Api</MenuItem>
+                <MenuItem value={'change_security_api'}>Bảo mật Api</MenuItem>
+              </CustomTextField>
             </Grid>
 
             <Grid item xs={12} sm={6}>
-              <TextField
+              <CustomTextField
                 fullWidth
-                label='Partner ID'
-                type='number'
-                value={formData.partner_id}
-                onChange={e => handleChange('partner_id', e.target.value)}
-              />
+                select
+                id='select-time'
+                label='Thời gian hiện thị'
+                defaultValue='1'
+                slotProps={{
+                  select: { displayEmpty: true },
+                  htmlInput: { 'aria-label': 'Without label' }
+                }}
+              >
+                <MenuItem value={1}>Ngày</MenuItem>
+                <MenuItem value={7}>Tuần</MenuItem>
+                <MenuItem value={30}>Tháng</MenuItem>
+                <MenuItem value={90}>3 Tháng</MenuItem>
+                <MenuItem value={180}>6 Tháng</MenuItem>
+                <MenuItem value={360}>1 Năm</MenuItem>
+              </CustomTextField>
             </Grid>
 
             <Grid item xs={12} sm={6}>
-              <TextField
+              <CustomTextField
                 fullWidth
+                select
+                id='select-type'
                 label='Type'
-                value={formData.type}
-                onChange={e => handleChange('type', e.target.value)}
-                placeholder='VD: ROTATING, STATIC'
-              />
+                defaultValue='0'
+                slotProps={{
+                  select: { displayEmpty: true },
+                  htmlInput: { 'aria-label': 'Without label' }
+                }}
+              >
+                <MenuItem value={0}>STATIC</MenuItem>
+                <MenuItem value={1}>ROTATING</MenuItem>
+              </CustomTextField>
             </Grid>
 
             <Grid item xs={12} sm={6}>
-              <TextField
+              <CustomTextField
                 fullWidth
-                label='IP Version'
-                value={formData.ip_version}
-                onChange={e => handleChange('ip_version', e.target.value)}
-                placeholder='VD: IPv4, IPv6'
-              />
+                select
+                id='select-status'
+                label='Trạng thái'
+                defaultValue='active'
+                slotProps={{
+                  select: { displayEmpty: true },
+                  htmlInput: { 'aria-label': 'Without label' }
+                }}
+              >
+                <MenuItem value={'active'}>ACTIVE</MenuItem>
+                <MenuItem value={'inactive'}>INACTIVE</MenuItem>
+              </CustomTextField>
             </Grid>
 
+            <Grid item xs={12} sm={6}>
+              <CustomTextField
+                fullWidth
+                select
+                id='select-proxy_type'
+                label='Proxy Type'
+                defaultValue='residential'
+                slotProps={{
+                  select: { displayEmpty: true },
+                  htmlInput: { 'aria-label': 'Without label' }
+                }}
+              >
+                <MenuItem value={'residential'}>Dân cư</MenuItem>
+                <MenuItem value={'datacenter'}>Datacenter</MenuItem>
+              </CustomTextField>
+            </Grid>
+
+            <Grid item xs={12} sm={6}>
+              <CustomTextField
+                fullWidth
+                select
+                id='select-proxy_type'
+                label='Ip Version'
+                defaultValue='ipv4'
+                slotProps={{
+                  select: { displayEmpty: true },
+                  htmlInput: { 'aria-label': 'Without label' }
+                }}
+              >
+                <MenuItem value={'ipv4'}>V4</MenuItem>
+                <MenuItem value={'ipv6'}>V6</MenuItem>
+              </CustomTextField>
+            </Grid>
+
+            <Grid item xs={12} sm={6}>
+              <CustomTextField rows={6} fullWidth multiline label='Body Api' id='textarea-outlined-static' />
+            </Grid>
+
+            <Grid item xs={12} sm={6}>
+              <Grid container spacing={3}>
+                <Grid item xs={12}>
+                  <CustomTextField
+                    fullWidth
+                    select
+                    id='select-partner'
+                    label='Đối tác'
+                    slotProps={{
+                      select: { displayEmpty: true },
+                      htmlInput: { 'aria-label': 'Without label' }
+                    }}
+                  >
+                    <MenuItem value={'residential'}>Dân cư</MenuItem>
+                    <MenuItem value={'datacenter'}>Datacenter</MenuItem>
+                  </CustomTextField>
+                </Grid>
+
+                <Grid item xs={12}>
+                  <FormControlLabel control={<Switch />} label='Hiện thị thời gian' />
+                  <FormControlLabel control={<Switch />} label='Hiện thị user/pass' />
+                </Grid>
+              </Grid>
+            </Grid>
             <Grid item xs={12}>
               <div className='flex gap-3 justify-end'>
                 <Button variant='outlined' onClick={() => router.push(`/${locale}/admin/service-type`)}>

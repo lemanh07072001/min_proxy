@@ -17,7 +17,7 @@ export const apiEndpoints: ApiEndpoint[] = [
     id: 'get-current-proxy',
     title: 'Get Current Proxy Xoay',
     method: 'POST',
-    endpoint: 'https://api.mktproxy.com/api/proxies/current',
+    endpoint: 'https://app.mktproxy.com/api/proxies/current',
     description: 'Lấy thông tin proxy xoay hiện tại',
     category: 'proxy',
     requestBody: `{
@@ -26,8 +26,7 @@ export const apiEndpoints: ApiEndpoint[] = [
     responses: {
       '200 OK': `{
   "data": {
-    "currentProxy": {
-      "realIpAddress": "42.119.124.219",
+     "realIpAddress": "42.119.124.219",
       "http": "42.119.124.219:16847:kh1jtlNj3Kd:rdkm3hbjq45d",
       "socks5": "42.119.124.219:26847:kh1jtlNj3Kd:rdkm3hbjq45d",
       "httpPort": "16847",
@@ -37,7 +36,6 @@ export const apiEndpoints: ApiEndpoint[] = [
       "nextChange": "2024-01-15T10:30:00Z",
       "timeLeft": 1800,
       "status": "active"
-    }
   },
   "message": "Proxy retrieved successfully",
   "success": true,
@@ -64,7 +62,7 @@ export const apiEndpoints: ApiEndpoint[] = [
     id: 'get-new-proxy',
     title: 'Get New Proxy Xoay',
     method: 'POST',
-    endpoint: 'https://api.mktproxy.com/api/proxies/new',
+    endpoint: 'https://app.mktproxy.com/api/proxies/new',
     description: 'Lấy proxy xoay mới',
     category: 'proxy',
     requestBody: `{
