@@ -8,6 +8,6 @@ export const getBankNumber = (userId: number | string) => {
     bankName: 'Vietcombank',
     accountNumber: '1056968673',
     accountName: 'LUONG VAN THUY',
-    note: `mktproxy ${randomNumber}${userId}`
+    note: `152${randomNumber}${userId}`
   }
 }

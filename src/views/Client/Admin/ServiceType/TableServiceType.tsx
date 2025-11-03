@@ -1,8 +1,9 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useCallback } from 'react'
 
 import Image from 'next/image'
+import { useParams, useRouter } from 'next/navigation'
 
 import { CircleQuestionMark, BadgeCheck, BadgeMinus, List, Copy, SquarePen, Trash2 } from 'lucide-react'
 
@@ -27,28 +28,32 @@ import { Button } from '@mui/material'
 
 import useAxiosAuth from '@/hocs/useAxiosAuth'
 import CustomIconButton from '@core/components/mui/IconButton'
-import ModalForm from './ModalForm'
 
 export default function TableServiceType() {
   const [columnFilters, setColumnFilters] = useState<any[]>([])
   const [rowSelection, setRowSelection] = useState({}) // State để lưu các hàng được chọn
   const [sorting, setSorting] = useState<any[]>([])
-  const [open, setOpen] = useState(false)
-  const [mode, setMode] = useState<'create' | 'edit'>('create')
 
   const [pagination, setPagination] = useState({
     pageIndex: 0,
     pageSize: 10
   }) // State để lưu các hàng được chọn
 
+  const router = useRouter()
+  const params = useParams()
   const axiosAuth = useAxiosAuth()
+  const { lang: locale } = params
 
-  const handleOpenCreate = () => {
-    setMode('create')
-    setOpen(true)
-  }
+  const handleOpenCreate = useCallback(() => {
+    router.push(`/${locale}/admin/service-type/create`)
+  }, [router, locale])
 
-  const handleSubmit = async (data: any) => {}
+  const handleOpenEdit = useCallback(
+    (serviceId: number) => {
+      router.push(`/${locale}/admin/service-type/edit/${serviceId}`)
+    },
+    [router, locale]
+  )
 
   const { data: dataServices = [], isLoading } = useQuery({
     queryKey: ['orderProxyStatic'],
@@ -139,15 +144,20 @@ export default function TableServiceType() {
         cell: ({ row }: { row: any }) => {
           return (
             <div className='flex gap-2'>
-              <CustomIconButton aria-label='capture screenshot' color='info' variant='tonal'>
+              <CustomIconButton
+                aria-label='edit service'
+                color='info'
+                variant='tonal'
+                onClick={() => handleOpenEdit(row.original.id)}
+              >
                 <SquarePen size={16} />
               </CustomIconButton>
 
-              <CustomIconButton aria-label='capture screenshot' color='info' variant='tonal'>
+              <CustomIconButton aria-label='copy service' color='info' variant='tonal'>
                 <Copy size={16} />
               </CustomIconButton>
 
-              <CustomIconButton aria-label='capture screenshot' color='error' variant='tonal'>
+              <CustomIconButton aria-label='delete service' color='error' variant='tonal'>
                 <Trash2 size={16} />
               </CustomIconButton>
             </div>
@@ -156,7 +166,7 @@ export default function TableServiceType() {
         size: 100
       }
     ],
-    []
+    [handleOpenEdit]
   )
 
   const table = useReactTable({
@@ -322,8 +332,6 @@ export default function TableServiceType() {
           </div>
         </div>
       </div>
-
-      <ModalForm open={open} onClose={() => setOpen(false)} onSubmit={handleSubmit} mode={mode} />
     </>
   )
 }

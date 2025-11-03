@@ -33,10 +33,9 @@ import { useOrders } from '@/hooks/apis/useOrders'
 import CustomTextField from '@/@core/components/mui/TextField'
 import useMediaQuery from '@/@menu/hooks/useMediaQuery'
 
-export default function TableTransactionHistory() {
-  const isMobile = useMediaQuery('768px') 
+export default function TableDepositHistory() {
+  const isMobile = useMediaQuery('768px')
 
-  
   const [columnFilters, setColumnFilters] = useState<any[]>([])
   const [rowSelection, setRowSelection] = useState({})
   const [sorting, setSorting] = useState<any[]>([])
@@ -61,7 +60,7 @@ export default function TableTransactionHistory() {
       const userName = normalize(item?.user?.name)
       const matchesUser = !searchUser || userName.includes(searchUser.trim().toLowerCase())
 
-      // Filter by status/type
+      // Filter by status/type (BUY/REFUND/FAILED)
       const type = (item?.type ?? '').toString()
       const matchesStatus = !statusFilter || type === statusFilter
 
@@ -69,7 +68,7 @@ export default function TableTransactionHistory() {
       const matchesDate = (() => {
         if (!date) return true
         try {
-          const rowDate = new Date(item?.thoigian)
+          const rowDate = new Date(item?.created_at)
           if (isNaN(rowDate.getTime())) return false
           const toYmd = (d: Date) =>
             `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d
@@ -106,7 +105,7 @@ export default function TableTransactionHistory() {
       {
         accessorKey: 'id',
         header: 'ID',
-        size: isMobile ? 60 : 20,
+        size: isMobile ? 60 : 20
       },
       {
         header: 'User',
@@ -116,7 +115,7 @@ export default function TableTransactionHistory() {
             <div className='text-gray-500'>{row.original?.user?.email}</div>
           </div>
         ),
-        size: isMobile ? 250 : 150,
+        size: isMobile ? 250 : 150
       },
 
       {
@@ -125,7 +124,7 @@ export default function TableTransactionHistory() {
         cell: ({ row }: { row: any }) => {
           return getStatusBadge(row.original.type)
         },
-        ssize: isMobile ? 250 : 100,
+        ssize: isMobile ? 250 : 100
       },
       {
         header: 'Số tiền',
@@ -156,8 +155,6 @@ export default function TableTransactionHistory() {
         header: 'Ngày mua',
         size: 200,
         cell: ({ row }: { row: any }) => {
-
-
           return (
             <>
               <div className='d-flex align-items-center  gap-1 '>
