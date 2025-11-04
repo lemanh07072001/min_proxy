@@ -23,7 +23,7 @@ export const useCancelOrder = () => {
 
   return useMutation({
     mutationFn: async (orderId: number) => {
-      const res = await axiosAuth.post(`/orders/${orderId}/cancel`)
+      const res = await axiosAuth.post(`/cancel-order/${orderId}`)
       return res?.data
     },
     onSuccess: () => {

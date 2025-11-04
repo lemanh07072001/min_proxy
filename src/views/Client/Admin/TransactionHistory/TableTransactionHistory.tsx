@@ -77,7 +77,6 @@ export default function TableDepositHistory() {
   const [isResendDialogOpen, setIsResendDialogOpen] = useState(false)
   const [selectedUserId, setSelectedUserId] = useState<number | undefined>()
   const [selectedOrderData, setSelectedOrderData] = useState<any>(null)
-  const [orderToDelete, setOrderToDelete] = useState<any>(null)
   const [orderToCancel, setOrderToCancel] = useState<any>(null)
   const [orderToResend, setOrderToResend] = useState<any>(null)
   const [date, setDate] = useState<Date | null | undefined>(new Date())
@@ -94,7 +93,6 @@ export default function TableDepositHistory() {
   // TanStack Query mutations
   const cancelOrderMutation = useCancelOrder()
   const resendOrderMutation = useResendOrder()
-  const deleteOrderMutation = useDeleteOrder()
 
   const filteredOrders = useMemo(() => {
     const normalize = (v: any) => (v ?? '').toString().toLowerCase()
@@ -148,7 +146,7 @@ export default function TableDepositHistory() {
             label={TRANSACTION_TYPE_LABELS[TRANSACTION_TYPES.REFUND]}
             size='small'
             icon={<BadgeMinus />}
-            color='error'
+            color='warning'
           />
         )
       default:
@@ -236,7 +234,11 @@ export default function TableDepositHistory() {
         accessorKey: 'status',
         header: 'Trạng thái',
         cell: ({ row }: { row: any }) => {
-          return getStatusBadge(row.original?.order?.status)
+          if (row.original?.type === 'REFUND') {
+            return getStatusBadge(ORDER_STATUS.COMPLETED)
+          } else {
+            return getStatusBadge(row.original?.order?.status)
+          }
         },
         ssize: isMobile ? 250 : 100
       },
@@ -247,8 +249,8 @@ export default function TableDepositHistory() {
         cell: ({ row }: { row: any }) => {
           const orderStatus = row.original?.order?.status
 
-          // Nếu status == PROCESSING, chỉ hiển thị 3 button: Hủy đơn hàng, Xem log, Gửi lại
-          if (orderStatus === ORDER_STATUS.PROCESSING) {
+          // Nếu status == FAILED, chỉ hiển thị 3 button: Hủy đơn hàng, Xem log, Gửi lại
+          if (orderStatus === ORDER_STATUS.FAILED) {
             return (
               <div className='flex gap-2'>
                 <Tooltip title='Hủy đơn hàng'>
@@ -356,24 +358,6 @@ export default function TableDepositHistory() {
     setOrderToDelete(null)
   }
 
-  const handleConfirmDelete = () => {
-    if (!orderToDelete?.order?.id) return
-
-    deleteOrderMutation.mutate(orderToDelete.id, {
-      onSuccess: () => {
-        handleCloseDeleteDialog()
-        // TODO: Thêm toast thông báo
-        // toast.success('Xóa đơn hàng thành công!')
-        console.log('Xóa đơn hàng thành công')
-      },
-      onError: (error: any) => {
-        // TODO: Thêm toast thông báo lỗi
-        // toast.error(error?.response?.data?.message || 'Có lỗi xảy ra khi xóa đơn hàng')
-        console.error('Lỗi khi xóa đơn hàng:', error)
-      }
-    })
-  }
-
   const handleOpenCancelDialog = (orderData: any) => {
     setOrderToCancel(orderData)
     setIsCancelDialogOpen(true)
@@ -385,9 +369,9 @@ export default function TableDepositHistory() {
   }
 
   const handleConfirmCancel = () => {
-    if (!orderToCancel?.id) return
+    if (!orderToCancel?.order?.id) return
 
-    cancelOrderMutation.mutate(orderToCancel.id, {
+    cancelOrderMutation.mutate(orderToCancel?.order?.id, {
       onSuccess: () => {
         handleCloseCancelDialog()
         // TODO: Thêm toast thông báo
