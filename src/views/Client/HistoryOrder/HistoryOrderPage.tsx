@@ -33,15 +33,15 @@ import Chip from '@mui/material/Chip'
 
 import Pagination from '@mui/material/Pagination'
 
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQueryClient } from '@tanstack/react-query'
 
 import { io } from 'socket.io-client'
 
 import CustomIconButton from '@core/components/mui/IconButton'
 
-import useAxiosAuth from '@/hocs/useAxiosAuth'
 import { useCopy } from '@/app/hooks/useCopy'
 import { formatDateTimeLocal } from '@/utils/formatDate'
+import { useHistoryOrders } from '@/hooks/apis/useHistoryOrders'
 import OrderDetail from './OrderDetail'
 
 export default function HistoryOrderPage() {
@@ -58,25 +58,13 @@ export default function HistoryOrderPage() {
   }) // State để lưu các hàng được chọn
 
   const queryClient = useQueryClient()
-
-  const axiosAuth = useAxiosAuth()
   const [, copy] = useCopy()
 
   const {
     data: dataOrders = [],
     isLoading,
     refetch
-  } = useQuery({
-    queryKey: ['orderProxyStatic'],
-    queryFn: async () => {
-      const res = await axiosAuth.get('/get-order')
-
-      return res.data.data
-    },
-    refetchOnMount: 'always',
-    refetchOnWindowFocus: true,
-    staleTime: 0
-  })
+  } = useHistoryOrders()
 
   const getStatusBadge = (status: string) => {
     switch (status) {

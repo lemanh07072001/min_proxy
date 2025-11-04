@@ -4,7 +4,23 @@ import { useEffect, useMemo, useState } from 'react'
 
 import Image from 'next/image'
 
-import { CircleQuestionMark, BadgeCheck, BadgeMinus, List, Clock3, Search, Calendar, Filter, X } from 'lucide-react'
+import {
+  CircleQuestionMark,
+  BadgeCheck,
+  BadgeMinus,
+  List,
+  Clock3,
+  Search,
+  Calendar,
+  Filter,
+  X,
+  Eye,
+  Edit,
+  Trash2,
+  XCircle,
+  FileText,
+  RefreshCw
+} from 'lucide-react'
 
 import {
   useReactTable,
@@ -23,15 +39,30 @@ import Pagination from '@mui/material/Pagination'
 import MenuItem from '@mui/material/MenuItem'
 import InputAdornment from '@mui/material/InputAdornment'
 import IconButton from '@mui/material/IconButton'
+import Tooltip from '@mui/material/Tooltip'
+import Dialog from '@mui/material/Dialog'
+import DialogActions from '@mui/material/DialogActions'
+import DialogContent from '@mui/material/DialogContent'
+import DialogContentText from '@mui/material/DialogContentText'
+import DialogTitle from '@mui/material/DialogTitle'
+import Button from '@mui/material/Button'
 
 import AppReactDatepicker from '@/components/AppReactDatepicker'
 
 import { formatDateTimeLocal } from '@/utils/formatDate'
 import DetailUserModal from '@/views/Client/Admin/TransactionHistory/DetailUserModal'
+import LogModal from '@/views/Client/Admin/TransactionHistory/LogModal'
 import { useUserOrders } from '@/hooks/apis/useUserOrders'
-import { useOrders } from '@/hooks/apis/useOrders'
+import { useOrders, useCancelOrder, useResendOrder, useDeleteOrder } from '@/hooks/apis/useOrders'
 import CustomTextField from '@/@core/components/mui/TextField'
 import useMediaQuery from '@/@menu/hooks/useMediaQuery'
+import {
+  ORDER_STATUS,
+  ORDER_STATUS_LABELS,
+  ORDER_STATUS_COLORS,
+  TRANSACTION_TYPES,
+  TRANSACTION_TYPE_LABELS
+} from '@/constants'
 
 export default function TableDepositHistory() {
   const isMobile = useMediaQuery('768px')
@@ -40,17 +71,30 @@ export default function TableDepositHistory() {
   const [rowSelection, setRowSelection] = useState({})
   const [sorting, setSorting] = useState<any[]>([])
   const [isModalDetailUserOpen, setIsModalDetailUserOpen] = useState(false)
+  const [isLogModalOpen, setIsLogModalOpen] = useState(false)
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false)
+  const [isResendDialogOpen, setIsResendDialogOpen] = useState(false)
   const [selectedUserId, setSelectedUserId] = useState<number | undefined>()
+  const [selectedOrderData, setSelectedOrderData] = useState<any>(null)
+  const [orderToDelete, setOrderToDelete] = useState<any>(null)
+  const [orderToCancel, setOrderToCancel] = useState<any>(null)
+  const [orderToResend, setOrderToResend] = useState<any>(null)
   const [date, setDate] = useState<Date | null | undefined>(new Date())
   const [searchUser, setSearchUser] = useState<string>('')
   const [statusFilter, setStatusFilter] = useState<string>('')
 
   const [pagination, setPagination] = useState({
     pageIndex: 0,
-    pageSize: 13
+    pageSize: 10
   }) // State để lưu các hàng được chọn
 
   const { data: dataOrders = [], isLoading } = useOrders()
+
+  // TanStack Query mutations
+  const cancelOrderMutation = useCancelOrder()
+  const resendOrderMutation = useResendOrder()
+  const deleteOrderMutation = useDeleteOrder()
 
   const filteredOrders = useMemo(() => {
     const normalize = (v: any) => (v ?? '').toString().toLowerCase()
@@ -61,7 +105,7 @@ export default function TableDepositHistory() {
       const matchesUser = !searchUser || userName.includes(searchUser.trim().toLowerCase())
 
       // Filter by status/type (BUY/REFUND/FAILED)
-      const type = (item?.type ?? '').toString()
+      const type = (item?.order?.status ?? '').toString()
       const matchesStatus = !statusFilter || type === statusFilter
 
       // Filter by date (compare date part only)
@@ -87,17 +131,40 @@ export default function TableDepositHistory() {
 
   const { data: sampleUser = [], isLoading: loadingModal, refetch } = useUserOrders(selectedUserId)
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      // case '':
-      //   return <Chip label='Chờ xử lý' size='small' icon={<BadgeAlert />} color='warning' />
-      case 'BUY':
-        return <Chip label='Thành công' size='small' icon={<BadgeCheck />} color='success' />
-      case 'REFUND':
-        return <Chip label='Hoàn' size='small' icon={<BadgeMinus />} color='error' />
+  const getTypeBadge = (type: string) => {
+    switch (type) {
+      case TRANSACTION_TYPES.BUY:
+        return (
+          <Chip
+            label={TRANSACTION_TYPE_LABELS[TRANSACTION_TYPES.BUY]}
+            size='small'
+            icon={<BadgeCheck />}
+            color='success'
+          />
+        )
+      case TRANSACTION_TYPES.REFUND:
+        return (
+          <Chip
+            label={TRANSACTION_TYPE_LABELS[TRANSACTION_TYPES.REFUND]}
+            size='small'
+            icon={<BadgeMinus />}
+            color='error'
+          />
+        )
       default:
         return <Chip label='Không xác định' size='small' icon={<CircleQuestionMark />} color='secondary' />
     }
+  }
+
+  const getStatusBadge = (status: string) => {
+    const label = ORDER_STATUS_LABELS[status as keyof typeof ORDER_STATUS_LABELS]
+    const color = ORDER_STATUS_COLORS[status as keyof typeof ORDER_STATUS_COLORS]
+
+    if (!label) {
+      return <Chip label='Không xác định' size='small' icon={<CircleQuestionMark />} color='secondary' />
+    }
+
+    return <Chip label={label} size='small' icon={<BadgeMinus />} color={color as any} />
   }
 
   const columns = useMemo(
@@ -122,7 +189,7 @@ export default function TableDepositHistory() {
         accessorKey: 'type',
         header: 'Loại',
         cell: ({ row }: { row: any }) => {
-          return getStatusBadge(row.original.type)
+          return getTypeBadge(row.original.type)
         },
         ssize: isMobile ? 250 : 100
       },
@@ -164,9 +231,73 @@ export default function TableDepositHistory() {
             </>
           )
         }
+      },
+      {
+        accessorKey: 'status',
+        header: 'Trạng thái',
+        cell: ({ row }: { row: any }) => {
+          return getStatusBadge(row.original?.order?.status)
+        },
+        ssize: isMobile ? 250 : 100
+      },
+      {
+        accessorKey: 'actions',
+        header: 'Hành động',
+        size: 150,
+        cell: ({ row }: { row: any }) => {
+          const orderStatus = row.original?.order?.status
+
+          // Nếu status == PROCESSING, chỉ hiển thị 3 button: Hủy đơn hàng, Xem log, Gửi lại
+          if (orderStatus === ORDER_STATUS.PROCESSING) {
+            return (
+              <div className='flex gap-2'>
+                <Tooltip title='Hủy đơn hàng'>
+                  <IconButton size='small' color='error' onClick={() => handleOpenCancelDialog(row.original)}>
+                    <XCircle size={18} />
+                  </IconButton>
+                </Tooltip>
+                <Tooltip title='Xem log'>
+                  <IconButton size='small' color='info' onClick={() => handleOpenLogModal(row.original)}>
+                    <FileText size={18} />
+                  </IconButton>
+                </Tooltip>
+                <Tooltip title='Gửi lại'>
+                  <IconButton size='small' color='success' onClick={() => handleOpenResendDialog(row.original)}>
+                    <RefreshCw size={18} />
+                  </IconButton>
+                </Tooltip>
+              </div>
+            )
+          }
+
+          // Các status khác hiển thị button mặc định
+          return (
+            <div className='flex gap-2'>
+              <Tooltip title='Xem chi tiết'>
+                <IconButton
+                  size='small'
+                  color='primary'
+                  onClick={() => handleOpenModalUserDetail(row.original?.user?.id)}
+                >
+                  <Eye size={18} />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title='Chỉnh sửa'>
+                <IconButton size='small' color='info'>
+                  <Edit size={18} />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title='Xóa'>
+                <IconButton size='small' color='error' onClick={() => handleOpenDeleteDialog(row.original)}>
+                  <Trash2 size={18} />
+                </IconButton>
+              </Tooltip>
+            </div>
+          )
+        }
       }
     ],
-    []
+    [isMobile]
   )
 
   const table = useReactTable({
@@ -208,6 +339,97 @@ export default function TableDepositHistory() {
   const handleOpenModalUserDetail = async (userId: number) => {
     setSelectedUserId(userId)
     setIsModalDetailUserOpen(true)
+  }
+
+  const handleOpenLogModal = (orderData: any) => {
+    setSelectedOrderData(orderData)
+    setIsLogModalOpen(true)
+  }
+
+  const handleOpenDeleteDialog = (orderData: any) => {
+    setOrderToDelete(orderData)
+    setIsDeleteDialogOpen(true)
+  }
+
+  const handleCloseDeleteDialog = () => {
+    setIsDeleteDialogOpen(false)
+    setOrderToDelete(null)
+  }
+
+  const handleConfirmDelete = () => {
+    if (!orderToDelete?.order?.id) return
+
+    deleteOrderMutation.mutate(orderToDelete.id, {
+      onSuccess: () => {
+        handleCloseDeleteDialog()
+        // TODO: Thêm toast thông báo
+        // toast.success('Xóa đơn hàng thành công!')
+        console.log('Xóa đơn hàng thành công')
+      },
+      onError: (error: any) => {
+        // TODO: Thêm toast thông báo lỗi
+        // toast.error(error?.response?.data?.message || 'Có lỗi xảy ra khi xóa đơn hàng')
+        console.error('Lỗi khi xóa đơn hàng:', error)
+      }
+    })
+  }
+
+  const handleOpenCancelDialog = (orderData: any) => {
+    setOrderToCancel(orderData)
+    setIsCancelDialogOpen(true)
+  }
+
+  const handleCloseCancelDialog = () => {
+    setIsCancelDialogOpen(false)
+    setOrderToCancel(null)
+  }
+
+  const handleConfirmCancel = () => {
+    if (!orderToCancel?.id) return
+
+    cancelOrderMutation.mutate(orderToCancel.id, {
+      onSuccess: () => {
+        handleCloseCancelDialog()
+        // TODO: Thêm toast thông báo
+        // toast.success('Hủy đơn hàng thành công!')
+        console.log('Hủy đơn hàng thành công')
+      },
+      onError: (error: any) => {
+        // TODO: Thêm toast thông báo lỗi
+        // toast.error(error?.response?.data?.message || 'Có lỗi xảy ra khi hủy đơn hàng')
+        console.error('Lỗi khi hủy đơn hàng:', error)
+      }
+    })
+  }
+
+  const handleOpenResendDialog = (orderData: any) => {
+    setOrderToResend(orderData)
+    setIsResendDialogOpen(true)
+  }
+
+  const handleCloseResendDialog = () => {
+    setIsResendDialogOpen(false)
+    setOrderToResend(null)
+  }
+
+  const handleConfirmResend = () => {
+    console.log(orderToResend)
+
+    if (!orderToResend?.order?.id) return
+
+    resendOrderMutation.mutate(orderToResend?.order?.id, {
+      onSuccess: () => {
+        handleCloseResendDialog()
+        // TODO: Thêm toast thông báo
+        // toast.success('Gửi lại đơn hàng thành công!')
+        console.log('Gửi lại đơn hàng thành công')
+      },
+      onError: (error: any) => {
+        // TODO: Thêm toast thông báo lỗi
+        // toast.error(error?.response?.data?.message || 'Có lỗi xảy ra khi gửi lại đơn hàng')
+        console.error('Lỗi khi gửi lại đơn hàng:', error)
+      }
+    })
   }
 
   return (
@@ -433,6 +655,63 @@ export default function TableDepositHistory() {
         data={sampleUser}
         isLoading={loadingModal}
       />
+
+      <LogModal
+        isOpen={isLogModalOpen}
+        onClose={() => setIsLogModalOpen(false)}
+        data={selectedOrderData}
+        isLoading={false}
+      />
+
+      {/* Cancel Order Confirmation Dialog */}
+      <Dialog
+        open={isCancelDialogOpen}
+        onClose={handleCloseCancelDialog}
+        aria-labelledby='cancel-dialog-title'
+        aria-describedby='cancel-dialog-description'
+      >
+        <DialogTitle id='cancel-dialog-title'>Xác nhận hủy đơn hàng</DialogTitle>
+        <DialogContent>
+          <DialogContentText id='cancel-dialog-description'>
+            Bạn có chắc chắn muốn hủy đơn hàng <strong>#{orderToCancel?.order?.order_code}</strong> không?
+            <br />
+            Đơn hàng sẽ được chuyển sang trạng thái "Đã hủy" và tiền sẽ được hoàn lại.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseCancelDialog} color='inherit'>
+            Quay lại
+          </Button>
+          <Button onClick={handleConfirmCancel} color='error' variant='contained' autoFocus>
+            Xác nhận hủy
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Resend Order Confirmation Dialog */}
+      <Dialog
+        open={isResendDialogOpen}
+        onClose={handleCloseResendDialog}
+        aria-labelledby='resend-dialog-title'
+        aria-describedby='resend-dialog-description'
+      >
+        <DialogTitle id='resend-dialog-title'>Xác nhận gửi lại đơn hàng</DialogTitle>
+        <DialogContent>
+          <DialogContentText id='resend-dialog-description'>
+            Bạn có chắc chắn muốn gửi lại đơn hàng <strong>#{orderToResend?.order?.order_code}</strong> không?
+            <br />
+            Hệ thống sẽ thực hiện lại quá trình xử lý đơn hàng này.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseResendDialog} color='inherit'>
+            Hủy
+          </Button>
+          <Button onClick={handleConfirmResend} color='success' variant='contained' autoFocus>
+            Xác nhận gửi lại
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   )
 }
