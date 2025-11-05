@@ -271,31 +271,38 @@ export default function TableDepositHistory() {
               </div>
             )
           }
+          else if (orderStatus === ORDER_STATUS.CANCEL) {
+            // Nếu status == CANCEL, không hiện gì cả
+            return null;
+          }else{
+            // Các status khác hiển thị button mặc định
+            return (
+              <div className='flex gap-2'>
+                <Tooltip title='Xem chi tiết'>
+                  <IconButton
+                    size='small'
+                    color='primary'
+                    onClick={() => handleOpenModalUserDetail(row.original?.user?.id)}
+                  >
+                    <Eye size={18} />
+                  </IconButton>
+                </Tooltip>
+                <Tooltip title='Chỉnh sửa'>
+                  <IconButton size='small' color='info'>
+                    <Edit size={18} />
+                  </IconButton>
+                </Tooltip>
+                <Tooltip title='Xóa'>
+                  <IconButton size='small' color='error' onClick={() => handleOpenDeleteDialog(row.original)}>
+                    <Trash2 size={18} />
+                  </IconButton>
+                </Tooltip>
+              </div>
+            )
+          }
 
-          // Các status khác hiển thị button mặc định
-          return (
-            <div className='flex gap-2'>
-              <Tooltip title='Xem chi tiết'>
-                <IconButton
-                  size='small'
-                  color='primary'
-                  onClick={() => handleOpenModalUserDetail(row.original?.user?.id)}
-                >
-                  <Eye size={18} />
-                </IconButton>
-              </Tooltip>
-              <Tooltip title='Chỉnh sửa'>
-                <IconButton size='small' color='info'>
-                  <Edit size={18} />
-                </IconButton>
-              </Tooltip>
-              <Tooltip title='Xóa'>
-                <IconButton size='small' color='error' onClick={() => handleOpenDeleteDialog(row.original)}>
-                  <Trash2 size={18} />
-                </IconButton>
-              </Tooltip>
-            </div>
-          )
+
+
         }
       }
     ],
