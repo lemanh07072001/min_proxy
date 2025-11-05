@@ -282,7 +282,7 @@ export default function TableDepositHistory() {
         header: 'Trạng thái',
         cell: ({ row }: { row: any }) => {
           if (row.original?.type === 'REFUND') {
-            return getStatusBadge(ORDER_STATUS.COMPLETED)
+            return null
           } else {
             return getStatusBadge(row.original?.order?.status)
           }

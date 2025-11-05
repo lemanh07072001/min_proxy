@@ -8,7 +8,7 @@ export const ORDER_STATUS = {
   PROCESSING: '1', // Đang xử lý
   COMPLETED: '2', // Hoàn thành
   FAILED: '3', // Lỗi
-  REFUNDED: '5', // Hoàn tiền
+  EXPIRED: '5', // Hết hạn expired
   CANCEL: '4' // Đã hủy
 } as const
 
@@ -24,7 +24,7 @@ export const ORDER_STATUS_LABELS = {
   [ORDER_STATUS.COMPLETED]: 'Hoàn thành',
   [ORDER_STATUS.FAILED]: 'Lỗi đơn hàng',
   [ORDER_STATUS.CANCEL]: 'Đã hủy',
-  [ORDER_STATUS.REFUNDED]: 'Hoàn tiền'
+  [ORDER_STATUS.EXPIRED]: 'Hoàn tiền'
 } as const
 
 /**
@@ -36,7 +36,7 @@ export const ORDER_STATUS_COLORS = {
   [ORDER_STATUS.PROCESSING]: 'warning', // Vàng cam
   [ORDER_STATUS.COMPLETED]: 'success', // Xanh lá
   [ORDER_STATUS.FAILED]: 'error', // Đỏ
-  [ORDER_STATUS.REFUNDED]: 'error', // Đỏ
+  [ORDER_STATUS.EXPIRED]: 'error', // Đỏ
   [ORDER_STATUS.CANCEL]: 'warning' // Đỏ
 } as const
 
