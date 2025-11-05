@@ -17,6 +17,22 @@ export const useOrders = () => {
   })
 }
 
+export const useApiKeys = (order_id?: string | number, enabled: boolean = true) => {
+  const axiosAuth = useAxiosAuth()
+
+  return useQuery({
+    queryKey: ['orderApiKeys', order_id],
+    queryFn: async () => {
+      const res = await axiosAuth.get(`/get-key-proxy/${order_id}`)
+      return res?.data?.data ?? []
+    },
+    enabled: !!order_id && enabled,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    staleTime: 5 * 60 * 1000 // 5 minutes
+  })
+}
+
 export const useCancelOrder = () => {
   const axiosAuth = useAxiosAuth()
   const queryClient = useQueryClient()

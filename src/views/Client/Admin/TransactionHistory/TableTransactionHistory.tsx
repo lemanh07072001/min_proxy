@@ -19,7 +19,12 @@ import {
   Trash2,
   XCircle,
   FileText,
-  RefreshCw
+  RefreshCw,
+  Loader2,
+  Clock,
+  CircleX,
+  RotateCcw,
+  User
 } from 'lucide-react'
 
 import {
@@ -47,13 +52,16 @@ import DialogContentText from '@mui/material/DialogContentText'
 import DialogTitle from '@mui/material/DialogTitle'
 import Button from '@mui/material/Button'
 
+import { toast } from 'react-toastify'
+
 import AppReactDatepicker from '@/components/AppReactDatepicker'
 
 import { formatDateTimeLocal } from '@/utils/formatDate'
 import DetailUserModal from '@/views/Client/Admin/TransactionHistory/DetailUserModal'
 import LogModal from '@/views/Client/Admin/TransactionHistory/LogModal'
+import OrderDetailModal from '@/views/Client/Admin/TransactionHistory/OrderDetailModal'
 import { useUserOrders } from '@/hooks/apis/useUserOrders'
-import { useOrders, useCancelOrder, useResendOrder, useDeleteOrder } from '@/hooks/apis/useOrders'
+import { useOrders, useCancelOrder, useResendOrder, useDeleteOrder, useApiKeys } from '@/hooks/apis/useOrders'
 import CustomTextField from '@/@core/components/mui/TextField'
 import useMediaQuery from '@/@menu/hooks/useMediaQuery'
 import {
@@ -72,6 +80,7 @@ export default function TableDepositHistory() {
   const [sorting, setSorting] = useState<any[]>([])
   const [isModalDetailUserOpen, setIsModalDetailUserOpen] = useState(false)
   const [isLogModalOpen, setIsLogModalOpen] = useState(false)
+  const [isOrderDetailModalOpen, setIsOrderDetailModalOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false)
   const [isResendDialogOpen, setIsResendDialogOpen] = useState(false)
@@ -88,9 +97,8 @@ export default function TableDepositHistory() {
     pageSize: 10
   }) // State để lưu các hàng được chọn
 
-  const { data: dataOrders = [], isLoading } = useOrders()
-
   // TanStack Query mutations
+  const { data: dataOrders = [], isLoading } = useOrders()
   const cancelOrderMutation = useCancelOrder()
   const resendOrderMutation = useResendOrder()
 
@@ -162,7 +170,46 @@ export default function TableDepositHistory() {
       return <Chip label='Không xác định' size='small' icon={<CircleQuestionMark />} color='secondary' />
     }
 
-    return <Chip label={label} size='small' icon={<BadgeMinus />} color={color as any} />
+    // Icon cho từng trạng thái
+    let icon = <CircleQuestionMark size={16} />
+
+    switch (status) {
+      case ORDER_STATUS.PENDING:
+        // Đang chờ xử lý - icon clock
+        icon = <Clock size={16} />
+        break
+      case ORDER_STATUS.PROCESSING:
+        // Đang xử lý - icon loading xoay
+        icon = (
+          <Loader2
+            size={16}
+            style={{
+              animation: 'spin 1s linear infinite'
+            }}
+          />
+        )
+        break
+      case ORDER_STATUS.COMPLETED:
+        // Hoàn thành - icon check
+        icon = <BadgeCheck size={16} />
+        break
+      case ORDER_STATUS.FAILED:
+        // Lỗi - icon X
+        icon = <CircleX size={16} />
+        break
+      case ORDER_STATUS.CANCEL:
+        // Đã hủy - icon XCircle
+        icon = <XCircle size={16} />
+        break
+      case ORDER_STATUS.REFUNDED:
+        // Hoàn tiền - icon rotate
+        icon = <RotateCcw size={16} />
+        break
+      default:
+        icon = <CircleQuestionMark size={16} />
+    }
+
+    return <Chip label={label} size='small' icon={icon} color={color as any} />
   }
 
   const columns = useMemo(
@@ -270,39 +317,38 @@ export default function TableDepositHistory() {
                 </Tooltip>
               </div>
             )
-          }
-          else if (orderStatus === ORDER_STATUS.CANCEL) {
-            // Nếu status == CANCEL, không hiện gì cả
-            return null;
-          }else{
-            // Các status khác hiển thị button mặc định
+          } else if (orderStatus === ORDER_STATUS.CANCEL || orderStatus === ORDER_STATUS.PENDING) {
+            // Nếu status == CANCEL hoặc PENDING, chỉ hiển thị nút xem chi tiết
             return (
               <div className='flex gap-2'>
-                <Tooltip title='Xem chi tiết'>
-                  <IconButton
-                    size='small'
-                    color='primary'
-                    onClick={() => handleOpenModalUserDetail(row.original?.user?.id)}
-                  >
+                <Tooltip title='Xem chi tiết đơn hàng'>
+                  <IconButton size='small' color='primary' onClick={() => handleOpenOrderDetailModal(row.original)}>
                     <Eye size={18} />
                   </IconButton>
                 </Tooltip>
-                <Tooltip title='Chỉnh sửa'>
-                  <IconButton size='small' color='info'>
-                    <Edit size={18} />
+              </div>
+            )
+          } else {
+            // Các status khác hiển thị button mặc định
+            return (
+              <div className='flex gap-2'>
+                <Tooltip title='Xem chi tiết đơn hàng'>
+                  <IconButton size='small' color='primary' onClick={() => handleOpenOrderDetailModal(row.original)}>
+                    <Eye size={18} />
                   </IconButton>
                 </Tooltip>
-                <Tooltip title='Xóa'>
-                  <IconButton size='small' color='error' onClick={() => handleOpenDeleteDialog(row.original)}>
-                    <Trash2 size={18} />
+                <Tooltip title='Xem thông tin user'>
+                  <IconButton
+                    size='small'
+                    color='info'
+                    onClick={() => handleOpenModalUserDetail(row.original?.user?.id)}
+                  >
+                    <User size={18} />
                   </IconButton>
                 </Tooltip>
               </div>
             )
           }
-
-
-
         }
       }
     ],
@@ -355,14 +401,14 @@ export default function TableDepositHistory() {
     setIsLogModalOpen(true)
   }
 
-  const handleOpenDeleteDialog = (orderData: any) => {
-    setOrderToDelete(orderData)
-    setIsDeleteDialogOpen(true)
+  const handleOpenOrderDetailModal = (orderData: any) => {
+    setSelectedOrderData(orderData)
+    setIsOrderDetailModalOpen(true)
   }
 
-  const handleCloseDeleteDialog = () => {
-    setIsDeleteDialogOpen(false)
-    setOrderToDelete(null)
+  const handleCloseOrderDetailModal = () => {
+    setIsOrderDetailModalOpen(false)
+    setSelectedOrderData(null)
   }
 
   const handleOpenCancelDialog = (orderData: any) => {
@@ -381,13 +427,10 @@ export default function TableDepositHistory() {
     cancelOrderMutation.mutate(orderToCancel?.order?.id, {
       onSuccess: () => {
         handleCloseCancelDialog()
-        // TODO: Thêm toast thông báo
-        // toast.success('Hủy đơn hàng thành công!')
-        console.log('Hủy đơn hàng thành công')
+        toast.success('Hủy đơn hàng thành công!')
       },
       onError: (error: any) => {
-        // TODO: Thêm toast thông báo lỗi
-        // toast.error(error?.response?.data?.message || 'Có lỗi xảy ra khi hủy đơn hàng')
+        toast.error(error?.response?.data?.message || 'Có lỗi xảy ra khi hủy đơn hàng')
         console.error('Lỗi khi hủy đơn hàng:', error)
       }
     })
@@ -404,20 +447,15 @@ export default function TableDepositHistory() {
   }
 
   const handleConfirmResend = () => {
-    console.log(orderToResend)
-
     if (!orderToResend?.order?.id) return
 
     resendOrderMutation.mutate(orderToResend?.order?.id, {
       onSuccess: () => {
         handleCloseResendDialog()
-        // TODO: Thêm toast thông báo
-        // toast.success('Gửi lại đơn hàng thành công!')
-        console.log('Gửi lại đơn hàng thành công')
+        toast.success('Gửi lại đơn hàng thành công!')
       },
       onError: (error: any) => {
-        // TODO: Thêm toast thông báo lỗi
-        // toast.error(error?.response?.data?.message || 'Có lỗi xảy ra khi gửi lại đơn hàng')
+        toast.error(error?.response?.data?.message || 'Có lỗi xảy ra khi gửi lại đơn hàng')
         console.error('Lỗi khi gửi lại đơn hàng:', error)
       }
     })
@@ -651,6 +689,13 @@ export default function TableDepositHistory() {
         isOpen={isLogModalOpen}
         onClose={() => setIsLogModalOpen(false)}
         data={selectedOrderData}
+        isLoading={false}
+      />
+
+      <OrderDetailModal
+        isOpen={isOrderDetailModalOpen}
+        onClose={handleCloseOrderDetailModal}
+        orderData={selectedOrderData}
         isLoading={false}
       />
 

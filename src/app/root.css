@@ -290,3 +290,13 @@
 .bg-pink-900 { background-color: #831843; }
 .text-pink-900 { color: #831843; }
 .border-pink-900 { border-color: #831843; }
+
+/* Animation Keyframes */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
