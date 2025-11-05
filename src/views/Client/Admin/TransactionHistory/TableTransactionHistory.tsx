@@ -318,16 +318,7 @@ export default function TableDepositHistory() {
               </div>
             )
           } else if (orderStatus === ORDER_STATUS.CANCEL || orderStatus === ORDER_STATUS.PENDING) {
-            // Nếu status == CANCEL hoặc PENDING, chỉ hiển thị nút xem chi tiết
-            return (
-              <div className='flex gap-2'>
-                <Tooltip title='Xem chi tiết đơn hàng'>
-                  <IconButton size='small' color='primary' onClick={() => handleOpenOrderDetailModal(row.original)}>
-                    <Eye size={18} />
-                  </IconButton>
-                </Tooltip>
-              </div>
-            )
+            return null
           } else {
             // Các status khác hiển thị button mặc định
             return (
