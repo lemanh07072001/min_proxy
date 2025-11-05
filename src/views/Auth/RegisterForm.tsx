@@ -54,6 +54,16 @@ export default function RegisterForm() {
     })
     .required()
 
+  const {
+    register,
+    handleSubmit,
+    reset,
+    setError,
+    formState: { errors }
+  } = useForm<RegisterFormInputs>({
+    resolver: yupResolver(schema)
+  })
+
   const { mutate, isPending } = useMutation({
     mutationFn: registerUser,
     onSuccess: data => {
@@ -63,20 +73,36 @@ export default function RegisterForm() {
 
       closeAuthModal()
     },
-    onError: error => {
+    onError: (error: any) => {
       console.error('Lỗi đăng ký:', error)
 
-      toast.error(t('auth.registerError'))
-    }
-  })
+      // Kiểm tra nếu có lỗi validation từ server
+      if (error?.response?.data?.errors) {
+        const serverErrors = error.response.data.errors
 
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors }
-  } = useForm<RegisterFormInputs>({
-    resolver: yupResolver(schema)
+        // Set lỗi cho từng field
+        Object.keys(serverErrors).forEach(field => {
+          if (field in errors || ['name', 'email', 'password', 'password_confirmation'].includes(field)) {
+            setError(field as keyof RegisterFormInputs, {
+              type: 'server',
+              message: serverErrors[field][0] // Lấy lỗi đầu tiên
+            })
+          }
+        })
+
+        // Hiển thị toast với lỗi chung (nếu có)
+        const firstError = Object.values(serverErrors)[0]
+        if (Array.isArray(firstError) && firstError[0]) {
+          toast.error(firstError[0])
+        }
+      } else if (error?.response?.data?.message) {
+        // Hiển thị message lỗi từ server
+        toast.error(error.response.data.message)
+      } else {
+        // Lỗi chung
+        toast.error(t('auth.registerError'))
+      }
+    }
   })
 
   const onSubmit = (data: RegisterFormInputs) => {
