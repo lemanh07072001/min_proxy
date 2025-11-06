@@ -9,7 +9,7 @@ export const ORDER_STATUS = {
   COMPLETED: '2', // Hoàn thành
   FAILED: '3', // Lỗi
   EXPIRED: '5', // Hết hạn expired
-  CANCEL: '4' // Đã hủy
+  CANCEL: '4' // Hoàn tiền
 } as const
 
 export type OrderStatusType = (typeof ORDER_STATUS)[keyof typeof ORDER_STATUS]
@@ -23,7 +23,7 @@ export const ORDER_STATUS_LABELS = {
   [ORDER_STATUS.PROCESSING]: 'Đang xử lý',
   [ORDER_STATUS.COMPLETED]: 'Hoàn thành',
   [ORDER_STATUS.FAILED]: 'Lỗi đơn hàng',
-  [ORDER_STATUS.CANCEL]: 'Đã hủy',
+  [ORDER_STATUS.CANCEL]: 'Hoàn tiền',
   [ORDER_STATUS.EXPIRED]: 'Hết hạn'
 } as const
 

@@ -110,9 +110,9 @@ export default function TableDepositHistory() {
       const userName = normalize(item?.user?.name)
       const matchesUser = !searchUser || userName.includes(searchUser.trim().toLowerCase())
 
-      // Filter by status/type (BUY/REFUND/FAILED)
-      const type = (item?.order?.status ?? '').toString()
-      const matchesStatus = !statusFilter || type === statusFilter
+      // Filter by order status (PENDING/PROCESSING/COMPLETED/FAILED/CANCEL/EXPIRED)
+      const orderStatus = (item?.order?.status ?? '').toString()
+      const matchesStatus = !statusFilter || orderStatus === statusFilter
 
       // Filter by date (compare date part only)
       const matchesDate = (() => {
@@ -205,13 +205,14 @@ export default function TableDepositHistory() {
         icon = <CircleX size={16} />
         break
       case ORDER_STATUS.CANCEL:
-        // Đã hủy - icon XCircle
+        // Hoàn tiền - icon XCircle
         icon = <XCircle size={16} />
         break
       case ORDER_STATUS.EXPIRED:
         // Hoàn tiền - icon rotate
         icon = <Clock size={16} />
         break
+
       default:
         icon = <CircleQuestionMark size={16} />
     }
@@ -288,7 +289,7 @@ export default function TableDepositHistory() {
         header: 'Trạng thái',
         cell: ({ row }: { row: any }) => {
           if (row.original?.type === 'REFUND') {
-            return null
+            return getStatusBadge(row.original?.order?.status)
           } else {
             return getStatusBadge(row.original?.order?.status)
           }
@@ -322,10 +323,7 @@ export default function TableDepositHistory() {
                 </Tooltip>
               </div>
             )
-          } else if (
-            (orderStatus === ORDER_STATUS.EXPIRED && row.original?.type === 'REFUND') ||
-            orderStatus === ORDER_STATUS.PENDING
-          ) {
+          } else if (orderStatus === ORDER_STATUS.CANCEL || orderStatus === ORDER_STATUS.PENDING) {
             return null
           } else {
             // Các status khác hiển thị button mặc định
@@ -533,11 +531,14 @@ export default function TableDepositHistory() {
                   }}
                 >
                   <MenuItem value=''>
-                    <em>Chọn loại dịch vụ</em>
+                    <em>Chọn trạng thái</em>
                   </MenuItem>
-                  <MenuItem value={'BUY'}>Thành công</MenuItem>
-                  <MenuItem value={'REFUND'}>Hoàn tiền</MenuItem>
-                  <MenuItem value={'FAILED'}>Thất bại</MenuItem>
+                  <MenuItem value={ORDER_STATUS.PENDING}>Đang chờ xử lý</MenuItem>
+                  <MenuItem value={ORDER_STATUS.PROCESSING}>Đang xử lý</MenuItem>
+                  <MenuItem value={ORDER_STATUS.COMPLETED}>Hoàn thành</MenuItem>
+                  <MenuItem value={ORDER_STATUS.FAILED}>Thất bại</MenuItem>
+                  <MenuItem value={ORDER_STATUS.CANCEL}>Đã hủy</MenuItem>
+                  <MenuItem value={ORDER_STATUS.EXPIRED}>Hết hạn</MenuItem>
                 </CustomTextField>
 
                 <AppReactDatepicker
