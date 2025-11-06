@@ -37,7 +37,10 @@ export default function DetailUserModal({
               <p className='text-orange-100 text-xs sm:text-sm hidden sm:block'>Chi tiết tài khoản và hoạt động</p>
             </div>
           </div>
-          <button onClick={onClose} className='p-2 rounded-lg hover:bg-white/20 text-white transition-colors'>
+          <button
+            onClick={onClose}
+            className='p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors'
+          >
             <X size={20} />
           </button>
         </div>

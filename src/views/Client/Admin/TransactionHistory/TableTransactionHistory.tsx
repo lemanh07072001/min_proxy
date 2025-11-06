@@ -176,7 +176,14 @@ export default function TableDepositHistory() {
     switch (status) {
       case ORDER_STATUS.PENDING:
         // Đang chờ xử lý - icon clock
-        icon = <Clock size={16} />
+        icon = (
+          <Loader2
+            size={16}
+            style={{
+              animation: 'spin 1s linear infinite'
+            }}
+          />
+        )
         break
       case ORDER_STATUS.PROCESSING:
         // Đang xử lý - icon loading xoay
@@ -201,9 +208,9 @@ export default function TableDepositHistory() {
         // Đã hủy - icon XCircle
         icon = <XCircle size={16} />
         break
-      case ORDER_STATUS.REFUNDED:
+      case ORDER_STATUS.EXPIRED:
         // Hoàn tiền - icon rotate
-        icon = <RotateCcw size={16} />
+        icon = <Clock size={16} />
         break
       default:
         icon = <CircleQuestionMark size={16} />
@@ -227,7 +234,7 @@ export default function TableDepositHistory() {
             <div className='text-gray-500'>{row.original?.user?.email}</div>
           </div>
         ),
-        size: isMobile ? 250 : 150
+        size: isMobile ? 250 : 250
       },
 
       {
@@ -236,13 +243,13 @@ export default function TableDepositHistory() {
         cell: ({ row }: { row: any }) => {
           return getTypeBadge(row.original.type)
         },
-        ssize: isMobile ? 250 : 100
+        ssize: isMobile ? 250 : 80
       },
       {
         header: 'Số tiền',
         cell: ({ row }: { row: any }) => (
           <div>
-            <span className='font-sm'>
+            <span className='font-sm font-bold'>
               Giá tiền: {new Intl.NumberFormat('vi-VN').format(row.original.sotienthaydoi) + ' đ'}
             </span>
           </div>
@@ -278,7 +285,6 @@ export default function TableDepositHistory() {
         }
       },
       {
-        accessorKey: 'status',
         header: 'Trạng thái',
         cell: ({ row }: { row: any }) => {
           if (row.original?.type === 'REFUND') {
@@ -290,7 +296,6 @@ export default function TableDepositHistory() {
         ssize: isMobile ? 250 : 100
       },
       {
-        accessorKey: 'actions',
         header: 'Hành động',
         size: 150,
         cell: ({ row }: { row: any }) => {
@@ -317,17 +322,9 @@ export default function TableDepositHistory() {
                 </Tooltip>
               </div>
             )
-          } else if (orderStatus === ORDER_STATUS.CANCEL || orderStatus === ORDER_STATUS.PENDING) {
+          } else if (orderStatus === ORDER_STATUS.EXPIRED || orderStatus === ORDER_STATUS.PENDING) {
             // Nếu status == CANCEL hoặc PENDING, chỉ hiển thị nút xem chi tiết
-            return (
-              <div className='flex gap-2'>
-                <Tooltip title='Xem chi tiết đơn hàng'>
-                  <IconButton size='small' color='primary' onClick={() => handleOpenOrderDetailModal(row.original)}>
-                    <Eye size={18} />
-                  </IconButton>
-                </Tooltip>
-              </div>
-            )
+            return null
           } else {
             // Các status khác hiển thị button mặc định
             return (

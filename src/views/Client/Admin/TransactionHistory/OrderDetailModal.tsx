@@ -85,8 +85,15 @@ export default function OrderDetailModal({ isOpen, onClose, orderData, isLoading
 
     switch (status) {
       case ORDER_STATUS.PENDING:
-        // Đang chờ xử lý - icon clock
-        icon = <Clock size={16} />
+        // Đang chờ xử lý - icon loading xoay
+        icon = (
+          <Loader2
+            size={16}
+            style={{
+              animation: 'spin 1s linear infinite'
+            }}
+          />
+        )
         break
       case ORDER_STATUS.PROCESSING:
         // Đang xử lý - icon loading xoay
@@ -111,9 +118,9 @@ export default function OrderDetailModal({ isOpen, onClose, orderData, isLoading
         // Đã hủy - icon XCircle
         icon = <XCircle size={16} />
         break
-      case ORDER_STATUS.REFUNDED:
+      case ORDER_STATUS.EXPIRED:
         // Hoàn tiền - icon rotate
-        icon = <RotateCcw size={16} />
+        icon = <Clock size={16} />
         break
       default:
         icon = <CircleQuestionMark size={16} />
@@ -146,10 +153,16 @@ export default function OrderDetailModal({ isOpen, onClose, orderData, isLoading
         size: 50
       },
       {
-        header: 'ApiKey',
+        header: 'ApiKey / Proxy',
         size: 200,
         cell: ({ row }: { row: any }) => {
-          return row.original.api_key ?? '-'
+          // Nếu api_key rỗng hoặc null → hiển thị Proxy
+          if (!row.original.api_key) {
+            return row.original.proxys || '-'
+          }
+
+          // Nếu có api_key → hiển thị api_key
+          return row.original.api_key
         }
       },
       {
@@ -161,15 +174,16 @@ export default function OrderDetailModal({ isOpen, onClose, orderData, isLoading
         header: 'Trạng thái',
         size: 150,
         cell: ({ row }: { row: any }) => {
-          if (row.original?.status === 'ACTIVE') {
+          if (row.original?.status === 'ACTIVE' || row.original?.status === 1) {
             return <Chip label='Hoạt động' size='small' icon={<BadgeCheck />} color='success' />
+          } else if (row.original?.status === 5 || row.original?.status === 'EXPIRED') {
+            return <Chip label='Hết hạn' size='small' icon={<CircleX />} color='error' />
           } else {
             return <Chip label='Hết hạn' size='small' icon={<CircleX />} color='error' />
           }
         }
       },
       {
-        accessorKey: 'created_at',
         header: 'Ngày mua',
         size: 200,
         cell: ({ row }: { row: any }) => {
@@ -184,7 +198,6 @@ export default function OrderDetailModal({ isOpen, onClose, orderData, isLoading
         }
       },
       {
-        accessorKey: 'expired_at',
         header: 'Ngày hết hạn',
         size: 200,
         cell: ({ row }: { row: any }) => (
@@ -269,12 +282,21 @@ export default function OrderDetailModal({ isOpen, onClose, orderData, isLoading
                     </div>
                     <div>
                       <p className='text-xs text-slate-500 mb-1'>Loại giao dịch</p>
-                      <span
-                        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium ${getTypeColor(orderData?.type)}`}
-                      >
-                        {orderData?.type === 'BUY' ? <CheckCircle size={14} /> : <Clock size={14} />}
-                        {getTypeLabel(orderData?.type)}
-                      </span>
+                      {orderData?.type === 'BUY' ? (
+                        <Chip
+                          label={getTypeLabel(orderData?.type)}
+                          icon={<CheckCircle size={14} />}
+                          color='success'
+                          size='small'
+                        />
+                      ) : (
+                        <Chip
+                          label={getTypeLabel(orderData?.type)}
+                          icon={<Clock size={14} />}
+                          color='warning'
+                          size='small'
+                        />
+                      )}
                     </div>
                     <div>
                       <p className='text-xs text-slate-500 mb-1'>Ngày tạo</p>
@@ -312,6 +334,8 @@ export default function OrderDetailModal({ isOpen, onClose, orderData, isLoading
                     <div>
                       <p className='text-xs text-slate-500 mb-1'>Trạng thái</p>
                       {getStatusBadge(orderData?.order?.status)}
+
+                      {console.log(orderData?.order?.status)}
                     </div>
                     <div>
                       <p className='text-xs text-slate-500 mb-1'>Nội dung</p>
@@ -337,7 +361,8 @@ export default function OrderDetailModal({ isOpen, onClose, orderData, isLoading
                               : dataApiKeys.map((item: any) => item.api_key).join('\n')
                           copyToClipboard(apiKeysToCopy, 'header')
                         }}
-                        className='px-3 py-1.5 text-sm rounded-lg font-medium text-white bg-orange-500 hover:bg-orange-600 transition-colors flex items-center gap-1.5'
+                        disabled={Object.keys(rowSelection).length === 0}
+                        className='px-3 py-1.5 text-sm rounded-lg font-medium text-white bg-orange-500 hover:bg-orange-600 transition-colors flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-orange-500'
                       >
                         {copiedField === 'header' ? (
                           <>
@@ -349,18 +374,19 @@ export default function OrderDetailModal({ isOpen, onClose, orderData, isLoading
                             <Copy size={14} />
                             {Object.keys(rowSelection).length > 0
                               ? `Copy ${Object.keys(rowSelection).length} keys`
-                              : 'Copy tất cả'}
+                              : 'Copy keys'}
                           </>
                         )}
                       </button>
                       <button
                         onClick={downloadApiKeys}
-                        className='px-3 py-1.5 text-sm rounded-lg font-medium text-white bg-blue-500 hover:bg-blue-600 transition-colors flex items-center gap-1.5'
+                        disabled={Object.keys(rowSelection).length === 0}
+                        className='px-3 py-1.5 text-sm rounded-lg font-medium text-white bg-blue-500 hover:bg-blue-600 transition-colors flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-blue-500'
                       >
                         <Download size={14} />
                         {Object.keys(rowSelection).length > 0
                           ? `Tải ${Object.keys(rowSelection).length} keys`
-                          : 'Tải tất cả'}
+                          : 'Tải keys'}
                       </button>
                     </div>
                   </div>
@@ -441,16 +467,6 @@ export default function OrderDetailModal({ isOpen, onClose, orderData, isLoading
             </div>
           </div>
         )}
-
-        {/* Footer */}
-        <div className='bg-slate-50 px-6 py-4 border-t border-slate-200 flex justify-end gap-3'>
-          <button
-            onClick={onClose}
-            className='px-5 py-2.5 rounded-lg font-medium text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 transition-colors'
-          >
-            Đóng
-          </button>
-        </div>
       </div>
     </Dialog>
   )
