@@ -209,7 +209,7 @@ export default function OrderDetailModal({ isOpen, onClose, orderData, isLoading
           <>
             <div className='d-flex align-items-center  gap-1 '>
               <Clock3 size={14} />
-              <div style={{ marginTop: '2px' }}>{formatDateTimeLocal(row.original.created_at)}</div>
+              <div style={{ marginTop: '2px' }}>{formatDateTimeLocal(row.original.expired_at)}</div>
             </div>
           </>
         )
@@ -335,6 +335,10 @@ export default function OrderDetailModal({ isOpen, onClose, orderData, isLoading
                       <div>
                         <p className='text-xs text-slate-500 mb-1'>Số lượng</p>
                         <p className='text-2xl font-bold text-slate-800'>{orderData?.order?.quantity}</p>
+                      </div>
+                      <div>
+                        <p className='text-xs text-slate-500 mb-1'>Thời gian</p>
+                        <p className='text-2xl font-bold text-slate-800'>{orderData?.order?.time}</p>
                       </div>
                       <div>
                         <p className='text-xs text-slate-500 mb-1'>Tổng tiền</p>
