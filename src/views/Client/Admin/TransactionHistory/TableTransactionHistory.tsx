@@ -322,7 +322,7 @@ export default function TableDepositHistory() {
                 </Tooltip>
               </div>
             )
-          } else if (orderStatus === ORDER_STATUS.CANCEL || orderStatus === ORDER_STATUS.PENDING) {
+          } else if (orderStatus === ORDER_STATUS.EXPIRED || orderStatus === ORDER_STATUS.PENDING) {
             return null
           } else {
             // Các status khác hiển thị button mặc định
