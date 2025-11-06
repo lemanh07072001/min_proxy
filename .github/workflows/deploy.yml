@@ -3,8 +3,7 @@ name: Build and Deploy to Server
 on:
   push:
     branches:
-      - 'main' # Kích hoạt cho nhánh Production
-      - 'test' # Kích hoạt cho nhánh Testing
+      - 'main' # Chỉ kích hoạt cho nhánh main
 
 jobs:
   build-and-deploy:
