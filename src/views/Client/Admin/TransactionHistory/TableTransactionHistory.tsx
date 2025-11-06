@@ -288,7 +288,7 @@ export default function TableDepositHistory() {
         header: 'Trạng thái',
         cell: ({ row }: { row: any }) => {
           if (row.original?.type === 'REFUND') {
-            return getStatusBadge(ORDER_STATUS.COMPLETED)
+            return null
           } else {
             return getStatusBadge(row.original?.order?.status)
           }
@@ -322,8 +322,7 @@ export default function TableDepositHistory() {
                 </Tooltip>
               </div>
             )
-          } else if (orderStatus === ORDER_STATUS.EXPIRED || orderStatus === ORDER_STATUS.PENDING) {
-            // Nếu status == CANCEL hoặc PENDING, chỉ hiển thị nút xem chi tiết
+          } else if (orderStatus === ORDER_STATUS.CANCEL || orderStatus === ORDER_STATUS.PENDING) {
             return null
           } else {
             // Các status khác hiển thị button mặc định

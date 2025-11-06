@@ -74,6 +74,8 @@ export default function HistoryOrderPage() {
         return <Chip label='Hoàn thành' size='small' icon={<BadgeCheck />} color='success' />
       case '3':
         return <Chip label='Thất bại' size='small' icon={<BadgeMinus />} color='error' />
+      case '4':
+        return <Chip label='Hoàn tền' size='small' icon={<BadgeMinus />} color='warning' />
       case '5':
         return <Chip label='Hết hạn' size='small' icon={<BadgeMinus />} color='error' />
       default:
@@ -109,6 +111,7 @@ export default function HistoryOrderPage() {
         accessorKey: 'status',
         header: 'Trạng thái',
         cell: ({ row }: { row: any }) => {
+          console.log(row)
           return getStatusBadge(row.original.status)
         },
         size: 150
