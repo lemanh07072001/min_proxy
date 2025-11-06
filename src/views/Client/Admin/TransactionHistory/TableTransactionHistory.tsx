@@ -106,9 +106,18 @@ export default function TableDepositHistory() {
     const normalize = (v: any) => (v ?? '').toString().toLowerCase()
 
     return (dataOrders ?? []).filter((item: any) => {
-      // Filter by user name
+      // Filter by user name, email, amount (sotienthaydoi), and content (noidung)
       const userName = normalize(item?.user?.name)
-      const matchesUser = !searchUser || userName.includes(searchUser.trim().toLowerCase())
+      const userEmail = normalize(item?.user?.email)
+      const amount = normalize(item?.sotienthaydoi)
+      const content = normalize(item?.noidung)
+      const searchLower = searchUser.trim().toLowerCase()
+
+      const matchesSearch = !searchUser ||
+        userName.includes(searchLower) ||
+        userEmail.includes(searchLower) ||
+        amount.includes(searchLower) ||
+        content.includes(searchLower)
 
       // Filter by order status (PENDING/PROCESSING/COMPLETED/FAILED/CANCEL/EXPIRED)
       const orderStatus = (item?.order?.status ?? '').toString()
@@ -131,7 +140,7 @@ export default function TableDepositHistory() {
         }
       })()
 
-      return matchesUser && matchesStatus && matchesDate
+      return matchesSearch && matchesStatus && matchesDate
     })
   }, [dataOrders, searchUser, statusFilter, date])
 

@@ -158,7 +158,12 @@ export default function OrderDetailModal({ isOpen, onClose, orderData, isLoading
         cell: ({ row }: { row: any }) => {
           // Nếu api_key rỗng hoặc null → hiển thị Proxy
           if (!row.original.api_key) {
-            return row.original.proxys || '-'
+            // Kiểm tra nếu proxys là object thì lấy http hoặc socks5
+            const proxys = row.original.proxys
+            if (proxys && typeof proxys === 'object') {
+              return proxys.http || proxys.socks5 || '-'
+            }
+            return proxys || '-'
           }
 
           // Nếu có api_key → hiển thị api_key
