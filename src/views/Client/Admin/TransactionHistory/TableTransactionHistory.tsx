@@ -537,7 +537,7 @@ export default function TableDepositHistory() {
                   <MenuItem value={ORDER_STATUS.PROCESSING}>Đang xử lý</MenuItem>
                   <MenuItem value={ORDER_STATUS.COMPLETED}>Hoàn thành</MenuItem>
                   <MenuItem value={ORDER_STATUS.FAILED}>Thất bại</MenuItem>
-                  <MenuItem value={ORDER_STATUS.CANCEL}>Đã hủy</MenuItem>
+                  <MenuItem value={ORDER_STATUS.CANCEL}>Hoàn tiền</MenuItem>
                   <MenuItem value={ORDER_STATUS.EXPIRED}>Hết hạn</MenuItem>
                 </CustomTextField>
 
