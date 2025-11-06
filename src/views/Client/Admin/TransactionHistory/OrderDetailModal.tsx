@@ -18,7 +18,7 @@ import {
 } from 'lucide-react'
 
 import { useReactTable, getCoreRowModel, flexRender, getPaginationRowModel } from '@tanstack/react-table'
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import Dialog from '@mui/material/Dialog'
 import { formatDateTimeLocal } from '@/utils/formatDate'
 import { ORDER_STATUS_LABELS, ORDER_STATUS, ORDER_STATUS_COLORS } from '@/constants'
@@ -230,6 +230,13 @@ export default function OrderDetailModal({ isOpen, onClose, orderData, isLoading
       }
     }
   })
+
+  // Reset checkbox selection khi đóng modal
+  useEffect(() => {
+    if (!isOpen) {
+      setRowSelection({})
+    }
+  }, [isOpen])
 
   // Early return AFTER all hooks
   if (!isOpen) return null
