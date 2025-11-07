@@ -3,16 +3,109 @@
 import { useState, useEffect } from 'react'
 
 import { useRouter, useParams } from 'next/navigation'
-
-import { Card, CardContent, CardHeader, Grid, TextField, MenuItem, Button, Typography } from '@mui/material'
+import Divider from '@mui/material/Divider'
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  Grid,
+  TextField,
+  MenuItem,
+  Button,
+  Typography,
+  FormControlLabel,
+  Switch,
+  Grid2,
+  Box,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Chip
+} from '@mui/material'
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { toast } from 'react-toastify'
 
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Plus, X } from 'lucide-react'
+import { useForm, Controller } from 'react-hook-form'
+import { yupResolver } from '@hookform/resolvers/yup'
+import * as yup from 'yup'
 
 import useAxiosAuth from '@/hocs/useAxiosAuth'
+import CustomTextField from '@/@core/components/mui/TextField'
+import { usePartners } from '@/hooks/apis/usePartners'
+import MultiInputModal from '@/views/Client/Admin/ServiceType/MultiInputModal'
+
+// Yup validation schema (same as CreateServicePage)
+const schema = yup.object({
+  name: yup
+    .string()
+    .nullable()
+    .transform(value => (value ? value.trim() : value))
+    .required('Tên dịch vụ là bắt buộc')
+    .min(1, 'Tên dịch vụ là bắt buộc'),
+  api_partner: yup
+    .string()
+    .nullable()
+    .transform(value => (value ? value.trim() : value))
+    .required('Api Partner là bắt buộc')
+    .min(1, 'Api Partner là bắt buộc'),
+  cost_price: yup
+    .number()
+    .nullable()
+    .typeError('Giá vốn phải là số')
+    .required('Giá vốn là bắt buộc')
+    .positive('Giá vốn phải lớn hơn 0'),
+  price: yup
+    .number()
+    .nullable()
+    .transform((value, originalValue) => {
+      return originalValue === '' ? undefined : value
+    })
+    .typeError('Giá bán phải là số')
+    .required('Giá bán là bắt buộc')
+    .positive('Giá bán phải lớn hơn 0')
+    .min(0.01, 'Giá bán phải lớn hơn 0')
+    .test('min-price', 'Giá bán phải lớn hơn hoặc bằng giá vốn', function (value) {
+      const { cost_price } = this.parent
+      if (!cost_price) return true
+      return value >= cost_price
+    }),
+  status: yup.string().nullable().required('Trạng thái là bắt buộc'),
+  partner_id: yup.string().nullable().required('Đối tác là bắt buộc'),
+  type: yup.string().nullable().required('Loại dịch vụ là bắt buộc'),
+  ip_version: yup.string().nullable().required('IP Version là bắt buộc'),
+  protocols: yup
+    .array()
+    .nullable()
+    .of(yup.string())
+    .min(1, 'Vui lòng chọn ít nhất một giao thức')
+    .required('Proxy type là bắt buộc')
+    .default([]),
+  durations: yup
+    .array()
+    .nullable()
+    .of(yup.string())
+    .min(1, 'Vui lòng chọn ít nhất một thời gian')
+    .required('Thời gian hiển thị là bắt buộc')
+    .default([]),
+  body_api: yup
+    .string()
+    .nullable()
+    .transform(value => (value ? value.trim() : value))
+    .required('Body Api là bắt buộc')
+    .min(1, 'Body Api là bắt buộc'),
+  display_time: yup
+    .number()
+    .nullable()
+    .typeError('Thời gian hiển thị phải là số')
+    .required('Thời gian hiển thị là bắt buộc')
+    .positive('Thời gian hiển thị phải lớn hơn 0'),
+  proxy_type: yup.string().nullable().required('Proxy type là bắt buộc'),
+  country: yup.string().nullable().required('Quốc gia là bắt buộc')
+})
 
 interface EditServicePageProps {
   serviceId: string
@@ -25,15 +118,92 @@ export default function EditServicePage({ serviceId }: EditServicePageProps) {
   const axiosAuth = useAxiosAuth()
   const queryClient = useQueryClient()
 
-  const [formData, setFormData] = useState({
-    name: '',
-    cost_price: '',
-    price: '',
-    status: 'active',
-    partner_id: '',
-    type: '',
-    ip_version: ''
+  // Fetch partners data
+  const { data: partners = [], isLoading: loadingPartners } = usePartners()
+
+  // React Hook Form
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+    setValue,
+    watch,
+    trigger,
+    register,
+    reset
+  } = useForm({
+    resolver: async (data, context, options) => {
+      try {
+        const values = await schema.validate(data, { abortEarly: false })
+        return { values, errors: {} }
+      } catch (err: any) {
+        const formattedErrors = err.inner.reduce(
+          (allErrors: any, currentError: any) => ({
+            ...allErrors,
+            [currentError.path]: {
+              type: currentError.type ?? 'validation',
+              message: currentError.message
+            }
+          }),
+          {}
+        )
+        return { values: {}, errors: formattedErrors }
+      }
+    },
+    mode: 'onSubmit',
+    defaultValues: {
+      name: '',
+      api_partner: '',
+      cost_price: undefined,
+      price: undefined,
+      status: 'active',
+      partner_id: '',
+      type: '0',
+      ip_version: 'ipv4',
+      protocols: [],
+      durations: [],
+      body_api: '',
+      display_time: undefined,
+      proxy_type: '',
+      country: ''
+    }
   })
+
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [descriptionForm, setDescriptionForm] = useState({
+    key: '',
+    value: ''
+  })
+
+  const [isMultiInputModalOpen, setIsMultiInputModalOpen] = useState(false)
+  const [multiInputFields, setMultiInputFields] = useState<Array<{ key: string; value: string }>>([
+    { key: '', value: '' }
+  ])
+
+  const ITEM_HEIGHT = 48
+  const ITEM_PADDING_TOP = 8
+  const MenuProps = {
+    PaperProps: {
+      style: {
+        maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
+        width: 250
+      }
+    }
+  }
+
+  const countries = ['Việt Nam']
+  const protocols = [
+    { value: 'http', label: 'HTTP' },
+    { value: 'socks5', label: 'SOCKS5' }
+  ]
+  const durations = [
+    { value: 'day', label: '1 ngày' },
+    { value: 'week', label: '1 tuần' },
+    { value: 'month', label: '1 tháng' },
+    { value: '3month', label: '3 tháng' },
+    { value: '6month', label: '6 tháng' },
+    { value: 'year', label: '1 năm' }
+  ]
 
   // Fetch service data
   const { data: serviceData, isLoading } = useQuery({
@@ -49,17 +219,24 @@ export default function EditServicePage({ serviceId }: EditServicePageProps) {
   // Load data vào form khi fetch xong
   useEffect(() => {
     if (serviceData) {
-      setFormData({
+      reset({
         name: serviceData.name || '',
-        cost_price: serviceData.cost_price || '',
-        price: serviceData.price || '',
+        api_partner: serviceData.api_partner || '',
+        cost_price: serviceData.cost_price || undefined,
+        price: serviceData.price || undefined,
         status: serviceData.status || 'active',
         partner_id: serviceData.partner_id || '',
-        type: serviceData.type || '',
-        ip_version: serviceData.ip_version || ''
+        type: serviceData.type || '0',
+        ip_version: serviceData.ip_version || 'ipv4',
+        protocols: serviceData.protocols || [],
+        durations: serviceData.durations || [],
+        body_api: serviceData.body_api || '',
+        display_time: serviceData.display_time || undefined,
+        proxy_type: serviceData.proxy_type || '',
+        country: serviceData.country || ''
       })
     }
-  }, [serviceData])
+  }, [serviceData, reset])
 
   const updateMutation = useMutation({
     mutationFn: async (data: any) => {
@@ -78,154 +255,561 @@ export default function EditServicePage({ serviceId }: EditServicePageProps) {
     }
   })
 
-  const handleChange = (field: string, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }))
+  const onSubmit = (data: any) => {
+    const submitData = {
+      ...data,
+      api_type: 'buy_api',
+      multi_inputs: multiInputFields
+    }
+
+    updateMutation.mutate(submitData)
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+  const onError = (errors: any) => {
+    const errorMessages = Object.values(errors)
+      .map((error: any) => error?.message)
+      .filter(Boolean)
 
-    // Validation
-    if (!formData.name || !formData.cost_price || !formData.price) {
-      toast.error('Vui lòng điền đầy đủ thông tin bắt buộc')
+    if (errorMessages.length > 0) {
+      toast.error(errorMessages[0] as string)
+    }
+  }
 
+  const handleOpenModal = () => {
+    setIsModalOpen(true)
+  }
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false)
+    setDescriptionForm({ key: '', value: '' })
+  }
+
+  const handleAddDescription = () => {
+    if (!descriptionForm.key || !descriptionForm.value) {
+      toast.error('Vui lòng điền đầy đủ thông tin')
       return
     }
 
-    updateMutation.mutate(formData)
+    handleCloseModal()
+    toast.success('Thêm mô tả thành công!')
   }
 
-  if (isLoading) {
-    return (
-      <div className='p-6'>
-        <Card>
-          <CardContent>
-            <div className='flex justify-center items-center py-10'>
-              <div className='loader-wrapper'>
-                <div className='loader'>
-                  <span></span>
-                  <span></span>
-                  <span></span>
-                </div>
-                <p className='loading-text'>Đang tải dữ liệu...</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    )
+  const handleRemoveDescription = (index: number) => {
+    toast.success('Xóa mô tả thành công!')
+  }
+
+  // Multi Input Modal handlers
+  const handleOpenMultiInputModal = () => {
+    setIsMultiInputModalOpen(true)
+  }
+
+  const handleCloseMultiInputModal = () => {
+    setIsMultiInputModalOpen(false)
+  }
+
+  const handleSaveMultiInputs = (fields: Array<{ key: string; value: string }>) => {
+    console.log('Multi Input Fields:', fields)
+    toast.success(`Đã lưu ${fields.length} trường thành công!`)
+    handleCloseMultiInputModal()
   }
 
   return (
-    <div className='p-6'>
-      <Card>
-        <CardHeader
-          title={
-            <div className='flex items-center gap-3'>
-              <Button
-                variant='outlined'
-                size='small'
-                startIcon={<ArrowLeft size={16} />}
-                onClick={() => router.push(`/${locale}/admin/service-type`)}
-              >
-                Quay lại
-              </Button>
-              <Typography variant='h5'>Chỉnh sửa dịch vụ</Typography>
-            </div>
-          }
-        />
-        <CardContent>
-          <form onSubmit={handleSubmit}>
-            <Grid container spacing={3}>
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label='Tên dịch vụ'
-                  value={formData.name}
-                  onChange={e => handleChange('name', e.target.value)}
-                  required
+    <Card className='orders-content'>
+      <CardContent>
+        <form onSubmit={handleSubmit(onSubmit, onError)}>
+          <Box>
+            <h2 className='text-xl font-semibold text-slate-900 mb-4'>Thông tin cơ bản</h2>
+            <Grid2 container spacing={3} className='pb-6 border-b border-slate-200'>
+              <Grid2 size={{ xs: 12, sm: 6 }}>
+                <Controller
+                  name='name'
+                  control={control}
+                  render={({ field }) => (
+                    <CustomTextField
+                      {...field}
+                      required
+                      size='medium'
+                      fullWidth
+                      label='Tên dịch vụ'
+                      placeholder='Nhập tên dịch vụ'
+                      error={!!errors.name}
+                      helperText={errors.name?.message}
+                    />
+                  )}
                 />
-              </Grid>
+              </Grid2>
 
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label='Giá vốn'
-                  type='number'
-                  value={formData.cost_price}
-                  onChange={e => handleChange('cost_price', e.target.value)}
-                  required
+              <Grid2 size={{ xs: 12, sm: 6 }}>
+                <Controller
+                  name='api_partner'
+                  control={control}
+                  render={({ field }) => (
+                    <CustomTextField
+                      size='medium'
+                      required
+                      {...field}
+                      fullWidth
+                      label='Api Partner'
+                      placeholder='Placeholder'
+                      error={!!errors.api_partner}
+                      helperText={errors.api_partner?.message}
+                    />
+                  )}
                 />
-              </Grid>
+              </Grid2>
 
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label='Giá bán'
-                  type='number'
-                  value={formData.price}
-                  onChange={e => handleChange('price', e.target.value)}
-                  required
+              <Grid2 size={{ xs: 12, sm: 6 }}>
+                <Controller
+                  name='cost_price'
+                  control={control}
+                  render={({ field }) => (
+                    <CustomTextField
+                      {...field}
+                      value={field.value}
+                      onChange={e => {
+                        const value = e.target.value === '' ? null : Number(e.target.value)
+                        field.onChange(value)
+                      }}
+                      size='medium'
+                      fullWidth
+                      type='number'
+                      label='Giá nhập'
+                      placeholder='Nhập giá nhập'
+                      required
+                      error={!!errors.cost_price}
+                      helperText={errors.cost_price?.message}
+                    />
+                  )}
                 />
-              </Grid>
+              </Grid2>
 
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  select
-                  label='Trạng thái'
-                  value={formData.status}
-                  onChange={e => handleChange('status', e.target.value)}
-                >
-                  <MenuItem value='active'>Active</MenuItem>
-                  <MenuItem value='inactive'>Inactive</MenuItem>
-                </TextField>
-              </Grid>
-
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label='Partner ID'
-                  type='number'
-                  value={formData.partner_id}
-                  onChange={e => handleChange('partner_id', e.target.value)}
+              <Grid2 size={{ xs: 12, sm: 6 }}>
+                <Controller
+                  name='price'
+                  control={control}
+                  render={({ field }) => (
+                    <CustomTextField
+                      {...field}
+                      value={field.value}
+                      onChange={e => {
+                        const value = e.target.value === '' ? undefined : Number(e.target.value)
+                        field.onChange(value)
+                      }}
+                      size='medium'
+                      fullWidth
+                      type='number'
+                      label='Giá bán'
+                      placeholder='Nhập giá bán'
+                      required
+                      error={!!errors.price}
+                      helperText={errors.price?.message}
+                    />
+                  )}
                 />
-              </Grid>
+              </Grid2>
+            </Grid2>
+          </Box>
 
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label='Type'
-                  value={formData.type}
-                  onChange={e => handleChange('type', e.target.value)}
-                  placeholder='VD: ROTATING, STATIC'
+          <Box>
+            <h2 className='text-xl font-semibold text-slate-900 mb-4 mt-4'>Cấu hình dịch vụ</h2>
+
+            <Grid2 container spacing={5} className='pb-6 border-b border-slate-200'>
+              <Grid2 size={{ xs: 12, sm: 4 }}>
+                <Controller
+                  name='display_time'
+                  control={control}
+                  render={({ field }) => (
+                    <CustomTextField
+                      {...field}
+                      size='medium'
+                      fullWidth
+                      select
+                      id='select-time'
+                      label='Thời gian hiện thị'
+                      value={field.value || ''}
+                      error={!!errors.display_time}
+                      helperText={errors.display_time?.message}
+                      slotProps={{
+                        select: { displayEmpty: true },
+                        htmlInput: { 'aria-label': 'Without label' }
+                      }}
+                    >
+                      <MenuItem value=''>
+                        <em>Chọn thời gian</em>
+                      </MenuItem>
+                      <MenuItem value={1}>Ngày</MenuItem>
+                      <MenuItem value={7}>Tuần</MenuItem>
+                      <MenuItem value={30}>Tháng</MenuItem>
+                      <MenuItem value={90}>3 Tháng</MenuItem>
+                      <MenuItem value={180}>6 Tháng</MenuItem>
+                      <MenuItem value={360}>1 Năm</MenuItem>
+                    </CustomTextField>
+                  )}
                 />
-              </Grid>
+              </Grid2>
 
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label='IP Version'
-                  value={formData.ip_version}
-                  onChange={e => handleChange('ip_version', e.target.value)}
-                  placeholder='VD: IPv4, IPv6'
+              <Grid2 size={{ xs: 12, sm: 4 }}>
+                <Controller
+                  name='type'
+                  control={control}
+                  render={({ field }) => (
+                    <CustomTextField
+                      {...field}
+                      size='medium'
+                      fullWidth
+                      select
+                      id='select-type'
+                      label='Type'
+                      error={!!errors.type}
+                      helperText={errors.type?.message}
+                      slotProps={{
+                        select: { displayEmpty: true },
+                        htmlInput: { 'aria-label': 'Without label' }
+                      }}
+                    >
+                      <MenuItem value='0'>STATIC</MenuItem>
+                      <MenuItem value='1'>ROTATING</MenuItem>
+                    </CustomTextField>
+                  )}
                 />
-              </Grid>
+              </Grid2>
 
-              <Grid item xs={12}>
+              <Grid2 size={{ xs: 12, sm: 4 }}>
+                <Controller
+                  name='status'
+                  control={control}
+                  render={({ field }) => (
+                    <CustomTextField
+                      {...field}
+                      size='medium'
+                      fullWidth
+                      select
+                      id='select-status'
+                      label='Trạng thái'
+                      error={!!errors.status}
+                      helperText={errors.status?.message}
+                      slotProps={{
+                        select: { displayEmpty: true },
+                        htmlInput: { 'aria-label': 'Without label' }
+                      }}
+                    >
+                      <MenuItem value='active'>ACTIVE</MenuItem>
+                      <MenuItem value='inactive'>INACTIVE</MenuItem>
+                    </CustomTextField>
+                  )}
+                />
+              </Grid2>
+
+              <Grid2 size={{ xs: 12, sm: 4 }}>
+                <Controller
+                  name='proxy_type'
+                  control={control}
+                  render={({ field }) => (
+                    <CustomTextField
+                      {...field}
+                      size='medium'
+                      fullWidth
+                      select
+                      id='select-proxy_type'
+                      label='Proxy Type'
+                      value={field.value || ''}
+                      error={!!errors.proxy_type}
+                      helperText={errors.proxy_type?.message}
+                      slotProps={{
+                        select: { displayEmpty: true },
+                        htmlInput: { 'aria-label': 'Without label' }
+                      }}
+                    >
+                      <MenuItem value=''>
+                        <em>Chọn proxy type</em>
+                      </MenuItem>
+                      <MenuItem value='residential'>Dân cư</MenuItem>
+                      <MenuItem value='datacenter'>Datacenter</MenuItem>
+                    </CustomTextField>
+                  )}
+                />
+              </Grid2>
+
+              <Grid2 size={{ xs: 12, sm: 4 }}>
+                <Controller
+                  name='ip_version'
+                  control={control}
+                  render={({ field }) => (
+                    <CustomTextField
+                      {...field}
+                      size='medium'
+                      fullWidth
+                      select
+                      id='select-ip-version'
+                      label='Ip Version'
+                      error={!!errors.ip_version}
+                      helperText={errors.ip_version?.message}
+                      slotProps={{
+                        select: { displayEmpty: true },
+                        htmlInput: { 'aria-label': 'Without label' }
+                      }}
+                    >
+                      <MenuItem value='ipv4'>V4</MenuItem>
+                      <MenuItem value='ipv6'>V6</MenuItem>
+                    </CustomTextField>
+                  )}
+                />
+              </Grid2>
+            </Grid2>
+          </Box>
+
+          <Box>
+            <h2 className='text-xl font-semibold text-slate-900 mb-4 mt-4'>Vị trí</h2>
+            <Grid2 container spacing={5} className='pb-6 border-b border-slate-200'>
+              <Grid2 size={{ xs: 12, sm: 6 }}>
+                <Controller
+                  name='partner_id'
+                  control={control}
+                  render={({ field }) => (
+                    <CustomTextField
+                      {...field}
+                      size='medium'
+                      fullWidth
+                      select
+                      id='select-partner'
+                      label='Đối tác'
+                      disabled={loadingPartners}
+                      error={!!errors.partner_id}
+                      helperText={errors.partner_id?.message}
+                      slotProps={{
+                        select: { displayEmpty: true },
+                        htmlInput: { 'aria-label': 'Without label' }
+                      }}
+                    >
+                      <MenuItem value=''>
+                        <em>{loadingPartners ? 'Đang tải...' : 'Chọn đối tác'}</em>
+                      </MenuItem>
+                      {partners?.map((partner: any) => (
+                        <MenuItem key={partner.id} value={partner.id}>
+                          {partner.title || partner.name}
+                        </MenuItem>
+                      ))}
+                    </CustomTextField>
+                  )}
+                />
+              </Grid2>
+
+              <Grid2 size={{ xs: 12, sm: 6 }}>
+                <Controller
+                  name='country'
+                  control={control}
+                  render={({ field }) => (
+                    <CustomTextField
+                      {...field}
+                      size='medium'
+                      fullWidth
+                      select
+                      id='select-country'
+                      label='Quốc gia'
+                      value={field.value || ''}
+                      error={!!errors.country}
+                      helperText={errors.country?.message}
+                      slotProps={{
+                        select: { displayEmpty: true },
+                        htmlInput: { 'aria-label': 'Without label' }
+                      }}
+                    >
+                      <MenuItem value=''>
+                        <em>Chọn quốc gia</em>
+                      </MenuItem>
+                      <MenuItem value='vi'>Việt Nam</MenuItem>
+                    </CustomTextField>
+                  )}
+                />
+              </Grid2>
+            </Grid2>
+          </Box>
+
+          <Box>
+            <h2 className='text-xl font-semibold text-slate-900 mb-4 mt-4'>Cấu hình body</h2>
+            <Grid2 container spacing={5} className='pb-6 border-b border-slate-200'>
+              <Grid2 size={{ xs: 12, sm: 12 }}>
+                <Controller
+                  name='body_api'
+                  control={control}
+                  render={({ field }) => (
+                    <CustomTextField
+                      {...field}
+                      rows={6}
+                      fullWidth
+                      multiline
+                      label='Body Api'
+                      id='textarea-outlined-static'
+                      error={!!errors.body_api}
+                      helperText={errors.body_api?.message}
+                    />
+                  )}
+                />
+              </Grid2>
+
+              <Grid2 size={{ xs: 12, sm: 12 }}>
+                <div className='flex gap-2'>
+                  <Button
+                    onClick={handleOpenModal}
+                    className='text-white'
+                    variant='contained'
+                    startIcon={<Plus size={16} />}
+                  >
+                    Thêm mô tả
+                  </Button>
+
+                  <Button
+                    onClick={handleOpenMultiInputModal}
+                    className='text-white'
+                    variant='contained'
+                    color='secondary'
+                    startIcon={<Plus size={16} />}
+                  >
+                    Thêm nhiều trường
+                  </Button>
+                </div>
+              </Grid2>
+            </Grid2>
+          </Box>
+
+          <Box>
+            <h2 className='text-xl font-semibold text-slate-900 mb-4 mt-4'>Tùy chọn</h2>
+            <Grid2 container spacing={5} className='pb-6 border-b border-slate-200'>
+              <Grid2 size={{ xs: 12, sm: 4 }}>
+                <Controller
+                  name='protocols'
+                  control={control}
+                  render={({ field }) => (
+                    <CustomTextField
+                      select
+                      fullWidth
+                      size='medium'
+                      label='Giao thức'
+                      value={field.value || []}
+                      onChange={field.onChange}
+                      onBlur={field.onBlur}
+                      name={field.name}
+                      error={!!errors.protocols}
+                      helperText={errors.protocols?.message}
+                      id='select-multiple-protocols'
+                      slotProps={{
+                        select: {
+                          multiple: true,
+                          MenuProps,
+                          renderValue: selected => {
+                            const values = selected as unknown as string[]
+                            if (!values || values.length === 0) {
+                              return <em>Chọn giao thức</em>
+                            }
+                            return (
+                              <div className='flex flex-wrap gap-1'>
+                                {values.map(val => {
+                                  const protocol = protocols.find(p => p.value === val)
+                                  return <Chip key={val} label={protocol?.label || val} size='small' />
+                                })}
+                              </div>
+                            )
+                          }
+                        }
+                      }}
+                    >
+                      {protocols.map(protocol => (
+                        <MenuItem key={protocol.value} value={protocol.value}>
+                          {protocol.label}
+                        </MenuItem>
+                      ))}
+                    </CustomTextField>
+                  )}
+                />
+              </Grid2>
+
+              <Grid2 size={{ xs: 12, sm: 4 }}>
+                <Controller
+                  name='durations'
+                  control={control}
+                  render={({ field }) => (
+                    <CustomTextField
+                      select
+                      fullWidth
+                      size='medium'
+                      label='Thời gian'
+                      value={field.value || []}
+                      onChange={field.onChange}
+                      onBlur={field.onBlur}
+                      name={field.name}
+                      error={!!errors.durations}
+                      helperText={errors.durations?.message}
+                      id='select-multiple-durations'
+                      slotProps={{
+                        select: {
+                          multiple: true,
+                          MenuProps,
+                          renderValue: selected => {
+                            const values = selected as unknown as string[]
+                            if (!values || values.length === 0) {
+                              return <em>Chọn thời gian</em>
+                            }
+                            return (
+                              <div className='flex flex-wrap gap-1'>
+                                {values.map(val => {
+                                  const duration = durations.find(d => d.value === val)
+                                  return <Chip key={val} label={duration?.label || val} size='small' />
+                                })}
+                              </div>
+                            )
+                          }
+                        }
+                      }}
+                    >
+                      {durations.map(duration => (
+                        <MenuItem key={duration.value} value={duration.value}>
+                          {duration.label}
+                        </MenuItem>
+                      ))}
+                    </CustomTextField>
+                  )}
+                />
+              </Grid2>
+
+              <FormControlLabel control={<Switch />} label='Hiện thị user/pass' />
+            </Grid2>
+          </Box>
+
+          <Box className='mt-6 pb-6'>
+            <Grid2 container spacing={3}>
+              <Grid2 size={{ xs: 12 }}>
                 <div className='flex gap-3 justify-end'>
                   <Button variant='outlined' onClick={() => router.push(`/${locale}/admin/service-type`)}>
                     Hủy
                   </Button>
-                  <Button type='submit' variant='contained' disabled={updateMutation.isPending}>
-                    {updateMutation.isPending ? 'Đang xử lý...' : 'Cập nhật'}
+                  <Button
+                    variant='contained'
+                    type='button'
+                    disabled={updateMutation.isPending}
+                    onClick={async () => {
+                      await handleSubmit(onSubmit, onError)()
+                    }}
+                  >
+                    {updateMutation.isPending ? 'Đang cập nhật...' : 'Cập nhật dịch vụ'}
                   </Button>
                 </div>
-              </Grid>
-            </Grid>
-          </form>
-        </CardContent>
-      </Card>
-    </div>
+              </Grid2>
+            </Grid2>
+          </Box>
+        </form>
+      </CardContent>
+
+      {/* Modal thêm nhiều input */}
+      <MultiInputModal
+        isOpen={isMultiInputModalOpen}
+        onClose={handleCloseMultiInputModal}
+        onSave={handleSaveMultiInputs}
+        title='Thêm nhiều trường'
+        keyLabel='Key'
+        valueLabel='Value'
+        fields={multiInputFields}
+        setFields={setMultiInputFields}
+      />
+    </Card>
   )
 }

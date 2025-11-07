@@ -16,9 +16,10 @@ const TextFieldStyled = styled(TextField)<TextFieldProps>(({ theme }) => ({
     maxWidth: '100%',
     lineHeight: 1.153,
     position: 'relative',
-    fontSize: theme.typography.body2.fontSize,
-    marginBottom: theme.spacing(1),
-    color: 'var(--mui-palette-text-primary)',
+    fontSize: '0.875rem', // text-sm
+    fontWeight: 500, // font-medium
+    marginBottom: '0.375rem', // mb-1.5
+    color: 'rgb(51 65 85)', // text-slate-700
     '&:not(.Mui-error).MuiFormLabel-colorPrimary.Mui-focused': {
       color: 'var(--mui-palette-primary-main) !important'
     },
@@ -251,21 +252,24 @@ const TextFieldStyled = styled(TextField)<TextFieldProps>(({ theme }) => ({
   }
 }))
 
-const CustomTextField = forwardRef((props: TextFieldProps, ref) => {
-  const { size = 'small', slotProps, ...rest } = props
-
-  return (
-    <TextFieldStyled
-      size={size}
-      inputRef={ref}
-      {...rest}
-      variant='filled'
-      slotProps={{
-        ...slotProps,
-        inputLabel: { ...slotProps?.inputLabel, shrink: true } as InputLabelProps
-      }}
-    />
-  )
-})
-
+const CustomTextField = forwardRef<HTMLInputElement, TextFieldProps>(
+  ({ size = 'small', slotProps, onChange, onBlur, value, name, ...rest }, ref) => {
+    return (
+      <TextFieldStyled
+        {...rest}
+        name={name}
+        value={value ?? ''} // ✅ tránh undefined
+        onChange={onChange} // ✅ bắt buộc
+        onBlur={onBlur} // ✅ để trigger blur validate
+        inputRef={ref}
+        size={size}
+        variant='filled'
+        slotProps={{
+          ...slotProps,
+          inputLabel: { ...slotProps?.inputLabel, shrink: true } as InputLabelProps
+        }}
+      />
+    )
+  }
+)
 export default CustomTextField
