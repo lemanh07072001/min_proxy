@@ -21,7 +21,8 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Chip
+  Chip,
+  CircularProgress
 } from '@mui/material'
 
 import { toast } from 'react-toastify'
@@ -218,8 +219,6 @@ export default function EditServicePage({ serviceId }: EditServicePageProps) {
 
   // Fetch service data
   const { data: serviceData, isLoading } = useServiceType(serviceId)
-
-  console.log(serviceData)
 
   // Load data vào form khi fetch xong
   useEffect(() => {
@@ -807,7 +806,9 @@ export default function EditServicePage({ serviceId }: EditServicePageProps) {
                   <Button
                     variant='contained'
                     type='button'
+                    className='text-white'
                     disabled={updateMutation.isPending}
+                    startIcon={updateMutation.isPending ? <CircularProgress size={20} color='inherit' /> : null}
                     onClick={async () => {
                       await handleSubmit(onSubmit, onError)()
                     }}

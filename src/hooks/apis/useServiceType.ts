@@ -63,7 +63,7 @@ export const useUpdateServiceType = (serviceId?: string | number) => {
 
   return useMutation({
     mutationFn: async (data: any) => {
-      const res = await axiosAuth.put(`/update-service-type/${serviceId}`, data)
+      const res = await axiosAuth.post(`/edit-service-type/${serviceId}`, data)
 
       return res?.data
     },
@@ -89,6 +89,25 @@ export const useDeleteServiceType = () => {
     },
     onSuccess: () => {
       // Refresh lại danh sách service types sau khi xóa
+      queryClient.invalidateQueries({ queryKey: ['service-types'] })
+      queryClient.invalidateQueries({ queryKey: ['orderProxyStatic'] })
+    }
+  })
+}
+
+// Hook để copy service type
+export const useCopyServiceType = () => {
+  const axiosAuth = useAxiosAuth()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (serviceId: string | number) => {
+      const res = await axiosAuth.post(`/copy-service-type/${serviceId}`)
+
+      return res?.data
+    },
+    onSuccess: () => {
+      // Refresh lại danh sách service types sau khi copy
       queryClient.invalidateQueries({ queryKey: ['service-types'] })
       queryClient.invalidateQueries({ queryKey: ['orderProxyStatic'] })
     }

@@ -24,10 +24,11 @@ import Pagination from '@mui/material/Pagination'
 
 import { useQuery } from '@tanstack/react-query'
 
-import { Button } from '@mui/material'
+import { Button, Dialog, DialogTitle, DialogContent, DialogActions, DialogContentText, Tooltip, IconButton } from '@mui/material'
 
 import useAxiosAuth from '@/hocs/useAxiosAuth'
-import CustomIconButton from '@core/components/mui/IconButton'
+import { useCopyServiceType, useDeleteServiceType } from '@/hooks/apis/useServiceType'
+import { toast } from 'react-toastify'
 
 export default function TableServiceType() {
   const [columnFilters, setColumnFilters] = useState<any[]>([])
@@ -39,10 +40,16 @@ export default function TableServiceType() {
     pageSize: 10
   }) // State để lưu các hàng được chọn
 
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [serviceToDelete, setServiceToDelete] = useState<number | null>(null)
+
   const router = useRouter()
   const params = useParams()
   const axiosAuth = useAxiosAuth()
   const { lang: locale } = params
+
+  const copyMutation = useCopyServiceType()
+  const deleteMutation = useDeleteServiceType()
 
   const handleOpenCreate = useCallback(() => {
     router.push(`/${locale}/admin/service-type/create`)
@@ -54,6 +61,44 @@ export default function TableServiceType() {
     },
     [router, locale]
   )
+
+  const handleCopyService = useCallback(
+    (serviceId: number) => {
+      copyMutation.mutate(serviceId, {
+        onSuccess: () => {
+          toast.success('Sao chép dịch vụ thành công!')
+        },
+        onError: (error: any) => {
+          toast.error(error?.response?.data?.message || 'Có lỗi xảy ra khi sao chép')
+        }
+      })
+    },
+    [copyMutation]
+  )
+
+  const handleOpenDeleteDialog = useCallback((serviceId: number) => {
+    setServiceToDelete(serviceId)
+    setDeleteDialogOpen(true)
+  }, [])
+
+  const handleCloseDeleteDialog = useCallback(() => {
+    setDeleteDialogOpen(false)
+    setServiceToDelete(null)
+  }, [])
+
+  const handleConfirmDelete = useCallback(() => {
+    if (serviceToDelete) {
+      deleteMutation.mutate(serviceToDelete, {
+        onSuccess: () => {
+          toast.success('Xóa dịch vụ thành công!')
+          handleCloseDeleteDialog()
+        },
+        onError: (error: any) => {
+          toast.error(error?.response?.data?.message || 'Có lỗi xảy ra khi xóa')
+        }
+      })
+    }
+  }, [serviceToDelete, deleteMutation, handleCloseDeleteDialog])
 
   const { data: dataServices = [], isLoading } = useQuery({
     queryKey: ['orderProxyStatic'],
@@ -140,33 +185,94 @@ export default function TableServiceType() {
         size: 100
       },
       {
+        header: 'Proxy Type',
+        cell: ({ row }: { row: any }) => {
+          const proxyType = row.original?.proxy_type
+          return (
+            <div>
+              <div className='font-bold'>
+                {proxyType === 'residential' ? 'Dân cư' : proxyType === 'datacenter' ? 'Datacenter' : proxyType || '-'}
+              </div>
+            </div>
+          )
+        },
+        size: 100
+      },
+      {
+        header: 'IP Version',
+        cell: ({ row }: { row: any }) => {
+          const ipVersion = row.original?.ip_version
+          return (
+            <div>
+              <div className='font-bold'>
+                {ipVersion === 'ipv4' ? 'IPv4' : ipVersion === 'ipv6' ? 'IPv6' : ipVersion || '-'}
+              </div>
+            </div>
+          )
+        },
+        size: 100
+      },
+      {
+        header: 'Protocols',
+        cell: ({ row }: { row: any }) => {
+          const protocols = row.original?.protocols
+          if (!protocols || protocols.length === 0) {
+            return <div>-</div>
+          }
+          return (
+            <div className='flex flex-wrap gap-1'>
+              {protocols.map((protocol: string, index: number) => (
+                <Chip
+                  key={index}
+                  label={protocol === 'http' ? 'HTTP' : protocol === 'socks5' ? 'SOCKS5' : protocol.toUpperCase()}
+                  size='small'
+                  variant='outlined'
+                />
+              ))}
+            </div>
+          )
+        },
+        size: 150
+      },
+      {
         header: 'Action',
         cell: ({ row }: { row: any }) => {
           return (
             <div className='flex gap-2'>
-              <CustomIconButton
-                aria-label='edit service'
-                color='info'
-                variant='tonal'
-                onClick={() => handleOpenEdit(row.original.id)}
-              >
-                <SquarePen size={16} />
-              </CustomIconButton>
+              <Tooltip title='Chỉnh sửa dịch vụ'>
+                <IconButton size='small' color='info' onClick={() => handleOpenEdit(row.original.id)}>
+                  <SquarePen size={18} />
+                </IconButton>
+              </Tooltip>
 
-              <CustomIconButton aria-label='copy service' color='info' variant='tonal'>
-                <Copy size={16} />
-              </CustomIconButton>
+              <Tooltip title='Sao chép dịch vụ'>
+                <IconButton
+                  size='small'
+                  color='success'
+                  onClick={() => handleCopyService(row.original.id)}
+                  disabled={copyMutation.isPending}
+                >
+                  <Copy size={18} />
+                </IconButton>
+              </Tooltip>
 
-              <CustomIconButton aria-label='delete service' color='error' variant='tonal'>
-                <Trash2 size={16} />
-              </CustomIconButton>
+              <Tooltip title='Xóa dịch vụ'>
+                <IconButton
+                  size='small'
+                  color='error'
+                  onClick={() => handleOpenDeleteDialog(row.original.id)}
+                  disabled={deleteMutation.isPending}
+                >
+                  <Trash2 size={18} />
+                </IconButton>
+              </Tooltip>
             </div>
           )
         },
         size: 100
       }
     ],
-    [handleOpenEdit]
+    [handleOpenEdit, handleCopyService, handleOpenDeleteDialog, copyMutation.isPending, deleteMutation.isPending]
   )
 
   const table = useReactTable({
@@ -332,6 +438,35 @@ export default function TableServiceType() {
           </div>
         </div>
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={handleCloseDeleteDialog}
+        aria-labelledby='delete-dialog-title'
+        aria-describedby='delete-dialog-description'
+      >
+        <DialogTitle id='delete-dialog-title'>Xác nhận xóa dịch vụ</DialogTitle>
+        <DialogContent>
+          <DialogContentText id='delete-dialog-description'>
+            Bạn có chắc chắn muốn xóa dịch vụ này không? Hành động này không thể hoàn tác.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDeleteDialog} variant='outlined' disabled={deleteMutation.isPending}>
+            Hủy
+          </Button>
+          <Button
+            onClick={handleConfirmDelete}
+            variant='contained'
+            color='error'
+            disabled={deleteMutation.isPending}
+            autoFocus
+          >
+            {deleteMutation.isPending ? 'Đang xóa...' : 'Xóa'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   )
 }

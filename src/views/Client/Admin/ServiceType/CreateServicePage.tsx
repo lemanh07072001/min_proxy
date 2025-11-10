@@ -20,7 +20,8 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
-  DialogActions
+  DialogActions,
+  CircularProgress
 } from '@mui/material'
 
 import { toast } from 'react-toastify'
@@ -104,10 +105,7 @@ const schema = yup.object({
         return false
       }
     }),
-  display_time: yup
-    .string()
-    .nullable()
-    .required('Thời gian hiển thị là bắt buộc'),
+  display_time: yup.string().nullable().required('Thời gian hiển thị là bắt buộc'),
   proxy_type: yup.string().nullable().required('Proxy type là bắt buộc'),
   country: yup.string().nullable().required('Quốc gia là bắt buộc')
 })
@@ -736,7 +734,9 @@ export default function CreateServicePage() {
                   <Button
                     variant='contained'
                     type='button'
+                    className='text-white'
                     disabled={createMutation.isPending}
+                    startIcon={createMutation.isPending ? <CircularProgress size={20} color='inherit' /> : null}
                     onClick={async () => {
                       await handleSubmit(onSubmit, onError)()
                     }}
