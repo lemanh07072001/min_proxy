@@ -72,6 +72,24 @@ const schema = yup.object({
       if (!cost_price) return true
       return value >= cost_price
     }),
+  discount_price: yup
+    .number()
+    .nullable()
+    .transform((value, originalValue) => {
+      return originalValue === '' ? null : value
+    })
+    .typeError('Giá giảm phải là số')
+    .positive('Giá giảm phải lớn hơn 0')
+    .test('max-discount', 'Giá giảm phải nhỏ hơn giá bán', function (value) {
+      if (!value) return true
+      const { price } = this.parent
+      if (!price) return true
+      return value < price
+    }),
+  code: yup
+    .string()
+    .nullable()
+    .transform(value => (value ? value.trim() : value)),
   status: yup.string().nullable().required('Trạng thái là bắt buộc'),
   partner_id: yup.string().nullable().required('Đối tác là bắt buộc'),
   type: yup.string().nullable().required('Loại dịch vụ là bắt buộc'),
@@ -152,6 +170,8 @@ export default function CreateServicePage() {
       api_partner: '',
       cost_price: undefined,
       price: undefined,
+      discount_price: undefined,
+      code: '',
       status: 'active',
       partner_id: '',
       type: '0',
@@ -349,6 +369,48 @@ export default function CreateServicePage() {
                       required
                       error={!!errors.price}
                       helperText={errors.price?.message}
+                    />
+                  )}
+                />
+              </Grid2>
+
+              <Grid2 size={{ xs: 12, sm: 6 }}>
+                <Controller
+                  name='discount_price'
+                  control={control}
+                  render={({ field }) => (
+                    <CustomTextField
+                      {...field}
+                      value={field.value}
+                      onChange={e => {
+                        const value = e.target.value === '' ? null : Number(e.target.value)
+                        field.onChange(value)
+                      }}
+                      size='medium'
+                      fullWidth
+                      type='number'
+                      label='Giá giảm'
+                      placeholder='Nhập giá giảm'
+                      error={!!errors.discount_price}
+                      helperText={errors.discount_price?.message}
+                    />
+                  )}
+                />
+              </Grid2>
+
+              <Grid2 size={{ xs: 12, sm: 6 }}>
+                <Controller
+                  name='code'
+                  control={control}
+                  render={({ field }) => (
+                    <CustomTextField
+                      {...field}
+                      size='medium'
+                      fullWidth
+                      label='Code'
+                      placeholder='Nhập code'
+                      error={!!errors.code}
+                      helperText={errors.code?.message}
                     />
                   )}
                 />
