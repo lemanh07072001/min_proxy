@@ -246,25 +246,29 @@ export default function TableServiceType() {
               </Tooltip>
 
               <Tooltip title='Sao chép dịch vụ'>
-                <IconButton
-                  size='small'
-                  color='success'
-                  onClick={() => handleCopyService(row.original.id)}
-                  disabled={copyMutation.isPending}
-                >
-                  <Copy size={18} />
-                </IconButton>
+                <span>
+                  <IconButton
+                    size='small'
+                    color='success'
+                    onClick={() => handleCopyService(row.original.id)}
+                    disabled={copyMutation.isPending}
+                  >
+                    <Copy size={18} />
+                  </IconButton>
+                </span>
               </Tooltip>
 
               <Tooltip title='Xóa dịch vụ'>
-                <IconButton
-                  size='small'
-                  color='error'
-                  onClick={() => handleOpenDeleteDialog(row.original.id)}
-                  disabled={deleteMutation.isPending}
-                >
-                  <Trash2 size={18} />
-                </IconButton>
+                <span>
+                  <IconButton
+                    size='small'
+                    color='error'
+                    onClick={() => handleOpenDeleteDialog(row.original.id)}
+                    disabled={deleteMutation.isPending}
+                  >
+                    <Trash2 size={18} />
+                  </IconButton>
+                </span>
               </Tooltip>
             </div>
           )
@@ -326,7 +330,7 @@ export default function TableServiceType() {
                 variant='contained'
                 color='primary'
                 className='text-white'
-                size='sm'
+                size='small'
                 startIcon={<SquarePlus  size={16} />}
               >
                 Thêm dịch vụ
