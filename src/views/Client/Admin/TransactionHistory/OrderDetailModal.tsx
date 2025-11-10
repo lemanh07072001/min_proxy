@@ -160,8 +160,9 @@ export default function OrderDetailModal({ isOpen, onClose, orderData, isLoading
           if (!row.original.api_key) {
             // Kiểm tra nếu proxys là object thì lấy http hoặc socks5
             const proxys = row.original.proxys
+
             if (proxys && typeof proxys === 'object') {
-              return proxys.http || proxys.socks5 || '-'
+              return proxys.HTTP || proxys.SOCK5 || '-'
             }
             return proxys || '-'
           }
@@ -349,9 +350,7 @@ export default function OrderDetailModal({ isOpen, onClose, orderData, isLoading
                     </div>
                     <div>
                       <p className='text-xs text-slate-500 mb-1'>Trạng thái</p>
-                      {getStatusBadge(orderData?.order?.status)}
-
-                      {console.log(orderData?.order?.status)}
+                      {getStatusBadge(orderData?.order?.status)}{' '}
                     </div>
                     <div>
                       <p className='text-xs text-slate-500 mb-1'>Nội dung</p>

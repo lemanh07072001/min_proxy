@@ -356,6 +356,16 @@ const VerticalMenu = ({ scrollMenu, dictionary }: Props) => {
               </MenuItem>
             )}
 
+            {hasPermission('admin.serviceType') && (
+              <MenuItem
+                icon={<TransactionHistory />}
+                rootStyles={getMenuItemStyles('admin/service-type')}
+                href={`/${locale}/admin/service-type`}
+              >
+                Dịch vụ
+              </MenuItem>
+            )}
+
             {/* <SubMenu
               label='Quản lý User'
               icon={<Users size={20} strokeWidth={1.5} />}
