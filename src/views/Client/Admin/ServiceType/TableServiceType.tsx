@@ -5,7 +5,7 @@ import { useMemo, useState, useCallback } from 'react'
 import Image from 'next/image'
 import { useParams, useRouter } from 'next/navigation'
 
-import { CircleQuestionMark, BadgeCheck, BadgeMinus, List, Copy, SquarePen, Trash2 } from 'lucide-react'
+import { CircleQuestionMark, BadgeCheck, BadgeMinus, List, Copy, SquarePen, Trash2, SquarePlus  } from 'lucide-react'
 
 import {
   useReactTable,
@@ -221,7 +221,7 @@ export default function TableServiceType() {
                 color='primary'
                 className='text-white'
                 size='sm'
-                startIcon={<i className='tabler-trash' />}
+                startIcon={<SquarePlus  size={16} />}
               >
                 Thêm dịch vụ
               </Button>

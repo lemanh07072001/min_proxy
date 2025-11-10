@@ -29,6 +29,7 @@
     "javascriptreact",
     "typescriptreact"
   ],
+  "eslint.enable": false,
   "eslint.format.enable": true,
   // Stylelint
   "css.validate": false,

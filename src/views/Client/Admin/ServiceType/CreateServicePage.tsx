@@ -23,8 +23,6 @@ import {
   DialogActions
 } from '@mui/material'
 
-import { useMutation, useQueryClient } from '@tanstack/react-query'
-
 import { toast } from 'react-toastify'
 
 import { ArrowLeft, Plus, X } from 'lucide-react'
@@ -33,9 +31,9 @@ import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
 
-import useAxiosAuth from '@/hocs/useAxiosAuth'
 import CustomTextField from '@/@core/components/mui/TextField'
 import { usePartners } from '@/hooks/apis/usePartners'
+import { useCreateServiceType } from '@/hooks/apis/useServiceType'
 import MultiInputModal from '@/views/Client/Admin/ServiceType/MultiInputModal'
 
 // Yup validation schema
@@ -96,13 +94,20 @@ const schema = yup.object({
     .nullable()
     .transform(value => (value ? value.trim() : value))
     .required('Body Api là bắt buộc')
-    .min(1, 'Body Api là bắt buộc'),
+    .min(1, 'Body Api là bắt buộc')
+    .test('is-valid-json', 'Body Api phải là JSON hợp lệ', function (value) {
+      if (!value) return true
+      try {
+        JSON.parse(value)
+        return true
+      } catch (error) {
+        return false
+      }
+    }),
   display_time: yup
-    .number()
+    .string()
     .nullable()
-    .typeError('Thời gian hiển thị phải là số')
-    .required('Thời gian hiển thị là bắt buộc')
-    .positive('Thời gian hiển thị phải lớn hơn 0'),
+    .required('Thời gian hiển thị là bắt buộc'),
   proxy_type: yup.string().nullable().required('Proxy type là bắt buộc'),
   country: yup.string().nullable().required('Quốc gia là bắt buộc')
 })
@@ -111,8 +116,6 @@ export default function CreateServicePage() {
   const router = useRouter()
   const params = useParams()
   const { lang: locale } = params
-  const axiosAuth = useAxiosAuth()
-  const queryClient = useQueryClient()
 
   // Fetch partners data
   const { data: partners = [], isLoading: loadingPartners } = usePartners()
@@ -158,7 +161,7 @@ export default function CreateServicePage() {
       protocols: [],
       durations: [],
       body_api: '',
-      display_time: undefined,
+      display_time: '',
       proxy_type: '',
       country: ''
     }
@@ -202,21 +205,17 @@ export default function CreateServicePage() {
     { value: 'year', label: '1 năm' }
   ]
 
-  const createMutation = useMutation({
-    mutationFn: async (data: any) => {
-      const res = await axiosAuth.post('/create-service-type', data)
+  const createMutation = useCreateServiceType()
 
-      return res.data
-    },
-    onSuccess: () => {
-      toast.success('Thêm dịch vụ thành công!')
-      queryClient.invalidateQueries({ queryKey: ['orderProxyStatic'] })
-      router.push(`/${locale}/admin/service-type`)
-    },
-    onError: (error: any) => {
-      toast.error(error?.response?.data?.message || 'Có lỗi xảy ra')
-    }
-  })
+  // Custom handlers cho mutation
+  const handleCreateSuccess = () => {
+    toast.success('Thêm dịch vụ thành công!')
+    router.push(`/${locale}/admin/service-type`)
+  }
+
+  const handleCreateError = (error: any) => {
+    toast.error(error?.response?.data?.message || 'Có lỗi xảy ra')
+  }
 
   const onSubmit = (data: any) => {
     const submitData = {
@@ -227,7 +226,10 @@ export default function CreateServicePage() {
 
     console.log(submitData)
 
-    // createMutation.mutate(submitData)
+    createMutation.mutate(submitData, {
+      onSuccess: handleCreateSuccess,
+      onError: handleCreateError
+    })
   }
 
   const onError = (errors: any) => {

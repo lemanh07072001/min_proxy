@@ -24,8 +24,6 @@ import {
   Chip
 } from '@mui/material'
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-
 import { toast } from 'react-toastify'
 
 import { ArrowLeft, Plus, X } from 'lucide-react'
@@ -33,9 +31,9 @@ import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
 
-import useAxiosAuth from '@/hocs/useAxiosAuth'
 import CustomTextField from '@/@core/components/mui/TextField'
 import { usePartners } from '@/hooks/apis/usePartners'
+import { useServiceType, useUpdateServiceType } from '@/hooks/apis/useServiceType'
 import MultiInputModal from '@/views/Client/Admin/ServiceType/MultiInputModal'
 
 // Yup validation schema (same as CreateServicePage)
@@ -96,13 +94,17 @@ const schema = yup.object({
     .nullable()
     .transform(value => (value ? value.trim() : value))
     .required('Body Api là bắt buộc')
-    .min(1, 'Body Api là bắt buộc'),
-  display_time: yup
-    .number()
-    .nullable()
-    .typeError('Thời gian hiển thị phải là số')
-    .required('Thời gian hiển thị là bắt buộc')
-    .positive('Thời gian hiển thị phải lớn hơn 0'),
+    .min(1, 'Body Api là bắt buộc')
+    .test('is-valid-json', 'Body Api phải là JSON hợp lệ', function (value) {
+      if (!value) return true
+      try {
+        JSON.parse(value)
+        return true
+      } catch (error) {
+        return false
+      }
+    }),
+  display_time: yup.string().nullable().required('Thời gian hiển thị là bắt buộc'),
   proxy_type: yup.string().nullable().required('Proxy type là bắt buộc'),
   country: yup.string().nullable().required('Quốc gia là bắt buộc')
 })
@@ -115,8 +117,6 @@ export default function EditServicePage({ serviceId }: EditServicePageProps) {
   const router = useRouter()
   const params = useParams()
   const { lang: locale } = params
-  const axiosAuth = useAxiosAuth()
-  const queryClient = useQueryClient()
 
   // Fetch partners data
   const { data: partners = [], isLoading: loadingPartners } = usePartners()
@@ -163,7 +163,7 @@ export default function EditServicePage({ serviceId }: EditServicePageProps) {
       protocols: [],
       durations: [],
       body_api: '',
-      display_time: undefined,
+      display_time: '',
       proxy_type: '',
       country: ''
     }
@@ -179,6 +179,7 @@ export default function EditServicePage({ serviceId }: EditServicePageProps) {
   const [multiInputFields, setMultiInputFields] = useState<Array<{ key: string; value: string }>>([
     { key: '', value: '' }
   ])
+  const [dateMappingOptions, setDateMappingOptions] = useState<Array<{ key: string; label: string }>>([])
 
   const ITEM_HEIGHT = 48
   const ITEM_PADDING_TOP = 8
@@ -205,20 +206,43 @@ export default function EditServicePage({ serviceId }: EditServicePageProps) {
     { value: 'year', label: '1 năm' }
   ]
 
-  // Fetch service data
-  const { data: serviceData, isLoading } = useQuery({
-    queryKey: ['service-type', serviceId],
-    queryFn: async () => {
-      const res = await axiosAuth.get(`/get-service-type/${serviceId}`)
+  // Fallback time options nếu không có date_mapping
+  const defaultTimeOptions = [
+    { key: '1', label: 'Ngày', value: 1 },
+    { key: '7', label: 'Tuần', value: 7 },
+    { key: '30', label: 'Tháng', value: 30 },
+    { key: '90', label: '3 Tháng', value: 90 },
+    { key: '180', label: '6 Tháng', value: 180 },
+    { key: '360', label: '1 Năm', value: 360 }
+  ]
 
-      return res.data.data
-    },
-    enabled: !!serviceId
-  })
+  // Fetch service data
+  const { data: serviceData, isLoading } = useServiceType(serviceId)
+
+  console.log(serviceData)
 
   // Load data vào form khi fetch xong
   useEffect(() => {
     if (serviceData) {
+      // Convert api_body từ object sang string JSON để hiển thị trong textarea
+      let bodyApiString = ''
+      if (serviceData.api_body) {
+        try {
+          bodyApiString =
+            typeof serviceData.api_body === 'string'
+              ? serviceData.api_body
+              : JSON.stringify(serviceData.api_body, null, 2)
+        } catch (error) {
+          console.error('Error parsing api_body:', error)
+          bodyApiString = ''
+        }
+      }
+
+      // Load multi_inputs từ API
+      if (serviceData.multi_inputs && Array.isArray(serviceData.multi_inputs)) {
+        setMultiInputFields(serviceData.multi_inputs.length > 0 ? serviceData.multi_inputs : [{ key: '', value: '' }])
+      }
+
       reset({
         name: serviceData.name || '',
         api_partner: serviceData.api_partner || '',
@@ -229,31 +253,26 @@ export default function EditServicePage({ serviceId }: EditServicePageProps) {
         type: serviceData.type || '0',
         ip_version: serviceData.ip_version || 'ipv4',
         protocols: serviceData.protocols || [],
-        durations: serviceData.durations || [],
-        body_api: serviceData.body_api || '',
-        display_time: serviceData.display_time || undefined,
+        durations: serviceData.date_mapping,
+        body_api: bodyApiString,
+        display_time: serviceData.time_type || '',
         proxy_type: serviceData.proxy_type || '',
         country: serviceData.country || ''
       })
     }
   }, [serviceData, reset])
 
-  const updateMutation = useMutation({
-    mutationFn: async (data: any) => {
-      const res = await axiosAuth.put(`/update-service-type/${serviceId}`, data)
+  const updateMutation = useUpdateServiceType(serviceId)
 
-      return res.data
-    },
-    onSuccess: () => {
-      toast.success('Cập nhật dịch vụ thành công!')
-      queryClient.invalidateQueries({ queryKey: ['orderProxyStatic'] })
-      queryClient.invalidateQueries({ queryKey: ['service-type', serviceId] })
-      router.push(`/${locale}/admin/service-type`)
-    },
-    onError: (error: any) => {
-      toast.error(error?.response?.data?.message || 'Có lỗi xảy ra')
-    }
-  })
+  // Custom handlers cho mutation
+  const handleUpdateSuccess = () => {
+    toast.success('Cập nhật dịch vụ thành công!')
+    router.push(`/${locale}/admin/service-type`)
+  }
+
+  const handleUpdateError = (error: any) => {
+    toast.error(error?.response?.data?.message || 'Có lỗi xảy ra')
+  }
 
   const onSubmit = (data: any) => {
     const submitData = {
@@ -262,7 +281,10 @@ export default function EditServicePage({ serviceId }: EditServicePageProps) {
       multi_inputs: multiInputFields
     }
 
-    updateMutation.mutate(submitData)
+    updateMutation.mutate(submitData, {
+      onSuccess: handleUpdateSuccess,
+      onError: handleUpdateError
+    })
   }
 
   const onError = (errors: any) => {
@@ -437,12 +459,11 @@ export default function EditServicePage({ serviceId }: EditServicePageProps) {
                       <MenuItem value=''>
                         <em>Chọn thời gian</em>
                       </MenuItem>
-                      <MenuItem value={1}>Ngày</MenuItem>
-                      <MenuItem value={7}>Tuần</MenuItem>
-                      <MenuItem value={30}>Tháng</MenuItem>
-                      <MenuItem value={90}>3 Tháng</MenuItem>
-                      <MenuItem value={180}>6 Tháng</MenuItem>
-                      <MenuItem value={360}>1 Năm</MenuItem>
+                      {(dateMappingOptions.length > 0 ? dateMappingOptions : defaultTimeOptions).map(option => (
+                        <MenuItem key={option.key} value={option.key}>
+                          {option.label}
+                        </MenuItem>
+                      ))}
                     </CustomTextField>
                   )}
                 />
@@ -749,11 +770,12 @@ export default function EditServicePage({ serviceId }: EditServicePageProps) {
                             if (!values || values.length === 0) {
                               return <em>Chọn thời gian</em>
                             }
+                            const options = dateMappingOptions.length > 0 ? dateMappingOptions : durations
                             return (
                               <div className='flex flex-wrap gap-1'>
                                 {values.map(val => {
-                                  const duration = durations.find(d => d.value === val)
-                                  return <Chip key={val} label={duration?.label || val} size='small' />
+                                  const option = options.find((d: any) => (d.key || d.value) === val)
+                                  return <Chip key={val} label={option?.label || val} size='small' />
                                 })}
                               </div>
                             )
@@ -761,9 +783,9 @@ export default function EditServicePage({ serviceId }: EditServicePageProps) {
                         }
                       }}
                     >
-                      {durations.map(duration => (
-                        <MenuItem key={duration.value} value={duration.value}>
-                          {duration.label}
+                      {(dateMappingOptions.length > 0 ? dateMappingOptions : durations).map((option: any) => (
+                        <MenuItem key={option.key || option.value} value={option.key || option.value}>
+                          {option.label}
                         </MenuItem>
                       ))}
                     </CustomTextField>
