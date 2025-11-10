@@ -197,7 +197,6 @@ export default function CreateServicePage() {
   ])
 
   // Multi-select no longer uses separate state - now managed by react-hook-form
-
   const ITEM_HEIGHT = 48
   const ITEM_PADDING_TOP = 8
   const MenuProps = {
