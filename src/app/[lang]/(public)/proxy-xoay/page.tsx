@@ -28,6 +28,8 @@ async function getProxyPlans() {
 
     const data = await response.json()
 
+    console.log(data)
+
     return data.data || []
   } catch (error) {
     console.error('Error fetching proxy plans:', error)
@@ -42,7 +44,6 @@ export default async function RotatingProxy({ params }: { params: Promise<{ lang
   // Fetch data and dictionary in parallel
   const [proxyPlans, dictionary] = await Promise.all([getProxyPlans(), getDictionary(lang)])
 
-  console.log(dictionary)
   // Create proxy template using server-side translations
   const proxyTemplate = {
     features: [
