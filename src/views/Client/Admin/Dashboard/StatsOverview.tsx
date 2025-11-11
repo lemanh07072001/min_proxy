@@ -112,6 +112,7 @@ export default function StatsOverview({ data }: StatsOverviewProps) {
           iconColor='text-yellow-600'
         />
       </Grid2>
+
       <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
         <StatCard
           title='Tổng đơn hàng'
