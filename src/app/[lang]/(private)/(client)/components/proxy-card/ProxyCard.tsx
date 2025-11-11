@@ -49,11 +49,7 @@ import { log } from 'console'
 
 interface ProxyCardProps {
   provider: string
-  logo: string
-  color: string
-  price: string
-  features: string[]
-  timeOptions?: Array<{ value: number; label: string }>
+
   onPurchaseSuccess: () => void
 }
 
@@ -130,7 +126,7 @@ const useBuyProxy = () => {
   return mutation
 }
 
-const ProxyCard: React.FC<ProxyCardProps> = ({ provider, logo, color, price, features, timeOptions = [] }) => {
+const ProxyCard: React.FC<ProxyCardProps> = ({ provider }) => {
   const params = useParams()
   const { mutate, isPending } = useBuyProxy()
   const session = useSession()
@@ -170,7 +166,7 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, logo, color, price, fea
   let daysInNumber = 0
 
   const calculateTotal = () => {
-    const basePrice = parseInt(price, 10) || 0
+    const basePrice = parseInt(provider.price, 10) || 0
     const quantity = parseInt(watchedQuantity, 10) || 1
 
     if (isSelectMode) {
@@ -196,7 +192,7 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, logo, color, price, fea
     const itemData = {
       ...data,
       serviceTypeId: provider.id,
-      price: price,
+      price: provider.price,
       ip_version: provider.ip_version,
       username: data.username === 'random' ? randomString() : data.username,
       password: data.password === 'random' ? randomString() : data.password,
@@ -238,12 +234,13 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, logo, color, price, fea
         return `${days} ngày`
     }
   }
+  console.log(provider)
 
   return (
     <>
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className={`proxy-card-column ${color}`}
+        className={`proxy-card-column `}
         style={{ display: 'flex', flexDirection: 'column', height: '100%' }}
       >
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
@@ -254,11 +251,14 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, logo, color, price, fea
               {logo ? <Image src={logo} width={80} height={20} alt='Logo' /> : null}
             </div> */}
               <div className='provider-info-column'>
-                <h3 className='provider-title-column'>{provider.title}</h3>
+                <h3 className='provider-title-column'>
+                  {provider.name}
+                  {provider.code ? ` - [${provider.code}]` : ''}
+                </h3>
                 <div className='feature-tags'>
-                  {features?.map((feature, index) => (
+                  {/* {features?.map((feature, index) => (
                     <Chip key={index} label={feature.title} color={feature.class} variant='tonal' size='small' />
-                  ))}
+                  ))} */}
                 </div>
               </div>
             </div>
@@ -457,7 +457,7 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, logo, color, price, fea
         onConfirm={handleConfirmPurchase}
         quantity={watchedQuantity}
         protocol={watchedProrocol}
-        price={price}
+        // price={price}
         packageName={provider.title}
         ip_version={provider.ip_version}
         total={calculateTotalFormat()}

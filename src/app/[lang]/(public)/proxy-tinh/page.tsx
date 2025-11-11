@@ -35,6 +35,8 @@ export default async function StaticProxy() {
     ]
   }
 
+  console.log(proxyPlans)
+
   const mergedPlans = proxyPlans?.map(plan => ({
     id: plan.id,
     title: plan.name,
@@ -54,7 +56,7 @@ export default async function StaticProxy() {
     <div className='main-content-modern'>
       {/* Proxy Cards */}
       <div className=''>
-        <StaticProxyPage data={mergedPlans} />
+        <StaticProxyPage data={proxyPlans} />
       </div>
     </div>
   )
