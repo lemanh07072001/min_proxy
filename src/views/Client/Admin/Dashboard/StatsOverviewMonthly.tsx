@@ -29,7 +29,7 @@ function StatCard({
   )
 }
 
-interface StatsOverviewProps {
+interface StatsOverviewMonthlyProps {
   data?: {
     active_proxies?: number
     completed_orders?: number
@@ -44,17 +44,14 @@ interface StatsOverviewProps {
   }
 }
 
-export default function StatsOverview({ data }: StatsOverviewProps) {
-  console.log(data)
-
+export default function StatsOverviewMonthly({ data }: StatsOverviewMonthlyProps) {
   return (
-    <div className=''>
-      <h2 className='text-2xl font-bold text-gray-800 mb-4'>Thống kê</h2>
-      <Grid2 container spacing={2}></Grid2>
+    <div className='mb-8'>
+      <h2 className='text-2xl font-bold text-gray-800 mb-4'>Thống kê tháng này</h2>
       <Grid2 container spacing={2}>
         <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
           <StatCard
-            title='Tổng User'
+            title='Tổng User (Tháng)'
             value={data?.total_users?.toLocaleString('vi-VN') || '0'}
             icon={User}
             bgColor='bg-blue-100'
@@ -63,7 +60,7 @@ export default function StatsOverview({ data }: StatsOverviewProps) {
         </Grid2>
         <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
           <StatCard
-            title='Tổng doanh thu'
+            title='Doanh thu (Tháng)'
             icon={DollarSign}
             value={data?.total_revenue?.toLocaleString('vi-VN') || '0'}
             bgColor='bg-green-100'
@@ -72,7 +69,7 @@ export default function StatsOverview({ data }: StatsOverviewProps) {
         </Grid2>
         <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
           <StatCard
-            title='User đã nạp'
+            title='User nạp (Tháng)'
             icon={DollarSign}
             value={data?.total_deposit?.toLocaleString('vi-VN') || '0'}
             bgColor='bg-green-100'
@@ -81,7 +78,7 @@ export default function StatsOverview({ data }: StatsOverviewProps) {
         </Grid2>
         <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
           <StatCard
-            title='Tổng tiền nhập'
+            title='Tiền nhập (Tháng)'
             value={data?.total_price_cost?.toLocaleString('vi-VN') || '0'}
             icon={AlertCircle}
             bgColor='bg-red-100'
@@ -90,7 +87,7 @@ export default function StatsOverview({ data }: StatsOverviewProps) {
         </Grid2>
         <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
           <StatCard
-            title='Tổng đơn hàng'
+            title='Tổng đơn hàng (Tháng)'
             value={data?.total_orders?.toLocaleString('vi-VN') || '0'}
             icon={AlertCircle}
             bgColor='bg-red-100'
