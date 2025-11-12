@@ -12,59 +12,59 @@ const privateRoutes = [
   '/dashboard'
 ]
 
-export default withAuth(
-  function middleware(req: NextRequestWithAuth) {
-    const { pathname } = req.nextUrl
-    const token = req.nextauth.token
+// export default withAuth(
+//   function middleware(req: NextRequestWithAuth) {
+//     const { pathname } = req.nextUrl
+//     const token = req.nextauth.token
 
-    // Lấy mã ngôn ngữ từ URL (ví dụ: /vi/login -> 'vi')
-    const lang = pathname.split('/')[1] || 'vi'
+//     // Lấy mã ngôn ngữ từ URL (ví dụ: /vi/login -> 'vi')
+//     const lang = pathname.split('/')[1] || 'vi'
 
-    // ⭐ LOGIC MỚI BẮT ĐẦU TỪ ĐÂY ⭐
-    // Định nghĩa các trang xác thực (login, register, ...)
-    const authRoutes = [`/${lang}/login`, `/${lang}/register`]
+//     // ⭐ LOGIC MỚI BẮT ĐẦU TỪ ĐÂY ⭐
+//     // Định nghĩa các trang xác thực (login, register, ...)
+//     const authRoutes = [`/${lang}/login`, `/${lang}/register`]
 
-    // Kiểm tra xem trang hiện tại có phải là trang xác thực không
-    const isAuthRoute = authRoutes.some(route => pathname.startsWith(route))
+//     // Kiểm tra xem trang hiện tại có phải là trang xác thực không
+//     const isAuthRoute = authRoutes.some(route => pathname.startsWith(route))
 
-    // Nếu người dùng ĐÃ ĐĂNG NHẬP (có token) và đang cố vào trang login/register
-    if (token && isAuthRoute) {
-      // Chuyển hướng họ về trang overview
-      return NextResponse.redirect(new URL(`/${lang}/overview`, req.url))
-    }
+//     // Nếu người dùng ĐÃ ĐĂNG NHẬP (có token) và đang cố vào trang login/register
+//     if (token && isAuthRoute) {
+//       // Chuyển hướng họ về trang overview
+//       return NextResponse.redirect(new URL(`/${lang}/overview`, req.url))
+//     }
 
-    // ⭐ KẾT THÚC LOGIC MỚI ⭐
+//     // ⭐ KẾT THÚC LOGIC MỚI ⭐
 
-    // Nếu không thuộc trường hợp trên, cho phép request tiếp tục
-    return NextResponse.next()
-  },
-  {
-    callbacks: {
-      // Logic gác cổng ở đây không thay đổi
-      authorized: ({ token, req }) => {
-        const { pathname } = req.nextUrl
+//     // Nếu không thuộc trường hợp trên, cho phép request tiếp tục
+//     return NextResponse.next()
+//   },
+//   {
+//     callbacks: {
+//       // Logic gác cổng ở đây không thay đổi
+//       authorized: ({ token, req }) => {
+//         const { pathname } = req.nextUrl
 
-        const isPrivateRoute = privateRoutes.some(route => pathname.includes(route))
+//         const isPrivateRoute = privateRoutes.some(route => pathname.includes(route))
 
-        // Nếu không phải trang private, luôn cho phép
-        if (!isPrivateRoute) {
-          return true
-        }
+//         // Nếu không phải trang private, luôn cho phép
+//         if (!isPrivateRoute) {
+//           return true
+//         }
 
-        // Nếu là trang private, yêu cầu phải có token hợp lệ
-        if (token && token.access_token && !token.error) {
-          return true
-        }
+//         // Nếu là trang private, yêu cầu phải có token hợp lệ
+//         if (token && token.access_token && !token.error) {
+//           return true
+//         }
 
-        // Nếu là trang private mà không có token, trả về false để chuyển hướng
-        return false
-      }
-    },
-    pages: {
-      signIn: '/empty'
-    }
-  }
-)
+//         // Nếu là trang private mà không có token, trả về false để chuyển hướng
+//         return false
+//       }
+//     },
+//     pages: {
+//       signIn: '/empty'
+//     }
+//   }
+// )
 
 export const config = {
   matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)']
