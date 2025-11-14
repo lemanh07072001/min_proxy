@@ -36,6 +36,7 @@ import CustomTextField from '@/@core/components/mui/TextField'
 import { usePartners } from '@/hooks/apis/usePartners'
 import { useCreateServiceType } from '@/hooks/apis/useServiceType'
 import MultiInputModal from '@/views/Client/Admin/ServiceType/MultiInputModal'
+import PriceByDurationModal from '@/views/Client/Admin/ServiceType/PriceByDurationModal'
 
 // Yup validation schema
 const schema = yup.object({
@@ -100,13 +101,6 @@ const schema = yup.object({
     .of(yup.string())
     .min(1, 'Vui lòng chọn ít nhất một giao thức')
     .required('Proxy type là bắt buộc')
-    .default([]),
-  durations: yup
-    .array()
-    .nullable()
-    .of(yup.string())
-    .min(1, 'Vui lòng chọn ít nhất một thời gian')
-    .required('Thời gian hiển thị là bắt buộc')
     .default([]),
   body_api: yup
     .string()
@@ -177,7 +171,6 @@ export default function CreateServicePage() {
       type: '0',
       ip_version: 'ipv4',
       protocols: [],
-      durations: [],
       body_api: '',
       display_time: '',
       proxy_type: '',
@@ -193,6 +186,11 @@ export default function CreateServicePage() {
 
   const [isMultiInputModalOpen, setIsMultiInputModalOpen] = useState(false)
   const [multiInputFields, setMultiInputFields] = useState<Array<{ key: string; value: string }>>([
+    { key: '', value: '' }
+  ])
+
+  const [isPriceModalOpen, setIsPriceModalOpen] = useState(false)
+  const [priceFields, setPriceFields] = useState<Array<{ key: string; value: string }>>([
     { key: '', value: '' }
   ])
 
@@ -212,14 +210,6 @@ export default function CreateServicePage() {
     { value: 'http', label: 'HTTP' },
     { value: 'socks5', label: 'SOCKS5' }
   ]
-  const durations = [
-    { value: 'day', label: '1 ngày' },
-    { value: 'week', label: '1 tuần' },
-    { value: 'month', label: '1 tháng' },
-    { value: '3month', label: '3 tháng' },
-    { value: '6month', label: '6 tháng' },
-    { value: 'year', label: '1 năm' }
-  ]
 
   const createMutation = useCreateServiceType()
 
@@ -237,7 +227,8 @@ export default function CreateServicePage() {
     const submitData = {
       ...data,
       api_type: 'buy_api',
-      multi_inputs: multiInputFields
+      multi_inputs: multiInputFields,
+      price_by_duration: priceFields
     }
 
     console.log(submitData)
@@ -275,6 +266,22 @@ export default function CreateServicePage() {
     console.log('Multi Input Fields:', fields)
     toast.success(`Đã lưu ${fields.length} trường thành công!`)
     handleCloseMultiInputModal()
+  }
+
+  // Price Modal handlers
+  const handleOpenPriceModal = () => {
+    setIsPriceModalOpen(true)
+  }
+
+  const handleClosePriceModal = () => {
+    setIsPriceModalOpen(false)
+  }
+
+  const handleSavePrices = (fields: Array<{ key: string; value: string }>) => {
+    setPriceFields(fields)
+    console.log('Price Fields:', fields)
+    toast.success('Đã lưu giá thành công!')
+    handleClosePriceModal()
   }
 
   return (
@@ -673,6 +680,16 @@ export default function CreateServicePage() {
                   >
                     Thêm nhiều trường
                   </Button>
+
+                  <Button
+                    onClick={handleOpenPriceModal}
+                    className='text-white'
+                    variant='contained'
+                    color='info'
+                    startIcon={<Plus size={16} />}
+                  >
+                    Set giá theo thời gian
+                  </Button>
                 </div>
               </Grid2>
             </Grid2>
@@ -732,54 +749,6 @@ export default function CreateServicePage() {
                 />
               </Grid2>
 
-              <Grid2 size={{ xs: 12, sm: 4 }}>
-                <Controller
-                  name='durations'
-                  control={control}
-                  render={({ field }) => (
-                    <CustomTextField
-                      select
-                      fullWidth
-                      size='medium'
-                      label='Thời gian'
-                      value={field.value || []}
-                      onChange={field.onChange}
-                      onBlur={field.onBlur}
-                      name={field.name}
-                      error={!!errors.durations}
-                      helperText={errors.durations?.message}
-                      id='select-multiple-durations'
-                      slotProps={{
-                        select: {
-                          multiple: true,
-                          MenuProps,
-                          renderValue: selected => {
-                            const values = selected as unknown as string[]
-                            if (!values || values.length === 0) {
-                              return <em>Chọn thời gian</em>
-                            }
-                            return (
-                              <div className='flex flex-wrap gap-1'>
-                                {values.map(val => {
-                                  const duration = durations.find(d => d.value === val)
-                                  return <Chip key={val} label={duration?.label || val} size='small' />
-                                })}
-                              </div>
-                            )
-                          }
-                        }
-                      }}
-                    >
-                      {durations.map(duration => (
-                        <MenuItem key={duration.value} value={duration.value}>
-                          {duration.label}
-                        </MenuItem>
-                      ))}
-                    </CustomTextField>
-                  )}
-                />
-              </Grid2>
-
               <FormControlLabel control={<Switch />} label='Hiện thị user/pass' />
             </Grid2>
           </Box>
@@ -820,6 +789,15 @@ export default function CreateServicePage() {
         valueLabel='Value'
         fields={multiInputFields}
         setFields={setMultiInputFields}
+      />
+
+      {/* Modal set giá theo thời gian */}
+      <PriceByDurationModal
+        isOpen={isPriceModalOpen}
+        onClose={handleClosePriceModal}
+        onSave={handleSavePrices}
+        fields={priceFields}
+        setFields={setPriceFields}
       />
     </Card>
   )
