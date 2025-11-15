@@ -19,7 +19,7 @@ async function getProxyPlans() {
       headers: {
         'Content-Type': 'application/json'
       },
-      cache: 'no-store' // Ensure fresh data on each request
+      cache: 'no-store'
     })
 
     if (!response.ok) {
@@ -27,8 +27,6 @@ async function getProxyPlans() {
     }
 
     const data = await response.json()
-
-    console.log(data)
 
     return data.data || []
   } catch (error) {
@@ -40,6 +38,8 @@ async function getProxyPlans() {
 
 export default async function RotatingProxy({ params }: { params: Promise<{ lang: Locale }> }) {
   const { lang } = await params
+
+  console.log(await getProxyPlans())
 
   // Fetch data and dictionary in parallel
   const [proxyPlans, dictionary] = await Promise.all([getProxyPlans(), getDictionary(lang)])

@@ -10,6 +10,7 @@ import { useQueryClient } from '@tanstack/react-query'
 
 import ProxyCard from '@/app/[lang]/(private)/(client)/components/proxy-card/ProxyCard'
 import OrderProxyPage from './OrderProxyPage'
+import { Grid2 } from '@mui/material'
 
 interface StaticProxyPageProps {
   data: any
@@ -55,21 +56,16 @@ export default function StaticProxyPage({ data }: StaticProxyPageProps) {
       </div>
 
       {currentView === 'form' && (
-        <div className='proxy-grid'>
-          {data?.map((provider: any, index: any) => {
-            return (
-              <ProxyCard
-                key={index}
-                provider={provider}
-                logo={provider.logo}
-                color={provider.color}
-                price={provider.price}
-                features={provider.features}
-                {...provider}
-              />
-            )
-          })}
-        </div>
+        <Grid2 container spacing={2}>
+          <Grid2 size={{ xs: 12, md: 4 }}></Grid2>
+          <Grid2 size={{ xs: 12, md: 8 }}>
+            <div className='proxy-grid' style={{ maxHeight: '80vh', overflowY: 'auto' }}>
+              {data?.map((provider: any, index: any) => {
+                return <ProxyCard key={index} provider={provider} />
+              })}
+            </div>
+          </Grid2>
+        </Grid2>
       )}
 
       {currentView === 'table' && <OrderProxyPage />}

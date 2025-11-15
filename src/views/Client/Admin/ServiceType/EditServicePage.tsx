@@ -36,6 +36,7 @@ import CustomTextField from '@/@core/components/mui/TextField'
 import { usePartners } from '@/hooks/apis/usePartners'
 import { useServiceType, useUpdateServiceType } from '@/hooks/apis/useServiceType'
 import MultiInputModal from '@/views/Client/Admin/ServiceType/MultiInputModal'
+import PriceByDurationModal from '@/views/Client/Admin/ServiceType/PriceByDurationModal'
 
 // Yup validation schema (same as CreateServicePage)
 const schema = yup.object({
@@ -72,6 +73,24 @@ const schema = yup.object({
       if (!cost_price) return true
       return value >= cost_price
     }),
+  discount_price: yup
+    .number()
+    .nullable()
+    .transform((value, originalValue) => {
+      return originalValue === '' ? null : value
+    })
+    .typeError('Giá giảm phải là số')
+    .positive('Giá giảm phải lớn hơn 0')
+    .test('max-discount', 'Giá giảm phải nhỏ hơn giá bán', function (value) {
+      if (!value) return true
+      const { price } = this.parent
+      if (!price) return true
+      return value < price
+    }),
+  code: yup
+    .string()
+    .nullable()
+    .transform(value => (value ? value.trim() : value)),
   status: yup.string().nullable().required('Trạng thái là bắt buộc'),
   partner_id: yup.string().nullable().required('Đối tác là bắt buộc'),
   type: yup.string().nullable().required('Loại dịch vụ là bắt buộc'),
@@ -82,13 +101,6 @@ const schema = yup.object({
     .of(yup.string())
     .min(1, 'Vui lòng chọn ít nhất một giao thức')
     .required('Proxy type là bắt buộc')
-    .default([]),
-  durations: yup
-    .array()
-    .nullable()
-    .of(yup.string())
-    .min(1, 'Vui lòng chọn ít nhất một thời gian')
-    .required('Thời gian hiển thị là bắt buộc')
     .default([]),
   body_api: yup
     .string()
@@ -157,12 +169,13 @@ export default function EditServicePage({ serviceId }: EditServicePageProps) {
       api_partner: '',
       cost_price: undefined,
       price: undefined,
+      discount_price: undefined,
+      code: '',
       status: 'active',
       partner_id: '',
       type: '0',
       ip_version: 'ipv4',
       protocols: [],
-      durations: [],
       body_api: '',
       display_time: '',
       proxy_type: '',
@@ -182,6 +195,11 @@ export default function EditServicePage({ serviceId }: EditServicePageProps) {
   ])
   const [dateMappingOptions, setDateMappingOptions] = useState<Array<{ key: string; label: string }>>([])
 
+  const [isPriceModalOpen, setIsPriceModalOpen] = useState(false)
+  const [priceFields, setPriceFields] = useState<Array<{ key: string; value: string }>>([
+    { key: '', value: '' }
+  ])
+
   const ITEM_HEIGHT = 48
   const ITEM_PADDING_TOP = 8
   const MenuProps = {
@@ -197,14 +215,6 @@ export default function EditServicePage({ serviceId }: EditServicePageProps) {
   const protocols = [
     { value: 'http', label: 'HTTP' },
     { value: 'socks5', label: 'SOCKS5' }
-  ]
-  const durations = [
-    { value: 'day', label: '1 ngày' },
-    { value: 'week', label: '1 tuần' },
-    { value: 'month', label: '1 tháng' },
-    { value: '3month', label: '3 tháng' },
-    { value: '6month', label: '6 tháng' },
-    { value: 'year', label: '1 năm' }
   ]
 
   // Fallback time options nếu không có date_mapping
@@ -242,17 +252,23 @@ export default function EditServicePage({ serviceId }: EditServicePageProps) {
         setMultiInputFields(serviceData.multi_inputs.length > 0 ? serviceData.multi_inputs : [{ key: '', value: '' }])
       }
 
+      // Load price_by_duration từ API
+      if (serviceData.price_by_duration && Array.isArray(serviceData.price_by_duration)) {
+        setPriceFields(serviceData.price_by_duration.length > 0 ? serviceData.price_by_duration : [{ key: '', value: '' }])
+      }
+
       reset({
         name: serviceData.name || '',
         api_partner: serviceData.api_partner || '',
         cost_price: serviceData.cost_price || undefined,
         price: serviceData.price || undefined,
+        discount_price: serviceData.discount_price || undefined,
+        code: serviceData.code || '',
         status: serviceData.status || 'active',
         partner_id: serviceData.partner_id || '',
         type: serviceData.type || '0',
         ip_version: serviceData.ip_version || 'ipv4',
         protocols: serviceData.protocols || [],
-        durations: serviceData.date_mapping,
         body_api: bodyApiString,
         display_time: serviceData.time_type || '',
         proxy_type: serviceData.proxy_type || '',
@@ -277,7 +293,8 @@ export default function EditServicePage({ serviceId }: EditServicePageProps) {
     const submitData = {
       ...data,
       api_type: 'buy_api',
-      multi_inputs: multiInputFields
+      multi_inputs: multiInputFields,
+      price_by_duration: priceFields
     }
 
     updateMutation.mutate(submitData, {
@@ -332,6 +349,22 @@ export default function EditServicePage({ serviceId }: EditServicePageProps) {
     console.log('Multi Input Fields:', fields)
     toast.success(`Đã lưu ${fields.length} trường thành công!`)
     handleCloseMultiInputModal()
+  }
+
+  // Price Modal handlers
+  const handleOpenPriceModal = () => {
+    setIsPriceModalOpen(true)
+  }
+
+  const handleClosePriceModal = () => {
+    setIsPriceModalOpen(false)
+  }
+
+  const handleSavePrices = (fields: Array<{ key: string; value: string }>) => {
+    setPriceFields(fields)
+    console.log('Price Fields:', fields)
+    toast.success('Đã lưu giá thành công!')
+    handleClosePriceModal()
   }
 
   return (
@@ -424,6 +457,48 @@ export default function EditServicePage({ serviceId }: EditServicePageProps) {
                       required
                       error={!!errors.price}
                       helperText={errors.price?.message}
+                    />
+                  )}
+                />
+              </Grid2>
+
+              <Grid2 size={{ xs: 12, sm: 6 }}>
+                <Controller
+                  name='discount_price'
+                  control={control}
+                  render={({ field }) => (
+                    <CustomTextField
+                      {...field}
+                      value={field.value}
+                      onChange={e => {
+                        const value = e.target.value === '' ? null : Number(e.target.value)
+                        field.onChange(value)
+                      }}
+                      size='medium'
+                      fullWidth
+                      type='number'
+                      label='Giá giảm'
+                      placeholder='Nhập giá giảm'
+                      error={!!errors.discount_price}
+                      helperText={errors.discount_price?.message}
+                    />
+                  )}
+                />
+              </Grid2>
+
+              <Grid2 size={{ xs: 12, sm: 6 }}>
+                <Controller
+                  name='code'
+                  control={control}
+                  render={({ field }) => (
+                    <CustomTextField
+                      {...field}
+                      size='medium'
+                      fullWidth
+                      label='Code'
+                      placeholder='Nhập code'
+                      error={!!errors.code}
+                      helperText={errors.code?.message}
                     />
                   )}
                 />
@@ -687,6 +762,16 @@ export default function EditServicePage({ serviceId }: EditServicePageProps) {
                   >
                     Thêm nhiều trường
                   </Button>
+
+                  <Button
+                    onClick={handleOpenPriceModal}
+                    className='text-white'
+                    variant='contained'
+                    color='info'
+                    startIcon={<Plus size={16} />}
+                  >
+                    Set giá theo thời gian
+                  </Button>
                 </div>
               </Grid2>
             </Grid2>
@@ -743,55 +828,6 @@ export default function EditServicePage({ serviceId }: EditServicePageProps) {
                 />
               </Grid2>
 
-              <Grid2 size={{ xs: 12, sm: 4 }}>
-                <Controller
-                  name='durations'
-                  control={control}
-                  render={({ field }) => (
-                    <CustomTextField
-                      select
-                      fullWidth
-                      size='medium'
-                      label='Thời gian'
-                      value={field.value || []}
-                      onChange={field.onChange}
-                      onBlur={field.onBlur}
-                      name={field.name}
-                      error={!!errors.durations}
-                      helperText={errors.durations?.message}
-                      id='select-multiple-durations'
-                      slotProps={{
-                        select: {
-                          multiple: true,
-                          MenuProps,
-                          renderValue: selected => {
-                            const values = selected as unknown as string[]
-                            if (!values || values.length === 0) {
-                              return <em>Chọn thời gian</em>
-                            }
-                            const options = dateMappingOptions.length > 0 ? dateMappingOptions : durations
-                            return (
-                              <div className='flex flex-wrap gap-1'>
-                                {values.map(val => {
-                                  const option = options.find((d: any) => (d.key || d.value) === val)
-                                  return <Chip key={val} label={option?.label || val} size='small' />
-                                })}
-                              </div>
-                            )
-                          }
-                        }
-                      }}
-                    >
-                      {(dateMappingOptions.length > 0 ? dateMappingOptions : durations).map((option: any) => (
-                        <MenuItem key={option.key || option.value} value={option.key || option.value}>
-                          {option.label}
-                        </MenuItem>
-                      ))}
-                    </CustomTextField>
-                  )}
-                />
-              </Grid2>
-
               <FormControlLabel control={<Switch />} label='Hiện thị user/pass' />
             </Grid2>
           </Box>
@@ -832,6 +868,15 @@ export default function EditServicePage({ serviceId }: EditServicePageProps) {
         valueLabel='Value'
         fields={multiInputFields}
         setFields={setMultiInputFields}
+      />
+
+      {/* Modal set giá theo thời gian */}
+      <PriceByDurationModal
+        isOpen={isPriceModalOpen}
+        onClose={handleClosePriceModal}
+        onSave={handleSavePrices}
+        fields={priceFields}
+        setFields={setPriceFields}
       />
     </Card>
   )
