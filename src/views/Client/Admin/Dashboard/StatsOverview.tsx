@@ -1,6 +1,5 @@
 import { Grid2 } from '@mui/material'
-import { User, DollarSign, Activity, AlertCircle } from 'lucide-react'
-import { da } from 'zod/v4/locales'
+import { User, DollarSign, AlertCircle } from 'lucide-react'
 
 function StatCard({
   title,
@@ -40,7 +39,8 @@ interface StatsOverviewProps {
     total_revenue?: number
     total_sales?: number
     total_users?: number
-    refunded_orders?: null
+    refunded_orders?: number
+    total_price_cost?: number
   }
 }
 
@@ -48,80 +48,57 @@ export default function StatsOverview({ data }: StatsOverviewProps) {
   console.log(data)
 
   return (
-    <Grid2 container spacing={2}>
-      <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
-        <StatCard
-          title='Tổng User'
-          value={data?.total_users?.toLocaleString('vi-VN') || '0'}
-          icon={User}
-          bgColor='bg-blue-100'
-          iconColor='text-blue-600'
-        />
-      </Grid2>
-      <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
-        <StatCard
-          title='Tổng doanh thu'
-          icon={DollarSign}
-          value={data?.total_revenue?.toLocaleString('vi-VN') || '0'}
-          bgColor='bg-green-100'
-          iconColor='text-green-600'
-        />
-      </Grid2>
-      <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
-        <StatCard
-          title='User đã nạp'
-          icon={DollarSign}
-          value={data?.total_deposit?.toLocaleString('vi-VN') || '0'}
-          bgColor='bg-green-100'
-          iconColor='text-green-600'
-        />
-      </Grid2>
-      <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
-        <StatCard
-          title='Proxy hoạt động'
-          value={data?.active_proxies?.toLocaleString('vi-VN') || '0'}
-          icon={Activity}
-          bgColor='bg-yellow-100'
-          iconColor='text-yellow-600'
-        />
-      </Grid2>
-      <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
-        <StatCard
-          title='Proxy đang hoạt động'
-          value={data?.active_proxies?.toLocaleString('vi-VN') || '0'}
-          icon={AlertCircle}
-          bgColor='bg-red-100'
-          iconColor='text-red-600'
-        />
-      </Grid2>
-      <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
-        <StatCard
-          title='Số lượng đơn hàng hoàn'
-          value={data?.active_proxies?.toLocaleString('vi-VN') || '0'}
-          icon={AlertCircle}
-          bgColor='bg-red-100'
-          iconColor='text-red-600'
-        />
-      </Grid2>
-      <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
-        <StatCard
-          title='Số lượng đơn hàng hoàn thành'
-          value={data?.refunded_orders?.toLocaleString('vi-VN') || '0'}
-          icon={AlertCircle}
-          bgColor='bg-yellow-100'
-          iconColor='text-yellow-600'
-        />
-      </Grid2>
+    <div className=''>
+      <h2 className='text-2xl font-bold text-gray-800 mb-4'>Thống kê</h2>
+      <Grid2 container spacing={2}></Grid2>
+      <Grid2 container spacing={2}>
+        <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+          <StatCard
+            title='Tổng User'
+            value={data?.total_users?.toLocaleString('vi-VN') || '0'}
+            icon={User}
+            bgColor='bg-blue-100'
+            iconColor='text-blue-600'
+          />
+        </Grid2>
+        <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+          <StatCard
+            title='Tổng doanh thu'
+            icon={DollarSign}
+            value={data?.total_revenue?.toLocaleString('vi-VN') || '0'}
+            bgColor='bg-green-100'
+            iconColor='text-green-600'
+          />
+        </Grid2>
+        <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+          <StatCard
+            title='User đã nạp'
+            icon={DollarSign}
+            value={data?.total_deposit?.toLocaleString('vi-VN') || '0'}
+            bgColor='bg-green-100'
+            iconColor='text-green-600'
+          />
+        </Grid2>
+        <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+          <StatCard
+            title='Tổng tiền nhập'
+            value={data?.total_price_cost?.toLocaleString('vi-VN') || '0'}
+            icon={AlertCircle}
+            bgColor='bg-red-100'
+            iconColor='text-red-600'
+          />
+        </Grid2>
 
-      <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
-        <StatCard
-          title='Tổng đơn hàng'
-          value={data?.total_orders?.toLocaleString('vi-VN') || '0'}
-          icon={Activity}
-          bgColor='bg-yellow-100'
-          iconColor='text-yellow-600'
-        />
+        <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+          <StatCard
+            title='Tổng đơn hàng'
+            value={data?.total_orders?.toLocaleString('vi-VN') || '0'}
+            icon={AlertCircle}
+            bgColor='bg-red-100'
+            iconColor='text-red-600'
+          />
+        </Grid2>
       </Grid2>
-    </Grid2>
+    </div>
   )
 }

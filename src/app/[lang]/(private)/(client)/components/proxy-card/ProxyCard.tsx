@@ -46,6 +46,7 @@ import { subtractBalance } from '@/store/userSlice'
 import type { AppDispatch } from '@/store'
 
 import { log } from 'console'
+import { Grid2 } from '@mui/material'
 
 interface ProxyCardProps {
   provider: string
@@ -269,154 +270,110 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider }) => {
           </div>
 
           {/* Form controls trong layout cột */}
-          <div className='form-grid'>
-            {/* version */}
-            <CustomTextField
-              fullWidth
-              InputProps={{ readOnly: true }}
-              id='version'
-              label={
-                <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                  <MapPin size={16} />
-                  Version
-                </span>
-              }
-              value={provider.ip_version}
-              sx={{
-                // Nhắm đến thẻ label của component này
-                '& .MuiInputLabel-root': {
-                  color: '#64748b', // Đổi màu label thành màu cam
-                  fontWeight: '600', // In đậm chữ
-                  fontSize: '11px', // Thay đổi kích thước font
-                  paddingBottom: '5px'
+          <Grid2 container spacing={4}>
+            <Grid2 size={{ xs: 12 }}>
+              {/* version */}
+              <CustomTextField
+                fullWidth
+                InputProps={{ readOnly: true }}
+                id='version'
+                label={
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                    <MapPin size={16} />
+                    Version
+                  </span>
                 }
-              }}
-            />
-
-            {/* Thời gian */}
-            <Controller
-              name='days'
-              control={control}
-              render={({ field }) => (
-                <CustomTextField
-                  type={isSelectMode ? 'select' : 'number'}
-                  inputProps={!isSelectMode ? { min: 1 } : undefined}
-                  select={isSelectMode}
-                  label={
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <Clock size={16} />
-                      THỜI GIAN
-                    </span>
+                value={provider.ip_version}
+                sx={{
+                  // Nhắm đến thẻ label của component này
+                  '& .MuiInputLabel-root': {
+                    color: '#64748b', // Đổi màu label thành màu cam
+                    fontWeight: '600', // In đậm chữ
+                    fontSize: '11px', // Thay đổi kích thước font
+                    paddingBottom: '5px'
                   }
-                  error={!!errors.days}
-                  helperText={errors.days?.message}
-                  {...field}
-                  sx={{
-                    '& .MuiInputLabel-root': {
-                      color: '#64748b', // Đổi màu label thành màu cam
-                      fontWeight: '600', // In đậm chữ
-                      fontSize: '11px', // Thay đổi kích thước font
-                      paddingBottom: '5px'
+                }}
+              />
+            </Grid2>
+
+            <Grid2 size={{ xs: 12 }}>
+              {/* Thời gian */}
+              <Controller
+                name='days'
+                control={control}
+                render={({ field }) => (
+                  <CustomTextField
+                    fullWidth
+                    type={isSelectMode ? 'select' : 'number'}
+                    inputProps={!isSelectMode ? { min: 1 } : undefined}
+                    select={isSelectMode}
+                    label={
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <Clock size={16} />
+                        THỜI GIAN
+                      </span>
                     }
-                  }}
-                >
-                  {isSelectMode &&
-                    Array.isArray(provider.date_mapping) &&
-                    provider.date_mapping.map(option => (
-                      <MenuItem key={option.key} value={option.key}>
-                        {option.label}
-                      </MenuItem>
-                    ))}
-                </CustomTextField>
-              )}
-            />
+                    error={!!errors.days}
+                    helperText={errors.days?.message}
+                    {...field}
+                    sx={{
+                      '& .MuiInputLabel-root': {
+                        color: '#64748b', // Đổi màu label thành màu cam
+                        fontWeight: '600', // In đậm chữ
+                        fontSize: '11px', // Thay đổi kích thước font
+                        paddingBottom: '5px'
+                      }
+                    }}
+                  >
+                    {isSelectMode &&
+                      Array.isArray(provider.date_mapping) &&
+                      provider.date_mapping.map(option => (
+                        <MenuItem key={option.key} value={option.key}>
+                          {option.label}
+                        </MenuItem>
+                      ))}
+                  </CustomTextField>
+                )}
+              />
+            </Grid2>
 
-            {/*Số lượng*/}
-            <Controller
-              name='quantity'
-              control={control}
-              render={({ field }) => (
-                <QuantityControl
-                  min={1}
-                  max={100}
-                  label='SỐ LƯỢNG'
-                  icon={<Users size={14} />}
-                  value={field.value || 1}
-                  onChange={field.onChange}
-                />
-              )}
-            />
+            <Grid2 size={{ xs: 12 }}>
+              {/*Số lượng*/}
+              <Controller
+                name='quantity'
+                control={control}
+                render={({ field }) => (
+                  <QuantityControl
+                    min={1}
+                    max={100}
+                    label='SỐ LƯỢNG'
+                    icon={<Users size={14} />}
+                    value={field.value || 1}
+                    onChange={field.onChange}
+                  />
+                )}
+              />
+            </Grid2>
 
-            {/* Giao thức */}
-            <Controller
-              name='protocol'
-              control={control}
-              render={({ field }) => (
-                <ProtocolSelector
-                  protocols={protocols}
-                  selectedProtocol={field.value}
-                  onProtocolChange={field.onChange}
-                  label='GIAO THỨC'
-                  required={true}
-                  error={errors.protocol?.message}
-                />
-              )}
-            />
-          </div>
-
-          {/* Auth section */}
-          {provider.allow_user == 0 ? (
-            <div className='auth-section-column'>
-              <div className='auth-row'>
-                <Controller
-                  name='username'
-                  control={control}
-                  render={({ field }) => (
-                    <CustomTextField
-                      type='text'
-                      {...field}
-                      label={<span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>Username</span>}
-                      sx={{
-                        // Nhắm đến thẻ label của component này
-                        '& .MuiInputLabel-root': {
-                          color: '#64748b', // Đổi màu label thành màu cam
-                          fontWeight: '600', // In đậm chữ
-                          fontSize: '11px', // Thay đổi kích thước font
-                          paddingBottom: '5px'
-                        },
-                        '&.MuiFilledInput-input': {
-                          background: '#ffffff !important'
-                        }
-                      }}
-                    />
-                  )}
-                />
-
-                <Controller
-                  name='password'
-                  control={control}
-                  render={({ field }) => (
-                    <CustomTextField
-                      {...field}
-                      type='text'
-                      label={<span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>Password</span>}
-                      sx={{
-                        '& .MuiInputLabel-root': {
-                          color: '#64748b', // Đổi màu label thành màu cam
-                          fontWeight: '600', // In đậm chữ
-                          fontSize: '11px', // Thay đổi kích thước font
-                          paddingBottom: '5px'
-                        },
-                        '&.MuiFilledInput-input': {
-                          background: '#ffffff !important'
-                        }
-                      }}
-                    />
-                  )}
-                />
-              </div>
-            </div>
-          ) : null}
+            <Grid2 size={{ xs: 12 }}>
+              {/* Giao thức */}
+              <Controller
+                name='protocol'
+                control={control}
+                render={({ field }) => (
+                  <ProtocolSelector
+                    protocols={protocols}
+                    selectedProtocol={field.value}
+                    onProtocolChange={field.onChange}
+                    label='GIAO THỨC'
+                    required={true}
+                    error={errors.protocol?.message}
+                  />
+                )}
+              />
+            </Grid2>
+          </Grid2>
+          <div className='form-grid'></div>
         </div>
 
         {/* Footer với tổng tiền và nút mua */}
