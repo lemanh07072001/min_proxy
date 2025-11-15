@@ -4,7 +4,18 @@ import { useEffect, useMemo, useState } from 'react'
 
 import Image from 'next/image'
 
-import { CircleQuestionMark, BadgeCheck, BadgeMinus, List, Clock3, Search, Calendar, Filter, X, Loader } from 'lucide-react'
+import {
+  CircleQuestionMark,
+  BadgeCheck,
+  BadgeMinus,
+  List,
+  Clock3,
+  Search,
+  Calendar,
+  Filter,
+  X,
+  Loader
+} from 'lucide-react'
 
 import {
   useReactTable,
@@ -139,7 +150,7 @@ export default function TableDepositHistory() {
         header: 'Trạng thái',
         size: isMobile ? 150 : 150,
         cell: ({ row }: { row: any }) => {
-          return getStatusBadge(row.original.status,row.original.note)
+          return getStatusBadge(row.original.status, row.original.note)
         }
       },
       {
@@ -183,10 +194,11 @@ export default function TableDepositHistory() {
         try {
           const rowDate = new Date(item?.created_at)
           if (isNaN(rowDate.getTime())) return false
-          const toYmd = (d: Date) => `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d
-            .getDate()
-            .toString()
-            .padStart(2, '0')}`
+          const toYmd = (d: Date) =>
+            `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d
+              .getDate()
+              .toString()
+              .padStart(2, '0')}`
           return toYmd(rowDate) === toYmd(date as Date)
         } catch {
           return false
@@ -224,7 +236,7 @@ export default function TableDepositHistory() {
   const totalRows = table.getFilteredRowModel().rows.length
   const startRow = pageIndex * pageSize + 1
   const endRow = Math.min(startRow + pageSize - 1, totalRows)
-  console.log(table.getRowModel().rows.length)
+
   // Detail User Modal
 
   return (
@@ -386,7 +398,9 @@ export default function TableDepositHistory() {
                       {row.getVisibleCells().map(cell => (
                         <td
                           className={`table-cell ${
-                            row.original?.type === 'gem1' || row.original?.transaction_type === 'gem1' ? 'text-red-500' : ''
+                            row.original?.type === 'gem1' || row.original?.transaction_type === 'gem1'
+                              ? 'text-red-500'
+                              : ''
                           }`}
                           key={cell.id}
                         >
