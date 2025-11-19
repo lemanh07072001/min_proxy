@@ -165,16 +165,20 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider }) => {
 
     if (quantity < 1) return 0
 
-    // Nếu có price_by_duration thì dùng giá từ đó (đã bao gồm duration)
+    // Chỉ tính giá dựa trên price_by_duration
     if (provider?.price_by_duration && provider.price_by_duration.length > 0) {
       const selectedDuration = provider.price_by_duration.find(item => item.key === watchedDays)
-      const basePrice = selectedDuration ? parseInt(selectedDuration.value, 10) : 0
-      return basePrice * quantity
+
+      if (selectedDuration) {
+        // Giá trong value đã bao gồm cả thời gian (7 ngày, 30 ngày, v.v.)
+        // Chỉ cần nhân với số lượng proxy
+        const totalPrice = parseInt(selectedDuration.value, 10) || 0
+        return totalPrice * quantity
+      }
     }
 
-    // Nếu không có price_by_duration thì tính theo price * days * quantity
-    const basePrice = parseInt(provider?.price, 10) || 0
-    return basePrice * daysInNumber * quantity
+    // Nếu không tìm thấy giá trong price_by_duration thì trả về 0
+    return 0
   }
 
   const calculateTotalFormat = () => {
@@ -184,23 +188,42 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider }) => {
   const total = calculateTotal()
 
   const onSubmit = data => {
+    // Tính lại total để đảm bảo lấy giá trị mới nhất
+    const currentTotal = calculateTotal()
+
+    // Lấy giá từ price_by_duration thay vì provider.price
+    const selectedDuration = provider?.price_by_duration?.find(item => item.key === data.days)
+    const priceForDuration = selectedDuration ? parseInt(selectedDuration.value, 10) : 0
+
+    console.log('DEBUG - Price calculation:', {
+      days: data.days,
+      provider_price_by_duration: provider?.price_by_duration,
+      selectedDuration,
+      priceForDuration,
+      currentTotal,
+      quantity: data.quantity
+    })
+
     const itemData = {
       ...data,
       serviceTypeId: provider.id,
-      price: provider.price,
+      price: priceForDuration, // Gửi giá từ price_by_duration thay vì provider.price
       ip_version: provider.ip_version,
-      total,
+      proxy_type: provider.proxy_type,
+      country: provider.country || provider.country_name || provider.country_code,
+      total: currentTotal,
       isPrivate: 'true'
     }
-    console.log(itemData)
-    // setFormData(itemData) // Lưu dữ liệu vào state
-    // setOpenConfirm(true) // Mở dialog xác nhận
+
+    console.log('Data gửi lên server:', itemData)
+    setFormData(itemData) // Lưu dữ liệu vào state
+    setOpenConfirm(true) // Mở dialog xác nhận
   }
 
   const handleConfirmPurchase = () => {
     try {
       if (formData) {
-        // mutate(formData) // Gọi API với dữ liệu đã lưu
+        mutate(formData) // Gọi API với dữ liệu đã lưu
         setOpenConfirm(false) // Đóng dialog
         setFormData(null) // Xóa dữ liệu đã lưu
       }
@@ -316,8 +339,8 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider }) => {
 
           {/* Form controls trong layout cột */}
           <Grid2 container spacing={4}>
-            {/* Version và Proxy Type - 2 cột */}
-            <Grid2 size={{ xs: 12, md: 6 }}>
+            {/* Version - full width */}
+            <Grid2 size={{ xs: 12 }}>
               {/* version */}
               <CustomTextField
                 fullWidth
@@ -342,7 +365,7 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider }) => {
               />
             </Grid2>
 
-            {/* Version và Proxy Type - 2 cột */}
+            {/* Proxy Type - 50% */}
             <Grid2 size={{ xs: 12, md: 6 }}>
               {/* Loại Proxy */}
               <CustomTextField
@@ -356,6 +379,32 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider }) => {
                   </span>
                 }
                 value={convertProxyType(provider?.proxy_type)}
+                sx={{
+                  // Nhắm đến thẻ label của component này
+                  '& .MuiInputLabel-root': {
+                    color: '#64748b', // Đổi màu label thành màu cam
+                    fontWeight: '600', // In đậm chữ
+                    fontSize: '11px', // Thay đổi kích thước font
+                    paddingBottom: '5px'
+                  }
+                }}
+              />
+            </Grid2>
+
+            {/* Quốc gia - 50% */}
+            <Grid2 size={{ xs: 12, md: 6 }}>
+              {/* Quốc gia */}
+              <CustomTextField
+                fullWidth
+                InputProps={{ readOnly: true }}
+                id='country'
+                label={
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                    <MapPin size={16} />
+                    Quốc gia
+                  </span>
+                }
+                value={provider?.country_name || provider?.country || 'N/A'}
                 sx={{
                   // Nhắm đến thẻ label của component này
                   '& .MuiInputLabel-root': {
