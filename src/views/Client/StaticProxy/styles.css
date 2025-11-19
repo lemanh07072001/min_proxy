@@ -1,0 +1,29 @@
+.embla {
+  overflow: hidden;
+  cursor: grab;
+}
+
+.embla:active {
+  cursor: grabbing;
+}
+
+.embla__container {
+  display: flex;
+  backface-visibility: hidden;
+  touch-action: pan-y pinch-zoom;
+  margin-inline-start: calc(1rem * -1);
+}
+
+.embla__slide {
+  flex: 0 0 50%;
+  min-inline-size: 0;
+  padding-inline-start: 1rem;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+@media (max-width: 768px) {
+  .embla__slide {
+    flex: 0 0 100%;
+  }
+}

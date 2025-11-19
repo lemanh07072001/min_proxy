@@ -35,8 +35,6 @@ export default async function StaticProxy() {
     ]
   }
 
-  console.log(proxyPlans)
-
   const mergedPlans = proxyPlans?.map(plan => ({
     id: plan.id,
     title: plan.name,
