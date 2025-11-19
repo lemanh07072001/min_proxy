@@ -7,6 +7,7 @@ import '@/app/css-variables.css'
 import '@/app/globals.css'
 import '@/app/shared-layout.css' // CSS chung cho cả private và public
 import '@/app/root.css'
+import '@/app/figtree.css'
 
 // Generated Icon CSS Imports
 import '@assets/iconify-icons/generated-icons.css'
