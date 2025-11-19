@@ -5,7 +5,7 @@ import { useMemo, useState, useCallback } from 'react'
 import Image from 'next/image'
 import { useParams, useRouter } from 'next/navigation'
 
-import { CircleQuestionMark, BadgeCheck, BadgeMinus, List, Copy, SquarePen, Trash2, SquarePlus  } from 'lucide-react'
+import { CircleQuestionMark, BadgeCheck, BadgeMinus, List, Copy, SquarePen, Trash2, SquarePlus } from 'lucide-react'
 
 import {
   useReactTable,
@@ -24,7 +24,16 @@ import Pagination from '@mui/material/Pagination'
 
 import { useQuery } from '@tanstack/react-query'
 
-import { Button, Dialog, DialogTitle, DialogContent, DialogActions, DialogContentText, Tooltip, IconButton } from '@mui/material'
+import {
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  DialogContentText,
+  Tooltip,
+  IconButton
+} from '@mui/material'
 
 import useAxiosAuth from '@/hocs/useAxiosAuth'
 import { useCopyServiceType, useDeleteServiceType } from '@/hooks/apis/useServiceType'
@@ -38,7 +47,7 @@ export default function TableServiceType() {
   const [pagination, setPagination] = useState({
     pageIndex: 0,
     pageSize: 10
-  }) // State để lưu các hàng được chọn
+  })
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [serviceToDelete, setServiceToDelete] = useState<number | null>(null)
@@ -331,7 +340,7 @@ export default function TableServiceType() {
                 color='primary'
                 className='text-white'
                 size='small'
-                startIcon={<SquarePlus  size={16} />}
+                startIcon={<SquarePlus size={16} />}
               >
                 Thêm dịch vụ
               </Button>
