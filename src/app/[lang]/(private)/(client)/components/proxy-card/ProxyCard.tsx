@@ -474,6 +474,7 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider }) => {
                                 value={item.key}
                                 checked={field.value === item.key}
                                 onChange={field.onChange}
+                                autoFocus={index === 0}
                                 style={{ cursor: 'pointer' }}
                               />
                               <span style={{ fontSize: '14px', fontWeight: '500' }}>{getDurationLabel(item.key)}</span>

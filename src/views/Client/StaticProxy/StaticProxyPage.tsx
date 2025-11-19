@@ -154,6 +154,7 @@ export default function StaticProxyPage({ data }: StaticProxyPageProps) {
                     value={searchCountry}
                     onChange={(e) => setSearchCountry(e.target.value)}
                     sx={{ mb: 2 }}
+                    autoFocus
                     InputProps={{
                       startAdornment: (
                         <InputAdornment position='start'>
