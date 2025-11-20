@@ -54,28 +54,17 @@ interface ProxyCardProps {
   onPurchaseSuccess: () => void
 }
 
-const createProxySchema = isSelectMode =>
+const createProxySchema = (isSelectMode, hasPriceByDuration) =>
   yup
     .object({
-      days: yup.mixed().when([], {
-        is: () => isSelectMode,
-
-        // ✅ SỬA Ở ĐÂY: Bọc schema trong một hàm () => ...
-        then: () => yup.string().required('Vui lòng chọn thời gian'),
-
-        // ✅ VÀ Ở ĐÂY
-        otherwise: () =>
-          yup.number().typeError('Vui lòng nhập số ngày').required('Vui lòng nhập số ngày').min(1, 'Tối thiểu 1 ngày')
-      }),
+      days: hasPriceByDuration ? yup.string().required('Vui lòng chọn thời gian') : yup.string().notRequired(),
       quantity: yup
         .number()
         .typeError('Vui lòng nhập số')
         .required('Vui lòng nhập số lượng')
         .integer('Số lượng phải là số nguyên')
         .min(1, 'Tối thiểu 1 proxy'),
-      protocol: yup.string().required(),
-      username: yup.string().min(4, 'Tối thiểu 4 ký tự'),
-      password: yup.string().min(4, 'Tối thiểu 4 ký tự')
+      protocol: yup.string().required('Vui lòng chọn giao thức')
     })
     .required()
 
@@ -139,9 +128,10 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider }) => {
 
   // Xác định chế độ select
   const isSelectMode = provider.show_time == 1
+  const hasPriceByDuration = provider?.price_by_duration && provider.price_by_duration.length > 0
 
   // Tạo schema dựa trên chế độ
-  const proxySchema = createProxySchema(isSelectMode)
+  const proxySchema = createProxySchema(isSelectMode, hasPriceByDuration)
 
   const {
     control,
@@ -151,11 +141,9 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider }) => {
   } = useForm({
     resolver: yupResolver(proxySchema),
     defaultValues: {
-      days: isSelectMode ? (provider.date_mapping?.[0]?.key ?? '') : 1,
+      days: '1',
       quantity: 1,
-      protocol: 'http',
-      username: 'random',
-      password: 'random'
+      protocol: 'http'
     },
     mode: 'onChange'
   })
@@ -167,20 +155,30 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider }) => {
   let daysInNumber = 0
 
   const calculateTotal = () => {
-    const basePrice = parseInt(provider.price, 10) || 0
     const quantity = parseInt(watchedQuantity, 10) || 1
 
     if (isSelectMode) {
-      // daysInNumber = DURATION_MAP[watchedDays] || 0
-      daysInNumber = parseInt(1, 10) || 0
+      daysInNumber = parseInt(watchedDays, 10) || 1
     } else {
       daysInNumber = parseInt(watchedDays, 10) || 0
     }
 
-    if (quantity < 1 || daysInNumber < 1) return 0
+    if (quantity < 1) return 0
 
-    // TÍNH THEO SỐ NGÀY
-    return basePrice * quantity * daysInNumber
+    // Chỉ tính giá dựa trên price_by_duration
+    if (provider?.price_by_duration && provider.price_by_duration.length > 0) {
+      const selectedDuration = provider.price_by_duration.find(item => item.key === watchedDays)
+
+      if (selectedDuration) {
+        // Giá trong value đã bao gồm cả thời gian (7 ngày, 30 ngày, v.v.)
+        // Chỉ cần nhân với số lượng proxy
+        const totalPrice = parseInt(selectedDuration.value, 10) || 0
+        return totalPrice * quantity
+      }
+    }
+
+    // Nếu không tìm thấy giá trong price_by_duration thì trả về 0
+    return 0
   }
 
   const calculateTotalFormat = () => {
@@ -190,17 +188,34 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider }) => {
   const total = calculateTotal()
 
   const onSubmit = data => {
+    // Tính lại total để đảm bảo lấy giá trị mới nhất
+    const currentTotal = calculateTotal()
+
+    // Lấy giá từ price_by_duration thay vì provider.price
+    const selectedDuration = provider?.price_by_duration?.find(item => item.key === data.days)
+    const priceForDuration = selectedDuration ? parseInt(selectedDuration.value, 10) : 0
+
+    console.log('DEBUG - Price calculation:', {
+      days: data.days,
+      provider_price_by_duration: provider?.price_by_duration,
+      selectedDuration,
+      priceForDuration,
+      currentTotal,
+      quantity: data.quantity
+    })
+
     const itemData = {
       ...data,
       serviceTypeId: provider.id,
-      price: provider.price,
+      price: priceForDuration, // Gửi giá từ price_by_duration thay vì provider.price
       ip_version: provider.ip_version,
-      username: data.username === 'random' ? randomString() : data.username,
-      password: data.password === 'random' ? randomString() : data.password,
-      total,
+      proxy_type: provider.proxy_type,
+      country: provider.country || provider.country_name || provider.country_code,
+      total: currentTotal,
       isPrivate: 'true'
     }
 
+    console.log('Data gửi lên server:', itemData)
     setFormData(itemData) // Lưu dữ liệu vào state
     setOpenConfirm(true) // Mở dialog xác nhận
   }
@@ -221,21 +236,78 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider }) => {
     }
   }
 
-  function convertDuration(days: number) {
-    switch (days) {
-      case '1':
-        return 'ngày'
-      case '7':
-        return 'tuần'
-      case '30':
-        return 'tháng'
-      case '365':
-        return 'năm'
+  function convertProxyType(type: string) {
+    switch (type?.toLowerCase()) {
+      case 'residential':
+        return 'Dân cư'
+      case 'datacenter':
+        return 'Datacenter'
       default:
-        return `${days} ngày`
+        return type || ''
     }
   }
-  console.log(provider)
+
+  function convertIpVersion(version: string) {
+    switch (version?.toLowerCase()) {
+      case 'ipv4':
+        return 'V4'
+      case 'ipv6':
+        return 'V6'
+      default:
+        return version || ''
+    }
+  }
+
+  function getDurationLabel(duration: string) {
+    switch (duration) {
+      case '1':
+        return 'Ngày'
+      case '7':
+        return 'Tuần'
+      case '30':
+        return 'Tháng'
+      case '365':
+        return 'Năm'
+      default:
+        return `${duration} ngày`
+    }
+  }
+
+  function calculateDiscount(duration: string, discountedPrice: string) {
+    const originalPricePerProduct = provider?.price || 0 // Giá gốc 1 sản phẩm
+    const discountPricePerProduct = parseInt(discountedPrice, 10) || 0 // Giá khuyến mãi 1 sản phẩm
+
+    // Nếu không có giá khuyến mãi hoặc giá khuyến mãi = 0 thì không hiển thị
+    if (!discountPricePerProduct || discountPricePerProduct === 0) {
+      return null
+    }
+
+    // Nếu không có giá gốc thì không hiển thị
+    if (!originalPricePerProduct || originalPricePerProduct === 0) {
+      return null
+    }
+
+    // Nếu giá khuyến mãi >= giá gốc thì không hiển thị (không có giảm giá)
+    if (discountPricePerProduct >= originalPricePerProduct) {
+      return null
+    }
+
+    // Tính % giảm giá: (giá gốc - giá khuyến mãi) / giá gốc * 100
+    const discountPercent = ((originalPricePerProduct - discountPricePerProduct) / originalPricePerProduct) * 100
+
+    return `-${Math.round(discountPercent)}%`
+  }
+
+  // Hàm lấy giá hiển thị ở header
+  function getHeaderPrice() {
+    // Nếu có price_by_duration thì lấy giá từ watchedDays
+    if (provider?.price_by_duration && provider.price_by_duration.length > 0) {
+      const selectedDuration = provider.price_by_duration.find(item => item.key === watchedDays)
+      return selectedDuration ? parseInt(selectedDuration.value, 10) : parseInt(provider?.price, 10) || 0
+    }
+    // Nếu không có price_by_duration thì hiển thị giá gốc
+    return parseInt(provider?.price, 10) || 0
+  }
 
   return (
     <>
@@ -252,10 +324,7 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider }) => {
               {logo ? <Image src={logo} width={80} height={20} alt='Logo' /> : null}
             </div> */}
               <div className='provider-info-column'>
-                <h3 className='provider-title-column'>
-                  {provider.name}
-                  {provider.code ? ` - [${provider.code}]` : ''}
-                </h3>
+                <h3 className='provider-title-column'>{provider?.code ?? provider?.name}</h3>
                 <div className='feature-tags'>
                   {/* {features?.map((feature, index) => (
                     <Chip key={index} label={feature.title} color={feature.class} variant='tonal' size='small' />
@@ -264,13 +333,13 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider }) => {
               </div>
             </div>
             <div className='price-section'>
-              <div className='price-amount'>{provider.price.toLocaleString('vi-VN')}đ</div>
-              <div className='price-unit'>/{convertDuration(provider.time_type)}</div>
+              <div className='price-amount'>{getHeaderPrice()?.toLocaleString('vi-VN')}đ</div>
             </div>
           </div>
 
           {/* Form controls trong layout cột */}
           <Grid2 container spacing={4}>
+            {/* Version - full width */}
             <Grid2 size={{ xs: 12 }}>
               {/* version */}
               <CustomTextField
@@ -283,7 +352,7 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider }) => {
                     Version
                   </span>
                 }
-                value={provider.ip_version}
+                value={convertIpVersion(provider.ip_version)}
                 sx={{
                   // Nhắm đến thẻ label của component này
                   '& .MuiInputLabel-root': {
@@ -296,48 +365,152 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider }) => {
               />
             </Grid2>
 
-            <Grid2 size={{ xs: 12 }}>
-              {/* Thời gian */}
-              <Controller
-                name='days'
-                control={control}
-                render={({ field }) => (
-                  <CustomTextField
-                    fullWidth
-                    type={isSelectMode ? 'select' : 'number'}
-                    inputProps={!isSelectMode ? { min: 1 } : undefined}
-                    select={isSelectMode}
-                    label={
-                      <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <Clock size={16} />
-                        THỜI GIAN
-                      </span>
-                    }
-                    error={!!errors.days}
-                    helperText={errors.days?.message}
-                    {...field}
-                    sx={{
-                      '& .MuiInputLabel-root': {
-                        color: '#64748b', // Đổi màu label thành màu cam
-                        fontWeight: '600', // In đậm chữ
-                        fontSize: '11px', // Thay đổi kích thước font
-                        paddingBottom: '5px'
-                      }
-                    }}
-                  >
-                    {isSelectMode &&
-                      Array.isArray(provider.date_mapping) &&
-                      provider.date_mapping.map(option => (
-                        <MenuItem key={option.key} value={option.key}>
-                          {option.label}
-                        </MenuItem>
-                      ))}
-                  </CustomTextField>
-                )}
+            {/* Proxy Type - 50% */}
+            <Grid2 size={{ xs: 12, md: 6 }}>
+              {/* Loại Proxy */}
+              <CustomTextField
+                fullWidth
+                InputProps={{ readOnly: true }}
+                id='proxy_type'
+                label={
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                    <MapPin size={16} />
+                    Loại Proxy
+                  </span>
+                }
+                value={convertProxyType(provider?.proxy_type)}
+                sx={{
+                  // Nhắm đến thẻ label của component này
+                  '& .MuiInputLabel-root': {
+                    color: '#64748b', // Đổi màu label thành màu cam
+                    fontWeight: '600', // In đậm chữ
+                    fontSize: '11px', // Thay đổi kích thước font
+                    paddingBottom: '5px'
+                  }
+                }}
               />
             </Grid2>
 
-            <Grid2 size={{ xs: 12 }}>
+            {/* Quốc gia - 50% */}
+            <Grid2 size={{ xs: 12, md: 6 }}>
+              {/* Quốc gia */}
+              <CustomTextField
+                fullWidth
+                InputProps={{ readOnly: true }}
+                id='country'
+                label={
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                    <MapPin size={16} />
+                    Quốc gia
+                  </span>
+                }
+                value={provider?.country_name || provider?.country || 'N/A'}
+                sx={{
+                  // Nhắm đến thẻ label của component này
+                  '& .MuiInputLabel-root': {
+                    color: '#64748b', // Đổi màu label thành màu cam
+                    fontWeight: '600', // In đậm chữ
+                    fontSize: '11px', // Thay đổi kích thước font
+                    paddingBottom: '5px'
+                  }
+                }}
+              />
+            </Grid2>
+
+            {/* Chỉ hiển thị thời gian nếu có price_by_duration */}
+            {provider?.price_by_duration && provider.price_by_duration.length > 0 && (
+              <Grid2 size={{ xs: 12 }}>
+                {/* Thời gian */}
+                <Controller
+                  name='days'
+                  control={control}
+                  render={({ field }) => (
+                    <div>
+                      <label
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.5rem',
+                          color: '#64748b',
+                          fontWeight: '600',
+                          fontSize: '11px',
+                          marginBottom: '8px'
+                        }}
+                      >
+                        <Clock size={16} />
+                        THỜI GIAN
+                      </label>
+                      <div
+                        style={{
+                          display: 'flex',
+                          gap: '12px',
+                          flexWrap: 'wrap'
+                        }}
+                      >
+                        {provider.price_by_duration.map((item, index) => {
+                          const discount = calculateDiscount(item.key, item.value)
+                          return (
+                            <label
+                              key={index}
+                              style={{
+                                position: 'relative',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                padding: '10px 16px',
+                                border:
+                                  field.value === item.key
+                                    ? '2px solid var(--mui-palette-primary-main)'
+                                    : '1px solid #e5e7eb',
+                                borderRadius: '8px',
+                                cursor: 'pointer',
+                                backgroundColor:
+                                  field.value === item.key ? 'var(--mui-palette-primary-lightOpacity)' : 'white',
+                                transition: 'all 0.2s ease'
+                              }}
+                            >
+                              <input
+                                type='radio'
+                                value={item.key}
+                                checked={field.value === item.key}
+                                onChange={field.onChange}
+                                style={{ cursor: 'pointer' }}
+                              />
+                              <span style={{ fontSize: '14px', fontWeight: '500' }}>{getDurationLabel(item.key)}</span>
+                              {/* Badge giảm giá */}
+                              {discount && (
+                                <span
+                                  style={{
+                                    position: 'absolute',
+                                    top: '-8px',
+                                    right: '-8px',
+                                    backgroundColor: '#ef4444',
+                                    color: 'white',
+                                    fontSize: '10px',
+                                    fontWeight: '700',
+                                    padding: '2px 6px',
+                                    borderRadius: '8px',
+                                    boxShadow: '0 2px 4px rgba(239, 68, 68, 0.3)'
+                                  }}
+                                >
+                                  {discount}
+                                </span>
+                              )}
+                            </label>
+                          )
+                        })}
+                      </div>
+                      {errors.days && (
+                        <p style={{ color: '#ef4444', fontSize: '12px', marginTop: '4px' }}>{errors.days.message}</p>
+                      )}
+                    </div>
+                  )}
+                />
+              </Grid2>
+            )}
+
+            {/* Số lượng và Proxy Type - 2 cột */}
+            <Grid2 size={{ xs: 12, md: 6 }}>
               {/*Số lượng*/}
               <Controller
                 name='quantity'
@@ -355,7 +528,7 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider }) => {
               />
             </Grid2>
 
-            <Grid2 size={{ xs: 12 }}>
+            <Grid2 size={{ xs: 12, md: 6 }}>
               {/* Giao thức */}
               <Controller
                 name='protocol'

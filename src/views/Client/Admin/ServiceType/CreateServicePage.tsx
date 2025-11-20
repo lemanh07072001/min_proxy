@@ -55,38 +55,8 @@ const schema = yup.object({
   cost_price: yup
     .number()
     .nullable()
-    .typeError('Giá vốn phải là số')
-    .required('Giá vốn là bắt buộc')
-    .positive('Giá vốn phải lớn hơn 0'),
-  price: yup
-    .number()
-    .nullable()
-    .transform((value, originalValue) => {
-      return originalValue === '' ? undefined : value
-    })
-    .typeError('Giá bán phải là số')
-    .required('Giá bán là bắt buộc')
-    .positive('Giá bán phải lớn hơn 0')
-    .min(0.01, 'Giá bán phải lớn hơn 0')
-    .test('min-price', 'Giá bán phải lớn hơn hoặc bằng giá vốn', function (value) {
-      const { cost_price } = this.parent
-      if (!cost_price) return true
-      return value >= cost_price
-    }),
-  discount_price: yup
-    .number()
-    .nullable()
-    .transform((value, originalValue) => {
-      return originalValue === '' ? null : value
-    })
-    .typeError('Giá giảm phải là số')
-    .positive('Giá giảm phải lớn hơn 0')
-    .test('max-discount', 'Giá giảm phải nhỏ hơn giá bán', function (value) {
-      if (!value) return true
-      const { price } = this.parent
-      if (!price) return true
-      return value < price
-    }),
+    .typeError('Giá nhập phải là số')
+    .positive('Giá nhập phải lớn hơn 0'),
   code: yup
     .string()
     .nullable()
@@ -117,7 +87,6 @@ const schema = yup.object({
         return false
       }
     }),
-  display_time: yup.string().nullable().required('Thời gian hiển thị là bắt buộc'),
   proxy_type: yup.string().nullable().required('Proxy type là bắt buộc'),
   country: yup.string().nullable().required('Quốc gia là bắt buộc')
 })
@@ -135,10 +104,6 @@ export default function CreateServicePage() {
     control,
     handleSubmit,
     formState: { errors },
-    setValue,
-    watch,
-    trigger,
-    register
   } = useForm({
     resolver: async (data, context, options) => {
       try {
@@ -163,8 +128,6 @@ export default function CreateServicePage() {
       name: '',
       api_partner: '',
       cost_price: undefined,
-      price: undefined,
-      discount_price: undefined,
       code: '',
       status: 'active',
       partner_id: '',
@@ -172,16 +135,9 @@ export default function CreateServicePage() {
       ip_version: 'ipv4',
       protocols: [],
       body_api: '',
-      display_time: '',
       proxy_type: '',
       country: ''
     }
-  })
-
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [descriptionForm, setDescriptionForm] = useState({
-    key: '',
-    value: ''
   })
 
   const [isMultiInputModalOpen, setIsMultiInputModalOpen] = useState(false)
@@ -205,7 +161,6 @@ export default function CreateServicePage() {
     }
   }
 
-  const countries = ['Việt Nam']
   const protocols = [
     { value: 'http', label: 'HTTP' },
     { value: 'socks5', label: 'SOCKS5' }
@@ -247,10 +202,6 @@ export default function CreateServicePage() {
     if (errorMessages.length > 0) {
       toast.error(errorMessages[0] as string)
     }
-  }
-
-  const handleOpenModal = () => {
-    setIsModalOpen(true)
   }
 
   // Multi Input Modal handlers
@@ -346,58 +297,8 @@ export default function CreateServicePage() {
                       type='number'
                       label='Giá nhập'
                       placeholder='Nhập giá nhập'
-                      required
                       error={!!errors.cost_price}
                       helperText={errors.cost_price?.message}
-                    />
-                  )}
-                />
-              </Grid2>
-
-              <Grid2 size={{ xs: 12, sm: 6 }}>
-                <Controller
-                  name='price'
-                  control={control}
-                  render={({ field }) => (
-                    <CustomTextField
-                      {...field}
-                      value={field.value}
-                      onChange={e => {
-                        const value = e.target.value === '' ? undefined : Number(e.target.value)
-                        field.onChange(value)
-                      }}
-                      size='medium'
-                      fullWidth
-                      type='number'
-                      label='Giá bán'
-                      placeholder='Nhập giá bán'
-                      required
-                      error={!!errors.price}
-                      helperText={errors.price?.message}
-                    />
-                  )}
-                />
-              </Grid2>
-
-              <Grid2 size={{ xs: 12, sm: 6 }}>
-                <Controller
-                  name='discount_price'
-                  control={control}
-                  render={({ field }) => (
-                    <CustomTextField
-                      {...field}
-                      value={field.value}
-                      onChange={e => {
-                        const value = e.target.value === '' ? null : Number(e.target.value)
-                        field.onChange(value)
-                      }}
-                      size='medium'
-                      fullWidth
-                      type='number'
-                      label='Giá giảm'
-                      placeholder='Nhập giá giảm'
-                      error={!!errors.discount_price}
-                      helperText={errors.discount_price?.message}
                     />
                   )}
                 />
@@ -427,40 +328,6 @@ export default function CreateServicePage() {
             <h2 className='text-xl font-semibold text-slate-900 mb-4 mt-4'>Cấu hình dịch vụ</h2>
 
             <Grid2 container spacing={5} className='pb-6 border-b border-slate-200'>
-              <Grid2 size={{ xs: 12, sm: 4 }}>
-                <Controller
-                  name='display_time'
-                  control={control}
-                  render={({ field }) => (
-                    <CustomTextField
-                      {...field}
-                      size='medium'
-                      fullWidth
-                      select
-                      id='select-time'
-                      label='Thời gian hiện thị'
-                      value={field.value || ''}
-                      error={!!errors.display_time}
-                      helperText={errors.display_time?.message}
-                      slotProps={{
-                        select: { displayEmpty: true },
-                        htmlInput: { 'aria-label': 'Without label' }
-                      }}
-                    >
-                      <MenuItem value=''>
-                        <em>Chọn thời gian</em>
-                      </MenuItem>
-                      <MenuItem value={1}>Ngày</MenuItem>
-                      <MenuItem value={7}>Tuần</MenuItem>
-                      <MenuItem value={30}>Tháng</MenuItem>
-                      <MenuItem value={90}>3 Tháng</MenuItem>
-                      <MenuItem value={180}>6 Tháng</MenuItem>
-                      <MenuItem value={360}>1 Năm</MenuItem>
-                    </CustomTextField>
-                  )}
-                />
-              </Grid2>
-
               <Grid2 size={{ xs: 12, sm: 4 }}>
                 <Controller
                   name='type'
@@ -662,15 +529,6 @@ export default function CreateServicePage() {
 
               <Grid2 size={{ xs: 12, sm: 12 }}>
                 <div className='flex gap-2'>
-                  <Button
-                    onClick={handleOpenModal}
-                    className='text-white'
-                    variant='contained'
-                    startIcon={<Plus size={16} />}
-                  >
-                    Thêm mô tả
-                  </Button>
-
                   <Button
                     onClick={handleOpenMultiInputModal}
                     className='text-white'

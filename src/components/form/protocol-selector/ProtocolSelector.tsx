@@ -39,7 +39,7 @@ const ProtocolSelector: React.FC<ProtocolSelectorProps> = ({
 
   const processedProtocols = protocols.map(protocol => {
     if (typeof protocol === 'string') {
-      return { id: protocol, name: protocol }
+      return { id: protocol, name: protocol.toUpperCase() }
     }
 
     return protocol
