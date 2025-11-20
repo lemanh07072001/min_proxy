@@ -204,7 +204,7 @@ export default function StaticProxyPage({ data }: StaticProxyPageProps) {
               {filteredProviders?.length > 0 ? (
                 filteredProviders.map((provider: any, index: any) => (
                   <Grid2 key={index} size={{ xs: 12, md: 6 }}>
-                    <ProxyCard provider={provider} />
+                    <ProxyCard provider={provider} isFirstCard={index === 0} />
                   </Grid2>
                 ))
               ) : (

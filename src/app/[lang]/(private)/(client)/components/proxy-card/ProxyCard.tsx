@@ -50,7 +50,7 @@ import { Grid2 } from '@mui/material'
 
 interface ProxyCardProps {
   provider: string
-
+  isFirstCard?: boolean
   onPurchaseSuccess: () => void
 }
 
@@ -116,7 +116,7 @@ const useBuyProxy = () => {
   return mutation
 }
 
-const ProxyCard: React.FC<ProxyCardProps> = ({ provider }) => {
+const ProxyCard: React.FC<ProxyCardProps> = ({ provider, isFirstCard = false }) => {
   const params = useParams()
   const { mutate, isPending } = useBuyProxy()
   const session = useSession()
@@ -130,6 +130,9 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider }) => {
   const isSelectMode = provider.show_time == 1
   const hasPriceByDuration = provider?.price_by_duration && provider.price_by_duration.length > 0
 
+  // Lấy giá trị days mặc định từ price_by_duration đầu tiên
+  const defaultDays = hasPriceByDuration ? provider.price_by_duration[0].key : '1'
+
   // Tạo schema dựa trên chế độ
   const proxySchema = createProxySchema(isSelectMode, hasPriceByDuration)
 
@@ -141,7 +144,7 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider }) => {
   } = useForm({
     resolver: yupResolver(proxySchema),
     defaultValues: {
-      days: '1',
+      days: defaultDays,
       quantity: 1,
       protocol: 'http'
     },
@@ -474,6 +477,7 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider }) => {
                                 value={item.key}
                                 checked={field.value === item.key}
                                 onChange={field.onChange}
+                                autoFocus={isFirstCard && index === 0}
                                 style={{ cursor: 'pointer' }}
                               />
                               <span style={{ fontSize: '14px', fontWeight: '500' }}>{getDurationLabel(item.key)}</span>
