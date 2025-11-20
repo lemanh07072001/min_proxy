@@ -64,13 +64,13 @@ export default function StatsOverviewMonthly() {
 
   // Convert date to timestamp (seconds)
   const startTimestamp = startDate ? Math.floor(startDate.getTime() / 1000) : undefined
-  const endTimestamp = endDate ? Math.floor(endDate.getTime() / 1000) : startTimestamp
+  const endTimestamp = endDate ? Math.floor(endDate.getTime() / 1000) : undefined
 
   // Use custom hook to fetch dashboard data
   const { data } = useDashboardMonthly(
     {
       start_date: startTimestamp,
-      end_date: endTimestamp
+      end_date: startTimestamp !== endTimestamp ? endTimestamp : undefined
     },
     !!startDate
   )
