@@ -96,14 +96,15 @@ export default async function RotatingProxy({ params }: { params: Promise<{ lang
 
     if (protocolIndex !== -1) {
       if (plan.protocol_type === 1) {
-        // ✅ Hiển thị select
+        // ✅ Hiển thị radio buttons giống như input Thời gian
         features[protocolIndex] = {
           ...features[protocolIndex],
           label: 'Giao thức',
-          status: 'select',
+          status: 'radio',
+          uppercaseLabel: false, // Giữ label không uppercase
           options: [
-            { label: 'HTTP', value: 'http' },
-            { label: 'SOCKS5', value: 'socks5' }
+            { key: 'http', label: 'HTTP' },
+            { key: 'socks5', label: 'SOCKS5' }
           ],
           field: 'protocol' // để client biết field này là gì
         }

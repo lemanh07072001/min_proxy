@@ -28,6 +28,7 @@ export default function ProxyPlansClient({ data }: ProxyPlansClientProps) {
     }
   }, [currentView, status, queryClient])
 
+
   return (
     <>
       <div className='mb-2'>
@@ -63,13 +64,7 @@ export default function ProxyPlansClient({ data }: ProxyPlansClientProps) {
         </div>
       </div>
 
-      {currentView === 'form' && (
-        <div className='proxy-xoay-page'>
-          <div className='plans-container'>
-            <RotatingProxyPage data={data} />
-          </div>
-        </div>
-      )}
+      {currentView === 'form' && <RotatingProxyPage data={data} />}
 
       {currentView === 'table' && <OrderRotatingProxyPage />}
 

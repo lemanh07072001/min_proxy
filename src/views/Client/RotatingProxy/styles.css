@@ -67,7 +67,7 @@
 
 .feature-row {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 12px;
   padding-block: 8px;
   padding-inline: 0;
@@ -78,18 +78,29 @@
   border-block-end: none;
 }
 
+.feature-icons {
+  display: flex;
+  align-items: center;
+  padding-block-start: 2px;
+  flex-shrink: 0;
+}
+
 .feature-content {
   flex: 1;
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 12px;
+  min-height: 24px;
 }
 
 .feature-label {
   font-size: 14px;
   color: #4a5568;
   font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .feature-value {

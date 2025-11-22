@@ -1,7 +1,7 @@
 'use client'
 
-import { Grid2, IconButton } from '@mui/material'
-import { User, DollarSign, AlertCircle, Info, TrendingUp, Calendar, X } from 'lucide-react'
+import { Grid2, IconButton, MenuItem } from '@mui/material'
+import { User, DollarSign, AlertCircle, Info, TrendingUp, Calendar, X, Shield, CheckCircle } from 'lucide-react'
 import { useState, forwardRef, useEffect } from 'react'
 import Tooltip from '@mui/material/Tooltip'
 import CustomTextField from '@/@core/components/mui/TextField'
@@ -24,8 +24,8 @@ const CustomInput = forwardRef<HTMLInputElement, CustomInputProps>((props, ref) 
   const { label, start, end, onClear, ...rest } = props
 
   // Handle case when start or end is undefined
-  const startDate = start ? format(start, 'MM/dd/yyyy') : ''
-  const endDate = end && end !== null ? ` - ${format(end, 'MM/dd/yyyy')}` : ''
+  const startDate = start ? format(start, 'dd/MM/yyyy') : ''
+  const endDate = end && end !== null ? ` - ${format(end, 'dd/MM/yyyy')}` : ''
 
   const value = startDate || endDate ? `${startDate}${endDate}` : ''
 
@@ -61,10 +61,11 @@ const CustomInput = forwardRef<HTMLInputElement, CustomInputProps>((props, ref) 
 export default function StatsOverviewMonthly() {
   const [startDate, setStartDate] = useState<Date | null | undefined>(new Date())
   const [endDate, setEndDate] = useState<Date | null | undefined>(undefined)
+  const [selectedProtocol, setSelectedProtocol] = useState<string>('http')
 
   // Convert date to timestamp (seconds)
-  const startTimestamp = startDate ? Math.floor(startDate.getTime() / 1000) : undefined
-  const endTimestamp = endDate ? Math.floor(endDate.getTime() / 1000) : undefined
+  const startTimestamp = startDate ? format(startDate, 'dd/MM/yyyy') : undefined
+  const endTimestamp = endDate ? format(endDate, 'dd/MM/yyyy') : undefined
 
   // Use custom hook to fetch dashboard data
   const { data } = useDashboardMonthly(
@@ -94,7 +95,7 @@ export default function StatsOverviewMonthly() {
     <div className='mb-8'>
       <div className='mb-4'>
         <Grid2 container spacing={6}>
-          <Grid2 size={{ xs: 12 }}>
+          <Grid2 size={{ xs: 12, md: 8 }}>
             <AppReactDatepicker
               selectsRange
               endDate={endDate as Date}
@@ -112,6 +113,62 @@ export default function StatsOverviewMonthly() {
                 />
               }
             />
+          </Grid2>
+          <Grid2 size={{ xs: 12, md: 4 }}>
+            <div>
+              <label
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  color: '#64748b',
+                  fontWeight: '600',
+                  fontSize: '11px',
+                  marginBottom: '8px'
+                }}
+              >
+                <Shield size={16} />
+                GIAO THỨC
+              </label>
+              <div
+                style={{
+                  display: 'flex',
+                  gap: '12px',
+                  flexWrap: 'wrap'
+                }}
+              >
+                {(data?.protocols || ['http', 'socks5']).map((protocol: string, index: number) => (
+                  <label
+                    key={protocol}
+                    style={{
+                      position: 'relative',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '10px 16px',
+                      border:
+                        selectedProtocol === protocol
+                          ? '2px solid var(--mui-palette-primary-main)'
+                          : '1px solid #e5e7eb',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      backgroundColor:
+                        selectedProtocol === protocol ? 'var(--mui-palette-primary-lightOpacity)' : 'white',
+                      transition: 'all 0.2s ease'
+                    }}
+                  >
+                    <input
+                      type='radio'
+                      value={protocol}
+                      checked={selectedProtocol === protocol}
+                      onChange={(e) => setSelectedProtocol(e.target.value)}
+                      style={{ cursor: 'pointer' }}
+                    />
+                    <span style={{ fontSize: '14px', fontWeight: '500' }}>{protocol.toUpperCase()}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
           </Grid2>
         </Grid2>
       </div>
