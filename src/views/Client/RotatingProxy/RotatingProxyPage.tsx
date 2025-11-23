@@ -187,13 +187,15 @@ const RadioFeatureRow = ({ feature, control, planId }) => {
       render={({ field }) => (
         <div>
           <div className='feature-row'>
-            <div className='feature-icons'>
-              <CheckCircle size={16} className='text-green-500' />
-            </div>
             <div className='feature-content' style={{ display: 'block', width: '100%' }}>
-              <label className='feature-label' style={{ marginBottom: '8px', display: 'block' }}>
-                {feature.label}:
-              </label>
+              <div className='flex align-start' style={{ alignItems: 'center', marginBottom: '8px', gap: '12px' }}>
+                <div className='feature-icons'>
+                  <CheckCircle size={16} className='text-green-500' />
+                </div>
+                <label className='feature-label'>
+                  {feature.label}:
+                </label>
+              </div>
               <div
                 style={{
                   display: 'flex',
