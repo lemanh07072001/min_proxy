@@ -78,7 +78,7 @@ export default async function RotatingProxy({ params }: { params: Promise<{ lang
 
   const mergedPlans = proxyPlans.map((plan: any) => {
     // copy features từ template
-    const features = proxyTemplate.features.map(f => ({ ...f }))
+    const features: any[] = proxyTemplate.features.map(f => ({ ...f }))
 
     // tìm vị trí của networkType
     const index = features.findIndex(f => f.label === dictionary.rotatingProxy.networkType)
@@ -112,20 +112,35 @@ export default async function RotatingProxy({ params }: { params: Promise<{ lang
       }
     }
 
-    // 👉 xử lý cột time: nếu time_type = 1 -> Ngày sử dụng, nếu = 7 -> Tuần sử dụng
+    // 👉 xử lý cột time: chuyển sang radio buttons với options từ price_by_duration
     const timeIndex = features.findIndex(f => f.field === 'time')
 
-    if (timeIndex !== -1) {
+    if (timeIndex !== -1 && plan.price_by_duration) {
+      // Parse price_by_duration nếu là string JSON
+      const priceDurations = typeof plan.price_by_duration === 'string'
+        ? JSON.parse(plan.price_by_duration)
+        : plan.price_by_duration
+
+      // Chuyển đổi thành options cho radio buttons
+      const timeOptions = priceDurations.map((item: any) => ({
+        key: item.duration || item.key,
+        label: item.duration || item.key,
+        value: item.price || item.value,
+        discount: item.discount || '0'
+      }))
+
       features[timeIndex] = {
-        ...features[timeIndex],
         label:
           plan.time_type === '1'
             ? 'Ngày sử dụng'
             : plan.time_type === '7'
               ? 'Tuần sử dụng'
-              : plan.time_type === '30' // hoặc giá trị bạn định nghĩa cho tháng
+              : plan.time_type === '30'
                 ? 'Tháng sử dụng'
-                : 'Không xác định'
+                : 'Không xác định',
+        status: 'radio',
+        field: 'time',
+        options: timeOptions
       }
     }
 
@@ -136,8 +151,9 @@ export default async function RotatingProxy({ params }: { params: Promise<{ lang
       api_body: plan.api_body,
       partner: plan.partner,
       ip_version: plan.ip_version,
-      time_type: plan.time_type, // lưu nếu cần dùng nơi khác
+      time_type: plan.time_type,
       protocol: plan.protocol,
+      price_by_duration: plan.price_by_duration,
       features
     }
   })
