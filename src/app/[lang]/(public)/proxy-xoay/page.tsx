@@ -39,8 +39,6 @@ async function getProxyPlans() {
 export default async function RotatingProxy({ params }: { params: Promise<{ lang: Locale }> }) {
   const { lang } = await params
 
-  console.log(await getProxyPlans())
-
   // Fetch data and dictionary in parallel
   const [proxyPlans, dictionary] = await Promise.all([getProxyPlans(), getDictionary(lang)])
 
@@ -133,7 +131,7 @@ export default async function RotatingProxy({ params }: { params: Promise<{ lang
 
     return {
       id: plan.id,
-      title: plan.name,
+      title: plan.code,
       price: parseInt(plan.price),
       api_body: plan.api_body,
       partner: plan.partner,

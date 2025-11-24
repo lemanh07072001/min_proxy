@@ -522,13 +522,12 @@ export default function RotatingProxyPage({ data }: RotatingProxyPageProps) {
       }),
     [data, selectedVersion, selectedProxyType, selectedCountry]
   )
-  console.log(filteredProviders)
 
   return (
     <>
       <Grid2 container spacing={2}>
-        <Grid2 size={{ xs: 12, md: 4 }}>
-          <div style={{ position: 'sticky', top: '20px' }} className='proxy-card-column '>
+        <Grid2 size={{ xs: 12, md: 4, lg: 2 }}>
+          <div style={{ position: 'sticky', top: '80px' }} className='proxy-card-column '>
             <Box className='flex gap-3 flex-col'>
               <Box>
                 <Typography variant='subtitle1' fontWeight='medium' mb={1}>
@@ -622,11 +621,11 @@ export default function RotatingProxyPage({ data }: RotatingProxyPageProps) {
           </div>
         </Grid2>
 
-        <Grid2 size={{ xs: 12, md: 8 }}>
+        <Grid2 size={{ xs: 12, md: 8, lg: 10 }}>
           <Grid2 container spacing={2}>
             {filteredProviders?.length > 0 ? (
               filteredProviders.map((plan: any, index: any) => (
-                <Grid2 key={plan.id || index} size={{ xs: 12, md: 6 }}>
+                <Grid2 key={plan.id || index} size={{ xs: 12, md: 12, lg: 4 }}>
                   <PlanCard plan={plan} />
                 </Grid2>
               ))

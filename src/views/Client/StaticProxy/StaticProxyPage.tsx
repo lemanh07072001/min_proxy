@@ -39,32 +39,34 @@ export default function StaticProxyPage({ data }: StaticProxyPageProps) {
 
   // Lọc danh sách quốc gia theo search
   const filteredCountries = useMemo(
-    () => countries?.filter((country: any) =>
-      (country.name || country.label || '').toLowerCase().includes(searchCountry.toLowerCase())
-    ),
+    () =>
+      countries?.filter((country: any) =>
+        (country.name || country.label || '').toLowerCase().includes(searchCountry.toLowerCase())
+      ),
     [countries, searchCountry]
   )
 
   // Lọc danh sách provider theo các filter
   const filteredProviders = useMemo(
-    () => data?.filter((provider: any) => {
-      // Filter theo version
-      if (selectedVersion && provider.ip_version?.toLowerCase() !== selectedVersion.toLowerCase()) {
-        return false
-      }
+    () =>
+      data?.filter((provider: any) => {
+        // Filter theo version
+        if (selectedVersion && provider.ip_version?.toLowerCase() !== selectedVersion.toLowerCase()) {
+          return false
+        }
 
-      // Filter theo proxy type
-      if (selectedProxyType && provider.proxy_type?.toLowerCase() !== selectedProxyType.toLowerCase()) {
-        return false
-      }
+        // Filter theo proxy type
+        if (selectedProxyType && provider.proxy_type?.toLowerCase() !== selectedProxyType.toLowerCase()) {
+          return false
+        }
 
-      // Filter theo country (giả sử provider có trường country_code hoặc country)
-      if (selectedCountry && provider.country_code !== selectedCountry && provider.country !== selectedCountry) {
-        return false
-      }
+        // Filter theo country (giả sử provider có trường country_code hoặc country)
+        if (selectedCountry && provider.country_code !== selectedCountry && provider.country !== selectedCountry) {
+          return false
+        }
 
-      return true
-    }),
+        return true
+      }),
     [data, selectedVersion, selectedProxyType, selectedCountry]
   )
 
@@ -104,8 +106,8 @@ export default function StaticProxyPage({ data }: StaticProxyPageProps) {
 
       {currentView === 'form' && (
         <Grid2 container spacing={2}>
-          <Grid2 size={{ xs: 12, md: 4 }}>
-            <div style={{ position: 'sticky', top: '20px' }} className='proxy-card-column '>
+          <Grid2 size={{ xs: 12, md: 4, lg: 2 }}>
+            <div style={{ position: 'sticky', top: '60px' }} className='proxy-card-column '>
               <Box className='flex gap-3 flex-col'>
                 <Box>
                   <Typography variant='subtitle1' fontWeight='medium' mb={1}>
@@ -116,7 +118,7 @@ export default function StaticProxyPage({ data }: StaticProxyPageProps) {
                     aria-label='version'
                     name='version'
                     value={selectedVersion}
-                    onChange={(e) => setSelectedVersion(e.target.value)}
+                    onChange={e => setSelectedVersion(e.target.value)}
                   >
                     <FormControlLabel value='' control={<Radio />} label='Tất cả' />
                     <FormControlLabel value='ipv4' control={<Radio />} label='V4' />
@@ -133,7 +135,7 @@ export default function StaticProxyPage({ data }: StaticProxyPageProps) {
                     aria-label='proxy-type'
                     name='proxy-type'
                     value={selectedProxyType}
-                    onChange={(e) => setSelectedProxyType(e.target.value)}
+                    onChange={e => setSelectedProxyType(e.target.value)}
                   >
                     <FormControlLabel value='' control={<Radio />} label='Tất cả' />
                     <FormControlLabel value='datacenter' control={<Radio />} label='Datacenter' />
@@ -152,7 +154,7 @@ export default function StaticProxyPage({ data }: StaticProxyPageProps) {
                     size='small'
                     placeholder='Tìm kiếm quốc gia...'
                     value={searchCountry}
-                    onChange={(e) => setSearchCountry(e.target.value)}
+                    onChange={e => setSearchCountry(e.target.value)}
                     sx={{ mb: 2 }}
                     InputProps={{
                       startAdornment: (
@@ -174,7 +176,7 @@ export default function StaticProxyPage({ data }: StaticProxyPageProps) {
                         aria-label='countries'
                         name='countries'
                         value={selectedCountry}
-                        onChange={(e) => setSelectedCountry(e.target.value)}
+                        onChange={e => setSelectedCountry(e.target.value)}
                       >
                         <FormControlLabel value='' control={<Radio />} label='Tất cả' />
                         {filteredCountries?.length > 0 ? (
@@ -199,11 +201,11 @@ export default function StaticProxyPage({ data }: StaticProxyPageProps) {
             </div>
           </Grid2>
 
-          <Grid2 size={{ xs: 12, md: 8 }}>
+          <Grid2 size={{ xs: 12, md: 8, lg: 10 }}>
             <Grid2 container spacing={2}>
               {filteredProviders?.length > 0 ? (
                 filteredProviders.map((provider: any, index: any) => (
-                  <Grid2 key={index} size={{ xs: 12, md: 6 }}>
+                  <Grid2 key={index} size={{ xs: 12, md: 12, lg: 4 }}>
                     <ProxyCard provider={provider} isFirstCard={index === 0} />
                   </Grid2>
                 ))
