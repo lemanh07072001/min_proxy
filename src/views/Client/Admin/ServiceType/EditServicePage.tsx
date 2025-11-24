@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 
 import { useRouter, useParams } from 'next/navigation'
 import Divider from '@mui/material/Divider'
@@ -34,7 +34,7 @@ import * as yup from 'yup'
 
 import CustomTextField from '@/@core/components/mui/TextField'
 import { usePartners } from '@/hooks/apis/usePartners'
-import { useServiceType, useUpdateServiceType } from '@/hooks/apis/useServiceType'
+import { useServiceType, useUpdateServiceType, useServiceTypes } from '@/hooks/apis/useServiceType'
 import MultiInputModal from '@/views/Client/Admin/ServiceType/MultiInputModal'
 import PriceByDurationModal from '@/views/Client/Admin/ServiceType/PriceByDurationModal'
 
@@ -167,23 +167,27 @@ export default function EditServicePage({ serviceId }: EditServicePageProps) {
     }
   }
 
-  const protocols = [
-    { value: 'http', label: 'HTTP' },
-    { value: 'socks5', label: 'SOCKS5' }
-  ]
-
-  // Fallback time options nếu không có date_mapping
-  const defaultTimeOptions = [
-    { key: '1', label: 'Ngày', value: 1 },
-    { key: '7', label: 'Tuần', value: 7 },
-    { key: '30', label: 'Tháng', value: 30 },
-    { key: '90', label: '3 Tháng', value: 90 },
-    { key: '180', label: '6 Tháng', value: 180 },
-    { key: '360', label: '1 Năm', value: 360 }
-  ]
-
   // Fetch service data
   const { data: serviceData, isLoading } = useServiceType(serviceId)
+
+  // Fetch tất cả service types để lấy danh sách protocols
+  const { data: serviceTypes = [] } = useServiceTypes()
+
+  // Lấy danh sách protocols từ tất cả service types và loại bỏ trùng lặp
+  const protocols = useMemo(() => {
+    const allProtocols = new Set<string>()
+    serviceTypes.forEach((service: any) => {
+      if (service.protocols && Array.isArray(service.protocols)) {
+        service.protocols.forEach((protocol: string) => {
+          allProtocols.add(protocol)
+        })
+      }
+    })
+    return Array.from(allProtocols).map(protocol => ({
+      value: protocol,
+      label: protocol.toUpperCase()
+    }))
+  }, [serviceTypes])
 
   // Load data vào form khi fetch xong
   useEffect(() => {

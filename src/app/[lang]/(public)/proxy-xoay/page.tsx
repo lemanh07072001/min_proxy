@@ -117,9 +117,8 @@ export default async function RotatingProxy({ params }: { params: Promise<{ lang
 
     if (timeIndex !== -1 && plan.price_by_duration) {
       // Parse price_by_duration nếu là string JSON
-      const priceDurations = typeof plan.price_by_duration === 'string'
-        ? JSON.parse(plan.price_by_duration)
-        : plan.price_by_duration
+      const priceDurations =
+        typeof plan.price_by_duration === 'string' ? JSON.parse(plan.price_by_duration) : plan.price_by_duration
 
       // Chuyển đổi thành options cho radio buttons
       const timeOptions = priceDurations.map((item: any) => ({
@@ -154,9 +153,12 @@ export default async function RotatingProxy({ params }: { params: Promise<{ lang
       time_type: plan.time_type,
       protocol: plan.protocol,
       price_by_duration: plan.price_by_duration,
+      proxy_type: plan.proxy_type,
+      country: plan.country,
+      protocols: plan.protocols,
       features
     }
   })
-
+  console.log(mergedPlans)
   return <ProxyPlansClient data={mergedPlans} />
 }

@@ -192,9 +192,7 @@ const RadioFeatureRow = ({ feature, control, planId }) => {
                 <div className='feature-icons'>
                   <CheckCircle size={16} className='text-green-500' />
                 </div>
-                <label className='feature-label'>
-                  {feature.label}:
-                </label>
+                <label className='feature-label'>{feature.label}:</label>
               </div>
               <div
                 style={{
@@ -325,9 +323,17 @@ const PlanCard = ({ plan }) => {
   const timeFeature = plan.features.find((f: any) => f.field === 'time')
   const defaultTime = timeFeature?.options?.length > 0 ? timeFeature.options[0].key : '1'
 
-  // Kiểm tra xem plan có feature protocol không
-  const protocolFeature = plan.features.find((f: any) => f.field === 'protocol')
-  const hasProtocol = !!protocolFeature
+  // Xử lý protocols từ mảng ['http', 'socks5'] sang options format
+  const hasProtocol = !!plan.protocols && plan.protocols.length > 0
+  const defaultProtocol = hasProtocol ? plan.protocols[0] : 'http'
+
+  // Tạo protocol options từ mảng protocols
+  const protocolOptions = hasProtocol
+    ? plan.protocols.map((protocol: string) => ({
+        key: protocol,
+        label: protocol.toUpperCase()
+      }))
+    : []
 
   const {
     control,
@@ -337,7 +343,7 @@ const PlanCard = ({ plan }) => {
     defaultValues: {
       quantity: 1,
       time: defaultTime,
-      ...(hasProtocol && { protocol: 'http' })
+      ...(hasProtocol && { protocol: defaultProtocol })
     },
     mode: 'onChange',
     resolver: yupResolver(proxyPlanSchema)
@@ -409,36 +415,51 @@ const PlanCard = ({ plan }) => {
           <h3 className='plan-title'>{plan.title}</h3>
         </div>
         <div className='plan-features'>
-          {plan.features.map((feature, index) => {
-            // Dựa vào `feature.status` để render component con phù hợp
-            switch (feature.status) {
-              case 'success':
-                return <StaticFeatureRow key={index} feature={feature} />
-              case 'input':
-                const isRotationTimeInput = feature.field === 'rotationTime'
+          {plan.features
+            .filter((feature: any) => feature.field !== 'protocol') // Loại bỏ protocol từ features để tránh trùng lặp
+            .map((feature, index) => {
+              // Dựa vào `feature.status` để render component con phù hợp
+              switch (feature.status) {
+                case 'success':
+                  return <StaticFeatureRow key={index} feature={feature} />
+                case 'input':
+                  const isRotationTimeInput = feature.field === 'rotationTime'
 
-                return (
-                  <InputFeatureRow
-                    key={index}
-                    feature={feature}
-                    control={control}
-                    errors={errors}
-                    planId={plan.id}
-                    min={plan.min}
-                    max={plan.max}
-                    isDisabled={isRotationTimeInput && !watchedFields.autoRotate}
-                  />
-                )
-              case 'checkbox':
-                return <SwitchFeatureRow key={index} feature={feature} control={control} planId={plan.id} />
-              case 'select':
-                return <SelectFeatureRow key={index} feature={feature} control={control} planId={plan.id} />
-              case 'radio':
-                return <RadioFeatureRow key={index} feature={feature} control={control} planId={plan.id} />
-              default:
-                return null
-            }
-          })}
+                  return (
+                    <InputFeatureRow
+                      key={index}
+                      feature={feature}
+                      control={control}
+                      errors={errors}
+                      planId={plan.id}
+                      min={plan.min}
+                      max={plan.max}
+                      isDisabled={isRotationTimeInput && !watchedFields.autoRotate}
+                    />
+                  )
+                case 'checkbox':
+                  return <SwitchFeatureRow key={index} feature={feature} control={control} planId={plan.id} />
+                case 'select':
+                  return <SelectFeatureRow key={index} feature={feature} control={control} planId={plan.id} />
+                case 'radio':
+                  return <RadioFeatureRow key={index} feature={feature} control={control} planId={plan.id} />
+                default:
+                  return null
+              }
+            })}
+
+          {/* Render protocol options nếu có protocols từ server */}
+          {hasProtocol && protocolOptions.length > 0 && (
+            <RadioFeatureRow
+              feature={{
+                field: 'protocol',
+                label: 'Giao thức',
+                options: protocolOptions
+              }}
+              control={control}
+              planId={plan.id}
+            />
+          )}
         </div>
 
         <div className='plan-footer'>
@@ -492,12 +513,9 @@ export default function RotatingProxyPage({ data }: RotatingProxyPageProps) {
 
   const { data: countries, isLoading: isLoadingCountries } = useCountries()
 
-  // Lọc danh sách quốc gia theo search
+  // Lọc danh sách quốc gia theo search (tìm theo code - case sensitive)
   const filteredCountries = useMemo(
-    () =>
-      countries?.filter((country: any) =>
-        (country.name || country.label || '').toLowerCase().includes(searchCountry.toLowerCase())
-      ),
+    () => countries?.filter((country: any) => (country.code || '').includes(searchCountry)),
     [countries, searchCountry]
   )
 
@@ -505,17 +523,17 @@ export default function RotatingProxyPage({ data }: RotatingProxyPageProps) {
   const filteredProviders = useMemo(
     () =>
       data?.filter((plan: any) => {
-        // Filter theo version
+        // Filter theo version (case insensitive)
         if (selectedVersion && plan.ip_version?.toLowerCase() !== selectedVersion.toLowerCase()) {
           return false
         }
 
-        // Filter theo proxy type
-        if (selectedProxyType && plan.proxy_type?.toLowerCase() !== selectedProxyType.toLowerCase()) {
+        // Filter theo proxy type (case sensitive)
+        if (selectedProxyType && plan.proxy_type !== selectedProxyType) {
           return false
         }
 
-        // Filter theo country
+        // Filter theo country (case sensitive)
         if (selectedCountry && plan.country_code !== selectedCountry && plan.country !== selectedCountry) {
           return false
         }
