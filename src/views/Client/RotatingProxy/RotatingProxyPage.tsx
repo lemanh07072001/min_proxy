@@ -579,7 +579,7 @@ export default function RotatingProxyPage({ data }: RotatingProxyPageProps) {
                 >
                   <FormControlLabel value='' control={<Radio />} label='Tất cả' />
                   <FormControlLabel value='datacenter' control={<Radio />} label='Datacenter' />
-                  <FormControlLabel value='residential' control={<Radio />} label='Residential' />
+                  <FormControlLabel value='residential' control={<Radio />} label='Dân cư' />
                 </RadioGroup>
               </Box>
 
