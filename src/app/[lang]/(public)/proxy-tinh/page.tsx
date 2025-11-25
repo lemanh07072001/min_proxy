@@ -47,6 +47,9 @@ export default async function StaticProxy() {
     allow_user: plan.allow_user,
     date_mapping: plan.date_mapping,
     time_type: plan.time_type,
+    proxy_type: plan.proxy_type,
+    country: plan.country,
+    protocols: plan.protocols,
     features: proxyProviders.features.map(f => ({ ...f }))
   }))
 
