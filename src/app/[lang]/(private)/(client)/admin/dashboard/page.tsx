@@ -33,9 +33,7 @@ async function getDashboardData() {
         Accept: 'application/json'
       }
     })
-
-    console.log(response?.data?.data)
-
+    
     return response?.data?.data ?? null
   } catch (error: any) {
     console.error('[Dashboard] Error fetching data:', error.message)
