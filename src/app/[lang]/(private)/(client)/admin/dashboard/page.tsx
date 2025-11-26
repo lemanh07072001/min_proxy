@@ -2,7 +2,7 @@ import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/libs/auth'
 import axiosInstance from '@/libs/axios'
 import KPICard from '@/components/UI/KPICard'
-import DailyStats from '@/components/Dashboard/DailyStats'
+import DailyStats from '@/views/Client/Admin/Dashboard/DailyStats'
 import { Grid2 } from '@mui/material'
 import {
   CheckCircle,

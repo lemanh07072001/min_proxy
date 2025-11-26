@@ -3,8 +3,7 @@ import { useSession } from 'next-auth/react'
 import useAxiosAuth from '@/hocs/useAxiosAuth'
 
 interface DashboardParams {
-  start_date?: number
-  end_date?: number
+  date?: string
 }
 
 export const useDashboard = () => {
@@ -35,12 +34,11 @@ export const useDashboardMonthly = (params?: DashboardParams, enabled: boolean =
   const axiosAuth = useAxiosAuth()
 
   return useQuery({
-    queryKey: ['dashboardMonthly', params?.start_date, params?.end_date],
+    queryKey: ['dashboardMonthly', params?.date],
     queryFn: async () => {
-      const res = await axiosAuth.get('/get-dashboard', {
+      const res = await axiosAuth.get('/get-dashboard-by-date', {
         params: {
-          start_date: params?.start_date,
-          end_date: params?.end_date
+          date: params?.date
         }
       })
       return res?.data?.data ?? null

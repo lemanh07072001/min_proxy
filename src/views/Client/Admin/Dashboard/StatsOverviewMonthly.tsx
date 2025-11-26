@@ -64,14 +64,14 @@ export default function StatsOverviewMonthly() {
   const [selectedProtocol, setSelectedProtocol] = useState<string>('http')
 
   // Convert date to timestamp (seconds)
-  const startTimestamp = startDate ? format(startDate, 'dd/MM/yyyy') : undefined
-  const endTimestamp = endDate ? format(endDate, 'dd/MM/yyyy') : undefined
+  const dateTimestamp = startDate ? format(startDate, 'dd/MM/yyyy') : undefined
 
+  console.log(dateTimestamp);
+  
   // Use custom hook to fetch dashboard data
   const { data } = useDashboardMonthly(
     {
-      start_date: startTimestamp,
-      end_date: startTimestamp !== endTimestamp ? endTimestamp : undefined
+      date: dateTimestamp 
     },
     !!startDate
   )
