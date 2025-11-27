@@ -79,34 +79,34 @@ export default async function DashboardPage() {
                 <div className='space-y-3'>
                   <KPICard
                     label='Tổng Doanh Thu'
-                    value={data.total_revenue}
+                    value={data?.total_revenue ?? 0}
                     icon={<DollarSign size={24} />}
                     color='blue'
                   />
                   <KPICard
                     label='Tổng Lợi Nhuận'
-                    value={data.total_profit}
+                    value={data?.total_profit ?? 0}
                     icon={<TrendingUp size={24} />}
                     color='green'
                   />
-                  <KPICard label='Tổng Chi Phí' value={data.total_cost} icon={<TrendingDown size={24} />} color='red' />
+                  <KPICard label='Tổng Chi Phí' value={data?.total_cost ?? 0} icon={<TrendingDown size={24} />} color='red' />
                 </div>
               </div>
 
               <div className='bg-white/80 backdrop-blur-sm rounded-xl p-4 border-l-4 border-green-500 shadow-lg'>
                 <h3 className='text-xs font-semibold text-gray-600 uppercase tracking-wide mb-3'>Nạp Tiền</h3>
                 <div className='space-y-3'>
-                  <KPICard label='Tổng Tiền Nạp' value={data.total_deposit} icon={<Wallet size={24} />} color='green' />
+                  <KPICard label='Tổng Tiền Nạp' value={data?.total_deposit ?? 0} icon={<Wallet size={24} />} color='green' />
                   <KPICard
                     label='Số Giao Dịch Nạp'
-                    value={data.total_deposit_count}
+                    value={data?.total_deposit_count ?? 0}
                     icon={<Receipt size={24} />}
                     format='number'
                     color='blue'
                   />
                   <KPICard
                     label='Số Dư Người Dùng'
-                    value={data.balance_remaining}
+                    value={data?.balance_remaining ?? 0}
                     icon={<Users size={24} />}
                     color='blue'
                   />
@@ -118,28 +118,28 @@ export default async function DashboardPage() {
                 <div className='space-y-3'>
                   <KPICard
                     label='Tổng Đơn Hàng'
-                    value={cumulative.total_orders}
+                    value={cumulative?.total_orders ?? 0}
                     icon={<ShoppingCart size={24} />}
                     format='number'
                     color='gray'
                   />
                   <KPICard
                     label='Đơn Thành Công'
-                    value={cumulative.orders_success}
+                    value={cumulative?.orders_success ?? 0}
                     icon={<CheckCircle size={24} />}
                     format='number'
                     color='green'
                   />
                   <KPICard
                     label='Đơn Thất Bại'
-                    value={cumulative.orders_failed}
+                    value={cumulative?.orders_failed ?? 0}
                     icon={<XCircle size={24} />}
                     format='number'
                     color='red'
                   />
                   <KPICard
                     label='Đơn Đang Xử Lý'
-                    value={cumulative.orders_processing}
+                    value={cumulative?.orders_processing ?? 0}
                     icon={<Clock size={24} />}
                     format='number'
                     color='gray'
