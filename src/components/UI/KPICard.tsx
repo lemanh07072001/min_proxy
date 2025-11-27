@@ -52,7 +52,7 @@ export default function KPICard({ label, value, icon, delta, format = 'currency'
           <p className='text-xs text-gray-600 font-semibold uppercase tracking-wide mb-2' >{label}</p>
         
           <h3 className='text-xl font-bold text-gray-900 group-hover:text-[#f97316] transition-colors mb-0'>
-            {formattedValue} đ
+            {formattedValue} 
           </h3>
         </div>
         <div

@@ -122,24 +122,24 @@ export default function DailyStats() {
             />
             <KPICard
               label='Thành Công'
-              value={dashboardData?.orders_success ?? 0}
+              value={dashboardData?.total_successful_orders ?? 0}
               icon={<CheckCircle size={24} />}
               format='number'
               color='green'
             />
             <KPICard
               label='Thất Bại'
-              value={dashboardData?.orders_failed ?? 0}
+              value={dashboardData?.total_failed_orders ?? 0}
               icon={<XCircle size={24} />}
               format='number'
               color='red'
             />
             <KPICard
-              label='Đang Xử Lý'
-              value={dashboardData?.orders_processing ?? 0}
-              icon={<Clock size={24} />}
+              label='Đã Hoàn'
+              value={dashboardData?.total_refunds ?? 0}
+              icon={<RefreshCw size={24} />}
               format='number'
-              color='gray'
+              color='red'
             />
           </div>
         </div>

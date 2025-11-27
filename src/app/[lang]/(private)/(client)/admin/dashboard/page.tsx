@@ -9,6 +9,8 @@ import {
   Clock,
   DollarSign,
   Receipt,
+  RefreshCcw,
+  RefreshCw,
   ShoppingCart,
   TrendingDown,
   TrendingUp,
@@ -118,31 +120,31 @@ export default async function DashboardPage() {
                 <div className='space-y-3'>
                   <KPICard
                     label='Tổng Đơn Hàng'
-                    value={cumulative?.total_orders ?? 0}
+                    value={data?.total_orders ?? 0}
                     icon={<ShoppingCart size={24} />}
                     format='number'
                     color='gray'
                   />
                   <KPICard
                     label='Đơn Thành Công'
-                    value={cumulative?.orders_success ?? 0}
+                    value={data?.total_successful_orders ?? 0}
                     icon={<CheckCircle size={24} />}
                     format='number'
                     color='green'
                   />
                   <KPICard
                     label='Đơn Thất Bại'
-                    value={cumulative?.orders_failed ?? 0}
+                    value={data?.total_failed_orders ?? 0}
                     icon={<XCircle size={24} />}
                     format='number'
                     color='red'
                   />
                   <KPICard
-                    label='Đơn Đang Xử Lý'
-                    value={cumulative?.orders_processing ?? 0}
-                    icon={<Clock size={24} />}
+                    label='Đơn Hoàn'
+                    value={data?.total_refunds ?? 0}
+                    icon={<RefreshCw size={24} />}
                     format='number'
-                    color='gray'
+                    color='red'
                   />
                 </div>
               </div>

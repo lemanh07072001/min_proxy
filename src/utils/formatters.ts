@@ -2,7 +2,7 @@ export const formatCurrency = (value: number): string => {
   return new Intl.NumberFormat('vi-VN', {
     minimumFractionDigits: 0,
     maximumFractionDigits: 0
-  }).format(value)
+  }).format(value) + ' đ'
 }
 
 export const formatNumber = (value: number): string => {
