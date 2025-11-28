@@ -171,13 +171,73 @@ const SwitchFeatureRow = ({ feature, control, planId }) => (
 )
 
 // Component này render radio buttons cho thời gian sử dụng và giao thức
-const RadioFeatureRow = ({ feature, control, planId }) => {
+const RadioFeatureRow = ({ feature, control, planId, plan }) => {
   const getDurationLabel = (key: string) => {
     const days = parseInt(key)
     if (days === 1) return 'Ngày'
     if (days === 7) return 'Tuần'
     if (days === 30) return 'Tháng'
     return `${days} ngày`
+  }
+
+  // Hàm tính phần trăm giảm giá theo công thức: (1 - giá_thực_tế / giá_gốc) * 100
+  const calculateDiscount = (duration: string, discountedPrice: string) => {
+    // Chỉ tính discount cho feature time
+    if (feature.field !== 'time') {
+      return null
+    }
+
+    if (!feature?.options || feature.options.length === 0) {
+      return null
+    }
+
+    const currentPrice = parseInt(discountedPrice, 10) || 0
+    const currentDuration = parseInt(duration, 10) || 0
+
+    // Nếu không có giá hoặc duration = 0 thì không hiển thị
+    if (!currentPrice || currentPrice === 0 || !currentDuration || currentDuration === 0) {
+      return null
+    }
+
+    // Lấy danh sách options từ feature
+    const options = feature.options
+
+    // Tìm giá của đơn vị thời gian ngắn nhất (duration nhỏ nhất)
+    const sortedOptions = [...options].sort(
+      (a: any, b: any) => parseInt(a.key, 10) - parseInt(b.key, 10)
+    )
+
+    if (sortedOptions.length === 0) {
+      return null
+    }
+
+    const baseOption = sortedOptions[0] // Duration ngắn nhất
+    const baseDurationDays = parseInt(baseOption.key, 10) || 1
+    const basePrice = parseInt(baseOption.value, 10) || 0
+
+    // Nếu không có giá đơn vị cơ sở thì không tính
+    if (!basePrice || basePrice === 0) {
+      return null
+    }
+
+    // Tính giá gốc cho duration hiện tại = (giá đơn vị cơ sở / số ngày cơ sở) * số ngày hiện tại
+    const basePricePerDay = basePrice / baseDurationDays
+    const originalPriceForCurrentDuration = basePricePerDay * currentDuration
+
+    // Nếu giá thực tế >= giá gốc tính theo công thức thì không có giảm giá
+    if (currentPrice >= originalPriceForCurrentDuration) {
+      return null
+    }
+
+    // Tính % giảm giá theo công thức: (1 - giá_thực_tế / giá_gốc) * 100
+    const discountPercent = (1 - currentPrice / originalPriceForCurrentDuration) * 100
+
+    // Chỉ hiển thị nếu có giảm giá (discountPercent > 0)
+    if (discountPercent <= 0) {
+      return null
+    }
+
+    return Math.round(discountPercent)
   }
 
   return (
@@ -202,7 +262,13 @@ const RadioFeatureRow = ({ feature, control, planId }) => {
                 }}
               >
                 {feature.options?.map((item: any, index: number) => {
-                  const discount = item.discount ? parseInt(item.discount) : 0
+                  // Tính discount theo công thức mới nếu là feature time, nếu không thì dùng discount cũ
+                  const calculatedDiscount = feature.field === 'time' 
+                    ? calculateDiscount(item.key, item.value) 
+                    : null
+                  const discount = calculatedDiscount !== null 
+                    ? calculatedDiscount 
+                    : (item.discount ? parseInt(item.discount) : 0)
                   // Hiển thị label: nếu là time thì dùng getDurationLabel, nếu là protocol thì dùng item.label
                   const displayLabel = feature.field === 'time' ? getDurationLabel(item.key) : item.label
 
@@ -442,7 +508,7 @@ const PlanCard = ({ plan }) => {
                 case 'select':
                   return <SelectFeatureRow key={index} feature={feature} control={control} planId={plan.id} />
                 case 'radio':
-                  return <RadioFeatureRow key={index} feature={feature} control={control} planId={plan.id} />
+                  return <RadioFeatureRow key={index} feature={feature} control={control} planId={plan.id} plan={plan} />
                 default:
                   return null
               }
@@ -458,6 +524,7 @@ const PlanCard = ({ plan }) => {
               }}
               control={control}
               planId={plan.id}
+              plan={plan}
             />
           )}
         </div>

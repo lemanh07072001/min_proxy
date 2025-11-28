@@ -152,8 +152,8 @@ export default function EditServicePage({ serviceId }: EditServicePageProps) {
   const [dateMappingOptions, setDateMappingOptions] = useState<Array<{ key: string; label: string }>>([])
 
   const [isPriceModalOpen, setIsPriceModalOpen] = useState(false)
-  const [priceFields, setPriceFields] = useState<Array<{ key: string; value: string }>>([
-    { key: '', value: '' }
+  const [priceFields, setPriceFields] = useState<Array<{ key: string; value: string; cost?: string }>>([
+    { key: '', value: '', cost: '' }
   ])
 
   const ITEM_HEIGHT = 48
@@ -213,7 +213,15 @@ export default function EditServicePage({ serviceId }: EditServicePageProps) {
 
       // Load price_by_duration từ API
       if (serviceData.price_by_duration && Array.isArray(serviceData.price_by_duration)) {
-        setPriceFields(serviceData.price_by_duration.length > 0 ? serviceData.price_by_duration : [{ key: '', value: '' }])
+        setPriceFields(
+          serviceData.price_by_duration.length > 0
+            ? serviceData.price_by_duration.map((item: any) => ({
+                key: item.key || '',
+                value: item.value || '',
+                cost: item.cost || ''
+              }))
+            : [{ key: '', value: '', cost: '' }]
+        )
       }
 
       reset({
@@ -246,12 +254,22 @@ export default function EditServicePage({ serviceId }: EditServicePageProps) {
   }
 
   const onSubmit = (data: any) => {
+    // Đảm bảo cost được gửi đi trong price_by_duration
+    const formattedPriceFields = priceFields.map((field: any) => ({
+      key: field.key,
+      value: field.value,
+      cost: field.cost || ''
+    }))
+
     const submitData = {
       ...data,
       api_type: 'buy_api',
       multi_inputs: multiInputFields,
-      price_by_duration: priceFields
+      price_by_duration: formattedPriceFields
     }
+
+    console.log('Submit Data:', submitData)
+    console.log('Price Fields with Cost:', formattedPriceFields)
 
     updateMutation.mutate(submitData, {
       onSuccess: handleUpdateSuccess,
@@ -293,7 +311,7 @@ export default function EditServicePage({ serviceId }: EditServicePageProps) {
     setIsPriceModalOpen(false)
   }
 
-  const handleSavePrices = (fields: Array<{ key: string; value: string }>) => {
+  const handleSavePrices = (fields: Array<{ key: string; value: string; cost?: string }>) => {
     setPriceFields(fields)
     console.log('Price Fields:', fields)
     toast.success('Đã lưu giá thành công!')

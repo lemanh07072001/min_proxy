@@ -146,8 +146,8 @@ export default function CreateServicePage() {
   ])
 
   const [isPriceModalOpen, setIsPriceModalOpen] = useState(false)
-  const [priceFields, setPriceFields] = useState<Array<{ key: string; value: string }>>([
-    { key: '', value: '' }
+  const [priceFields, setPriceFields] = useState<Array<{ key: string; value: string; cost?: string }>>([
+    { key: '', value: '', cost: '' }
   ])
 
   const ITEM_HEIGHT = 48
@@ -179,14 +179,22 @@ export default function CreateServicePage() {
   }
 
   const onSubmit = (data: any) => {
+    // Đảm bảo cost được gửi đi trong price_by_duration
+    const formattedPriceFields = priceFields.map((field: any) => ({
+      key: field.key,
+      value: field.value,
+      cost: field.cost || ''
+    }))
+
     const submitData = {
       ...data,
       api_type: 'buy_api',
       multi_inputs: multiInputFields,
-      price_by_duration: priceFields
+      price_by_duration: formattedPriceFields
     }
 
-    console.log(submitData)
+    console.log('Submit Data:', submitData)
+    console.log('Price Fields with Cost:', formattedPriceFields)
 
     createMutation.mutate(submitData, {
       onSuccess: handleCreateSuccess,
@@ -228,7 +236,7 @@ export default function CreateServicePage() {
     setIsPriceModalOpen(false)
   }
 
-  const handleSavePrices = (fields: Array<{ key: string; value: string }>) => {
+  const handleSavePrices = (fields: Array<{ key: string; value: string; cost?: string }>) => {
     setPriceFields(fields)
     console.log('Price Fields:', fields)
     toast.success('Đã lưu giá thành công!')

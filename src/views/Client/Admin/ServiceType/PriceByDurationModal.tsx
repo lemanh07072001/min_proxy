@@ -9,6 +9,7 @@ import CustomTextField from '@/@core/components/mui/TextField'
 interface PriceField {
   key: string
   value: string
+  cost?: string
 }
 
 interface PriceByDurationModalProps {
@@ -33,7 +34,7 @@ export default function PriceByDurationModal({
   setFields
 }: PriceByDurationModalProps) {
   const handleAddField = () => {
-    setFields([...fields, { key: '', value: '' }])
+    setFields([...fields, { key: '', value: '', cost: '' }])
   }
 
   const handleRemoveField = (index: number) => {
@@ -42,7 +43,7 @@ export default function PriceByDurationModal({
     }
   }
 
-  const handleFieldChange = (index: number, field: 'key' | 'value', value: string) => {
+  const handleFieldChange = (index: number, field: 'key' | 'value' | 'cost', value: string) => {
     const updatedFields = [...fields]
     updatedFields[index][field] = value
     setFields(updatedFields)
@@ -64,7 +65,15 @@ export default function PriceByDurationModal({
       return
     }
 
-    onSave(fields)
+    // Đảm bảo cost luôn có trong mỗi field (ít nhất là empty string)
+    const formattedFields = fields.map(field => ({
+      key: field.key,
+      value: field.value,
+      cost: field.cost || ''
+    }))
+
+    console.log('Saving price fields with cost:', formattedFields)
+    onSave(formattedFields)
     onClose()
   }
 
@@ -94,7 +103,7 @@ export default function PriceByDurationModal({
           {fields.map((field, index) => (
             <Box key={index}>
               <Grid2 container spacing={3} className='flex align-bottom items-end'>
-                <Grid2 size={{ xs: 12, sm: 5 }}>
+                <Grid2 size={{ xs: 12, sm: 4 }}>
                   <CustomTextField
                     required
                     size='medium'
@@ -118,7 +127,7 @@ export default function PriceByDurationModal({
                   </CustomTextField>
                 </Grid2>
 
-                <Grid2 size={{ xs: 12, sm: 5 }}>
+                <Grid2 size={{ xs: 12, sm: 3 }}>
                   <CustomTextField
                     required
                     size='medium'
@@ -128,6 +137,18 @@ export default function PriceByDurationModal({
                     placeholder='Nhập giá tiền'
                     value={field.value}
                     onChange={e => handleFieldChange(index, 'value', e.target.value)}
+                  />
+                </Grid2>
+
+                <Grid2 size={{ xs: 12, sm: 3 }}>
+                  <CustomTextField
+                    size='medium'
+                    fullWidth
+                    type='number'
+                    label='Giá cost'
+                    placeholder='Nhập giá cost'
+                    value={field.cost || ''}
+                    onChange={e => handleFieldChange(index, 'cost', e.target.value)}
                   />
                 </Grid2>
 
