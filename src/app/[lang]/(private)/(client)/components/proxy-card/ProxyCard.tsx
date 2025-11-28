@@ -298,28 +298,55 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, isFirstCard = false, co
   }
 
   function calculateDiscount(duration: string, discountedPrice: string) {
-    const originalPricePerProduct = provider?.price || 0 // Giá gốc 1 sản phẩm
-    const discountPricePerProduct = parseInt(discountedPrice, 10) || 0 // Giá khuyến mãi 1 sản phẩm
-
-    // Nếu không có giá khuyến mãi hoặc giá khuyến mãi = 0 thì không hiển thị
-    if (!discountPricePerProduct || discountPricePerProduct === 0) {
+    if (!provider?.price_by_duration || provider.price_by_duration.length === 0) {
       return null
     }
 
-    // Nếu không có giá gốc thì không hiển thị
-    if (!originalPricePerProduct || originalPricePerProduct === 0) {
+    const currentPrice = parseInt(discountedPrice, 10) || 0
+    const currentDuration = parseInt(duration, 10) || 0
+
+    // Nếu không có giá hoặc duration = 0 thì không hiển thị
+    if (!currentPrice || currentPrice === 0 || !currentDuration || currentDuration === 0) {
       return null
     }
 
-    // Nếu giá khuyến mãi >= giá gốc thì không hiển thị (không có giảm giá)
-    if (discountPricePerProduct >= originalPricePerProduct) {
+    // Tìm giá của đơn vị thời gian ngắn nhất (duration nhỏ nhất)
+    const sortedDurations = [...provider.price_by_duration].sort(
+      (a: any, b: any) => parseInt(a.key, 10) - parseInt(b.key, 10)
+    )
+
+    if (sortedDurations.length === 0) {
       return null
     }
 
-    // Tính % giảm giá: (giá gốc - giá khuyến mãi) / giá gốc * 100
-    const discountPercent = ((originalPricePerProduct - discountPricePerProduct) / originalPricePerProduct) * 100
+    const baseDuration = sortedDurations[0] // Duration ngắn nhất
+    const baseDurationDays = parseInt(baseDuration.key, 10) || 1
+    const basePrice = parseInt(baseDuration.value, 10) || 0
 
-    return `-${Math.round(discountPercent)}%`
+    // Nếu không có giá đơn vị cơ sở thì không tính
+    if (!basePrice || basePrice === 0) {
+      return null
+    }
+
+    // Tính giá gốc cho duration hiện tại = (giá đơn vị cơ sở / số ngày cơ sở) * số ngày hiện tại
+    // Hoặc đơn giản hơn: giá đơn vị cơ sở * (số ngày hiện tại / số ngày cơ sở)
+    const basePricePerDay = basePrice / baseDurationDays
+    const originalPriceForCurrentDuration = basePricePerDay * currentDuration
+
+    // Nếu giá thực tế >= giá gốc tính theo công thức thì không có giảm giá
+    if (currentPrice >= originalPriceForCurrentDuration) {
+      return null
+    }
+
+    // Tính % giảm giá theo công thức: (1 - giá_thực_tế / giá_gốc) * 100
+    const discountPercent = (1 - currentPrice / originalPriceForCurrentDuration) * 100
+
+    // Chỉ hiển thị nếu có giảm giá (discountPercent > 0)
+    if (discountPercent <= 0) {
+      return null
+    }
+
+    return Math.round(discountPercent)
   }
 
   // Hàm lấy giá hiển thị ở header
@@ -528,7 +555,7 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, isFirstCard = false, co
                               />
                               <span style={{ fontSize: '14px', fontWeight: '500' }}>{getDurationLabel(item.key)}</span>
                               {/* Badge giảm giá */}
-                              {discount && (
+                              {discount !== null && discount > 0 && (
                                 <span
                                   style={{
                                     position: 'absolute',
@@ -543,7 +570,7 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, isFirstCard = false, co
                                     boxShadow: '0 2px 4px rgba(239, 68, 68, 0.3)'
                                   }}
                                 >
-                                  {discount}
+                                  -{discount}%
                                 </span>
                               )}
                             </label>
