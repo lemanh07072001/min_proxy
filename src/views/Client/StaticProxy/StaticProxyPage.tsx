@@ -32,10 +32,8 @@ export default function StaticProxyPage({ data }: StaticProxyPageProps) {
   const queryClient = useQueryClient()
   const { data: countries, isLoading: isLoadingCountries } = useCountries()
 
-  // Debug: Log giá trị của các state
-  useEffect(() => {
-    console.log('State values:', { selectedVersion, selectedProxyType, selectedCountry })
-  }, [selectedVersion, selectedProxyType, selectedCountry])
+  console.log(countries);
+  
 
   // Lọc danh sách quốc gia theo search
   const filteredCountries = useMemo(
@@ -78,6 +76,8 @@ export default function StaticProxyPage({ data }: StaticProxyPageProps) {
     }
   }, [currentView, status, queryClient])
 
+  console.log(filteredProviders);
+  
   return (
     <div className='flex flex-col'>
       <div className='mb-2'>
@@ -206,7 +206,7 @@ export default function StaticProxyPage({ data }: StaticProxyPageProps) {
               {filteredProviders?.length > 0 ? (
                 filteredProviders.map((provider: any, index: any) => (
                   <Grid2 key={index} size={{ xs: 12, md: 12, lg: 4 }}>
-                    <ProxyCard provider={provider} isFirstCard={index === 0} />
+                    <ProxyCard provider={provider} isFirstCard={index === 0} countries={countries} />
                   </Grid2>
                 ))
               ) : (

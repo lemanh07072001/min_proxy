@@ -51,7 +51,8 @@ import { Grid2 } from '@mui/material'
 interface ProxyCardProps {
   provider: string
   isFirstCard?: boolean
-  onPurchaseSuccess: () => void
+  onPurchaseSuccess?: () => void
+  countries?: any[]
 }
 
 const createProxySchema = (isSelectMode, hasPriceByDuration) =>
@@ -116,7 +117,7 @@ const useBuyProxy = () => {
   return mutation
 }
 
-const ProxyCard: React.FC<ProxyCardProps> = ({ provider, isFirstCard = false }) => {
+const ProxyCard: React.FC<ProxyCardProps> = ({ provider, isFirstCard = false, countries = [] }) => {
   const params = useParams()
   const { mutate, isPending } = useBuyProxy()
   const session = useSession()
@@ -261,6 +262,26 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, isFirstCard = false }) 
     }
   }
 
+  // Hàm lấy tên country từ code bằng cách so sánh với danh sách countries
+  function getCountryName() {
+    if (!countries || countries.length === 0) {
+      return null
+    }
+
+    // Lấy country code từ provider (có thể là country hoặc country_code)
+    const countryCode = provider?.country || provider?.country_code
+
+    if (!countryCode) {
+      return null
+    }
+
+    // Tìm country trong danh sách có code khớp
+    const country = countries.find((c: any) => c.code === countryCode)
+
+    // Nếu tìm thấy thì trả về name, không thì trả về null
+    return country?.name || null
+  }
+
   function getDurationLabel(duration: string) {
     switch (duration) {
       case '1':
@@ -342,8 +363,8 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, isFirstCard = false }) 
 
           {/* Form controls trong layout cột */}
           <Grid2 container spacing={4}>
-            {/* Version - full width */}
-            <Grid2 size={{ xs: 12 }}>
+            {/* Version - 50% */}
+            <Grid2 size={{ xs: 12, md: 6 }}>
               {/* version */}
               <CustomTextField
                 fullWidth
@@ -365,6 +386,25 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, isFirstCard = false }) 
                     paddingBottom: '5px'
                   }
                 }}
+              />
+            </Grid2>
+
+            {/* Giao thức - 50% */}
+            <Grid2 size={{ xs: 12, md: 6 }}>
+              {/* Giao thức */}
+              <Controller
+                name='protocol'
+                control={control}
+                render={({ field }) => (
+                  <ProtocolSelector
+                    protocols={protocols}
+                    selectedProtocol={field.value}
+                    onProtocolChange={field.onChange}
+                    label='GIAO THỨC'
+                    required={true}
+                    error={errors.protocol?.message}
+                  />
+                )}
               />
             </Grid2>
 
@@ -407,7 +447,13 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, isFirstCard = false }) 
                     Quốc gia
                   </span>
                 }
-                value={provider?.country_name || provider?.country || 'N/A'}
+                value={
+                  getCountryName() ||
+                  provider?.country_name ||
+                  provider?.country ||
+                  provider?.country_code ||
+                  'N/A'
+                }
                 sx={{
                   // Nhắm đến thẻ label của component này
                   '& .MuiInputLabel-root': {
@@ -513,7 +559,7 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, isFirstCard = false }) 
               </Grid2>
             )}
 
-            {/* Số lượng và Proxy Type - 2 cột */}
+            {/* Số lượng - 50% */}
             <Grid2 size={{ xs: 12, md: 6 }}>
               {/*Số lượng*/}
               <Controller
@@ -527,24 +573,6 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, isFirstCard = false }) 
                     icon={<Users size={14} />}
                     value={field.value || 1}
                     onChange={field.onChange}
-                  />
-                )}
-              />
-            </Grid2>
-
-            <Grid2 size={{ xs: 12, md: 6 }}>
-              {/* Giao thức */}
-              <Controller
-                name='protocol'
-                control={control}
-                render={({ field }) => (
-                  <ProtocolSelector
-                    protocols={protocols}
-                    selectedProtocol={field.value}
-                    onProtocolChange={field.onChange}
-                    label='GIAO THỨC'
-                    required={true}
-                    error={errors.protocol?.message}
                   />
                 )}
               />
