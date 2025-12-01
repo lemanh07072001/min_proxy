@@ -134,6 +134,111 @@ export default function TableServiceType() {
     }
   }
 
+  const getRowTooltipContent = (rowData: any) => {
+    if (!rowData?.price_by_duration) {
+      return (
+        <div style={{ padding: '4px 0', color: '#999' }}>Chưa có thông tin giá</div>
+      )
+    }
+
+    // Parse price_by_duration nếu là string JSON
+    let priceDurations: any[] = []
+    try {
+      priceDurations =
+        typeof rowData.price_by_duration === 'string'
+          ? JSON.parse(rowData.price_by_duration)
+          : rowData.price_by_duration
+    } catch (error) {
+      return <div style={{ padding: '4px 0', color: '#f44336' }}>Lỗi định dạng dữ liệu giá</div>
+    }
+
+    if (!Array.isArray(priceDurations) || priceDurations.length === 0) {
+      return (
+        <div style={{ padding: '4px 0', color: '#999' }}>Chưa có thông tin giá</div>
+      )
+    }
+
+    // Định nghĩa các khoảng thời gian cần hiển thị
+    const durationMap: { [key: string]: { label: string; icon: string } } = {
+      '1': { label: '1 ngày', icon: '📅' },
+      '7': { label: '1 tuần', icon: '📆' },
+      '30': { label: '1 tháng', icon: '🗓️' }
+    }
+
+    const tooltipItems: JSX.Element[] = []
+
+    // Tìm và hiển thị giá cho từng khoảng thời gian
+    ;['1', '7', '30'].forEach((duration, index) => {
+      const priceItem = priceDurations.find(
+        (item: any) => item.key === duration || item.duration === duration
+      )
+
+      if (priceItem) {
+        const price = priceItem.value || priceItem.price || '0'
+        const cost = priceItem.cost || '0'
+        const priceFormatted = new Intl.NumberFormat('vi-VN').format(parseInt(price) || 0)
+        const costFormatted = new Intl.NumberFormat('vi-VN').format(parseInt(cost) || 0)
+        const durationInfo = durationMap[duration]
+
+        tooltipItems.push(
+          <div
+            key={duration}
+            style={{
+              padding: '8px 0',
+              borderBottom: index < 2 ? '1px solid rgba(255, 255, 255, 0.1)' : 'none'
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                marginBottom: '6px',
+                fontSize: '13px',
+                fontWeight: 600,
+                color: '#fff'
+              }}
+            >
+              <span style={{ marginRight: '6px', fontSize: '14px' }}>{durationInfo.icon}</span>
+              <span>{durationInfo.label}</span>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center' }}>
+                <span style={{ color: '#90caf9', marginRight: '8px', minWidth: '70px' }}>
+                  Giá bán:
+                </span>
+                <span style={{ color: '#4caf50', fontWeight: 600 }}>
+                  {priceFormatted} đ
+                </span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center' }}>
+                <span style={{ color: '#90caf9', marginRight: '8px', minWidth: '70px' }}>
+                  Giá cost:
+                </span>
+                <span style={{ color: '#ff9800', fontWeight: 600 }}>
+                  {costFormatted} đ
+                </span>
+              </div>
+            </div>
+          </div>
+        )
+      }
+    })
+
+    return tooltipItems.length > 0 ? (
+      <div
+        style={{
+          padding: '8px 4px',
+          minWidth: '200px',
+          maxWidth: '280px'
+        }}
+      >
+        {tooltipItems}
+      </div>
+    ) : (
+      <div style={{ padding: '4px 0', color: '#999' }}>Chưa có thông tin giá</div>
+    )
+  }
+
   const columns = useMemo(
     () => [
       {
@@ -149,20 +254,6 @@ export default function TableServiceType() {
           </div>
         ),
         size: 200
-      },
-      {
-        header: 'Giá vốn',
-        cell: ({ row }: { row: any }) => {
-          return new Intl.NumberFormat('vi-VN').format(row.original.cost_price) + ' đ'
-        },
-        size: 100
-      },
-      {
-        header: 'Giá bán',
-        cell: ({ row }: { row: any }) => {
-          return new Intl.NumberFormat('vi-VN').format(row.original.price) + ' đ'
-        },
-        size: 100
       },
       {
         header: 'Trạng thái',
@@ -185,9 +276,11 @@ export default function TableServiceType() {
       {
         header: 'Type',
         cell: ({ row }: { row: any }) => {
+          const type = row.original?.type
+          const displayText = type === 0 || type === '0' ? 'Tĩnh' : type === 1 || type === '1' ? 'Xoay' : type || '-'
           return (
             <div>
-              <div className='font-bold'>{row.original?.type}</div>
+              <div className='font-bold'>{displayText}</div>
             </div>
           )
         },
@@ -385,13 +478,41 @@ export default function TableServiceType() {
                   </tr>
                 ) : (
                   table.getRowModel().rows.map(row => (
-                    <tr className='table-row' key={row.id}>
-                      {row.getVisibleCells().map(cell => (
-                        <td className='table-cell' key={cell.id}>
-                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                        </td>
-                      ))}
-                    </tr>
+                    <Tooltip
+                      key={row.id}
+                      title={getRowTooltipContent(row.original)}
+                      arrow
+                      placement='top'
+                      componentsProps={{
+                        tooltip: {
+                          sx: {
+                            bgcolor: 'rgba(30, 30, 30, 0.95)',
+                            backdropFilter: 'blur(10px)',
+                            border: '1px solid rgba(255, 255, 255, 0.1)',
+                            borderRadius: '8px',
+                            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
+                            maxWidth: 'none',
+                            fontSize: '12px'
+                          }
+                        },
+                        arrow: {
+                          sx: {
+                            color: 'rgba(30, 30, 30, 0.95)',
+                            '&::before': {
+                              border: '1px solid rgba(255, 255, 255, 0.1)'
+                            }
+                          }
+                        }
+                      }}
+                    >
+                      <tr className='table-row'>
+                        {row.getVisibleCells().map(cell => (
+                          <td className='table-cell' key={cell.id}>
+                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                          </td>
+                        ))}
+                      </tr>
+                    </Tooltip>
                   ))
                 )}
               </tbody>
