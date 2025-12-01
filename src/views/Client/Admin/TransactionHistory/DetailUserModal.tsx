@@ -15,7 +15,6 @@ export default function DetailUserModal({
 }) {
   if (!isOpen) return null
 
-  console.log(data)
   return (
     <Dialog
       onClose={onClose}

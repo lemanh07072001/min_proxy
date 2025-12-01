@@ -2,35 +2,29 @@
 
 import { useState } from 'react'
 
-import { Button } from '@mui/material'
-
-import ModalAddPartner from '@/app/[lang]/(private)/(client)/admin/partner/ModalAddPartner'
+import ModalAddPartner from '@/views/Client/Admin/Partner/ModalAddPartner'
+import TablePartner from '@/views/Client/Admin/Partner/TablePartner'
 
 export default function AdminPartnerPage() {
   const [open, setOpen] = useState(false)
-  const [type, setType] = useState('create')
+  const [type, setType] = useState<'create' | 'edit'>('create')
+  const [partnerData, setPartnerData] = useState<any>(null)
 
-  const handleOpenAddModal = () => {
+  const handleOpenModal = (modalType: 'create' | 'edit', data?: any) => {
+    setType(modalType)
+    setPartnerData(data || null)
     setOpen(true)
-    setType('create')
   }
 
-  const handleCloseAddModal = () => setOpen(false)
+  const handleCloseModal = () => {
+    setOpen(false)
+    setPartnerData(null)
+  }
 
   return (
     <>
-      <div className='mb-8 flex justify-end'>
-        <Button
-          onClick={handleOpenAddModal}
-          sx={{ color: '#fff' }}
-          variant='contained'
-          startIcon={<i className='tabler-send' />}
-        >
-          Thêm đối tác
-        </Button>
-      </div>
-
-      <ModalAddPartner open={open} onClose={handleCloseAddModal} type={type} />
+      <TablePartner onOpenModal={handleOpenModal} />
+      <ModalAddPartner open={open} onClose={handleCloseModal} type={type} partnerData={partnerData} />
     </>
   )
 }
