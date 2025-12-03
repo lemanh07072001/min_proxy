@@ -35,6 +35,7 @@ interface TransactionData {
   qrUrl: string | null
   amount: string
   rechargeAmount: string
+  transactionCode?: string
 }
 
 const NavbarContent = () => {
@@ -48,10 +49,11 @@ const NavbarContent = () => {
   const [transactionData, setTransactionData] = useState<TransactionData>({
     qrUrl: null,
     amount: '',
-    rechargeAmount: ''
+    rechargeAmount: '',
+    transactionCode: ''
   })
 
-  const handleGenerateQr = (data: { qrUrl: string; amount: string; rechargeAmount: string }) => {
+  const handleGenerateQr = (data: { qrUrl: string; amount: string; rechargeAmount: string; transactionCode: string }) => {
     setTransactionData(data)
     setIsInputOpen(false)
     setIsQrOpen(true)
@@ -129,6 +131,7 @@ const NavbarContent = () => {
         qrDataUrl={transactionData.qrUrl}
         amount={transactionData.amount}
         rechargeAmount={transactionData.rechargeAmount}
+        transactionCode={transactionData.transactionCode}
       />
     </div>
   )

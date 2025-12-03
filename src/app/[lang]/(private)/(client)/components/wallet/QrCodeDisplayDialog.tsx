@@ -29,6 +29,7 @@ interface QrCodeDisplayDialogProps {
   qrDataUrl: string | null
   amount: string // Số tiền chưa format (e.g., '10000')
   rechargeAmount: string // Số tiền đã format (e.g., '10,000')
+  transactionCode?: string // Mã giao dịch đã được tạo
 }
 
 export default function QrCodeDisplayDialog({
@@ -36,15 +37,27 @@ export default function QrCodeDisplayDialog({
   handleClose,
   qrDataUrl,
   amount,
-  rechargeAmount
+  rechargeAmount,
+  transactionCode
 }: QrCodeDisplayDialogProps) {
   if (!qrDataUrl) return null
 
   const { data: session } = useSession()
-  const userId = session?.user?.id ?? ''
+  const userId = (session?.user as any)?.id ?? ''
 
-  // Thông tin ngân hàng có thể được định nghĩa ở đây hoặc truyền từ ngoài vào
-  const BANK_INFO = getBankNumber(userId)
+  // Thông tin ngân hàng cơ bản
+  const BANK_INFO_BASE = {
+    bankCode: '970436',
+    bankName: 'Vietcombank',
+    accountNumber: '1056968673',
+    accountName: 'LUONG VAN THUY'
+  }
+
+  // Sử dụng mã giao dịch đã được truyền từ RechargeInputDialog, nếu không có thì tạo mới (fallback)
+  const BANK_INFO = {
+    ...BANK_INFO_BASE,
+    note: transactionCode || getBankNumber(userId).note
+  }
 
   const [, copy] = useCopy()
 

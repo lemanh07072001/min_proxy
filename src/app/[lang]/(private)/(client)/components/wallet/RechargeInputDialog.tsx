@@ -15,13 +15,14 @@ import { useSession } from 'next-auth/react'
 import CustomTextField from '@core/components/mui/TextField'
 
 import { getBankNumber } from '@/utils/bankInfo'
+import { useCreateCodeTransaction } from '@/hooks/apis/useCodeTransactions'
 
 const denominations = ['50000', '100000', '200000', '500000', '1000000']
 
 interface RechargeInputDialogProps {
   isOpen: boolean
   handleClose: () => void
-  onGenerateQr: (data: { qrUrl: string; amount: string; rechargeAmount: string }) => void
+  onGenerateQr: (data: { qrUrl: string; amount: string; rechargeAmount: string; transactionCode: string }) => void
 }
 
 export default function RechargeInputDialog({ isOpen, handleClose, onGenerateQr }: RechargeInputDialogProps) {
@@ -30,9 +31,16 @@ export default function RechargeInputDialog({ isOpen, handleClose, onGenerateQr 
   const [isGeneratingQR, setIsGeneratingQR] = useState(false)
 
   const { data: session } = useSession()
-  const userId = session?.user?.id ?? ''
+  const userId = (session?.user as any)?.id ?? ''
+  const createCodeTransaction = useCreateCodeTransaction()
 
-  const BANK_INFO = getBankNumber(userId)
+  // Thông tin ngân hàng cơ bản (không có mã giao dịch)
+  const BANK_INFO_BASE = {
+    bankCode: '970436',
+    bankName: 'Vietcombank',
+    accountNumber: '1056968673',
+    accountName: 'LUONG VAN THUY'
+  }
 
   useEffect(() => {
     if (!isOpen) {
@@ -57,13 +65,27 @@ export default function RechargeInputDialog({ isOpen, handleClose, onGenerateQr 
     setRechargeAmount(formatted)
   }
 
-  const handleCreateQrCode = () => {
+  const handleCreateQrCode = async () => {
     setIsGeneratingQR(true)
+    
+    // Tạo mã giao dịch tại thời điểm click (có 3 số ngẫu nhiên để tránh trùng)
+    const BANK_INFO = getBankNumber(userId)
+    
+    try {
+      // Gọi API code-transactions với mã giao dịch
+      await createCodeTransaction.mutateAsync({
+        code: BANK_INFO.note
+      })
+    } catch (error) {
+      console.error('Lỗi khi gọi API code-transactions:', error)
+      // Vẫn tiếp tục tạo QR code ngay cả khi API lỗi
+    }
+
     const qrUrl = `https://img.vietqr.io/image/${BANK_INFO.bankCode}-${BANK_INFO.accountNumber}-compact2.png?amount=${amount}&addInfo=${encodeURIComponent(BANK_INFO.note)}`
 
     // Giả lập thời gian chờ tạo QR
     setTimeout(() => {
-      onGenerateQr({ qrUrl, amount, rechargeAmount })
+      onGenerateQr({ qrUrl, amount, rechargeAmount, transactionCode: BANK_INFO.note })
       handleClose() // Tự động đóng dialog này sau khi tạo QR
     }, 2000)
   }

@@ -2,7 +2,7 @@
 
 import { useMemo, useState, useEffect } from 'react'
 import Image from 'next/image'
-import { Clock3, List, X, Loader2, CheckCircle, XCircle, RotateCcw } from 'lucide-react'
+import { Clock3, List, X, Loader2 } from 'lucide-react'
 
 import {
   useReactTable,
@@ -18,11 +18,10 @@ import {
 import Chip from '@mui/material/Chip'
 import Pagination from '@mui/material/Pagination'
 import Dialog from '@mui/material/Dialog'
-import { Button, IconButton, Tooltip } from '@mui/material'
+import { Button } from '@mui/material'
 
-import { usePartnerTransactions, useUpdateTransactionStatus } from '@/hooks/apis/usePartners'
+import { usePartnerTransactions } from '@/hooks/apis/usePartners'
 import { formatDateTimeLocal } from '@/utils/formatDate'
-import { toast } from 'react-toastify'
 
 interface TransactionModalProps {
   open: boolean
@@ -47,7 +46,6 @@ export default function TransactionModal({ open, onClose, partnerId, partnerName
   // Gọi API get-topup-history - chỉ gọi khi modal mở và có partnerId
   const shouldFetch = useMemo(() => open && !!partnerId, [open, partnerId])
   const { data: transactions = [], isLoading, isError, error } = usePartnerTransactions(partnerId, shouldFetch)
-  const updateStatusMutation = useUpdateTransactionStatus()
   
   const columns = useMemo(
     () => [
@@ -109,117 +107,8 @@ export default function TransactionModal({ open, onClose, partnerId, partnerName
         },
         size: 180
       },
-      {
-        header: 'Action',
-        cell: ({ row }: { row: any }) => {
-          const status = row.original?.status
-          const transactionId = row.original?.id || row.original?.system_transaction_id
-          const isPending = status === 'pending';
-          const isSuccess = status === 'success'
-
-          
-          const handleUpdateToSuccess = () => {
-            if (transactionId && partnerId) {
-              updateStatusMutation.mutate(
-                { transactionId, partnerId, status: 'success' },
-                {
-                  onSuccess: () => {
-                    toast.success('Cập nhật trạng thái thành công!')
-                  },
-                  onError: (error: any) => {
-                    toast.error(error?.response?.data?.message || 'Có lỗi xảy ra khi cập nhật trạng thái')
-                  }
-                }
-              )
-            }
-          }
-
-          const handleUpdateToError = () => {
-            if (transactionId && partnerId) {
-              updateStatusMutation.mutate(
-                { transactionId, partnerId, status: 'failed' },
-                {
-                  onSuccess: () => {
-                    toast.success('Cập nhật trạng thái thành công!')
-                  },
-                  onError: (error: any) => {
-                    toast.error(error?.response?.data?.message || 'Có lỗi xảy ra khi cập nhật trạng thái')
-                  }
-                }
-              )
-            }
-          }
-
-          const handleUpdateToPending = () => {
-            if (transactionId && partnerId) {
-              updateStatusMutation.mutate(
-                { transactionId, partnerId, status: 'pending' },
-                {
-                  onSuccess: () => {
-                    toast.success('Cập nhật trạng thái thành công!')
-                  },
-                  onError: (error: any) => {
-                    toast.error(error?.response?.data?.message || 'Có lỗi xảy ra khi cập nhật trạng thái')
-                  }
-                }
-              )
-            }
-          }
-
-          return (
-            <div className='flex gap-1'>
-              {isPending && (
-                <>
-                  <Tooltip title='Cập nhật trạng thái thành công'>
-                    <span>
-                      <IconButton
-                        size='small'
-                        color='success'
-                        onClick={handleUpdateToSuccess}
-                        disabled={updateStatusMutation.isPending}
-                      >
-                        <CheckCircle size={18} />
-                      </IconButton>
-                    </span>
-                  </Tooltip>
-                  <Tooltip title='Uncheck - Hủy xác nhận'>
-                    <span>
-                      <IconButton
-                        size='small'
-                        color='error'
-                        onClick={handleUpdateToError}
-                        disabled={updateStatusMutation.isPending}
-                      >
-                        < XCircle size={18} />
-                      </IconButton>
-                    </span>
-                  </Tooltip>
-                </>
-              )}
-              {isSuccess && (
-                <Tooltip title='Cập nhật trạng thái về đang xử lý'>
-                  <span>
-                    <IconButton
-                      size='small'
-                      color='warning'
-                      onClick={handleUpdateToPending}
-                      disabled={updateStatusMutation.isPending}
-                    >
-                      <RotateCcw size={18} />
-                    </IconButton>
-                  </span>
-                </Tooltip>
-              )}
-              {!isPending && !isSuccess && (
-                <span className='text-sm text-gray-400'>-</span>
-              )}
-            </div>
-          )
-        },
-        size: 120
-      }
     ],
-    [partnerId, updateStatusMutation]
+    [partnerId]
   )
 
   const table = useReactTable({

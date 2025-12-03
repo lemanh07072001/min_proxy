@@ -113,21 +113,3 @@ export const usePartnerTransactions = (partnerId?: number | string, enabled: boo
   })
 }
 
-// Hook để cập nhật status của transaction
-export const useUpdateTransactionStatus = () => {
-  const axiosAuth = useAxiosAuth()
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: async ({ transactionId, partnerId, status }: { transactionId: number | string; partnerId?: number | string; status: string }) => {
-      const res = await axiosAuth.post(`/update-topup-transaction-status/${transactionId}`, { status })
-      return res?.data
-    },
-    onSuccess: (_, variables) => {
-      // Refresh lại danh sách transactions sau khi cập nhật thành công
-      if (variables.partnerId) {
-        queryClient.invalidateQueries({ queryKey: ['topupHistory', variables.partnerId] })
-      }
-    }
-  })
-}
