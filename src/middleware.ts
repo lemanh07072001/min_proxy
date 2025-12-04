@@ -9,8 +9,12 @@ const privateRoutes = [
   '/history-order',
   '/affiliate',
   '/transaction-history',
-  '/dashboard'
+  '/dashboard',
+  '/admin'
 ]
+
+// Routes chỉ dành cho admin (role = 0)
+const adminRoutes = ['/admin']
 
 export default withAuth(
   function middleware(req: NextRequestWithAuth) {
@@ -30,6 +34,14 @@ export default withAuth(
     // Nếu người dùng ĐÃ ĐĂNG NHẬP (có token) và đang cố vào trang login/register
     if (token && isAuthRoute) {
       // Chuyển hướng họ về trang overview
+      return NextResponse.redirect(new URL(`/${lang}/overview`, req.url))
+    }
+
+    // Kiểm tra quyền truy cập admin (chỉ role = 0 mới được vào)
+    const isAdminRoute = adminRoutes.some(route => pathname.includes(route))
+
+    if (isAdminRoute && token?.role !== 0) {
+      // Nếu không phải admin, chuyển hướng về trang overview
       return NextResponse.redirect(new URL(`/${lang}/overview`, req.url))
     }
 
