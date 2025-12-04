@@ -21,6 +21,7 @@ import {
 } from 'lucide-react'
 import AppReactDatepicker from '@/components/AppReactDatepicker'
 import CustomTextField from '@/@core/components/mui/TextField'
+import { useDashboardMonthly } from '@/hooks/apis/useDashboard'
 
 interface DailyData {
   total_revenue?: number
@@ -37,59 +38,20 @@ interface DailyData {
 }
 
 export default function DailyStats() {
-  const { data: session } = useSession() as any
-  const [date, setDate] = useState<Date | null>(new Date())
-  const [loading, setLoading] = useState(false)
-  const [data, setData] = useState<DailyData | null>(null)
+  const [date, setDate] = useState<Date | null | undefined>(new Date())
 
-  const formatDate = (date: Date) => {
-    const year = date.getFullYear()
-    const month = String(date.getMonth() + 1).padStart(2, '0')
-    const day = String(date.getDate()).padStart(2, '0')
-    return `${year}-${month}-${day}`
-  }
 
-  const fetchDataByDate = async (selectedDate: Date) => {
-    if (!session?.access_token) return
+  const { data: dashboardData } = useDashboardMonthly(
+    {
+      date: date?.toLocaleDateString() 
+    },
+    !!date
+  )
 
-    setLoading(true)
-    try {
-      const dateStr = formatDate(selectedDate)
+  console.log(dashboardData)
 
-      const res = await fetch(`/api/admin/dashboard/by-date?date=${dateStr}`, {
-        headers: {
-          Authorization: `Bearer ${session.access_token}`
-        }
-      })
-      const result = await res.json()
-      setData(result?.data ?? null)
-    } catch (error) {
-      console.error('Error fetching data:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
 
-  // Fetch data khi component mount và khi date thay đổi
-  useEffect(() => {
-    if (date && session?.access_token) {
-      fetchDataByDate(date)
-    }
-  }, [date, session?.access_token])
 
-  const daily = data ?? {
-    total_revenue: 0,
-    total_profit: 0,
-    total_cost: 0,
-    total_deposit: 0,
-    total_deposit_count: 0,
-    balance_remaining: 0,
-    total_orders: 0,
-    orders_success: 0,
-    orders_failed: 0,
-    orders_processing: 0,
-    total_refunds: 0
-  }
 
   return (
     <section aria-labelledby='daily-heading' className='lg:col-span-2'>
@@ -103,43 +65,44 @@ export default function DailyStats() {
 
       <div className='space-y-6'>
         {/* Date Picker */}
-        <div className='bg-white/80 backdrop-blur-sm rounded-xl shadow-lg p-5 border-t-4 border-[#f97316]'>
-          <div className='flex items-center gap-2 mb-4'>
+        <div className='bg-white/80 backdrop-blur-sm rounded-xl shadow-lg p-4 border-t-4 border-[#f97316] relative z-[100]'>
+          <div className='flex items-center gap-2 mb-2'>
             <Calendar size={20} className='text-[#f97316]' />
-            <h3 className='text-sm font-semibold text-gray-900'>Chọn Ngày</h3>
+            <h3 className='text-sm font-semibold text-gray-900 mb-0'>Chọn Ngày</h3>
           </div>
           <div className='flex items-center gap-4'>
             <div className='w-[200px]'>
-              <AppReactDatepicker
-                selected={date}
-                onChange={(newDate: Date | null) => setDate(newDate)}
-                placeholderText='Chọn ngày'
-                customInput={<CustomTextField label='Ngày' fullWidth />}
-                dateFormat='dd/MM/yyyy'
-              />
+            <AppReactDatepicker
+              selected={date}
+              id='callback-open'
+              dateFormat='dd/MM/yyyy'
+              onChange={(date: Date | null) => setDate(date)}
+              customInput={<CustomTextField  fullWidth />}
+            
+            />
             </div>
-            {loading && <Loader2 size={20} className='animate-spin text-[#f97316]' />}
+
           </div>
         </div>
 
         {/* Key Metrics */}
-        <div className='bg-white/80 backdrop-blur-sm rounded-xl p-6 border-t-4 border-[#f97316] shadow-lg'>
+        <div className='bg-white/80 backdrop-blur-sm rounded-xl p-6 border-t-4 border-[#f97316] shadow-lg z-0'>
           <h3 className='text-sm font-semibold text-gray-700 uppercase tracking-wide mb-4'>Chỉ Số Chính</h3>
           <div className='grid sm:grid-cols-2 gap-4'>
-            <KPICard label='Doanh Thu' value={daily.total_revenue ?? 0} icon={<DollarSign size={24} />} color='blue' />
-            <KPICard label='Lợi Nhuận' value={daily.total_profit ?? 0} icon={<TrendingUp size={24} />} color='green' />
-            <KPICard label='Tiền Nạp' value={daily.total_deposit ?? 0} icon={<Wallet size={24} />} color='green' />
-            <KPICard label='Chi Phí' value={daily.total_cost ?? 0} icon={<TrendingDown size={24} />} color='red' />
+            <KPICard label='Doanh Thu' value={dashboardData?.total_revenue ?? 0} icon={<DollarSign size={24} />} color='blue' />
+            <KPICard label='Lợi Nhuận' value={dashboardData?.total_profit ?? 0} icon={<TrendingUp size={24} />} color='green' />
+            <KPICard label='Tiền Nạp' value={dashboardData?.total_deposit ?? 0} icon={<Wallet size={24} />} color='green' />
+            <KPICard label='Chi Phí' value={dashboardData?.total_cost ?? 0} icon={<TrendingDown size={24} />} color='red' />
             <KPICard
               label='Số Giao Dịch Nạp'
-              value={daily.total_deposit_count ?? 0}
+              value={dashboardData?.total_deposit_count ?? 0}
               icon={<Receipt size={24} />}
               format='number'
               color='blue'
             />
             <KPICard
               label='Số Dư Người Dùng'
-              value={daily.balance_remaining ?? 0}
+              value={dashboardData?.balance_remaining ?? 0}
               icon={<Users size={24} />}
               color='blue'
             />
@@ -152,28 +115,28 @@ export default function DailyStats() {
           <div className='grid sm:grid-cols-2 lg:grid-cols-4 gap-4'>
             <KPICard
               label='Tổng Đơn'
-              value={daily.total_orders ?? 0}
+              value={dashboardData?.total_orders ?? 0}
               icon={<ShoppingCart size={24} />}
               format='number'
               color='gray'
             />
             <KPICard
               label='Thành Công'
-              value={daily.orders_success ?? 0}
+              value={dashboardData?.orders_success ?? 0}
               icon={<CheckCircle size={24} />}
               format='number'
               color='green'
             />
             <KPICard
               label='Thất Bại'
-              value={daily.orders_failed ?? 0}
+              value={dashboardData?.orders_failed ?? 0}
               icon={<XCircle size={24} />}
               format='number'
               color='red'
             />
             <KPICard
               label='Đang Xử Lý'
-              value={daily.orders_processing ?? 0}
+              value={dashboardData?.orders_processing ?? 0}
               icon={<Clock size={24} />}
               format='number'
               color='gray'
@@ -184,7 +147,7 @@ export default function DailyStats() {
         {/* Refunds */}
         <div className='bg-white/80 backdrop-blur-sm rounded-xl p-6 border-t-4 border-red-500 shadow-lg'>
           <h3 className='text-sm font-semibold text-gray-700 uppercase tracking-wide mb-4'>Hoàn Tiền</h3>
-          <KPICard label='Số Tiền Hoàn' value={daily.total_refunds ?? 0} icon={<RefreshCw size={24} />} color='red' />
+          <KPICard label='Số Tiền Hoàn' value={dashboardData?.total_refunds ?? 0} icon={<RefreshCw size={24} />} color='red' />
         </div>
       </div>
     </section>
