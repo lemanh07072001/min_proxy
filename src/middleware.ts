@@ -1,83 +1,96 @@
 import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
 
-import { withAuth } from 'next-auth/middleware'
-import type { NextRequestWithAuth } from 'next-auth/middleware'
+import { getToken } from 'next-auth/jwt'
 
-const privateRoutes = [
-  '/overview',
-  '/order-proxy',
-  '/history-order',
-  '/affiliate',
-  '/transaction-history',
-  '/dashboard',
-  '/admin'
-]
+// Pre-compiled Sets cho lookup nhanh O(1)
+const privateRoutesSet = new Set([
+  'overview',
+  'order-proxy',
+  'history-order',
+  'affiliate',
+  'transaction-history',
+  'dashboard',
+  'admin'
+])
 
-// Routes chỉ dành cho admin (role = 0)
-const adminRoutes = ['/admin']
+const adminRoutesSet = new Set(['admin'])
+const authRoutesSet = new Set(['login', 'register'])
+const validLangs = new Set(['vi', 'en', 'cn', 'ko', 'ja'])
 
-export default withAuth(
-  function middleware(req: NextRequestWithAuth) {
-    const { pathname } = req.nextUrl
-    const token = req.nextauth.token
+export async function middleware(req: NextRequest) {
+  const { pathname } = req.nextUrl
 
-    // Lấy mã ngôn ngữ từ URL (ví dụ: /vi/login -> 'vi')
-    const lang = pathname.split('/')[1] || 'vi'
-
-    // ⭐ LOGIC MỚI BẮT ĐẦU TỪ ĐÂY ⭐
-    // Định nghĩa các trang xác thực (login, register, ...)
-    const authRoutes = [`/${lang}/login`, `/${lang}/register`]
-
-    // Kiểm tra xem trang hiện tại có phải là trang xác thực không
-    const isAuthRoute = authRoutes.some(route => pathname.startsWith(route))
-
-    // Nếu người dùng ĐÃ ĐĂNG NHẬP (có token) và đang cố vào trang login/register
-    if (token && isAuthRoute) {
-      // Chuyển hướng họ về trang overview
-      return NextResponse.redirect(new URL(`/${lang}/overview`, req.url))
-    }
-
-    // Kiểm tra quyền truy cập admin (chỉ role = 0 mới được vào)
-    const isAdminRoute = adminRoutes.some(route => pathname.includes(route))
-
-    if (isAdminRoute && token?.role !== 0) {
-      // Nếu không phải admin, chuyển hướng về trang overview
-      return NextResponse.redirect(new URL(`/${lang}/overview`, req.url))
-    }
-
-    // ⭐ KẾT THÚC LOGIC MỚI ⭐
-
-    // Nếu không thuộc trường hợp trên, cho phép request tiếp tục
+  // Skip static files và API routes sớm
+  if (
+    pathname.startsWith('/_next') ||
+    pathname.startsWith('/api') ||
+    pathname.includes('.') // files với extension
+  ) {
     return NextResponse.next()
-  },
-  {
-    callbacks: {
-      // Logic gác cổng ở đây không thay đổi
-      authorized: ({ token, req }) => {
-        const { pathname } = req.nextUrl
+  }
 
-        const isPrivateRoute = privateRoutes.some(route => pathname.includes(route))
+  // Parse path một lần duy nhất
+  const segments = pathname.split('/').filter(Boolean)
+  const lang = validLangs.has(segments[0]) ? segments[0] : 'vi'
+  const route = segments[1] || ''
 
-        // Nếu không phải trang private, luôn cho phép
-        if (!isPrivateRoute) {
-          return true
-        }
+  // Skip nếu không phải route cần check
+  const isPrivateRoute = privateRoutesSet.has(route)
+  const isAuthRoute = authRoutesSet.has(route)
 
-        // Nếu là trang private, yêu cầu phải có token hợp lệ
-        if (token && token.access_token && !token.error) {
-          return true
-        }
+  if (!isPrivateRoute && !isAuthRoute) {
+    return NextResponse.next()
+  }
 
-        // Nếu là trang private mà không có token, trả về false để chuyển hướng
-        return false
+  // Chỉ lấy token khi thực sự cần
+  const token = await getToken({
+    req,
+    secret: process.env.NEXTAUTH_SECRET
+  })
+
+  // User đã login cố vào login/register -> redirect về overview
+  if (token && isAuthRoute) {
+    return NextResponse.redirect(new URL(`/${lang}/overview`, req.url))
+  }
+
+  // Chưa login cố vào private route -> redirect về login
+  if (!token && isPrivateRoute) {
+    return NextResponse.redirect(new URL(`/${lang}/login`, req.url))
+  }
+
+  // Kiểm tra token hợp lệ cho private routes
+  if (isPrivateRoute) {
+    const tokenAny = token as any
+
+    if (!tokenAny?.access_token || tokenAny?.error) {
+      return NextResponse.redirect(new URL(`/${lang}/login`, req.url))
+    }
+
+    // Admin route check
+    if (adminRoutesSet.has(route)) {
+      const role = tokenAny?.role
+      const isAdmin = role === 0 || role === '0' || role === 'admin'
+
+      if (!isAdmin) {
+        return NextResponse.redirect(new URL(`/${lang}/overview`, req.url))
       }
-    },
-    pages: {
-      signIn: '/empty'
     }
   }
-)
+
+  return NextResponse.next()
+}
 
 export const config = {
-  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)']
+  matcher: [
+    /*
+     * Match all request paths except:
+     * - api (API routes)
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico, sitemap.xml, robots.txt
+     * - images và public files
+     */
+    '/((?!api|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|images|manifest.json).*)'
+  ]
 }
