@@ -7,7 +7,7 @@ import { Typography } from '@mui/material'
 
 import { EthernetPort, MapPinHouse, User, Wallet, Zap } from 'lucide-react'
 
-import { getServerSession } from 'next-auth'
+import { getServerSession } from 'next-auth/next'
 
 import CustomIconButton from '@core/components/mui/IconButton'
 import BoxCustom from '@/components/UI/BoxCustom'

@@ -2,7 +2,7 @@
 import { redirect } from 'next/navigation'
 
 // Third-party Imports
-import { getServerSession } from 'next-auth'
+import { getServerSession } from 'next-auth/next'
 
 // Type Imports
 import type { ChildrenType } from '@core/types'

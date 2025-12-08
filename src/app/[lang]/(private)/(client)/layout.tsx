@@ -31,16 +31,17 @@ function HorizontalFooter() {
   return null
 }
 
-const Layout = async (props: ChildrenType & { params: Promise<{ lang: Locale }> }) => {
+const Layout = async (props: ChildrenType & { params: Promise<{ lang: string }> }) => {
   const { children } = props
 
   const params = await props.params
+  const lang = params.lang as Locale
 
   // Vars - Fetch song song để tối ưu performance
   const [mode, systemMode, dictionary] = await Promise.all([
     getMode(),
     getSystemMode(),
-    getDictionary(params.lang)
+    getDictionary(lang)
   ])
 
   return (
@@ -50,22 +51,22 @@ const Layout = async (props: ChildrenType & { params: Promise<{ lang: Locale }> 
           <LayoutWrapper
             systemMode={systemMode}
             verticalLayout={
-            <VerticalLayout 
-              navigation={<Navigation dictionary={dictionary} mode={mode} />} 
+            <VerticalLayout
+              navigation={<Navigation dictionary={dictionary} mode={mode} />}
               navbar={<Navbar />}
               landingPage={false}
             >
-                <AuthGuard locale={params.lang}>
+                <AuthGuard locale={lang}>
                   {children}
                 </AuthGuard>
               </VerticalLayout>
             }
             horizontalLayout={
-              <HorizontalLayout 
-                header={<Header dictionary={dictionary} />} 
+              <HorizontalLayout
+                header={<Header dictionary={dictionary} />}
                 footer={<HorizontalFooter />}
               >
-                <AuthGuard locale={params.lang}>
+                <AuthGuard locale={lang}>
                   {children}
                 </AuthGuard>
               </HorizontalLayout>

@@ -137,7 +137,7 @@ const TestimonialsSection = () => {
           <div className='row'>
             {testimonials.slice(0, 3).map((testimonial, index) => (
               <div key={testimonial.id} className='col-lg-4 col-md-6 mb-4'>
-                <div className='testimonial-card' style={{ '--animation-delay': `${index * 0.2}s` }}>
+                <div className='testimonial-card' style={{ '--animation-delay': `${index * 0.2}s` } as React.CSSProperties}>
                   {/* Quote Icon */}
                   <div className='quote-icon'>
                     <Quote size={24} color='rgba(255,68,68,0.3)' />

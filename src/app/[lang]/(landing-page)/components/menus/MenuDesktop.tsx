@@ -22,7 +22,8 @@ export default function MenuDesktop() {
   const pathname = usePathname()
   const params = useParams()
   const { openAuthModal } = useModalContext()
-  const { data } = useContext(SessionContext)
+  const sessionContext = useContext(SessionContext)
+  const { data } = sessionContext ?? {}
   const session = useSession()
   const { t } = useTranslation()
   const MenuLandingPage = useMenuLandingPage()

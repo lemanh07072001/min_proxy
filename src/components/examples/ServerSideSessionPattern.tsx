@@ -2,7 +2,7 @@
 // PATTERN TỐT NHẤT: Server-side Session để tránh flicker
 // ===============================================
 
-import { getServerSession } from 'next-auth'
+import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/libs/auth'
 import type { Session } from 'next-auth'
 
@@ -233,7 +233,7 @@ async function UserDashboard({ userId }: UserDashboardProps) {
 
 // File: app/api/user-data/route.ts
 /*
-import { getServerSession } from 'next-auth'
+import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/libs/auth'
 import { NextResponse } from 'next/server'
 

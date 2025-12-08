@@ -31,7 +31,8 @@ const MainHeader = () => {
   const { scrollY } = useScroll()
   const { isMobile } = useResponsive()
   const { openAuthModal } = useModalContext()
-  const { data } = useContext(SessionContext)
+  const sessionContext = useContext(SessionContext)
+  const { data } = sessionContext ?? {}
   const session = useSession()
 
   // 1. ĐÃ XÓA: state `scrolled` và useEffect theo dõi scroll thủ công.

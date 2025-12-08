@@ -142,7 +142,7 @@ function ServerSideExample({ session }: ServerSideExampleProps) {
 
 // File: app/comparison/page.tsx
 /*
-import { getServerSession } from 'next-auth'
+import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/libs/auth'
 import FlickerComparison from '@/components/examples/FlickerComparison'
 

@@ -100,7 +100,7 @@ const PartnersSection = () => {
                   '--delay': `${index * 0.2}s`,
                   '--bg-color': partner.bgColor,
                   '--text-color': partner.color
-                }}
+                } as React.CSSProperties}
               >
                 <div className='partner-logo'>
                   {partner.name === 'Viettel' ? (
@@ -142,7 +142,7 @@ const PartnersSection = () => {
                   '--delay': `${(index + partners.length) * 0.2}s`,
                   '--bg-color': partner.bgColor,
                   '--text-color': partner.color
-                }}
+                } as React.CSSProperties}
               >
                 <div className='partner-logo'>
                   {partner.name === 'Viettel' ? (

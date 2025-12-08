@@ -1,5 +1,5 @@
 // src/app/[lang]/(private)/(client)/components/wallet/BalanceCard.tsx
-import { getServerSession } from 'next-auth'
+import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/libs/auth'
 import BalanceCardClient from './BalanceCardClient'
 
