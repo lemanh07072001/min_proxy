@@ -2,7 +2,7 @@
 // SERVER-SIDE: Sử dụng getServerSession
 // ===============================================
 
-import { getServerSession } from 'next-auth'
+import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/libs/auth'
 
 // ===============================================
@@ -43,7 +43,7 @@ export default async function ServerSessionExample() {
 
 // File: src/app/api/user/profile/route.ts
 /*
-import { getServerSession } from 'next-auth'
+import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/libs/auth'
 import { NextResponse } from 'next/server'
 
@@ -160,7 +160,7 @@ export const config = {
 // File: src/app/actions/userActions.ts
 'use server'
 
-import { getServerSession } from 'next-auth'
+import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/libs/auth'
 
 export async function updateUserProfile(formData: FormData) {

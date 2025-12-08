@@ -1,5 +1,5 @@
 // Third-party Imports
-import { getServerSession } from 'next-auth'
+import { getServerSession } from 'next-auth/next'
 
 // Component Imports
 import LayoutNavbar from '@layouts/components/vertical/Navbar'

@@ -28,13 +28,14 @@ function HorizontalFooter() {
   return null
 }
 
-const Layout = async (props: ChildrenType & { params: Promise<{ lang: Locale }> }) => {
+const Layout = async (props: ChildrenType & { params: Promise<{ lang: string }> }) => {
   const { children } = props
 
   const params = await props.params
+  const lang = params.lang as Locale
 
   // Vars - Fetch song song để tối ưu performance
-  const [mode, systemMode, dictionary] = await Promise.all([getMode(), getSystemMode(), getDictionary(params.lang)])
+  const [mode, systemMode, dictionary] = await Promise.all([getMode(), getSystemMode(), getDictionary(lang)])
 
   return (
     <Providers direction='ltr'>

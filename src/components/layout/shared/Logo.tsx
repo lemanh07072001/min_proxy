@@ -67,7 +67,14 @@ const Logo = ({ color }: { color?: CSSProperties['color'] }) => {
 
   return (
     <div className='flex items-center'>
-      <Image src='/images/logo/Logo_MKT_Proxy.png' alt='MKT_PROXY_2' width={190} height={50} />
+      <Image
+        src='/images/logo/Logo_MKT_Proxy.png'
+        alt='MKT_PROXY_2'
+        width={190}
+        height={50}
+        priority
+        unoptimized
+      />
 
       {/* <LogoText
         color={color}

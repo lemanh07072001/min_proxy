@@ -12,12 +12,11 @@ import '@/app/[lang]/(landing-page)/main.css'
 // Generated Icon CSS Imports
 import '@assets/iconify-icons/generated-icons.css'
 
-import type { Locale } from '@/configs/configi18n'
 import LayoutWrapper from '@layouts/LayoutWrapper'
 
 import type { ChildrenType } from '@core/types'
 import Header from '@/app/[lang]/(landing-page)/components/Header'
-import { getMode, getSystemMode } from '@core/utils/serverHelpers'
+import { getSystemMode } from '@core/utils/serverHelpers'
 import VerticalLayout from '@layouts/VerticalLayout'
 
 import Providers from '@components/Providers'
@@ -25,20 +24,16 @@ import HorizontalLayout from '@layouts/HorizontalLayout'
 
 import ScrollToTop from '@core/components/scroll-to-top'
 import Footer from './components/Footer'
-import TokenExpirationChecker from './components/TokenExpirationChecker'
 
 function HorizontalFooter() {
   return null
 }
 
-const Layout = async (props: ChildrenType & { params: Promise<{ lang: Locale }> }) => {
+const Layout = async (props: ChildrenType) => {
   const { children } = props
-
-  const params = await props.params
 
   // Vars
   const direction = 'ltr'
-  const mode = await getMode()
   const systemMode = await getSystemMode()
 
   // const dictionary = await getDictionary(params.lang)

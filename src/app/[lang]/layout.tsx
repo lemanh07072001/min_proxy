@@ -16,8 +16,6 @@ import { Figtree } from 'next/font/google'
 
 import { headers } from 'next/headers'
 
-import { usePathname } from 'next/navigation'
-
 // Utils
 import type { Metadata } from 'next'
 
@@ -25,7 +23,7 @@ import InitColorSchemeScript from '@mui/material/InitColorSchemeScript'
 
 import { getServerUserData } from '@/utils/serverSessionValidation'
 
-// import { getServerSession } from 'next-auth' // Removed unused import
+// import { getServerSession } from 'next-auth/next' // Removed unused import
 
 import { i18n } from '@/configs/configi18n'
 
@@ -47,13 +45,10 @@ import { authOptions } from '@/libs/auth'
 import I18nextProvider from '@/app/i18n-provider'
 
 import StoreProvider from '@/components/StoreProvider'
-import { setUser, addBalance } from '@/store/userSlice'
 import ReferralHandler from '@/components/ReferralHandler'
 import { NextAuthProvider } from '@/app/contexts/nextAuthProvider'
 
 import { getServerSession } from 'next-auth/next'
-
-import StarField from '@/components/StarField'
 
 const figtree = Figtree({
   subsets: ['latin'],
@@ -61,14 +56,12 @@ const figtree = Figtree({
   display: 'swap'
 })
 
-export async function generateMetadata({ params }: { params: Promise<{ lang: Locale }> }): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }): Promise<Metadata> {
   const resolvedParams = await params
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://mktproxy.com'
 
   return {
-    title: {
-      default: 'MKT Proxy - Dịch vụ Proxy Chất Lượng Cao'
-    },
+    title: 'MKT Proxy - Dịch vụ Proxy Chất Lượng Cao',
     description:
       'Dịch vụ proxy bảo mật, tốc độ cao với hỗ trợ đa quốc gia. Giải pháp mạng riêng ảo tin cậy cho doanh nghiệp và cá nhân.',
     keywords: [
@@ -145,7 +138,7 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: Loc
 
 export const revalidate = 0 //
 
-const RootLayout = async (props: ChildrenType & { params: Promise<{ lang: Locale }> }) => {
+const RootLayout = async (props: ChildrenType & { params: Promise<{ lang: string }> }) => {
   const { children } = props
 
   const params = await props.params
@@ -153,7 +146,7 @@ const RootLayout = async (props: ChildrenType & { params: Promise<{ lang: Locale
   const headersList = await headers()
   const systemMode = await getSystemMode()
 
-  const direction = i18n.langDirection[params.lang]
+  const direction = i18n.langDirection[params.lang as Locale]
 
   // ✅ Sử dụng server-side utility để lấy user data
   const user = await getServerUserData()
@@ -162,10 +155,10 @@ const RootLayout = async (props: ChildrenType & { params: Promise<{ lang: Locale
   const session = (await getServerSession(authOptions as any)) as any
 
   return (
-    <TranslationWrapper headersList={headersList} lang={params.lang}>
+    <TranslationWrapper headersList={headersList} lang={params.lang as Locale}>
       <html id='__next' lang={params.lang} dir={direction} className={figtree.variable} suppressHydrationWarning>
         <body className='flex is-full min-bs-full flex-auto flex-col'>
-          <I18nextProvider locale={params.lang}>
+          <I18nextProvider locale={params.lang as Locale}>
             <NextAuthProvider
               refetchInterval={10}
               refetchOnWindowFocus={true}

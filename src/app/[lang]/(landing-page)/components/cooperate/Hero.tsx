@@ -52,7 +52,7 @@ const Hero = () => {
 
           {/* Features */}
           <div className='grid grid-cols-1 md:grid-cols-3 gap-6 mb-12'>
-            {t('landing.cooperate.hero.features', { returnObjects: true }).map(
+            {(t('landing.cooperate.hero.features', { returnObjects: true }) as { title: string; desc: string }[]).map(
               (feature: { title: string; desc: string }, index: number) => {
                 const icons = [Shield, Zap, Globe]
                 const IconComponent = icons[index]

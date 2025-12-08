@@ -1,6 +1,6 @@
 import { MousePointer, DollarSign, BanknoteArrowDown } from 'lucide-react'
 
-import { getServerSession } from 'next-auth'
+import { getServerSession } from 'next-auth/next'
 
 import AffiliatePage from '@/views/Client/Affiliate/AffiliatePage'
 import BoxCustom from '@/components/UI/BoxCustom'

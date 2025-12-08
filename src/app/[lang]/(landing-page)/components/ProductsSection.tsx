@@ -78,7 +78,7 @@ export default function ProductsSection({ local }: { local: string }) {
               <div key={product.id} className='col-lg-4 col-md-6 mb-4'>
                 <div
                   className={`product-card-modern ${product.popular ? 'popular' : ''}`}
-                  style={{ '--delay': `${index * 0.1}s` }}
+                  style={{ '--delay': `${index * 0.1}s` } as React.CSSProperties}
                 >
                   {/* Popular Badge */}
                   {product.popular && (

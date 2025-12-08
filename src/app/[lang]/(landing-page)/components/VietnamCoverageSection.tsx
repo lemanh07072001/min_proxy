@@ -89,7 +89,7 @@ const VietnamCoverageSection = () => {
               {/* Features List */}
               <div className='features-list'>
                 {features.map((feature, index) => (
-                  <div key={index} className='feature-item-vietnam' style={{ '--animation-delay': `${index * 0.1}s` }}>
+                  <div key={index} className='feature-item-vietnam' style={{ '--animation-delay': `${index * 0.1}s` } as React.CSSProperties}>
                     <div className='feature-icon-vietnam'>{feature.icon}</div>
                     <span className='feature-text-vietnam'>{feature.text}</span>
                   </div>
