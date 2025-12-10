@@ -20,33 +20,24 @@
   },
   "paths": {
     "/api/proxies/new": {
-      "post": {
+      "get": {
         "tags": [
           "Api Get Proxy"
         ],
         "summary": "Lấy proxy xoay",
-        "description": "API trả về proxy HTTP/SOCKS5 với token xác thực Bearer.",
-        "security": [
+        "description": "API trả về proxy HTTP/SOCKS5 với key xác thực qua query parameter.\n\nVí dụ: `https://app.mktproxy.com/api/proxies/new?key=11765339914y0hoin`",
+        "parameters": [
           {
-            "bearerAuth": []
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "key": {
-                    "type": "string",
-                    "example": "GSaTZVGtrHPRiYUhBUSfPx"
-                  }
-                }
-              }
+            "name": "key",
+            "in": "query",
+            "required": true,
+            "description": "Key xác thực proxy",
+            "schema": {
+              "type": "string",
+              "example": "11765339914y0hoin"
             }
           }
-        },
+        ],
         "responses": {
           "200": {
             "description": "Thành công",
