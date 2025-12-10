@@ -51,35 +51,35 @@
                       "properties": {
                         "realIpAddress": {
                           "type": "string",
-                          "example": "42.119.124.219"
+                          "example": "192.168.1.100"
                         },
                         "http": {
                           "type": "string",
-                          "example": "42.119.124.219:16847:khljtiNj3Kd:fdkm3nbjg45d"
-                        },
-                        "socks5": {
-                          "type": "string",
-                          "example": "42.119.124.219:26847:khljtiNj3Kd:fdkm3nbjg45d"
+                          "example": "192.168.1.100:8080:proxyuser123:secretPass456"
                         },
                         "httpPort": {
-                          "type": "string",
-                          "example": "16847"
-                        },
-                        "socks5Port": {
-                          "type": "string",
-                          "example": "26847"
+                          "type": "integer",
+                          "example": 8080
                         },
                         "host": {
                           "type": "string",
-                          "example": "42.119.124.219"
+                          "example": "192.168.1.100"
                         },
-                        "location": {
+                        "user": {
                           "type": "string",
-                          "example": "YenBai1"
+                          "example": "proxyuser123"
                         },
-                        "expirationAt": {
+                        "pass": {
+                          "type": "string",
+                          "example": "secretPass456"
+                        },
+                        "timeRemaining": {
                           "type": "integer",
-                          "example": 1758099900
+                          "example": 60
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "Proxy hiện tại, có thể xoay sau 60s"
                         }
                       }
                     },
@@ -100,32 +100,116 @@
               }
             }
           },
-          "400": {
-            "description": "Thất bại (ví dụ thay đổi proxy quá sớm)",
+          "401": {
+            "description": "Lỗi xác thực",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
                   "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Unauthorized"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Lỗi server",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Internal Server Error"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/proxies/current": {
+      "get": {
+        "tags": [
+          "Api Get Proxy"
+        ],
+        "summary": "Lấy proxy hiện tại",
+        "description": "API trả về proxy HTTP/SOCKS5 hiện tại với key xác thực qua query parameter.\n\nVí dụ: `https://app.mktproxy.com/api/proxies/current?key=11765339914y0hoin`",
+        "parameters": [
+          {
+            "name": "key",
+            "in": "query",
+            "required": true,
+            "description": "Key xác thực proxy",
+            "schema": {
+              "type": "string",
+              "example": "11765339914y0hoin"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Thành công",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "realIpAddress": {
+                          "type": "string",
+                          "example": "192.168.1.100"
+                        },
+                        "http": {
+                          "type": "string",
+                          "example": "192.168.1.100:8080:proxyuser123:secretPass456"
+                        },
+                        "httpPort": {
+                          "type": "integer",
+                          "example": 8080
+                        },
+                        "host": {
+                          "type": "string",
+                          "example": "192.168.1.100"
+                        },
+                        "user": {
+                          "type": "string",
+                          "example": "proxyuser123"
+                        },
+                        "pass": {
+                          "type": "string",
+                          "example": "secretPass456"
+                        },
+                        "timeRemaining": {
+                          "type": "integer",
+                          "example": 60
+                        },
+                        "message": {
+                          "type": "string",
+                          "example": "Proxy hiện tại, có thể xoay sau 60s"
+                        }
+                      }
+                    },
                     "success": {
                       "type": "boolean",
-                      "example": false
+                      "example": true
                     },
                     "code": {
                       "type": "integer",
-                      "example": 40400006
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Proxy can be changed again in 49 seconds."
+                      "example": 200
                     },
                     "status": {
                       "type": "string",
-                      "example": "FAIL"
-                    },
-                    "error": {
-                      "type": "string",
-                      "example": "ERROR_SERVER"
+                      "example": "SUCCESS"
                     }
                   }
                 }
