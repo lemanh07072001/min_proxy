@@ -6,7 +6,7 @@ module.exports = {
       args: "start",
       env: {
         NODE_ENV: "production",
-        NEXT_PUBLIC_API_URL: "https://api.mktproxy.com",
+        NEXT_PUBLIC_API_URL: "https://app.mktproxy.com",
         PORT: 3001,
       }
     },
