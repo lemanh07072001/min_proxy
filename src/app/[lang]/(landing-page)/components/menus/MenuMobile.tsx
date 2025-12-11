@@ -1,7 +1,5 @@
 'use client'
 
-import Image from 'next/image'
-
 import { useParams, usePathname } from 'next/navigation'
 
 import useMenuLandingPage from '@/app/data/MenuLandingPage'
@@ -25,7 +23,13 @@ export default function MenuMobile({ onClose }: MenuMobileProps) {
     <div className='menu-container'>
       <div className='mobile-header'>
         <div className='mobile-logo'>
-          <Image src='/images/logo/Logo_MKT_Proxy.png' alt='Logo_MKT_Proxy' width={180} height={50} />
+          <img
+            src='/images/logo/Logo_MKT_Proxy.png'
+            alt='Logo_MKT_Proxy'
+            width={180}
+            height={50}
+            style={{ maxWidth: '100%', height: 'auto' }}
+          />
         </div>
         {/* Close Button */}
         <button className='btn-close-menu' onClick={onClose} aria-label='Đóng menu'>

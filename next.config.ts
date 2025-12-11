@@ -9,8 +9,8 @@ const nextConfig: NextConfig = {
     root: process.cwd()
   },
   images: {
-    unoptimized: false,
-    remotePatterns: [],
+    unoptimized: true,
+    remotePatterns: []
   },
 
   async redirects() {

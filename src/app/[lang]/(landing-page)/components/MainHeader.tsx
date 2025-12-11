@@ -103,7 +103,14 @@ const MainHeader = () => {
         <div className='container-lg'>
           {/* Logo */}
           <a className='navbar-brand navbar-brand-custom d-flex align-items-center logo' href='#'>
-            <Image src='/images/logo/Logo_MKT_Proxy.png' alt='Logo_MKT_Proxy' width={180} height={50} />
+            <Image
+              src='/images/logo/Logo_MKT_Proxy.png'
+              alt='Logo_MKT_Proxy'
+              width={180}
+              height={50}
+              priority
+              unoptimized
+            />
           </a>
 
           <div className='header-mobile'>

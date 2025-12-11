@@ -2,20 +2,21 @@
 
 import type { CSSProperties } from 'react'
 
-import Image from 'next/image'
-
 const Logo = ({ color }: { color?: CSSProperties['color'] }) => {
   return (
     <div className='flex items-center'>
-      <Image 
+      <img 
         src='/images/logo/Logo_MKT_Proxy.png' 
         alt='Logo_MKT_Proxy' 
         width={180} 
         height={50}
-        priority
-        unoptimized={false}
+        style={{ maxWidth: '100%', height: 'auto' }}
         onError={(e) => {
           console.error('Logo image failed to load:', e)
+          const target = e.target as HTMLImageElement
+          if (target) {
+            target.style.display = 'none'
+          }
         }}
       />
     </div>
