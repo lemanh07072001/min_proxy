@@ -8,6 +8,10 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: process.cwd()
   },
+  images: {
+    unoptimized: false,
+    remotePatterns: [],
+  },
 
   async redirects() {
     return [

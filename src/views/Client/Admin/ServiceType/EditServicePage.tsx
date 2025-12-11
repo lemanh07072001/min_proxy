@@ -168,7 +168,7 @@ export default function EditServicePage({ serviceId }: EditServicePageProps) {
   }
 
   // Fetch service data
-  const { data: serviceData, isLoading } = useServiceType(serviceId)
+  const { data: serviceData, isLoading, isError, error } = useServiceType(serviceId)
 
   // Fetch tất cả service types để lấy danh sách protocols
   const { data: serviceTypes = [] } = useServiceTypes()
@@ -316,6 +316,40 @@ export default function EditServicePage({ serviceId }: EditServicePageProps) {
     console.log('Price Fields:', fields)
     toast.success('Đã lưu giá thành công!')
     handleClosePriceModal()
+  }
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <Card className='orders-content'>
+        <CardContent>
+          <Box display='flex' justifyContent='center' alignItems='center' minHeight='400px'>
+            <CircularProgress />
+          </Box>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  // Show error state
+  if (isError) {
+    return (
+      <Card className='orders-content'>
+        <CardContent>
+          <Box display='flex' flexDirection='column' alignItems='center' justifyContent='center' minHeight='400px' gap={2}>
+            <Typography variant='h6' color='error'>
+              Không thể tải dữ liệu dịch vụ
+            </Typography>
+            <Typography variant='body2' color='text.secondary'>
+              {error instanceof Error ? error.message : 'Có lỗi xảy ra khi tải dữ liệu'}
+            </Typography>
+            <Button variant='contained' onClick={() => router.push(`/${locale}/admin/service-type`)}>
+              Quay lại danh sách
+            </Button>
+          </Box>
+        </CardContent>
+      </Card>
+    )
   }
 
   return (
