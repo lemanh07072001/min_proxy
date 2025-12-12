@@ -17,7 +17,7 @@ const nextConfig: NextConfig = {
         permanent: false // 307 tạm thời, đổi thành true nếu muốn 308 vĩnh viễn
       },
       {
-        source: '/:path((?!vi|en|cn|ko|ja|robots\\.txt|sitemap\\.xml|manifest\\.json|favicon\\.ico|_next|api).*)',
+        source: '/:path((?!vi|en|cn|ko|ja|robots\\.txt|sitemap\\.xml|manifest\\.json|favicon\\.ico|_next|api|images).*)',
         destination: '/vi/:path',
         permanent: false
       }

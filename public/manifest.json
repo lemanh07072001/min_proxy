@@ -10,15 +10,9 @@
     "icons": [
         {
             "src": "/images/logo/MKT_PROXY_2.png",
-            "sizes": "192x192",
+            "sizes": "any",
             "type": "image/png",
-            "purpose": "any maskable"
-        },
-        {
-            "src": "/images/logo/MKT_PROXY_2.png",
-            "sizes": "512x512",
-            "type": "image/png",
-            "purpose": "any maskable"
+            "purpose": "any"
         }
     ],
     "categories": [
