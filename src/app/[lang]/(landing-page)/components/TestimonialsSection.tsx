@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import Image from 'next/image'
 
 import { Star, Quote } from 'lucide-react'
 
@@ -146,7 +147,7 @@ const TestimonialsSection = () => {
                   {/* User Info */}
                   <div className='user-info'>
                     <div className='user-avatar'>
-                      <img src={testimonial.avatar} alt={testimonial.name} />
+                      <Image src={testimonial.avatar} alt={testimonial.name} width={100} height={100} />
                       <div className='avatar-ring'></div>
                     </div>
                     <div className='user-details'>

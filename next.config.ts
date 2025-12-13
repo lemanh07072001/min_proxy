@@ -8,6 +8,15 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: process.cwd()
   },
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'images.pexels.com',
+        pathname: '/photos/**'
+      }
+    ]
+  },
 
   async redirects() {
     return [
@@ -17,7 +26,7 @@ const nextConfig: NextConfig = {
         permanent: false // 307 tạm thời, đổi thành true nếu muốn 308 vĩnh viễn
       },
       {
-        source: '/:path((?!vi/|en/|cn/|ko/|ja/|robots\\.txt|sitemap\\.xml|manifest\\.json|favicon\\.ico|_next/|api/|images/).+)',
+        source: '/:path((?!vi$|vi/|en$|en/|cn$|cn/|ko$|ko/|ja$|ja/|robots\\.txt|sitemap\\.xml|manifest\\.json|favicon\\.ico|_next|api|images).*)',
         destination: '/vi/:path',
         permanent: false
       }
