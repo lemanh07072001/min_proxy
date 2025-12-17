@@ -1,4 +1,5 @@
 import React from 'react'
+import Image from 'next/image'
 
 const InfrastructureSection = () => {
   return (
@@ -20,59 +21,73 @@ const InfrastructureSection = () => {
           <div className='gallery-container'>
             {/* Top row images */}
             <div className='gallery-image-wrapper gallery-top-left'>
-              <img
+              <Image
                 src='https://images.pexels.com/photos/325229/pexels-photo-325229.jpeg?auto=compress&cs=tinysrgb&w=300&h=200&fit=crop'
                 alt='Server Infrastructure 1'
                 className='gallery-image'
+                width={300}
+                height={200}
               />
             </div>
             <div className='gallery-image-wrapper gallery-top-right'>
-              <img
+              <Image
                 src='https://images.pexels.com/photos/442150/pexels-photo-442150.jpeg?auto=compress&cs=tinysrgb&w=300&h=200&fit=crop'
                 alt='Server Infrastructure 2'
                 className='gallery-image'
+                width={300}
+                height={200}
               />
             </div>
 
             {/* Middle row images */}
             <div className='gallery-image-wrapper gallery-middle-left'>
-              <img
+              <Image
                 src='https://images.pexels.com/photos/159304/network-cable-ethernet-computer-159304.jpeg?auto=compress&cs=tinysrgb&w=300&h=200&fit=crop'
                 alt='Network Cables'
                 className='gallery-image'
+                width={300}
+                height={200}
               />
             </div>
 
             {/* Center main image */}
             <div className='gallery-image-wrapper gallery-center'>
-              <img
+              <Image
                 src='https://images.pexels.com/photos/2881232/pexels-photo-2881232.jpeg?auto=compress&cs=tinysrgb&w=500&h=300&fit=crop'
                 alt='Main Server Infrastructure'
                 className='gallery-image main-image'
+                width={500}
+                height={300}
               />
             </div>
 
             <div className='gallery-image-wrapper gallery-middle-right'>
-              <img
+              <Image
                 src='https://images.pexels.com/photos/1148820/pexels-photo-1148820.jpeg?auto=compress&cs=tinysrgb&w=300&h=200&fit=crop'
                 alt='Server Hardware'
                 className='gallery-image'
+                width={300}
+                height={200}
               />
             </div>
 
             {/* Bottom row images */}
             <div className='gallery-image-wrapper gallery-bottom-left'>
-              <img
+              <Image
                 src='https://images.pexels.com/photos/2582937/pexels-photo-2582937.jpeg?auto=compress&cs=tinysrgb&w=300&h=200&fit=crop'
                 alt='Network Equipment'
                 className='gallery-image'
+                width={300}
+                height={200}
               />
             </div>
             <div className='gallery-image-wrapper gallery-bottom-right'>
-              <img
+              <Image
                 src='https://images.pexels.com/photos/1181354/pexels-photo-1181354.jpeg?auto=compress&cs=tinysrgb&w=300&h=200&fit=crop'
                 alt='Data Center'
                 className='gallery-image'
+                width={300}
+                height={200}
               />
             </div>
           </div>
