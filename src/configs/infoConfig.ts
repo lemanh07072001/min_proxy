@@ -3,7 +3,7 @@ export const infoConfigs = [
     key: 'facebook',
     title: 'Facebook',
     icon: '/images/infos/fb.png',
-    link: 'https://www.facebook.com/profile.php?id=61580520613559'
+    link: 'https://www.facebook.com/profile.php?id=61584271979066'
   },
   {
     key: 'zalo',
