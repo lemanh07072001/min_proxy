@@ -42,85 +42,36 @@ export default async function RotatingProxy({ params }: { params: Promise<{ lang
   // Fetch data and dictionary in parallel
   const [proxyPlans, dictionary] = await Promise.all([getProxyPlans(), getDictionary(lang)])
 
-  // Create proxy template using server-side translations
-  const proxyTemplate = {
-    features: [
-      { label: dictionary.rotatingProxy.networkType, value: dictionary.rotatingProxy.fiberOptic, status: 'success' },
-      { label: dictionary.rotatingProxy.provider, value: dictionary.rotatingProxy.providers, status: 'success' },
-      {
-        label: dictionary.rotatingProxy.minChangeTime,
-        value: dictionary.rotatingProxy.changeTimeValue,
-        status: 'success'
-      },
-      {
-        label: dictionary.rotatingProxy.minLifetime,
-        value: dictionary.rotatingProxy.minLifetimeValue,
-        status: 'success'
-      },
-      {
-        label: dictionary.rotatingProxy.maxLifetime,
-        value: dictionary.rotatingProxy.maxLifetimeValue,
-        status: 'success'
-      },
-      { label: dictionary.rotatingProxy.location, value: dictionary.rotatingProxy.randomLocation, status: 'success' },
-      {
-        label: dictionary.rotatingProxy.quantity,
-        status: 'input',
-        inputType: 'number',
-        field: 'quantity',
-        min: 1,
-        max: 100
-      },
-      { label: dictionary.rotatingProxy.days, status: 'input', inputType: 'number', field: 'time', min: 1, max: 100 },
-      { label: dictionary.rotatingProxy.protocol, value: 'HTTP(S), SOCKS5', status: 'success' }
-    ]
-  }
-
   const mergedPlans = proxyPlans.map((plan: any) => {
-    // copy features từ template
-    const features: any[] = proxyTemplate.features.map(f => ({ ...f }))
+    // Tạo features từ multi_inputs của API
+    const features: any[] = []
 
-    // tìm vị trí của networkType
-    const index = features.findIndex(f => f.label === dictionary.rotatingProxy.networkType)
-
-    // chèn ip_version ngay sau vị trí đó
-    features.splice(index + 1, 0, {
-      label: 'IP Version',
-      value: plan.ip_version,
-      status: 'success'
-    })
-
-    const protocolIndex = features.findIndex(f => f.label === dictionary.rotatingProxy.protocol)
-
-    if (protocolIndex !== -1) {
-      if (plan.protocol_type === 1) {
-        // ✅ Hiển thị radio buttons giống như input Thời gian
-        features[protocolIndex] = {
-          ...features[protocolIndex],
-          label: 'Giao thức',
-          status: 'radio',
-          uppercaseLabel: false, // Giữ label không uppercase
-          options: [
-            { key: 'http', label: 'HTTP' },
-            { key: 'socks5', label: 'SOCKS5' }
-          ],
-          field: 'protocol' // để client biết field này là gì
-        }
-      } else {
-        // ❌ Không hiển thị gì — xóa dòng protocol khỏi danh sách
-        features.splice(protocolIndex, 1)
-      }
+    // Thêm các mô tả từ multi_inputs
+    if (plan.multi_inputs && Array.isArray(plan.multi_inputs)) {
+      plan.multi_inputs.forEach((input: any) => {
+        features.push({
+          label: input.key,
+          value: input.value,
+          status: 'success'
+        })
+      })
     }
 
-    // 👉 xử lý cột time: chuyển sang radio buttons với options từ price_by_duration
-    const timeIndex = features.findIndex(f => f.field === 'time')
+    // Thêm input số lượng
+    features.push({
+      label: dictionary.rotatingProxy.quantity,
+      status: 'input',
+      inputType: 'number',
+      field: 'quantity',
+      min: 1,
+      max: 100
+    })
 
-    if (timeIndex !== -1 && plan.price_by_duration) {
-      // Parse price_by_duration nếu là string JSON
+    // Xử lý time: chuyển sang radio buttons với options từ price_by_duration
+    if (plan.price_by_duration) {
       const priceDurations =
         typeof plan.price_by_duration === 'string' ? JSON.parse(plan.price_by_duration) : plan.price_by_duration
 
-      // Chuyển đổi thành options cho radio buttons
       const timeOptions = priceDurations.map((item: any) => ({
         key: item.duration || item.key,
         label: item.duration || item.key,
@@ -128,19 +79,19 @@ export default async function RotatingProxy({ params }: { params: Promise<{ lang
         discount: item.discount || '0'
       }))
 
-      features[timeIndex] = {
+      features.push({
         label:
           plan.time_type === '1'
-            ? 'Ngày sử dụng'
+            ? dictionary.rotatingProxy.days || 'Ngày sử dụng'
             : plan.time_type === '7'
               ? 'Tuần sử dụng'
               : plan.time_type === '30'
                 ? 'Tháng sử dụng'
-                : 'Không xác định',
+                : 'Thời gian sử dụng',
         status: 'radio',
         field: 'time',
         options: timeOptions
-      }
+      })
     }
 
     return {
