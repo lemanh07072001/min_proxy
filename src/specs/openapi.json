@@ -58,8 +58,8 @@
                           "example": "192.168.1.100:8080:proxyuser123:secretPass456"
                         },
                         "httpPort": {
-                          "type": "integer",
-                          "example": 8080
+                          "type": "string",
+                          "example": "8080"
                         },
                         "host": {
                           "type": "string",
@@ -174,8 +174,8 @@
                           "example": "192.168.1.100:8080:proxyuser123:secretPass456"
                         },
                         "httpPort": {
-                          "type": "integer",
-                          "example": 8080
+                          "type": "string",
+                          "example": "8080"
                         },
                         "host": {
                           "type": "string",
