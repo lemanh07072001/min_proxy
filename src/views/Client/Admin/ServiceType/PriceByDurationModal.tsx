@@ -20,10 +20,14 @@ interface PriceByDurationModalProps {
   setFields: (fields: PriceField[]) => void
 }
 
+// Cấu hình các tùy chọn thời gian - dễ dàng mở rộng
 const durationOptions = [
   { value: '1', label: '1 ngày' },
-  { value: '7', label: '1 tuần' },
-  { value: '30', label: '1 tháng' }
+  { value: '3', label: '3 ngày' },
+  { value: '7', label: '7 ngày (1 tuần)' },
+  { value: '14', label: '14 ngày (2 tuần)' },
+  { value: '21', label: '21 ngày (3 tuần)' },
+  { value: '30', label: '30 ngày (1 tháng)' }
 ]
 
 export default function PriceByDurationModal({

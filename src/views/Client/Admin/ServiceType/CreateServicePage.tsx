@@ -88,7 +88,11 @@ const schema = yup.object({
       }
     }),
   proxy_type: yup.string().nullable().required('Proxy type là bắt buộc'),
-  country: yup.string().nullable().required('Quốc gia là bắt buộc')
+  country: yup.string().nullable().required('Quốc gia là bắt buộc'),
+  note: yup
+    .string()
+    .nullable()
+    .transform(value => (value ? value.trim() : value))
 })
 
 export default function CreateServicePage() {
@@ -136,7 +140,8 @@ export default function CreateServicePage() {
       protocols: [],
       body_api: '',
       proxy_type: '',
-      country: ''
+      country: '',
+      note: ''
     }
   })
 
@@ -616,6 +621,31 @@ export default function CreateServicePage() {
               </Grid2>
 
               <FormControlLabel control={<Switch />} label='Hiện thị user/pass' />
+            </Grid2>
+          </Box>
+
+          <Box>
+            <h2 className='text-xl font-semibold text-slate-900 mb-4 mt-4'>Ghi chú</h2>
+            <Grid2 container spacing={5} className='pb-6 border-b border-slate-200'>
+              <Grid2 size={{ xs: 12, sm: 12 }}>
+                <Controller
+                  name='note'
+                  control={control}
+                  render={({ field }) => (
+                    <CustomTextField
+                      {...field}
+                      rows={4}
+                      fullWidth
+                      multiline
+                      label='Note'
+                      placeholder='Nhập ghi chú (tùy chọn)'
+                      id='textarea-note'
+                      error={!!errors.note}
+                      helperText={errors.note?.message}
+                    />
+                  )}
+                />
+              </Grid2>
             </Grid2>
           </Box>
 

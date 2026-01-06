@@ -40,18 +40,14 @@ interface DailyData {
 export default function DailyStats() {
   const [date, setDate] = useState<Date | null | undefined>(new Date())
 
-
   const { data: dashboardData } = useDashboardMonthly(
     {
-      date: date?.toLocaleDateString() 
+      date: date || new Date() // Pass Date object, hook will format it
     },
     !!date
   )
 
   console.log(dashboardData)
-
-
-
 
   return (
     <section aria-labelledby='daily-heading' className='lg:col-span-2'>
@@ -72,16 +68,14 @@ export default function DailyStats() {
           </div>
           <div className='flex items-center gap-4'>
             <div className='w-[200px]'>
-            <AppReactDatepicker
-              selected={date}
-              id='callback-open'
-              dateFormat='dd/MM/yyyy'
-              onChange={(date: Date | null) => setDate(date)}
-              customInput={<CustomTextField  fullWidth />}
-            
-            />
+              <AppReactDatepicker
+                selected={date}
+                id='callback-open'
+                dateFormat='dd/MM/yyyy'
+                onChange={(date: Date | null) => setDate(date)}
+                customInput={<CustomTextField fullWidth />}
+              />
             </div>
-
           </div>
         </div>
 
@@ -89,10 +83,30 @@ export default function DailyStats() {
         <div className='bg-white/80 backdrop-blur-sm rounded-xl p-6 border-t-4 border-[#f97316] shadow-lg z-0'>
           <h3 className='text-sm font-semibold text-gray-700 uppercase tracking-wide mb-4'>Chỉ Số Chính</h3>
           <div className='grid sm:grid-cols-2 gap-4'>
-            <KPICard label='Doanh Thu' value={dashboardData?.total_revenue ?? 0} icon={<DollarSign size={24} />} color='blue' />
-            <KPICard label='Lợi Nhuận' value={dashboardData?.total_profit ?? 0} icon={<TrendingUp size={24} />} color='green' />
-            <KPICard label='Tiền Nạp' value={dashboardData?.total_deposit ?? 0} icon={<Wallet size={24} />} color='green' />
-            <KPICard label='Chi Phí' value={dashboardData?.total_cost ?? 0} icon={<TrendingDown size={24} />} color='red' />
+            <KPICard
+              label='Doanh Thu'
+              value={dashboardData?.total_revenue ?? 0}
+              icon={<DollarSign size={24} />}
+              color='blue'
+            />
+            <KPICard
+              label='Lợi Nhuận'
+              value={dashboardData?.total_profit ?? 0}
+              icon={<TrendingUp size={24} />}
+              color='green'
+            />
+            <KPICard
+              label='Tiền Nạp'
+              value={dashboardData?.total_deposit ?? 0}
+              icon={<Wallet size={24} />}
+              color='green'
+            />
+            <KPICard
+              label='Chi Phí'
+              value={dashboardData?.total_cost ?? 0}
+              icon={<TrendingDown size={24} />}
+              color='red'
+            />
             <KPICard
               label='Số Giao Dịch Nạp'
               value={dashboardData?.total_deposit_count ?? 0}
@@ -147,7 +161,12 @@ export default function DailyStats() {
         {/* Refunds */}
         <div className='bg-white/80 backdrop-blur-sm rounded-xl p-6 border-t-4 border-red-500 shadow-lg'>
           <h3 className='text-sm font-semibold text-gray-700 uppercase tracking-wide mb-4'>Hoàn Tiền</h3>
-          <KPICard label='Số Tiền Hoàn' value={dashboardData?.total_refunds ?? 0} icon={<RefreshCw size={24} />} color='red' />
+          <KPICard
+            label='Số Tiền Hoàn'
+            value={dashboardData?.total_refunds ?? 0}
+            icon={<RefreshCw size={24} />}
+            color='red'
+          />
         </div>
       </div>
     </section>
