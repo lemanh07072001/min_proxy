@@ -22,7 +22,7 @@ import { useQuery } from '@tanstack/react-query'
 import Chip from '@mui/material/Chip'
 import { useSession } from 'next-auth/react'
 
-import useAxiosAuth from '@/hocs/useAxiosAuth'
+import useAxiosAuth from '@/hooks/useAxiosAuth'
 import { formatDateTimeLocal } from '@/utils/formatDate'
 
 export default function UserWithdrawalTable() {

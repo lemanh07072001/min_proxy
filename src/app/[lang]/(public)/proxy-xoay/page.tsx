@@ -110,6 +110,8 @@ export default async function RotatingProxy({ params }: { params: Promise<{ lang
       features
     }
   })
+
   console.log(mergedPlans)
-  return <ProxyPlansClient data={mergedPlans} />
+  
+return <ProxyPlansClient data={mergedPlans} />
 }

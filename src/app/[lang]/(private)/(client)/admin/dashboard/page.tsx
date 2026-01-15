@@ -1,9 +1,7 @@
 import { getServerSession } from 'next-auth/next'
-import { authOptions } from '@/libs/auth'
-import axiosInstance from '@/libs/axios'
-import KPICard from '@/components/UI/KPICard'
-import DailyStats from '@/views/Client/Admin/Dashboard/DailyStats'
+
 import { Grid2 } from '@mui/material'
+
 import {
   CheckCircle,
   Clock,
@@ -18,6 +16,11 @@ import {
   Wallet,
   XCircle
 } from 'lucide-react'
+
+import { authOptions } from '@/libs/auth'
+import axiosInstance from '@/libs/axios'
+import KPICard from '@/components/UI/KPICard'
+import DailyStats from '@/views/Client/Admin/Dashboard/DailyStats'
 
 // Server-side data fetching
 async function getDashboardData() {
@@ -39,7 +42,8 @@ async function getDashboardData() {
     return response?.data?.data ?? null
   } catch (error: any) {
     console.error('[Dashboard] Error fetching data:', error.message)
-    return null
+    
+return null
   }
 }
 

@@ -1,30 +1,23 @@
+'use client'
+
 import React from 'react'
 
-import { MapPin, Globe, Shield, Zap, Clock, Users } from 'lucide-react'
+import { Globe, Shield, Zap, Clock, Users } from 'lucide-react'
+
+import { useTranslation } from 'react-i18next'
 
 const VietnamCoverageSection = () => {
-  const features = [
-    {
-      icon: <Globe size={20} />,
-      text: 'Hỗ trợ xây dựng website riêng miễn phí'
-    },
-    {
-      icon: <Shield size={20} />,
-      text: 'Nguồn proxy ổn định, đa dạng IP'
-    },
-    {
-      icon: <Zap size={20} />,
-      text: 'Gió nhẹp cạnh tranh, lợi nhuận hấp dẫn'
-    },
-    {
-      icon: <Clock size={20} />,
-      text: 'Hệ thống tự động hoàn toàn, dễ quản lý'
-    },
-    {
-      icon: <Users size={20} />,
-      text: 'Hỗ trợ kỹ thuật và marketing 24/7'
-    }
+  const { t } = useTranslation()
+
+  const featureIcons = [
+    <Globe key="globe" size={20} />,
+    <Shield key="shield" size={20} />,
+    <Zap key="zap" size={20} />,
+    <Clock key="clock" size={20} />,
+    <Users key="users" size={20} />
   ]
+
+  const featureTexts = t('landing.coverage.features', { returnObjects: true }) as string[]
 
   return (
     <section className='vietnam-coverage-section'>
@@ -70,28 +63,26 @@ const VietnamCoverageSection = () => {
             {/* Main Title */}
             <div className='coverage-header'>
               <h2 className='coverage-main-title'>
-                Có mặt hầu hết ở các tỉnh thành <span className='text-red'>Việt Nam</span>
+                {t('landing.coverage.title.text')} <span className='text-red'>{t('landing.coverage.title.highlight')}</span>
               </h2>
               <p className='coverage-subtitle'>
-                Mạng lưới máy chủ phủ sóng toàn diện, kết nối xuyên suốt 3 miền đất nước với công nghệ hiện đại nhất
+                {t('landing.coverage.subtitle')}
               </p>
             </div>
 
             {/* Proxy Section */}
             <div className='proxy-info-section'>
-              <h3 className='proxy-title'>Proxy Dân Cư tỉnh Việt Nam</h3>
+              <h3 className='proxy-title'>{t('landing.coverage.proxyTitle')}</h3>
               <p className='proxy-description'>
-                Hệ thống máy chủ đặt tại nhiều khu vực trong điểm trên cả ba miền, đang từng bước mở rộng phủ sóng đủ 34
-                tỉnh thành. Hạ tầng xây dựng với tiêu chuẩn ổn định cao, trang bị đầy đủ thiết bị dự phòng để luôn sẵn
-                sàng, tránh tối đa mọi sự cố
+                {t('landing.coverage.proxyDescription')}
               </p>
 
               {/* Features List */}
               <div className='features-list'>
-                {features.map((feature, index) => (
+                {Array.isArray(featureTexts) && featureTexts.map((text, index) => (
                   <div key={index} className='feature-item-vietnam' style={{ '--animation-delay': `${index * 0.1}s` } as React.CSSProperties}>
-                    <div className='feature-icon-vietnam'>{feature.icon}</div>
-                    <span className='feature-text-vietnam'>{feature.text}</span>
+                    <div className='feature-icon-vietnam'>{featureIcons[index]}</div>
+                    <span className='feature-text-vietnam'>{text}</span>
                   </div>
                 ))}
               </div>
@@ -99,7 +90,7 @@ const VietnamCoverageSection = () => {
               {/* CTA Button */}
               <div className='coverage-cta'>
                 <button className='btn-register-now'>
-                  <span>ĐĂNG KÝ NGAY</span>
+                  <span>{t('landing.coverage.registerNow')}</span>
                   <div className='btn-shine-effect'></div>
                 </button>
               </div>
@@ -203,22 +194,22 @@ const VietnamCoverageSection = () => {
                 <div className='coverage-stats'>
                   <div className='stat-badge stat-64'>
                     <div className='stat-number'>64+</div>
-                    <div className='stat-label'>Phủ khắp 3 miền Việt Nam</div>
+                    <div className='stat-label'>{t('landing.coverage.statsLabel')}</div>
                   </div>
                 </div>
 
                 {/* Floating Info Cards */}
                 <div className='floating-info-card card-north'>
                   <div className='info-dot'></div>
-                  <div className='info-text'>Miền Bắc</div>
+                  <div className='info-text'>{t('landing.coverage.regions.north')}</div>
                 </div>
                 <div className='floating-info-card card-central'>
                   <div className='info-dot'></div>
-                  <div className='info-text'>Miền Trung</div>
+                  <div className='info-text'>{t('landing.coverage.regions.central')}</div>
                 </div>
                 <div className='floating-info-card card-south'>
                   <div className='info-dot'></div>
-                  <div className='info-text'>Miền Nam</div>
+                  <div className='info-text'>{t('landing.coverage.regions.south')}</div>
                 </div>
               </div>
             </div>

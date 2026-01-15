@@ -27,10 +27,8 @@ import { signOut, useSession } from 'next-auth/react'
 
 import Box from '@mui/material/Box'
 
-import { useDispatch } from 'react-redux'
-
 import { useSettings } from '@core/hooks/useSettings'
-import { clearUser } from '@/store/userSlice'
+import { useUserStore } from '@/stores'
 
 import ConfirmDialog from '@components/confirm-modal/ConfirmDialog'
 
@@ -53,7 +51,7 @@ const UserDropdown = () => {
 
   // Hooks
   const router = useRouter()
-  const dispatch = useDispatch()
+  const clearUser = useUserStore((state) => state.clearUser)
 
   const { settings } = useSettings()
 
@@ -77,8 +75,8 @@ const UserDropdown = () => {
     setOpenConfirm(false)
 
     try {
-      // Clear Redux store trước
-      dispatch(clearUser())
+      // Clear Zustand store trước
+      clearUser()
 
       // Clear session và redirect về trang proxy-tinh
       await signOut({
@@ -89,8 +87,8 @@ const UserDropdown = () => {
       // Force reload để clear tất cả state
       window.location.href = `/${lang}/proxy-tinh`
     } catch (error) {
-      // Nếu có lỗi, vẫn clear Redux và redirect về trang proxy-tinh
-      dispatch(clearUser())
+      // Nếu có lỗi, vẫn clear Zustand và redirect về trang proxy-tinh
+      clearUser()
       window.location.href = `/${lang}/proxy-tinh`
     }
   }

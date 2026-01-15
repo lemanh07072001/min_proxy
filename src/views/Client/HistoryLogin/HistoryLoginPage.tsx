@@ -24,7 +24,7 @@ import { useQuery } from '@tanstack/react-query'
 
 import Button from '@mui/material/Button'
 
-import useAxiosAuth from '@/hocs/useAxiosAuth'
+import useAxiosAuth from '@/hooks/useAxiosAuth'
 import { useCopy } from '@/app/hooks/useCopy'
 import { formatDateTimeLocal } from '@/utils/formatDate'
 import CustomIconButton from '@core/components/mui/IconButton'

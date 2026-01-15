@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 
-import useAxiosAuth from '@/hocs/useAxiosAuth'
+import useAxiosAuth from '@/hooks/useAxiosAuth'
 
 export const useDepositHistory = () => {
   const axiosAuth = useAxiosAuth()
@@ -9,7 +9,9 @@ export const useDepositHistory = () => {
     queryKey: ['depositHistory'],
     queryFn: async () => {
       const res = await axiosAuth.get('/get-deponsit-history')
-      return res?.data ?? []
+
+      
+return res?.data ?? []
     },
     refetchOnMount: 'always',
     refetchOnWindowFocus: true,

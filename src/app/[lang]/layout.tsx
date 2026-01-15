@@ -7,6 +7,7 @@ import '@/app/css-variables.css'
 import '@/app/globals.css'
 import '@/app/shared-layout.css' // CSS chung cho cả private và public
 import '@/app/root.css'
+
 // import '@/app/figtree.css'
 
 // Generated Icon CSS Imports
@@ -36,7 +37,7 @@ import type { ChildrenType } from '@core/types'
 import TanstackProvider from '@/components/TanstackProvider'
 
 import { getSystemMode } from '@core/utils/serverHelpers'
-import TranslationWrapper from '@/hocs/TranslationWrapper'
+import TranslationWrapper from '@/components/providers/TranslationWrapper'
 
 import { ModalContextProvider } from '@/app/contexts/ModalContext'
 
@@ -44,7 +45,7 @@ import { authOptions } from '@/libs/auth'
 
 import I18nextProvider from '@/app/i18n-provider'
 
-import StoreProvider from '@/components/StoreProvider'
+import ZustandHydrator from '@/components/ZustandHydrator'
 import ReferralHandler from '@/components/ReferralHandler'
 import { NextAuthProvider } from '@/app/contexts/nextAuthProvider'
 
@@ -136,7 +137,7 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
   }
 }
 
-export const revalidate = 0 //
+export const revalidate = 60 // Cache 60 giây
 
 const RootLayout = async (props: ChildrenType & { params: Promise<{ lang: string }> }) => {
   const { children } = props
@@ -160,19 +161,19 @@ const RootLayout = async (props: ChildrenType & { params: Promise<{ lang: string
         <body className='flex is-full min-bs-full flex-auto flex-col'>
           <I18nextProvider locale={params.lang as Locale}>
             <NextAuthProvider
-              refetchInterval={10}
-              refetchOnWindowFocus={true}
+              refetchInterval={5 * 60}
+              refetchOnWindowFocus={false}
               session={session as any}
               basePath={process.env.NEXTAUTH_BASEPATH}
             >
               <TanstackProvider>
                 <InitColorSchemeScript attribute='data' defaultMode={systemMode} />
-                <StoreProvider initialUser={user}>
+                <ZustandHydrator initialUser={user}>
                   <ModalContextProvider>
                     <ReferralHandler />
                     <div className='relative z-10 main'>{children}</div>
                   </ModalContextProvider>
-                </StoreProvider>
+                </ZustandHydrator>
               </TanstackProvider>
             </NextAuthProvider>
           </I18nextProvider>

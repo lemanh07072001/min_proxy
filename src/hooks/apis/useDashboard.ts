@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { useSession } from 'next-auth/react'
-import useAxiosAuth from '@/hocs/useAxiosAuth'
+
+import useAxiosAuth from '@/hooks/useAxiosAuth'
 
 interface DashboardParams {
   date?: string
@@ -13,6 +14,7 @@ export const useDashboard = () => {
     queryKey: ['dashboard'],
     queryFn: async () => {
       const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+
       const res = await fetch(`${baseUrl}/api/admin/dashboard`, {
         method: 'GET',
         headers: {
@@ -20,13 +22,14 @@ export const useDashboard = () => {
           'Content-Type': 'application/json'
         }
       })
+
       const data = await res.json()
-      return data?.data ?? null
+
+      
+return data?.data ?? null
     },
     enabled: !!session?.access_token,
-    refetchOnMount: 'always',
-    refetchOnWindowFocus: true,
-    staleTime: 0
+    staleTime: 5 * 60 * 1000 // 5 phút
   })
 }
 
@@ -40,14 +43,18 @@ export const useDashboardMonthly = (params?: DashboardParams, enabled: boolean =
       const day = String(today.getDate()).padStart(2, '0')
       const month = String(today.getMonth() + 1).padStart(2, '0')
       const year = today.getFullYear()
-      return `${day}-${month}-${year}`
+
+      
+return `${day}-${month}-${year}`
     }
 
     if (date instanceof Date) {
       const day = String(date.getDate()).padStart(2, '0')
       const month = String(date.getMonth() + 1).padStart(2, '0')
       const year = date.getFullYear()
-      return `${day}-${month}-${year}`
+
+      
+return `${day}-${month}-${year}`
     }
 
     // If date is string in format DD/MM/YYYY, convert to DD-MM-YYYY
@@ -65,6 +72,7 @@ export const useDashboardMonthly = (params?: DashboardParams, enabled: boolean =
     queryFn: async () => {
       const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
       const url = new URL(`${baseUrl}/api/get-dashboard-by-date`)
+
       if (formattedDate) {
         url.searchParams.set('date', formattedDate)
       }
@@ -76,8 +84,11 @@ export const useDashboardMonthly = (params?: DashboardParams, enabled: boolean =
           'Content-Type': 'application/json'
         }
       })
+
       const data = await res.json()
-      return data?.data ?? null
+
+      
+return data?.data ?? null
     },
     enabled: enabled && !!session?.access_token,
     refetchOnMount: false,

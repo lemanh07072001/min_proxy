@@ -2,11 +2,11 @@ import i18n from 'i18next'
 import { initReactI18next } from 'react-i18next'
 
 import { i18n as appI18n } from '@/configs/configi18n'
-import en from '@/locales/en.json'
-import vi from '@/locales/vi.json'
-import cn from '@/locales/cn.json'
-import ko from '@/locales/ko.json'
-import ja from '@/locales/ja.json'
+import en from '@/data/dictionaries/en.json'
+import vi from '@/data/dictionaries/vi.json'
+import cn from '@/data/dictionaries/cn.json'
+import ko from '@/data/dictionaries/ko.json'
+import ja from '@/data/dictionaries/ja.json'
 
 // Khởi tạo i18n
 if (!i18n.isInitialized) {
@@ -26,9 +26,11 @@ if (!i18n.isInitialized) {
       useSuspense: false
     },
     debug: false,
+
     // Đảm bảo có thể thay đổi ngôn ngữ
     saveMissing: false,
     missingKeyHandler: false,
+
     // Force reload when language changes
     reloadOnPrerender: true
   })

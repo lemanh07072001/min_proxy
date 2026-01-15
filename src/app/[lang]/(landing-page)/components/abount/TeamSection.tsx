@@ -10,7 +10,9 @@ import { useLanguageSync } from '@/hooks/useLanguageSync'
 
 const TeamSection = () => {
   const { t } = useTranslation()
+
   useLanguageSync()
+
   const teamValues = [
     {
       icon: (

@@ -1,6 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import useAxiosAuth from '@/hocs/useAxiosAuth'
+
 import axios from 'axios'
+
+import useAxiosAuth from '@/hooks/useAxiosAuth'
 
 export const usePartners = () => {
   const axiosAuth = useAxiosAuth()
@@ -10,8 +12,10 @@ export const usePartners = () => {
     queryFn: async () => {
       const res = await axiosAuth.get('/get-partner')
       const data = res?.data?.data ?? res?.data ?? []
+
       console.log('Partners data from API:', data)
-      return data
+      
+return data
     },
     refetchOnMount: false,
     refetchOnWindowFocus: false,
@@ -27,7 +31,9 @@ export const useCreatePartner = () => {
   return useMutation({
     mutationFn: async (data: any) => {
       const res = await axiosAuth.post('/add-partner', data)
-      return res?.data
+
+      
+return res?.data
     },
     onSuccess: () => {
       // Refresh lại danh sách partners sau khi tạo thành công
@@ -44,7 +50,9 @@ export const useUpdatePartner = (partnerId?: number) => {
   return useMutation({
     mutationFn: async (data: any) => {
       const res = await axiosAuth.post(`/edit-partner/${partnerId}`, data)
-      return res?.data
+
+      
+return res?.data
     },
     onSuccess: () => {
       // Refresh lại danh sách partners sau khi cập nhật thành công
@@ -61,7 +69,9 @@ export const useDeletePartner = () => {
   return useMutation({
     mutationFn: async (partnerId: number) => {
       const res = await axiosAuth.post(`/delete-partner/${partnerId}`)
-      return res?.data
+
+      
+return res?.data
     },
     onSuccess: () => {
       // Refresh lại danh sách partners sau khi xóa thành công
@@ -77,7 +87,9 @@ export const useGenerateQrCode = () => {
   return useMutation({
     mutationFn: async (data: { partner_code: string; amount: string | number }) => {
       const res = await axiosAuth.post('/create-topup-transaction', data)
-      return res?.data
+
+      
+return res?.data
     }
   })
 }
@@ -100,6 +112,7 @@ export const usePartnerTransactions = (partnerId?: number | string, enabled: boo
         return res?.data?.data ?? res?.data ?? []
       } catch (error: any) {
         console.error('Error fetching topup history:', error)
+
         // Throw error để React Query có thể xử lý
         throw error
       }

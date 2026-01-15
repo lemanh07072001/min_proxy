@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+
 import {
   Card,
   CardContent,
@@ -21,6 +22,7 @@ import {
 } from '@mui/material'
 import { Plus, X } from 'lucide-react'
 import { toast } from 'react-toastify'
+
 import CustomTextField from '@/@core/components/mui/TextField'
 
 interface MultiInputField {
@@ -64,6 +66,7 @@ export default function MultiInputModal({
 
   const handleInputFieldChange = (index: number, field: 'key' | 'value', value: string) => {
     const updatedFields = [...multiInputFields]
+
     updatedFields[index][field] = value
     setMultiInputFields(updatedFields)
   }
@@ -71,9 +74,11 @@ export default function MultiInputModal({
   const handleSave = () => {
     // Validate: check if all fields are filled
     const hasEmptyFields = multiInputFields.some(field => !field.key || !field.value)
+
     if (hasEmptyFields) {
       toast.error('Vui lòng điền đầy đủ tất cả các trường')
-      return
+      
+return
     }
 
     onSave(multiInputFields)

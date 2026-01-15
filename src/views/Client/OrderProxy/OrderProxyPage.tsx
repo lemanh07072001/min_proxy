@@ -34,7 +34,7 @@ import {
 
 import Chip from '@mui/material/Chip'
 
-import './styles.css'
+import './stylesOrder.css'
 import Pagination from '@mui/material/Pagination'
 
 import Checkbox from '@mui/material/Checkbox'
@@ -49,7 +49,7 @@ import { useCopy } from '@/app/hooks/useCopy'
 
 import { ChangePassword } from './ChangePassword'
 
-import useAxiosAuth from '@/hocs/useAxiosAuth'
+import useAxiosAuth from '@/hooks/useAxiosAuth'
 
 export default function OrderProxyPage() {
   const [columnFilters, setColumnFilters] = useState([])

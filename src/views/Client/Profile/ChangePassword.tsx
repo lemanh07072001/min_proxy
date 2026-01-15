@@ -14,7 +14,7 @@ import { useMutation } from '@tanstack/react-query'
 import { toast } from 'react-toastify'
 
 import CustomTextField from '@core/components/mui/TextField'
-import useAxiosAuth from '@/hocs/useAxiosAuth'
+import useAxiosAuth from '@/hooks/useAxiosAuth'
 
 interface ChangePasswordFormData {
   currentPassword: string
@@ -130,6 +130,7 @@ const ChangePassword = () => {
                     <InputAdornment position='end'>
                       <IconButton
                         edge='end'
+
                         // SỬA Ở ĐÂY
                         onClick={handleClickShowPassword('current')}
                         onMouseDown={handleMouseDownPassword}

@@ -19,13 +19,10 @@ import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
 
-import { useSelector } from 'react-redux'
-
 import CustomTextField from '@core/components/mui/TextField'
 import DialogCloseButton from '@/components/modals/DialogCloseButton'
 import { useModalContext } from '@/app/contexts/ModalContext'
-
-import type { RootState } from '@/store'
+import { useUserStore } from '@/stores'
 
 interface UserProfileModalProps {
   isOpen: boolean
@@ -62,7 +59,7 @@ const changePasswordSchema = yup
 const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onClose }) => {
   const [activeTab, setActiveTab] = useState('info')
 
-  const { user } = useSelector((state: RootState) => state.user)
+  const user = useUserStore((state) => state.user)
   const { openAuthModal } = useModalContext()
 
 
@@ -124,6 +121,7 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onClose }) 
             <div className='flex items-center space-x-6'>
               <div className='relative'>
                 <img
+
                   // src={editedUser.avatar}
                   // alt={editedUser.name}
                   className='w-24 h-24 rounded-full border-4 border-white shadow-lg object-cover'

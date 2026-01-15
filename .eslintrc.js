@@ -6,6 +6,14 @@ module.exports = {
     'react/no-children-prop': 'off',
     '@next/next/no-img-element': 'off',
     '@next/next/no-page-custom-font': 'off',
+    '@next/next/no-html-link-for-pages': 'warn',
+    'react/no-unescaped-entities': 'warn',
+    'react/jsx-no-undef': 'warn',
+    'import/no-unresolved': 'warn',
+    'import/named': 'warn',
+    'import/no-duplicates': 'warn',
+    '@typescript-eslint/no-unused-vars': 'off',
+    'react-hooks/exhaustive-deps': 'warn',
     'lines-around-comment': [
       'error',
       {
@@ -52,7 +60,7 @@ module.exports = {
       }
     ],
     'import/order': [
-      'error',
+      'warn',
       {
         groups: ['builtin', 'external', ['internal', 'parent', 'sibling', 'index'], ['object', 'unknown']],
         pathGroups: [

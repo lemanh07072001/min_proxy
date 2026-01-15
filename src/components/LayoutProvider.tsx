@@ -1,11 +1,15 @@
 'use client'
 
 import { createContext, useContext, ReactNode } from 'react'
+
 import { ToastContainer } from 'react-toastify'
-import ScrollToTop from '@core/components/scroll-to-top'
+
 import Button from '@mui/material/Button'
 
+import ScrollToTop from '@core/components/scroll-to-top'
+
 interface LayoutContextType {
+
   // Có thể thêm các giá trị context nếu cần
 }
 
@@ -13,10 +17,13 @@ const LayoutContext = createContext<LayoutContextType | null>(null)
 
 export const useLayout = () => {
   const context = useContext(LayoutContext)
+
   if (!context) {
     throw new Error('useLayout must be used within LayoutProvider')
   }
-  return context
+
+  
+return context
 }
 
 interface LayoutProviderProps {

@@ -1,4 +1,334 @@
 {
+  "time": {
+    "months": "month",
+    "days": "days",
+    "hours": "hours",
+    "minutes": "minutes"
+  },
+  "landing": {
+    "header": {
+      "promoBanner": {
+        "text": "Special promotion from {{appName}}!",
+        "button": "View now"
+      },
+      "menu": {
+        "home": "Home",
+        "products": "Products",
+        "pricing": "Pricing",
+        "docs": "Docs",
+        "about": "About",
+        "cooperate": "Cooperate",
+        "hotline": "Contact",
+        "contact": "Contact"
+      },
+      "buttons": {
+        "login": "Login",
+        "register": "Register",
+        "dashboard": "Dashboard"
+      },
+      "auth": {
+        "login": "Login",
+        "register": "Register"
+      },
+      "goToHome": "Go to Home"
+    },
+    "hero": {
+      "title": {
+        "line1": "Vietnam Proxy",
+        "line2": "High Quality"
+      },
+      "subtitle": "Stable, high-speed proxy service with real Vietnam IPs",
+      "description": "Professional proxy solution for businesses and individuals",
+      "buttons": {
+        "tryFree": "Try for free",
+        "viewPricing": "View pricing"
+      },
+      "features": {
+        "coverage": "64 provinces coverage",
+        "speed": "High speed",
+        "uptime": "99.9% Uptime",
+        "support": "24/7 Support"
+      },
+      "actions": {
+        "buyNow": "Buy Now",
+        "watchDemo": "Watch Demo"
+      },
+      "trust": {
+        "customers": "Customers",
+        "uptime": "Uptime",
+        "support": "Support"
+      },
+      "floatingCards": {
+        "security": {
+          "title": "Security",
+          "desc": "End-to-end encryption"
+        },
+        "speed": {
+          "title": "High Speed",
+          "desc": "Unlimited bandwidth"
+        },
+        "coverage": {
+          "title": "Coverage",
+          "desc": "64 provinces in Vietnam"
+        }
+      }
+    },
+    "products": {
+      "title": "Proxy Products",
+      "subtitle": "Choose the proxy package that suits your needs",
+      "cards": {
+        "viettel": {
+          "name": "Viettel Proxy",
+          "badge": "Popular",
+          "features": [
+            "100% Real Viettel IP",
+            "High stable speed",
+            "HTTP/SOCKS5 support",
+            "Unlimited IP changes"
+          ]
+        },
+        "fpt": {
+          "name": "FPT Proxy",
+          "badge": "Best seller",
+          "features": [
+            "100% Real FPT IP",
+            "Unlimited bandwidth",
+            "HTTP/SOCKS5 support",
+            "99.9% Uptime"
+          ]
+        },
+        "vnpt": {
+          "name": "VNPT Proxy",
+          "badge": "Stable",
+          "features": [
+            "100% Real VNPT IP",
+            "Low latency",
+            "HTTP/SOCKS5 support",
+            "High security"
+          ]
+        }
+      },
+      "actions": {
+        "buyNow": "Buy now",
+        "popular": "Most popular",
+        "guarantee": "24h money back guarantee"
+      },
+      "cta": {
+        "title": "Need more advice?",
+        "description": "Contact us for the best support",
+        "button": "Contact consultant"
+      }
+    },
+    "features": {
+      "title": "Why Choose Us",
+      "subtitle": "Leading proxy service in Vietnam",
+      "items": {
+        "speed": {
+          "title": "High Speed",
+          "description": "Unlimited bandwidth, low latency"
+        },
+        "security": {
+          "title": "Security",
+          "description": "End-to-end encryption, no logs"
+        },
+        "support": {
+          "title": "24/7 Support",
+          "description": "Professional support team"
+        },
+        "uptime": {
+          "title": "99.9% Uptime",
+          "description": "Stable system, continuous operation"
+        }
+      }
+    },
+    "pricing": {
+      "title": "Pricing",
+      "subtitle": "Plans for all needs",
+      "perMonth": "/month",
+      "perDay": "/day"
+    },
+    "testimonials": {
+      "title": "What Customers Say",
+      "subtitle": "Reviews from customers who have used our service"
+    },
+    "faq": {
+      "title": "Frequently Asked Questions",
+      "subtitle": "Answers to your questions"
+    },
+    "footer": {
+      "cta": {
+        "title": "Start today",
+        "description": "Register to receive special offers",
+        "contactAgent": "Contact agent",
+        "registerNow": "Register now"
+      },
+      "sections": {
+        "company": {
+          "title": "Company",
+          "about": "About",
+          "agentOffers": "Agent program",
+          "partners": "Partners",
+          "sitemap": "Sitemap"
+        },
+        "products": {
+          "title": "Products",
+          "staticProxy": "Static Proxy",
+          "rotatingProxy": "Rotating Proxy"
+        },
+        "locations": {
+          "title": "Locations",
+          "vietnam": "Vietnam",
+          "hcm": "Ho Chi Minh City",
+          "hanoi": "Hanoi",
+          "hungYen": "Hung Yen",
+          "tuyenQuang": "Tuyen Quang",
+          "binhDinh": "Binh Dinh"
+        },
+        "support": {
+          "title": "Support",
+          "contact": "Contact",
+          "faq": "FAQ"
+        },
+        "getStarted": {
+          "title": "Get Started",
+          "becomeCTV": "Become a CTV",
+          "becomeAgent": "Become an Agent",
+          "buyCheap": "Buy Cheap Proxy",
+          "autoTrade": "Auto Trading System",
+          "help": "Help"
+        }
+      },
+      "legal": {
+        "privacy": "Privacy Policy",
+        "service": "Terms of Service",
+        "refund": "Refund Policy",
+        "copyright": "© 2024 {{appName}}. All rights reserved."
+      },
+      "contact": {
+        "title": "Contact Us"
+      },
+      "copyright": "© 2024 MKT Proxy. All rights reserved."
+    },
+    "about": {
+      "hero": {
+        "title": {
+          "main": "About",
+          "highlight": "Us"
+        },
+        "subtitle": "{{appName}} is a leading proxy service provider in Vietnam with over 5 years of experience",
+        "features": [
+          "Over 5000 trusted customers",
+          "Coverage in 64 provinces",
+          "99.9% Uptime",
+          "24/7 Support"
+        ],
+        "actions": {
+          "contact": "Contact Now",
+          "pricing": "View Pricing"
+        },
+        "stats": {
+          "customers": "Customers",
+          "provinces": "Provinces",
+          "uptime": "Uptime",
+          "experience": "Years Experience"
+        }
+      },
+      "companyInfo": {
+        "title": "Company Information",
+        "description": "MKT Proxy is a leading proxy service provider in Vietnam"
+      }
+    },
+    "cooperate": {
+      "about": {
+        "title": "Cooperate With Us",
+        "subtitle": "Join our agent program and receive special offers"
+      }
+    },
+    "hotline": {
+      "hero": {
+        "title": "Contact Us",
+        "subtitle": "We are always ready to support and advise you"
+      }
+    },
+    "infrastructure": {
+      "title": {
+        "highlight": "Infrastructure",
+        "text": "of ours"
+      },
+      "subtitle": "Modern infrastructure equipped with the most advanced proxy server technologies, outstanding stability and security",
+      "stats": {
+        "uptime": "Uptime",
+        "monitoring": "Monitoring",
+        "servers": "Servers",
+        "providers": "Providers"
+      }
+    },
+    "coverage": {
+      "title": {
+        "text": "Present in most provinces of",
+        "highlight": "Vietnam"
+      },
+      "subtitle": "Comprehensive server network covering all 3 regions of the country with the most modern technology",
+      "proxyTitle": "Vietnam Residential Proxy",
+      "proxyDescription": "Server system located in key areas across all three regions, gradually expanding coverage to all 34 provinces. Infrastructure built with high stability standards, fully equipped with backup devices to always be ready and minimize all incidents",
+      "features": [
+        "Free support for building your own website",
+        "Stable proxy source, diverse IPs",
+        "Competitive price, attractive profits",
+        "Fully automated system, easy to manage",
+        "24/7 technical and marketing support"
+      ],
+      "registerNow": "REGISTER NOW",
+      "statsLabel": "Covering all 3 regions of Vietnam",
+      "regions": {
+        "north": "North",
+        "central": "Central",
+        "south": "South"
+      }
+    },
+    "testimonials": {
+      "titleNumber": "100+",
+      "titleText": "Customers nationwide",
+      "stats": {
+        "customers": {
+          "number": "1000+",
+          "label": "Trusted customers"
+        },
+        "uptime": {
+          "number": "99.9%",
+          "label": "Uptime"
+        },
+        "support": {
+          "number": "24/7",
+          "label": "Technical support"
+        },
+        "providers": {
+          "number": "3",
+          "label": "Major providers"
+        }
+      },
+      "reviews": [
+        {
+          "name": "Nguyen Thanh Binh",
+          "role": "Full-time proxy business",
+          "content": "I have been an agent since the early days of {{appName}} launch and am very surprised by the professionalism in operation and support. I have my own customized website, clear policies, and careful care. This is a reliable and serious platform in the proxy field."
+        },
+        {
+          "name": "Nguyen Hoa",
+          "role": "Proxy dealer in HCMC",
+          "content": "Initially I was hesitant to sell online because of complexity and high costs. But since joining {{appName}}'s private web agent program, I received dedicated support, free private website and increased experience by 3 million. Now I sell proxy stably every month, easy start."
+        },
+        {
+          "name": "Vu Huy",
+          "role": "{{appName}} private web partner",
+          "content": "I am satisfied when finding {{appName}} agent because I feel truly accompanied. Not just reselling products, I received professional private web design support, built a clear brand identity, created customer trust and always supported by {{appName}} when needed."
+        }
+      ]
+    },
+    "common": {
+      "closeMenu": "Close menu"
+    }
+  },
   "navigation": {
     "home": "Home",
     "overview": "Overview",
@@ -9,10 +339,12 @@
     "proxyOrders": "Proxy Orders",
     "rotatingProxyOrders": "Rotating Proxy Orders",
     "purchaseHistory": "Purchase History",
+    "affiliate": "Affiliate",
     "transactionHistory": "Transaction History",
     "proxyChangeHistory": "Proxy Change History",
     "loginHistory": "Login History",
     "guide": "Guide",
+    "partner": "Partner",
     "support": "Support",
     "docsApi": "Docs Api"
   },
@@ -58,5 +390,47 @@
     "randomLocation": "Random",
     "quantity": "Quantity",
     "days": "Days"
+  },
+  "auth": {
+    "email": "Email",
+    "password": "Password",
+    "username": "Username",
+    "confirmPassword": "Confirm Password",
+    "register": "Register",
+    "rememberMe": "Remember me",
+    "loginSuccess": "Login successful!",
+    "loginError": "Login failed!",
+    "registerError": "Registration failed!",
+    "placeholders": {
+      "enterEmail": "Enter your email",
+      "enterPassword": "Enter your password",
+      "enterName": "Enter your name"
+    },
+    "validation": {
+      "emailRequired": "Please enter email",
+      "emailInvalid": "Invalid email",
+      "passwordRequired": "Please enter password",
+      "passwordMinLength": "Password must be at least 6 characters",
+      "nameRequired": "Please enter name",
+      "confirmPasswordRequired": "Please confirm password",
+      "passwordsNotMatch": "Passwords do not match"
+    },
+    "messages": {
+      "welcomeBack": "Welcome back!",
+      "welcomeToApp": "Welcome to {{appName}}",
+      "loginInstructions": "Login to continue",
+      "registerInstructions": "Create a new account",
+      "forgotPasswordTitle": "Forgot password?",
+      "forgotPasswordInstructions": "Enter your email to reset password"
+    },
+    "buttons": {
+      "login": "Login",
+      "loading": "Processing...",
+      "forgotPassword": "Forgot password?",
+      "noAccount": "Don't have an account?",
+      "registerNow": "Register now",
+      "hasAccount": "Already have an account?",
+      "loginNow": "Login now"
+    }
   }
 }

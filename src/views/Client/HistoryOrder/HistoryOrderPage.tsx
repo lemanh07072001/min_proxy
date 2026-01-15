@@ -112,7 +112,8 @@ export default function HistoryOrderPage() {
         header: 'Trạng thái',
         cell: ({ row }: { row: any }) => {
           console.log(row)
-          return getStatusBadge(row.original.status)
+          
+return getStatusBadge(row.original.status)
         },
         size: 150
       },

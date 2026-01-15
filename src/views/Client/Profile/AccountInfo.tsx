@@ -15,7 +15,7 @@ import { toast } from 'react-toastify'
 
 import { formatDateTimeLocal } from '@/utils/formatDate'
 import CustomTextField from '@/@core/components/mui/TextField'
-import useAxiosAuth from '@/hocs/useAxiosAuth'
+import useAxiosAuth from '@/hooks/useAxiosAuth'
 
 interface Profile {
   id: string

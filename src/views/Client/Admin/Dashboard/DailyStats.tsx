@@ -1,8 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+
 import { useSession } from 'next-auth/react'
-import KPICard from '@/components/UI/KPICard'
+
 import {
   BarChart3,
   Calendar,
@@ -19,6 +20,8 @@ import {
   Wallet,
   XCircle
 } from 'lucide-react'
+
+import KPICard from '@/components/UI/KPICard'
 import AppReactDatepicker from '@/components/AppReactDatepicker'
 import CustomTextField from '@/@core/components/mui/TextField'
 import { useDashboardMonthly } from '@/hooks/apis/useDashboard'

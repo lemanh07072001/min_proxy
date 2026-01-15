@@ -1,58 +1,39 @@
 'use client'
 
 import React from 'react'
+
 import Image from 'next/image'
 
 import { Star, Quote } from 'lucide-react'
 
+import { useTranslation } from 'react-i18next'
+
+interface Review {
+  name: string
+  role: string
+  content: string
+}
+
 const TestimonialsSection = () => {
-  const testimonials = [
-    {
-      id: 1,
-      name: 'Nguyễn Thanh Bình',
-      role: 'Kinh doanh proxy full time',
-      avatar:
-        'https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop&crop=face',
-      rating: 5,
-      content: `Tôi là đại lý từ những ngày đầu ${process.env.NEXT_PUBLIC_APP_NAME} ra mắt và rất bất ngờ với sự chuyên nghiệp trong cách vận hành và hỗ trợ. Tôi có website riêng được tùy chỉnh theo ý mình, chính sách rõ ràng, chăm sóc kỹ lưỡng. Đây là nền tảng đáng tin cậy và nghiêm túc trong mảng proxy.`
-    },
-    {
-      id: 2,
-      name: 'Nguyễn Hoa',
-      role: 'Đại lý kinh doanh proxy tại TP.HCM',
-      avatar:
-        'https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop&crop=face',
-      rating: 5,
-      content: `Ban đầu tôi rất ngại bán hàng qua web vì sợ phức tạp và chi phí cao. Nhưng từ khi tham gia chương trình đại lý web riêng của ${process.env.NEXT_PUBLIC_APP_NAME}, tôi được hỗ trợ tận tình, miễn phí web riêng và tăng hẳn 3 triệu trải nghiệm. Giờ tôi bán proxy ổn định hàng tháng, khởi đầu nhẹ nhàng đồng thú.`
-    },
-    {
-      id: 3,
-      name: 'Vũ Huy',
-      role: `Đối tác web riêng ${process.env.NEXT_PUBLIC_APP_NAME}`,
-      avatar:
-        'https://images.pexels.com/photos/1681010/pexels-photo-1681010.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop&crop=face',
-      rating: 5,
-      content: `Tôi hài lòng khi tìm đại lý ${process.env.NEXT_PUBLIC_APP_NAME} vì cảm giác được đồng hành thật sự. Không chỉ lấy sản phẩm bán lại, tôi được hỗ trợ thiết kế web riêng chuyên nghiệp, xây dựng thương hiệu có nhận rõ ràng, tạo sự tin tưởng với khách hàng và luôn được ${process.env.NEXT_PUBLIC_APP_NAME} hỗ trợ khi cần.`
-    },
-    {
-      id: 4,
-      name: 'Trần Văn Nam',
-      role: 'Chuyên gia marketing online',
-      avatar:
-        'https://images.pexels.com/photos/1043471/pexels-photo-1043471.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop&crop=face',
-      rating: 5,
-      content: `Sau nhiều năm sử dụng proxy từ nhiều nhà cung cấp khác nhau, tôi thấy ${process.env.NEXT_PUBLIC_APP_NAME} có chất lượng ổn định nhất. IP sạch, tốc độ nhanh, ít bị block. Đặc biệt là team support rất nhiệt tình, giải quyết vấn đề nhanh chóng 24/7.`
-    },
-    {
-      id: 5,
-      name: 'Phạm Thị Lan',
-      role: 'Quản lý dự án digital',
-      avatar:
-        'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop&crop=face',
-      rating: 5,
-      content: `${process.env.NEXT_PUBLIC_APP_NAME} đã giúp công ty chúng tôi tiết kiệm rất nhiều chi phí và thời gian. Hệ thống proxy ổn định, dễ sử dụng, và quan trọng nhất là có đội ngũ kỹ thuật hỗ trợ chuyên nghiệp. Chúng tôi rất hài lòng với dịch vụ này.`
-    }
+  const { t } = useTranslation()
+  const appName = process.env.NEXT_PUBLIC_APP_NAME || 'MKT Proxy'
+
+  const reviews = t('landing.testimonials.reviews', { returnObjects: true }) as Review[]
+
+  const avatars = [
+    'https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop&crop=face',
+    'https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop&crop=face',
+    'https://images.pexels.com/photos/1681010/pexels-photo-1681010.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop&crop=face'
   ]
+
+  const testimonials = Array.isArray(reviews) ? reviews.map((review, index) => ({
+    id: index + 1,
+    name: review.name,
+    role: review.role.replace(/\{\{appName\}\}/g, appName),
+    avatar: avatars[index] || avatars[0],
+    rating: 5,
+    content: review.content.replace(/\{\{appName\}\}/g, appName)
+  })) : []
 
   const renderStars = (rating: number) => {
     return Array.from({ length: 5 }, (_, index) => (
@@ -128,8 +109,8 @@ const TestimonialsSection = () => {
         {/* Header */}
         <div className='testimonials-header'>
           <h2 className='testimonials-title'>
-            <span className='title-number'>100+</span>
-            <span className='title-text'>Khách hàng cả nước</span>
+            <span className='title-number'>{t('landing.testimonials.titleNumber')}</span>
+            <span className='title-text'>{t('landing.testimonials.titleText')}</span>
           </h2>
         </div>
 
@@ -188,8 +169,8 @@ const TestimonialsSection = () => {
                     <path d='M8 24C8 20.686 10.686 18 14 18H18C21.314 18 24 20.686 24 24V26H8V24Z' fill='white' />
                   </svg>
                 </div>
-                <div className='stat-number'>1000+</div>
-                <div className='stat-label'>Khách hàng tin tưởng</div>
+                <div className='stat-number'>{t('landing.testimonials.stats.customers.number')}</div>
+                <div className='stat-label'>{t('landing.testimonials.stats.customers.label')}</div>
               </div>
             </div>
             <div className='col-md-3 col-6'>
@@ -210,8 +191,8 @@ const TestimonialsSection = () => {
                     />
                   </svg>
                 </div>
-                <div className='stat-number'>99.9%</div>
-                <div className='stat-label'>Thời gian hoạt động</div>
+                <div className='stat-number'>{t('landing.testimonials.stats.uptime.number')}</div>
+                <div className='stat-label'>{t('landing.testimonials.stats.uptime.label')}</div>
               </div>
             </div>
             <div className='col-md-3 col-6'>
@@ -232,8 +213,8 @@ const TestimonialsSection = () => {
                     />
                   </svg>
                 </div>
-                <div className='stat-number'>24/7</div>
-                <div className='stat-label'>Hỗ trợ kỹ thuật</div>
+                <div className='stat-number'>{t('landing.testimonials.stats.support.number')}</div>
+                <div className='stat-label'>{t('landing.testimonials.stats.support.label')}</div>
               </div>
             </div>
             <div className='col-md-3 col-6'>
@@ -253,8 +234,8 @@ const TestimonialsSection = () => {
                     />
                   </svg>
                 </div>
-                <div className='stat-number'>3</div>
-                <div className='stat-label'>Nhà mạng lớn</div>
+                <div className='stat-number'>{t('landing.testimonials.stats.providers.number')}</div>
+                <div className='stat-label'>{t('landing.testimonials.stats.providers.label')}</div>
               </div>
             </div>
           </div>

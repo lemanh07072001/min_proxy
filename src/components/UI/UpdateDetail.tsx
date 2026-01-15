@@ -42,6 +42,7 @@ export default function UpdateDetail({ updateHistory }) {
         {' '}
         {/* Thêm khoảng cách giữa các bản cập nhật */}
         {updateHistory.map((update, index) => (
+
           // Thẻ div bao bọc mỗi mục cập nhật lớn
           <div key={index} className='flex space-x-3'>
             <div className={`w-3 h-3 ${update.color} rounded-full mt-1 flex-shrink-0`}></div>

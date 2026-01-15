@@ -34,8 +34,9 @@ import {
   TextField
 } from '@mui/material'
 
-import { usePartners, useDeletePartner } from '@/hooks/apis/usePartners'
 import { toast } from 'react-toastify'
+
+import { usePartners, useDeletePartner } from '@/hooks/apis/usePartners'
 import QrCodeDialog from '@/views/Client/Admin/Partner/QrCodeDialog'
 import TransactionModal from '@/views/Client/Admin/Partner/TransactionModal'
 
@@ -96,7 +97,9 @@ export default function TablePartner({ onOpenModal }: TablePartnerProps) {
   const handleOpenEdit = useCallback(
     (partnerId: number) => {
       const partner = dataPartners.find((p: any) => p.id === partnerId)
+
       console.log('Partner data when edit clicked:', partner)
+
       if (onOpenModal && partner) {
         onOpenModal('edit', partner)
       }
@@ -106,6 +109,7 @@ export default function TablePartner({ onOpenModal }: TablePartnerProps) {
 
   const handleOpenDeleteDialog = useCallback((partnerId: number) => {
     const partner = dataPartners.find((p: any) => p.id === partnerId)
+
     setPartnerToDelete(partnerId)
     setPartnerToDeleteData(partner)
     setDeleteDialogOpen(true)
@@ -119,6 +123,7 @@ export default function TablePartner({ onOpenModal }: TablePartnerProps) {
 
   const handleOpenRechargeDialog = useCallback((partnerId: number) => {
     const partner = dataPartners.find((p: any) => p.id === partnerId)
+
     setPartnerToRecharge(partner)
     setRechargeAmount('')
     setRechargeDialogOpen(true)
@@ -157,6 +162,7 @@ export default function TablePartner({ onOpenModal }: TablePartnerProps) {
 
   const handleOpenTransactionModal = useCallback((partnerId: number | string) => {
     const partner = dataPartners.find((p: any) => p.id === partnerId)
+
     if (partner) {
       setPartnerForTransaction(partner)
       setTransactionModalOpen(true)
@@ -435,7 +441,7 @@ export default function TablePartner({ onOpenModal }: TablePartnerProps) {
           <DialogContentText id='delete-dialog-description'>
             Bạn có chắc chắn muốn xóa đối tác{' '}
             <strong>
-              "{partnerToDeleteData?.title || partnerToDeleteData?.name || 'này'}"
+              {partnerToDeleteData?.title || partnerToDeleteData?.name || 'này'}
             </strong>{' '}
             không? Hành động này không thể hoàn tác.
           </DialogContentText>
@@ -481,6 +487,7 @@ export default function TablePartner({ onOpenModal }: TablePartnerProps) {
             value={rechargeAmount}
             onChange={(e) => {
               const value = e.target.value.replace(/[^0-9]/g, '')
+
               setRechargeAmount(value)
             }}
             InputProps={{

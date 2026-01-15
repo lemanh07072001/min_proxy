@@ -2,6 +2,8 @@
 
 import { useParams, usePathname } from 'next/navigation'
 
+import { useTranslation } from 'react-i18next'
+
 import useMenuLandingPage from '@/app/data/MenuLandingPage'
 import Link from '@components/Link'
 import { useModalContext } from '@/app/contexts/ModalContext'
@@ -11,6 +13,7 @@ interface MenuMobileProps {
 }
 
 export default function MenuMobile({ onClose }: MenuMobileProps) {
+  const { t } = useTranslation()
   const { openAuthModal } = useModalContext()
   const MenuLandingPage = useMenuLandingPage()
 
@@ -32,7 +35,7 @@ export default function MenuMobile({ onClose }: MenuMobileProps) {
           />
         </div>
         {/* Close Button */}
-        <button className='btn-close-menu' onClick={onClose} aria-label='Đóng menu'>
+        <button className='btn-close-menu' onClick={onClose} aria-label={t('landing.common.closeMenu')}>
           ✕
         </button>
       </div>

@@ -1,7 +1,9 @@
 'use client'
 
 import { useMemo, useState, useEffect } from 'react'
+
 import Image from 'next/image'
+
 import { Clock3, List, X, Loader2 } from 'lucide-react'
 
 import {
@@ -31,9 +33,6 @@ interface TransactionModalProps {
 }
 
 export default function TransactionModal({ open, onClose, partnerId, partnerName }: TransactionModalProps) {
-  // Early return nếu modal không mở - tránh render không cần thiết
-  if (!open) return null
-
   const [columnFilters, setColumnFilters] = useState<any[]>([])
   const [rowSelection, setRowSelection] = useState({})
   const [sorting, setSorting] = useState<any[]>([])
@@ -46,7 +45,7 @@ export default function TransactionModal({ open, onClose, partnerId, partnerName
   // Gọi API get-topup-history - chỉ gọi khi modal mở và có partnerId
   const shouldFetch = useMemo(() => open && !!partnerId, [open, partnerId])
   const { data: transactions = [], isLoading, isError, error } = usePartnerTransactions(partnerId, shouldFetch)
-  
+
   const columns = useMemo(
     () => [
       {
@@ -67,9 +66,12 @@ export default function TransactionModal({ open, onClose, partnerId, partnerName
             style: 'currency',
             currency: 'VND'
           })
+
           const amount = row.original?.amount || 0
           const isPositive = amount >= 0
-          return (
+
+          
+return (
             <div>
               <span className={`text-sm font-bold ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
                 {isPositive ? '+' : ''}{formatter.format(amount)}
@@ -83,6 +85,7 @@ export default function TransactionModal({ open, onClose, partnerId, partnerName
         header: 'Trạng thái',
         cell: ({ row }: { row: any }) => {
           const status = row.original?.status
+
           if (status === 'completed' || status === 'success' || status === 'SUCCESS') {
             return <Chip label='Thành công' size='small' color='success' />
           } else if (status === 'pending' || status === 'PENDING') {
@@ -90,7 +93,9 @@ export default function TransactionModal({ open, onClose, partnerId, partnerName
           } else if (status === 'failed' || status === 'FAILED' || status === 'error') {
             return <Chip label='Thất bại' size='small' color='error' />
           }
-          return <Chip label={status || 'Không xác định'} size='small' color='default' />
+
+          
+return <Chip label={status || 'Không xác định'} size='small' color='default' />
         },
         size: 150
       },
@@ -98,7 +103,9 @@ export default function TransactionModal({ open, onClose, partnerId, partnerName
         header: 'Thời gian',
         cell: ({ row }: { row: any }) => {
           const dateStr = row.original?.created_at
-          return (
+
+          
+return (
             <div className='d-flex align-items-center gap-1'>
               <Clock3 size={14} />
               <div style={{ marginTop: '2px' }}>{dateStr ? formatDateTimeLocal(dateStr) : '-'}</div>

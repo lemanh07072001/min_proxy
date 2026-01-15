@@ -1,5 +1,6 @@
 'use client'
 import dynamic from 'next/dynamic'
+
 const RedocStandalone = dynamic(
   () => import('redoc').then(m => m.RedocStandalone),
   { ssr: false }

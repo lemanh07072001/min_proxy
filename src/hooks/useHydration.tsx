@@ -41,6 +41,7 @@ export const useLocalStorage = (key: string, initialValue?: string) => {
     if (isClient) {
       try {
         const item = window.localStorage.getItem(key)
+
         if (item) {
           setStoredValue(item)
         }

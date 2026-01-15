@@ -14,6 +14,7 @@ const Logo = ({ color }: { color?: CSSProperties['color'] }) => {
         onError={(e) => {
           console.error('Logo image failed to load:', e)
           const target = e.target as HTMLImageElement
+
           if (target) {
             target.style.display = 'none'
           }

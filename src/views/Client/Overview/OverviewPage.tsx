@@ -8,7 +8,7 @@ import { useQuery } from '@tanstack/react-query'
 
 import { toast } from 'react-toastify'
 
-import useAxiosAuth from '@/hocs/useAxiosAuth'
+import useAxiosAuth from '@/hooks/useAxiosAuth'
 
 import { formatDateTimeLocal } from '@/utils/formatDate'
 

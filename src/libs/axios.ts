@@ -6,6 +6,7 @@ const axiosInstance = axios.create({
   headers: {
     Accept: 'application/json',
     'Content-Type': 'application/json',
+
     // 'User-Agent': typeof navigator !== 'undefined' ? navigator.userAgent : 'NextJS-Server'
   }
 })

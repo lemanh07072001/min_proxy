@@ -63,14 +63,13 @@ export default function MenuDesktop() {
         <LanguageDropdown />
 
         {session && session.status === 'authenticated' ? (
-          // <UserDropdown session={data} />
           <Link
             className='btn btn-gradient-primary me-2'
             style={{ padding: '5px 20px' }}
             href={`/${locale}/overview`}
             target={`_blank`}
           >
-            Đi đến Trang chủ
+            {t('landing.header.goToHome')}
           </Link>
         ) : (
           <div className='d-flex align-items-center gap-2'>
@@ -79,10 +78,10 @@ export default function MenuDesktop() {
               style={{ padding: '5px 20px' }}
               onClick={handleOpenModalRegister}
             >
-              {t('landing.header.auth.register')}
+              {t('landing.header.buttons.register')}
             </button>
             <button className='btn btn-gradient-primary' style={{ padding: '5px 20px' }} onClick={handleOpenModalLogin}>
-              {t('landing.header.auth.login')}
+              {t('landing.header.buttons.login')}
             </button>
           </div>
         )}

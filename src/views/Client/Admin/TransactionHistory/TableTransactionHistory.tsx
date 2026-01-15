@@ -126,15 +126,20 @@ export default function TableDepositHistory() {
       // Filter by date (compare date part only)
       const matchesDate = (() => {
         if (!date) return true
+
         try {
           const rowDate = new Date(item?.created_at)
+
           if (isNaN(rowDate.getTime())) return false
+
           const toYmd = (d: Date) =>
             `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d
               .getDate()
               .toString()
               .padStart(2, '0')}`
-          return toYmd(rowDate) === toYmd(date as Date)
+
+          
+return toYmd(rowDate) === toYmd(date as Date)
         } catch {
           return false
         }
@@ -720,7 +725,7 @@ export default function TableDepositHistory() {
           <DialogContentText id='cancel-dialog-description'>
             Bạn có chắc chắn muốn hủy đơn hàng <strong>#{orderToCancel?.order?.order_code}</strong> không?
             <br />
-            Đơn hàng sẽ được chuyển sang trạng thái "Đã hủy" và tiền sẽ được hoàn lại.
+            Đơn hàng sẽ được chuyển sang trạng thái Đã hủy và tiền sẽ được hoàn lại.
           </DialogContentText>
         </DialogContent>
         <DialogActions>

@@ -3,7 +3,9 @@ import type { Locale } from '@/configs/configi18n'
 
 export async function generateMetadata({ params }: { params: Promise<{ lang: Locale }> }) {
   const resolvedParams = await params
-  return generatePageMetadata(pageMetadataConfigs.pricing, resolvedParams.lang, '/pricing')
+
+  
+return generatePageMetadata(pageMetadataConfigs.pricing, resolvedParams.lang, '/pricing')
 }
 
 export default function PricingPage() {

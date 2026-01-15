@@ -1,4 +1,5 @@
 import { MetadataRoute } from 'next'
+
 import { i18n } from '@/configs/configi18n'
 
 export default function sitemap(): MetadataRoute.Sitemap {

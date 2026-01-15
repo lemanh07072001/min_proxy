@@ -6,7 +6,7 @@ import About from '../components/cooperate/About'
 
 export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }): Promise<Metadata> {
   const { lang } = await params
-  const dictionary = await import(`@/locales/${lang}.json`).then(m => m.default)
+  const dictionary = await import(`@/data/dictionaries/${lang}.json`).then(m => m.default)
 
   return {
     title: dictionary.landing?.header?.menu?.cooperate || 'Cooperate with us',

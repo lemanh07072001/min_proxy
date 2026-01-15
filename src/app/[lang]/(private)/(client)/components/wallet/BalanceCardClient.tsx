@@ -1,21 +1,18 @@
 'use client'
 
-import { useEffect } from 'react'
-
-import { useSelector, useDispatch } from 'react-redux'
 import { Wallet } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
 
-import type { RootState, AppDispatch } from '@/store'
+import { useUserStore } from '@/stores'
 
 interface BalanceCardClientProps {
   isWalletVisible: boolean
   isInitialLoad: boolean
-  initialBalance: number
+  initialBalance?: number
 }
 
 export default function BalanceCardClient({ isWalletVisible, isInitialLoad }: BalanceCardClientProps) {
-  const { sodu } = useSelector((state: RootState) => state.user)
+  const sodu = useUserStore((state) => state.sodu)
 
   return (
     <>

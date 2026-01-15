@@ -1,4 +1,5 @@
 import { usePathname, useRouter } from 'next/navigation'
+
 import { i18n } from '@/configs/configi18n'
 
 export type Locale = typeof i18n.locales[number]
@@ -41,6 +42,7 @@ export const useLanguageSwitcher = () => {
   
   const switchLanguage = (locale: Locale) => {
     const newPath = getLocalePath(pathname, locale)
+
     router.push(newPath, { scroll: false })
   }
   

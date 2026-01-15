@@ -15,6 +15,9 @@ import {
   MessageCircleQuestionMark,
   Handshake,
   Link,
+  ArrowRightLeft,
+  Wallet,
+  Layers,
 
   // Admin icons
   Users,
@@ -45,7 +48,6 @@ import menuItemStyles from '@core/styles/vertical/menuItemStyles'
 import menuSectionStyles from '@core/styles/vertical/menuSectionStyles'
 import type { getDictionary } from '@/utils/getDictionary'
 import BalanceCard from '@/app/[lang]/(private)/(client)/components/wallet/BalanceCard'
-import { TransactionHistory } from '@/components/icons'
 
 type RenderExpandIconProps = {
   open?: boolean
@@ -338,7 +340,7 @@ const VerticalMenu = ({ scrollMenu, dictionary }: Props) => {
 
             {hasPermission('admin.transactionHistory') && (
               <MenuItem
-                icon={<TransactionHistory />}
+                icon={<ArrowRightLeft size={20} strokeWidth={1.5} />}
                 rootStyles={getMenuItemStyles('admin/transaction-history')}
                 href={`/${locale}/admin/transaction-history`}
               >
@@ -348,7 +350,7 @@ const VerticalMenu = ({ scrollMenu, dictionary }: Props) => {
 
             {hasPermission('admin.depositHistory') && (
               <MenuItem
-                icon={<TransactionHistory />}
+                icon={<Wallet size={20} strokeWidth={1.5} />}
                 rootStyles={getMenuItemStyles('admin/deposit-history')}
                 href={`/${locale}/admin/deposit-history`}
               >
@@ -358,7 +360,7 @@ const VerticalMenu = ({ scrollMenu, dictionary }: Props) => {
 
             {hasPermission('admin.serviceType') && (
               <MenuItem
-                icon={<TransactionHistory />}
+                icon={<Layers size={20} strokeWidth={1.5} />}
                 rootStyles={getMenuItemStyles('admin/service-type')}
                 href={`/${locale}/admin/service-type`}
               >

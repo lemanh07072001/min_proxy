@@ -8,13 +8,14 @@ import './styles.css'
 import { useSession } from 'next-auth/react'
 import { useQueryClient } from '@tanstack/react-query'
 
-import ProxyCard from '@/app/[lang]/(private)/(client)/components/proxy-card/ProxyCard'
-import OrderProxyPage from './OrderProxyPage'
 import { Box, Grid2, Typography, CircularProgress, TextField, InputAdornment } from '@mui/material'
 import Radio from '@mui/material/Radio'
 import RadioGroup from '@mui/material/RadioGroup'
 import FormControlLabel from '@mui/material/FormControlLabel'
 import { Search } from 'lucide-react'
+
+import OrderProxyPage from './OrderProxyPage'
+import ProxyCard from '@/app/[lang]/(private)/(client)/components/proxy-card/ProxyCard'
 import { useCountries } from '@/hooks/apis/useCountries'
 
 interface StaticProxyPageProps {

@@ -84,23 +84,34 @@ export default function TableDepositHistory() {
       //   return <Chip label='Chờ xử lý' size='small' icon={<BadgeAlert />} color='warning' />
       case 'pending': {
         const label = 'Chờ xử lý'
-        return <Chip label={label} size='small' icon={<Loader className='animate-spin' />} color='warning' />
+
+        
+return <Chip label={label} size='small' icon={<Loader className='animate-spin' />} color='warning' />
       }
+
       case 'success': {
         const label = 'Thành công'
-        return <Chip label={label} size='small' icon={<BadgeCheck />} color='success' />
+
+        
+return <Chip label={label} size='small' icon={<BadgeCheck />} color='success' />
       }
+
       case 'failed': {
         const label = 'Thất bại'
-        return (
+
+        
+return (
           <Tooltip title={note} placement='top'>
             <Chip label={label} size='small' icon={<BadgeMinus />} color='error' />
           </Tooltip>
         )
       }
+
       default: {
         const label = 'Thành công'
-        return <Chip label={label} size='small' icon={<BadgeCheck />} color='success' />
+
+        
+return <Chip label={label} size='small' icon={<BadgeCheck />} color='success' />
       }
     }
   }
@@ -191,15 +202,20 @@ export default function TableDepositHistory() {
       // Date filter (date-only)
       const matchesDate = (() => {
         if (!date) return true
+
         try {
           const rowDate = new Date(item?.created_at)
+
           if (isNaN(rowDate.getTime())) return false
+
           const toYmd = (d: Date) =>
             `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d
               .getDate()
               .toString()
               .padStart(2, '0')}`
-          return toYmd(rowDate) === toYmd(date as Date)
+
+          
+return toYmd(rowDate) === toYmd(date as Date)
         } catch {
           return false
         }

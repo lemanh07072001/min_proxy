@@ -25,7 +25,7 @@ import { useQuery } from '@tanstack/react-query'
 
 import { formatDateTimeLocal } from '@/utils/formatDate'
 
-import useAxiosAuth from '@/hocs/useAxiosAuth'
+import useAxiosAuth from '@/hooks/useAxiosAuth'
 
 export default function TransactionHistoryPage() {
   const [columnFilters, setColumnFilters] = useState([])

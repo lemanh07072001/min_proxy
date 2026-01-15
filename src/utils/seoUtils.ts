@@ -1,4 +1,5 @@
 import { Metadata } from 'next'
+
 import type { Locale } from '@/configs/configi18n'
 
 interface SEOConfig {

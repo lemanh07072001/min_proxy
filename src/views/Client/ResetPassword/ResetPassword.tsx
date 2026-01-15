@@ -1,8 +1,11 @@
 "use client"
 
-import { useModalContext } from '@/app/contexts/ModalContext'
-import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect } from 'react'
+
+import { useRouter, useSearchParams } from 'next/navigation'
+
+import { useModalContext } from '@/app/contexts/ModalContext'
+
 import EmptyAuthPage from '@components/EmptyAuthPage'
 
 

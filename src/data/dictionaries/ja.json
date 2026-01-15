@@ -1,4 +1,334 @@
 {
+    "time": {
+        "months": "月",
+        "days": "日",
+        "hours": "時間",
+        "minutes": "分"
+    },
+    "landing": {
+        "header": {
+            "promoBanner": {
+                "text": "{{appName}}からの特別プロモーション！",
+                "button": "今すぐ見る"
+            },
+            "menu": {
+                "home": "ホーム",
+                "products": "製品",
+                "pricing": "価格",
+                "docs": "ドキュメント",
+                "about": "会社概要",
+                "cooperate": "パートナー",
+                "hotline": "お問い合わせ",
+                "contact": "お問い合わせ"
+            },
+            "buttons": {
+                "login": "ログイン",
+                "register": "登録",
+                "dashboard": "ダッシュボード"
+            },
+            "auth": {
+                "login": "ログイン",
+                "register": "登録"
+            },
+            "goToHome": "ホームページへ"
+        },
+        "hero": {
+            "title": {
+                "line1": "ベトナムプロキシ",
+                "line2": "高品質"
+            },
+            "subtitle": "安定した高速プロキシサービス、本物のベトナムIP",
+            "description": "企業・個人向けのプロフェッショナルなプロキシソリューション",
+            "buttons": {
+                "tryFree": "無料で試す",
+                "viewPricing": "価格を見る"
+            },
+            "features": {
+                "coverage": "64省をカバー",
+                "speed": "高速",
+                "uptime": "99.9%稼働率",
+                "support": "24/7サポート"
+            },
+            "actions": {
+                "buyNow": "今すぐ購入",
+                "watchDemo": "デモを見る"
+            },
+            "trust": {
+                "customers": "お客様",
+                "uptime": "稼働率",
+                "support": "サポート"
+            },
+            "floatingCards": {
+                "security": {
+                    "title": "セキュリティ",
+                    "desc": "エンドツーエンド暗号化"
+                },
+                "speed": {
+                    "title": "高速",
+                    "desc": "帯域幅無制限"
+                },
+                "coverage": {
+                    "title": "カバレッジ",
+                    "desc": "ベトナム64省"
+                }
+            }
+        },
+        "products": {
+            "title": "プロキシ製品",
+            "subtitle": "ニーズに合ったプロキシパッケージを選択",
+            "cards": {
+                "viettel": {
+                    "name": "Viettelプロキシ",
+                    "badge": "人気",
+                    "features": [
+                        "100%本物のViettel IP",
+                        "高速・安定",
+                        "HTTP/SOCKS5対応",
+                        "IP変更無制限"
+                    ]
+                },
+                "fpt": {
+                    "name": "FPTプロキシ",
+                    "badge": "ベストセラー",
+                    "features": [
+                        "100%本物のFPT IP",
+                        "帯域幅無制限",
+                        "HTTP/SOCKS5対応",
+                        "99.9%稼働率"
+                    ]
+                },
+                "vnpt": {
+                    "name": "VNPTプロキシ",
+                    "badge": "安定",
+                    "features": [
+                        "100%本物のVNPT IP",
+                        "低遅延",
+                        "HTTP/SOCKS5対応",
+                        "高セキュリティ"
+                    ]
+                }
+            },
+            "actions": {
+                "buyNow": "今すぐ購入",
+                "popular": "最も人気",
+                "guarantee": "24時間返金保証"
+            },
+            "cta": {
+                "title": "もっとアドバイスが必要ですか？",
+                "description": "最高のサポートを受けるためにお問い合わせください",
+                "button": "コンサルタントに連絡"
+            }
+        },
+        "features": {
+            "title": "なぜ私たちを選ぶのか",
+            "subtitle": "ベトナムでリーディングなプロキシサービス",
+            "items": {
+                "speed": {
+                    "title": "高速",
+                    "description": "帯域幅無制限、低遅延"
+                },
+                "security": {
+                    "title": "セキュリティ",
+                    "description": "エンドツーエンド暗号化、ログなし"
+                },
+                "support": {
+                    "title": "24/7サポート",
+                    "description": "プロフェッショナルなサポートチーム"
+                },
+                "uptime": {
+                    "title": "99.9%稼働率",
+                    "description": "安定したシステム、継続的な運用"
+                }
+            }
+        },
+        "pricing": {
+            "title": "価格",
+            "subtitle": "あらゆるニーズに対応するプラン",
+            "perMonth": "/月",
+            "perDay": "/日"
+        },
+        "testimonials": {
+            "title": "お客様の声",
+            "subtitle": "サービスを利用したお客様からのレビュー"
+        },
+        "faq": {
+            "title": "よくある質問",
+            "subtitle": "ご質問にお答えします"
+        },
+        "footer": {
+            "cta": {
+                "title": "今日から始める",
+                "description": "特別オファーを受け取るために登録",
+                "contactAgent": "エージェントに連絡",
+                "registerNow": "今すぐ登録"
+            },
+            "sections": {
+                "company": {
+                    "title": "会社",
+                    "about": "会社概要",
+                    "agentOffers": "エージェントプログラム",
+                    "partners": "パートナー",
+                    "sitemap": "サイトマップ"
+                },
+                "products": {
+                    "title": "製品",
+                    "staticProxy": "静的プロキシ",
+                    "rotatingProxy": "ローテーションプロキシ"
+                },
+                "locations": {
+                    "title": "場所",
+                    "vietnam": "ベトナム",
+                    "hcm": "ホーチミン市",
+                    "hanoi": "ハノイ",
+                    "hungYen": "フンイエン",
+                    "tuyenQuang": "トゥエンクアン",
+                    "binhDinh": "ビンディン"
+                },
+                "support": {
+                    "title": "サポート",
+                    "contact": "お問い合わせ",
+                    "faq": "FAQ"
+                },
+                "getStarted": {
+                    "title": "はじめる",
+                    "becomeCTV": "CTVになる",
+                    "becomeAgent": "エージェントになる",
+                    "buyCheap": "安いプロキシを購入",
+                    "autoTrade": "自動取引システム",
+                    "help": "ヘルプ"
+                }
+            },
+            "legal": {
+                "privacy": "プライバシーポリシー",
+                "service": "利用規約",
+                "refund": "返金ポリシー",
+                "copyright": "© 2024 {{appName}}. 全著作権所有。"
+            },
+            "contact": {
+                "title": "お問い合わせ"
+            },
+            "copyright": "© 2024 MKT Proxy. 全著作権所有。"
+        },
+        "about": {
+            "hero": {
+                "title": {
+                    "main": "会社",
+                    "highlight": "概要"
+                },
+                "subtitle": "{{appName}}は5年以上の経験を持つベトナムの主要なプロキシサービスプロバイダーです",
+                "features": [
+                    "5000人以上のお客様に信頼されています",
+                    "64省をカバー",
+                    "99.9%の稼働率",
+                    "24/7サポート"
+                ],
+                "actions": {
+                    "contact": "今すぐお問い合わせ",
+                    "pricing": "価格を見る"
+                },
+                "stats": {
+                    "customers": "お客様",
+                    "provinces": "省",
+                    "uptime": "稼働率",
+                    "experience": "年の経験"
+                }
+            },
+            "companyInfo": {
+                "title": "会社情報",
+                "description": "MKT Proxyはベトナムでリーディングなプロキシサービスプロバイダーです"
+            }
+        },
+        "cooperate": {
+            "about": {
+                "title": "私たちと協力する",
+                "subtitle": "エージェントプログラムに参加して特別オファーを受け取る"
+            }
+        },
+        "hotline": {
+            "hero": {
+                "title": "お問い合わせ",
+                "subtitle": "私たちはいつでもサポートとアドバイスを提供する準備ができています"
+            }
+        },
+        "infrastructure": {
+            "title": {
+                "highlight": "インフラストラクチャ",
+                "text": "私たちの"
+            },
+            "subtitle": "最先端のプロキシサーバー技術を備えた近代的なインフラストラクチャ、卓越した安定性とセキュリティ",
+            "stats": {
+                "uptime": "稼働率",
+                "monitoring": "監視",
+                "servers": "サーバー",
+                "providers": "プロバイダー"
+            }
+        },
+        "coverage": {
+            "title": {
+                "text": "ほとんどの省に展開",
+                "highlight": "ベトナム"
+            },
+            "subtitle": "最新技術で全国3地域をカバーする包括的なサーバーネットワーク",
+            "proxyTitle": "ベトナム住宅用プロキシ",
+            "proxyDescription": "3つの地域の主要エリアに設置されたサーバーシステム、34省すべてへのカバレッジを徐々に拡大中。高い安定性基準で構築されたインフラストラクチャ、常に準備完了でバックアップ機器を完備し、あらゆる事故を最小限に抑えます",
+            "features": [
+                "自分のウェブサイト構築の無料サポート",
+                "安定したプロキシソース、多様なIP",
+                "競争力のある価格、魅力的な利益",
+                "完全自動化システム、管理が簡単",
+                "24/7技術とマーケティングサポート"
+            ],
+            "registerNow": "今すぐ登録",
+            "statsLabel": "ベトナム3地域をカバー",
+            "regions": {
+                "north": "北部",
+                "central": "中部",
+                "south": "南部"
+            }
+        },
+        "testimonials": {
+            "titleNumber": "100+",
+            "titleText": "全国のお客様",
+            "stats": {
+                "customers": {
+                    "number": "1000+",
+                    "label": "信頼されるお客様"
+                },
+                "uptime": {
+                    "number": "99.9%",
+                    "label": "稼働時間"
+                },
+                "support": {
+                    "number": "24/7",
+                    "label": "技術サポート"
+                },
+                "providers": {
+                    "number": "3",
+                    "label": "主要プロバイダー"
+                }
+            },
+            "reviews": [
+                {
+                    "name": "グエン・タン・ビン",
+                    "role": "フルタイムプロキシビジネス",
+                    "content": "{{appName}}がリリースされた初期から代理店をしており、運営とサポートのプロフェッショナリズムにとても驚いています。自分のカスタマイズされたウェブサイト、明確なポリシー、丁寧なケアがあります。これはプロキシ分野で信頼性と真剣さのあるプラットフォームです。"
+                },
+                {
+                    "name": "グエン・ホア",
+                    "role": "ホーチミンのプロキシ販売代理店",
+                    "content": "最初は複雑さと高いコストでオンライン販売をためらっていました。でも{{appName}}のプライベートウェブ代理店プログラムに参加してから、熱心なサポート、無料のプライベートウェブサイト、300万の経験増加を受けました。今は毎月安定してプロキシを販売しています、簡単なスタートです。"
+                },
+                {
+                    "name": "ヴー・フイ",
+                    "role": "{{appName}}プライベートウェブパートナー",
+                    "content": "{{appName}}の代理店を見つけて満足しています、本当に同行してもらえていると感じるからです。製品を転売するだけでなく、プロフェッショナルなプライベートウェブデザインのサポートを受け、明確なブランドアイデンティティを構築し、顧客の信頼を創造し、必要な時はいつも{{appName}}にサポートしてもらえます。"
+                }
+            ]
+        },
+        "common": {
+            "closeMenu": "メニューを閉じる"
+        }
+    },
     "navigation": {
         "home": "ホームページ",
         "overview": "概要",
@@ -9,15 +339,38 @@
         "proxyOrders": "プロキシ注文",
         "rotatingProxyOrders": "ローテーティングプロキシ注文",
         "purchaseHistory": "購入履歴",
+        "affiliate": "アフィリエイト",
         "transactionHistory": "取引履歴",
         "proxyChangeHistory": "プロキシ変更履歴",
         "loginHistory": "ログイン履歴",
         "guide": "ガイド",
+        "partner": "パートナー",
         "support": "サポート"
     },
     "staticProxy": {
         "title": "住宅用プロキシ",
-        "describe": "あなたのニーズに合ったプロキシパッケージを選択してください"
+        "describe": "あなたのニーズに合ったプロキシパッケージを選択してください",
+        "days": "日数",
+        "location": "場所",
+        "duration": "期間",
+        "quantity": "数量",
+        "protocol": "プロトコル",
+        "username": "ユーザー名",
+        "password": "パスワード",
+        "total": "合計",
+        "buyNow": "今すぐ購入",
+        "validation": {
+            "pleaseEnterNumber": "数字を入力してください",
+            "pleaseEnterDays": "日数を入力してください",
+            "daysMustBeInteger": "日数は整数でなければなりません",
+            "minDays": "最低1日",
+            "pleaseEnterQuantity": "数量を入力してください",
+            "quantityMustBeInteger": "数量は整数でなければなりません",
+            "minQuantity": "最低1つのプロキシ",
+            "minChars": "最低4文字",
+            "pleaseEnterUsername": "ユーザー名を入力してください",
+            "pleaseEnterPassword": "パスワードを入力してください"
+        }
     },
     "rotatingProxy": {
         "title": "ローテーティングプロキシ",
@@ -36,5 +389,47 @@
         "randomLocation": "ランダム",
         "quantity": "数量",
         "days": "使用日数"
+    },
+    "auth": {
+        "email": "メールアドレス",
+        "password": "パスワード",
+        "username": "ユーザー名",
+        "confirmPassword": "パスワード確認",
+        "register": "登録",
+        "rememberMe": "ログイン状態を保持",
+        "loginSuccess": "ログイン成功！",
+        "loginError": "ログイン失敗！",
+        "registerError": "登録失敗！",
+        "placeholders": {
+            "enterEmail": "メールアドレスを入力",
+            "enterPassword": "パスワードを入力",
+            "enterName": "お名前を入力"
+        },
+        "validation": {
+            "emailRequired": "メールアドレスを入力してください",
+            "emailInvalid": "無効なメールアドレス",
+            "passwordRequired": "パスワードを入力してください",
+            "passwordMinLength": "パスワードは6文字以上必要です",
+            "nameRequired": "お名前を入力してください",
+            "confirmPasswordRequired": "パスワード確認を入力してください",
+            "passwordsNotMatch": "パスワードが一致しません"
+        },
+        "messages": {
+            "welcomeBack": "おかえりなさい！",
+            "welcomeToApp": "{{appName}}へようこそ",
+            "loginInstructions": "ログインして続行",
+            "registerInstructions": "新しいアカウントを作成",
+            "forgotPasswordTitle": "パスワードを忘れましたか？",
+            "forgotPasswordInstructions": "パスワードをリセットするためにメールアドレスを入力"
+        },
+        "buttons": {
+            "login": "ログイン",
+            "loading": "処理中...",
+            "forgotPassword": "パスワードを忘れましたか？",
+            "noAccount": "アカウントをお持ちでないですか？",
+            "registerNow": "今すぐ登録",
+            "hasAccount": "すでにアカウントをお持ちですか？",
+            "loginNow": "今すぐログイン"
+        }
     }
 }

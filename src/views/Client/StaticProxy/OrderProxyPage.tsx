@@ -35,7 +35,7 @@ import { io } from 'socket.io-client'
 import { formatDateTimeLocal } from '@/utils/formatDate'
 import { useCopy } from '@/app/hooks/useCopy'
 
-import useAxiosAuth from '@/hocs/useAxiosAuth'
+import useAxiosAuth from '@/hooks/useAxiosAuth'
 import CustomTextField from '@/@core/components/mui/TextField'
 
 export default function OrderProxyPage() {
@@ -224,6 +224,7 @@ export default function OrderProxyPage() {
             if (allPageRowsSelected) {
               // Bỏ chọn tất cả hàng trên trang hiện tại
               const newSelection = { ...rowSelection }
+
               currentPageRows.forEach((row: any) => {
                 delete newSelection[row.index]
               })
@@ -231,6 +232,7 @@ export default function OrderProxyPage() {
             } else {
               // Chọn tất cả hàng trên trang hiện tại
               const newSelection = { ...rowSelection }
+
               currentPageRows.forEach((row: any) => {
                 newSelection[row.index] = true
               })
@@ -593,6 +595,7 @@ export default function OrderProxyPage() {
                         onMouseDown={e => {
                           // Không trigger selection nếu click vào button, checkbox, hoặc các element tương tác khác
                           const target = e.target as HTMLElement
+
                           const isInteractiveElement =
                             target.closest('button') ||
                             target.closest('input') ||

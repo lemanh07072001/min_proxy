@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
+
 import { getServerSession } from 'next-auth/next'
-import { authOptions } from '@/libs/auth'
+
 import axios from 'axios'
+
+import { authOptions } from '@/libs/auth'
 
 export async function POST(request: NextRequest) {
   try {

@@ -54,7 +54,7 @@ import CustomIconButton from '@core/components/mui/IconButton'
 import { useCopy } from '@/app/hooks/useCopy'
 import { formatDateTimeLocal } from '@/utils/formatDate'
 
-import useAxiosAuth from '@/hocs/useAxiosAuth'
+import useAxiosAuth from '@/hooks/useAxiosAuth'
 import ProxyDetailModal from './ProxyDetailModal'
 
 export default function OrderRotatingProxyPage() {
@@ -239,6 +239,7 @@ export default function OrderRotatingProxyPage() {
             if (allPageRowsSelected) {
               // Bỏ chọn tất cả hàng trên trang hiện tại
               const newSelection = { ...rowSelection }
+
               currentPageRows.forEach((row: any) => {
                 delete newSelection[row.index]
               })
@@ -246,6 +247,7 @@ export default function OrderRotatingProxyPage() {
             } else {
               // Chọn tất cả hàng trên trang hiện tại
               const newSelection = { ...rowSelection }
+
               currentPageRows.forEach((row: any) => {
                 newSelection[row.index] = true
               })
@@ -626,6 +628,7 @@ export default function OrderRotatingProxyPage() {
                         onMouseDown={e => {
                           // Không trigger selection nếu click vào button, checkbox, hoặc các element tương tác khác
                           const target = e.target as HTMLElement
+
                           const isInteractiveElement =
                             target.closest('button') ||
                             target.closest('input') ||

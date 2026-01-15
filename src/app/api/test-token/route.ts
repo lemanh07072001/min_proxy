@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server'
+
 import { getServerSession } from 'next-auth/next'
+
 import { authOptions } from '@/libs/auth'
 
 export async function GET() {
@@ -25,7 +27,8 @@ export async function GET() {
     })
   } catch (error) {
     console.error('Token test error:', error)
-    return NextResponse.json({ 
+    
+return NextResponse.json({ 
       error: 'Internal server error',
       message: error instanceof Error ? error.message : 'Unknown error'
     }, { status: 500 })

@@ -1,3 +1,5 @@
+import { useMemo, useState, useEffect } from 'react'
+
 import {
   X,
   CheckCircle,
@@ -18,11 +20,12 @@ import {
 } from 'lucide-react'
 
 import { useReactTable, getCoreRowModel, flexRender, getPaginationRowModel } from '@tanstack/react-table'
-import { useMemo, useState, useEffect } from 'react'
 import Dialog from '@mui/material/Dialog'
+
+import { Chip, Checkbox } from '@mui/material'
+
 import { formatDateTimeLocal } from '@/utils/formatDate'
 import { ORDER_STATUS_LABELS, ORDER_STATUS, ORDER_STATUS_COLORS } from '@/constants'
-import { Chip, Checkbox } from '@mui/material'
 import { useApiKeys } from '@/hooks/apis/useOrders'
 
 interface OrderDetailModalProps {
@@ -48,6 +51,7 @@ export default function OrderDetailModal({ isOpen, onClose, orderData, isLoading
 
   const downloadApiKeys = () => {
     const selectedRows = table.getFilteredSelectedRowModel().rows
+
     const apiKeysToDownload =
       selectedRows.length > 0
         ? selectedRows.map((row: any) => row.original.api_key).join('\n')
@@ -56,6 +60,7 @@ export default function OrderDetailModal({ isOpen, onClose, orderData, isLoading
     const blob = new Blob([apiKeysToDownload], { type: 'text/plain' })
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
+
     link.href = url
     link.download = `api-keys-${orderData?.order?.order_code || 'export'}.txt`
     document.body.appendChild(link)
@@ -164,7 +169,9 @@ export default function OrderDetailModal({ isOpen, onClose, orderData, isLoading
             if (proxys && typeof proxys === 'object') {
               return proxys.HTTP || proxys.SOCK5 || '-'
             }
-            return proxys || '-'
+
+            
+return proxys || '-'
           }
 
           // Nếu có api_key → hiển thị api_key
@@ -246,7 +253,8 @@ export default function OrderDetailModal({ isOpen, onClose, orderData, isLoading
 
   // Early return AFTER all hooks
   if (!isOpen) return null
-  return (
+  
+return (
     <Dialog
       onClose={onClose}
       aria-labelledby='order-detail-dialog'
@@ -370,10 +378,12 @@ export default function OrderDetailModal({ isOpen, onClose, orderData, isLoading
                       <button
                         onClick={() => {
                           const selectedRows = table.getFilteredSelectedRowModel().rows
+
                           const apiKeysToCopy =
                             selectedRows.length > 0
                               ? selectedRows.map((row: any) => row.original.api_key).join('\n')
                               : dataApiKeys.map((item: any) => item.api_key).join('\n')
+
                           copyToClipboard(apiKeysToCopy, 'header')
                         }}
                         disabled={Object.keys(rowSelection).length === 0}

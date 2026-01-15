@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 import { Bell, Shield, Globe, Moon, Mail, Smartphone, CreditCard, Download } from 'lucide-react'
+
 import GetToken from '@views/Client/Profile/GetToken'
 
 const SettingsPanel = () => {

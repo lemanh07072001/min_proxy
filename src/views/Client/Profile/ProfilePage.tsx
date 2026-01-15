@@ -10,7 +10,7 @@ import Alert from '@mui/material/Alert'
 import AccountInfo from './AccountInfo'
 import ChangePassword from './ChangePassword'
 import SettingsPanel from './SettingsPanel'
-import useAxiosAuth from '@/hocs/useAxiosAuth'
+import useAxiosAuth from '@/hooks/useAxiosAuth'
 
 type TabType = 'account' | 'password' | 'settings'
 
@@ -93,12 +93,15 @@ export default function ProfilePage({ dataProfile }: ProfileProps) {
                   <div className='relative group'>
                     <div className='w-24 h-24 bg-white rounded-full flex items-center justify-center shadow-lg overflow-hidden'>
                       {avatar ? (
+
                         // 👉 Ảnh xem trước (base64 hoặc URL blob)
                         <img src={avatar} alt='Preview Avatar' className='w-full h-full object-cover' />
                       ) : session?.user?.avatar ? (
+
                         // 👉 Ảnh avatar hiện tại từ session
                         <img src={session.user.avatar} alt='Avatar' className='w-full h-full object-cover' />
                       ) : (
+
                         // 👉 Chưa có ảnh => hiển thị ký tự đầu tên
                         <span className='text-4xl font-bold text-orange-600'>
                           {session?.user?.name?.charAt(0)?.toUpperCase() || 'A'}

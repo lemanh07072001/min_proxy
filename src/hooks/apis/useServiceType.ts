@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 
-import useAxiosAuth from '@/hocs/useAxiosAuth'
+import useAxiosAuth from '@/hooks/useAxiosAuth'
 
 // Hook để lấy danh sách service types
 export const useServiceTypes = () => {
@@ -13,9 +13,7 @@ export const useServiceTypes = () => {
 
       return res?.data?.data ?? []
     },
-    refetchOnMount: 'always',
-    refetchOnWindowFocus: true,
-    staleTime: 0
+    staleTime: 10 * 60 * 1000 // 10 phút
   })
 }
 

@@ -27,14 +27,14 @@ import axios from 'axios'
 
 import { toast } from 'react-toastify'
 
-import { useDispatch } from 'react-redux'
+import { Grid2 } from '@mui/material'
 
 import CustomTextField from '@core/components/mui/TextField'
 
 import QuantityControl from '@components/form/input-quantity/QuantityControl'
 import ProtocolSelector from '@components/form/protocol-selector/ProtocolSelector'
 
-import useRandomString from '@/hocs/useRandomString'
+import useRandomString from '@/hooks/useRandomString'
 
 import { protocols } from '@/utils/protocolProxy'
 
@@ -42,11 +42,9 @@ import { useModalContext } from '@/app/contexts/ModalContext'
 
 import { DURATION_MAP } from '@/utils/empty'
 import { ConfirmDialogOrder } from '@/components/confirm-modal/ConfirmDialogOrder'
-import { subtractBalance } from '@/store/userSlice'
-import type { AppDispatch } from '@/store'
+import { useUserStore } from '@/stores'
 
 import { log } from 'console'
-import { Grid2 } from '@mui/material'
 
 interface ProxyCardProps {
   provider: string
@@ -74,7 +72,7 @@ const useBuyProxy = () => {
   const queryClient = useQueryClient()
   const session = useSession()
   const router = useRouter()
-  const dispatch = useDispatch<AppDispatch>()
+  const subtractBalance = useUserStore((state) => state.subtractBalance)
 
   const mutation = useMutation({
     mutationFn: orderData => {
@@ -97,7 +95,7 @@ const useBuyProxy = () => {
       } else {
         const total = variables.total
 
-        dispatch(subtractBalance(total))
+        subtractBalance(total)
         toast.success('Mua proxy thành công.')
 
         router.push('/history-order')
@@ -177,7 +175,9 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, isFirstCard = false, co
         // Giá trong value đã bao gồm cả thời gian (7 ngày, 30 ngày, v.v.)
         // Chỉ cần nhân với số lượng proxy
         const totalPrice = parseInt(selectedDuration.value, 10) || 0
-        return totalPrice * quantity
+
+        
+return totalPrice * quantity
       }
     }
 
@@ -354,8 +354,12 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, isFirstCard = false, co
     // Nếu có price_by_duration thì lấy giá từ watchedDays
     if (provider?.price_by_duration && provider.price_by_duration.length > 0) {
       const selectedDuration = provider.price_by_duration.find(item => item.key === watchedDays)
-      return selectedDuration ? parseInt(selectedDuration.value, 10) : parseInt(provider?.price, 10) || 0
+
+      
+return selectedDuration ? parseInt(selectedDuration.value, 10) : parseInt(provider?.price, 10) || 0
     }
+
+
     // Nếu không có price_by_duration thì hiển thị giá gốc
     return parseInt(provider?.price, 10) || 0
   }
@@ -521,7 +525,9 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, isFirstCard = false, co
                       >
                         {provider.price_by_duration.map((item, index) => {
                           const discount = calculateDiscount(item.key, item.value)
-                          return (
+
+                          
+return (
                             <label
                               key={index}
                               style={{
@@ -642,6 +648,7 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, isFirstCard = false, co
         onConfirm={handleConfirmPurchase}
         quantity={watchedQuantity}
         protocol={watchedProrocol}
+
         // price={price}
         packageName={provider.title}
         ip_version={provider.ip_version}

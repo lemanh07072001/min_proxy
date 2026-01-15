@@ -1,4 +1,334 @@
 {
+    "time": {
+        "months": "월",
+        "days": "일",
+        "hours": "시간",
+        "minutes": "분"
+    },
+    "landing": {
+        "header": {
+            "promoBanner": {
+                "text": "{{appName}} 특별 프로모션!",
+                "button": "지금 보기"
+            },
+            "menu": {
+                "home": "홈",
+                "products": "제품",
+                "pricing": "가격",
+                "docs": "문서",
+                "about": "소개",
+                "cooperate": "파트너",
+                "hotline": "문의하기",
+                "contact": "문의하기"
+            },
+            "buttons": {
+                "login": "로그인",
+                "register": "회원가입",
+                "dashboard": "대시보드"
+            },
+            "auth": {
+                "login": "로그인",
+                "register": "회원가입"
+            },
+            "goToHome": "홈페이지로 이동"
+        },
+        "hero": {
+            "title": {
+                "line1": "베트남 프록시",
+                "line2": "고품질"
+            },
+            "subtitle": "안정적이고 빠른 프록시 서비스, 실제 베트남 IP",
+            "description": "기업 및 개인을 위한 전문 프록시 솔루션",
+            "buttons": {
+                "tryFree": "무료 체험",
+                "viewPricing": "가격 보기"
+            },
+            "features": {
+                "coverage": "64개 성 커버리지",
+                "speed": "고속",
+                "uptime": "99.9% 가동률",
+                "support": "24/7 지원"
+            },
+            "actions": {
+                "buyNow": "지금 구매",
+                "watchDemo": "데모 보기"
+            },
+            "trust": {
+                "customers": "고객",
+                "uptime": "가동률",
+                "support": "지원"
+            },
+            "floatingCards": {
+                "security": {
+                    "title": "보안",
+                    "desc": "종단간 암호화"
+                },
+                "speed": {
+                    "title": "고속",
+                    "desc": "무제한 대역폭"
+                },
+                "coverage": {
+                    "title": "커버리지",
+                    "desc": "베트남 64개 성"
+                }
+            }
+        },
+        "products": {
+            "title": "프록시 제품",
+            "subtitle": "필요에 맞는 프록시 패키지 선택",
+            "cards": {
+                "viettel": {
+                    "name": "Viettel 프록시",
+                    "badge": "인기",
+                    "features": [
+                        "100% 실제 Viettel IP",
+                        "고속 안정성",
+                        "HTTP/SOCKS5 지원",
+                        "무제한 IP 변경"
+                    ]
+                },
+                "fpt": {
+                    "name": "FPT 프록시",
+                    "badge": "베스트셀러",
+                    "features": [
+                        "100% 실제 FPT IP",
+                        "무제한 대역폭",
+                        "HTTP/SOCKS5 지원",
+                        "99.9% 가동률"
+                    ]
+                },
+                "vnpt": {
+                    "name": "VNPT 프록시",
+                    "badge": "안정",
+                    "features": [
+                        "100% 실제 VNPT IP",
+                        "낮은 지연",
+                        "HTTP/SOCKS5 지원",
+                        "높은 보안"
+                    ]
+                }
+            },
+            "actions": {
+                "buyNow": "지금 구매",
+                "popular": "가장 인기",
+                "guarantee": "24시간 환불 보장"
+            },
+            "cta": {
+                "title": "더 많은 조언이 필요하세요?",
+                "description": "최고의 지원을 받으려면 문의하세요",
+                "button": "상담사에게 연락"
+            }
+        },
+        "features": {
+            "title": "왜 우리를 선택해야 하나요",
+            "subtitle": "베트남 최고의 프록시 서비스",
+            "items": {
+                "speed": {
+                    "title": "고속",
+                    "description": "무제한 대역폭, 낮은 지연"
+                },
+                "security": {
+                    "title": "보안",
+                    "description": "종단간 암호화, 로그 없음"
+                },
+                "support": {
+                    "title": "24/7 지원",
+                    "description": "전문 지원 팀"
+                },
+                "uptime": {
+                    "title": "99.9% 가동률",
+                    "description": "안정적인 시스템, 지속적인 운영"
+                }
+            }
+        },
+        "pricing": {
+            "title": "가격",
+            "subtitle": "모든 요구 사항에 맞는 플랜",
+            "perMonth": "/월",
+            "perDay": "/일"
+        },
+        "testimonials": {
+            "title": "고객 후기",
+            "subtitle": "서비스를 이용한 고객들의 리뷰"
+        },
+        "faq": {
+            "title": "자주 묻는 질문",
+            "subtitle": "질문에 대한 답변"
+        },
+        "footer": {
+            "cta": {
+                "title": "오늘 시작하세요",
+                "description": "특별 혜택을 받으려면 등록하세요",
+                "contactAgent": "에이전트에게 연락",
+                "registerNow": "지금 등록"
+            },
+            "sections": {
+                "company": {
+                    "title": "회사",
+                    "about": "소개",
+                    "agentOffers": "에이전트 프로그램",
+                    "partners": "파트너",
+                    "sitemap": "사이트맵"
+                },
+                "products": {
+                    "title": "제품",
+                    "staticProxy": "정적 프록시",
+                    "rotatingProxy": "로테이팅 프록시"
+                },
+                "locations": {
+                    "title": "위치",
+                    "vietnam": "베트남",
+                    "hcm": "호치민시",
+                    "hanoi": "하노이",
+                    "hungYen": "흥옌",
+                    "tuyenQuang": "뚜옌꽝",
+                    "binhDinh": "빈딘"
+                },
+                "support": {
+                    "title": "지원",
+                    "contact": "연락처",
+                    "faq": "FAQ"
+                },
+                "getStarted": {
+                    "title": "시작하기",
+                    "becomeCTV": "CTV 되기",
+                    "becomeAgent": "에이전트 되기",
+                    "buyCheap": "저렴한 프록시 구매",
+                    "autoTrade": "자동 거래 시스템",
+                    "help": "도움말"
+                }
+            },
+            "legal": {
+                "privacy": "개인정보 처리방침",
+                "service": "서비스 이용약관",
+                "refund": "환불 정책",
+                "copyright": "© 2024 {{appName}}. 모든 권리 보유."
+            },
+            "contact": {
+                "title": "문의하기"
+            },
+            "copyright": "© 2024 MKT Proxy. 모든 권리 보유."
+        },
+        "about": {
+            "hero": {
+                "title": {
+                    "main": "회사",
+                    "highlight": "소개"
+                },
+                "subtitle": "{{appName}}는 5년 이상의 경험을 가진 베트남 최고의 프록시 서비스 제공업체입니다",
+                "features": [
+                    "5000명 이상의 신뢰 고객",
+                    "64개 성 커버리지",
+                    "99.9% 가동률",
+                    "24/7 지원"
+                ],
+                "actions": {
+                    "contact": "지금 문의하기",
+                    "pricing": "가격 보기"
+                },
+                "stats": {
+                    "customers": "고객",
+                    "provinces": "성",
+                    "uptime": "가동률",
+                    "experience": "년 경험"
+                }
+            },
+            "companyInfo": {
+                "title": "회사 정보",
+                "description": "MKT Proxy는 베트남 최고의 프록시 서비스 제공업체입니다"
+            }
+        },
+        "cooperate": {
+            "about": {
+                "title": "우리와 협력하세요",
+                "subtitle": "에이전트 프로그램에 참여하고 특별 혜택을 받으세요"
+            }
+        },
+        "hotline": {
+            "hero": {
+                "title": "문의하기",
+                "subtitle": "항상 지원하고 조언할 준비가 되어 있습니다"
+            }
+        },
+        "infrastructure": {
+            "title": {
+                "highlight": "인프라",
+                "text": "우리의"
+            },
+            "subtitle": "가장 진보된 프록시 서버 기술을 갖춘 현대적인 인프라, 뛰어난 안정성과 보안",
+            "stats": {
+                "uptime": "가동률",
+                "monitoring": "모니터링",
+                "servers": "서버",
+                "providers": "제공업체"
+            }
+        },
+        "coverage": {
+            "title": {
+                "text": "대부분의 성에 존재",
+                "highlight": "베트남"
+            },
+            "subtitle": "최신 기술로 전국 3개 지역을 커버하는 포괄적인 서버 네트워크",
+            "proxyTitle": "베트남 주거용 프록시",
+            "proxyDescription": "3개 지역의 주요 지역에 위치한 서버 시스템, 34개 성 전체로 점차 확대 중. 높은 안정성 기준으로 구축된 인프라, 백업 장비를 완비하여 항상 준비되어 있으며 모든 사고를 최소화합니다",
+            "features": [
+                "자체 웹사이트 구축 무료 지원",
+                "안정적인 프록시 소스, 다양한 IP",
+                "경쟁력 있는 가격, 매력적인 수익",
+                "완전 자동화 시스템, 관리 용이",
+                "24/7 기술 및 마케팅 지원"
+            ],
+            "registerNow": "지금 등록",
+            "statsLabel": "베트남 3개 지역 커버",
+            "regions": {
+                "north": "북부",
+                "central": "중부",
+                "south": "남부"
+            }
+        },
+        "testimonials": {
+            "titleNumber": "100+",
+            "titleText": "전국 고객",
+            "stats": {
+                "customers": {
+                    "number": "1000+",
+                    "label": "신뢰받는 고객"
+                },
+                "uptime": {
+                    "number": "99.9%",
+                    "label": "가동 시간"
+                },
+                "support": {
+                    "number": "24/7",
+                    "label": "기술 지원"
+                },
+                "providers": {
+                    "number": "3",
+                    "label": "주요 제공업체"
+                }
+            },
+            "reviews": [
+                {
+                    "name": "응우옌 탄 빈",
+                    "role": "풀타임 프록시 비즈니스",
+                    "content": "{{appName}}가 출시된 초기부터 대리점을 하고 있으며 운영과 지원의 전문성에 매우 놀랐습니다. 나만의 맞춤형 웹사이트, 명확한 정책, 세심한 관리가 있습니다. 이것은 프록시 분야에서 신뢰할 수 있고 진지한 플랫폼입니다."
+                },
+                {
+                    "name": "응우옌 호아",
+                    "role": "호치민의 프록시 딜러",
+                    "content": "처음에는 복잡성과 높은 비용 때문에 온라인 판매를 망설였습니다. 하지만 {{appName}}의 프라이빗 웹 에이전트 프로그램에 가입한 후 열정적인 지원, 무료 프라이빗 웹사이트, 300만의 경험 증가를 받았습니다. 이제 매월 안정적으로 프록시를 판매합니다, 쉬운 시작입니다."
+                },
+                {
+                    "name": "부 후이",
+                    "role": "{{appName}} 프라이빗 웹 파트너",
+                    "content": "{{appName}} 대리점을 찾아서 만족합니다, 진정으로 동행하는 느낌이 들기 때문입니다. 제품을 재판매하는 것뿐만 아니라 전문적인 프라이빗 웹 디자인 지원을 받고, 명확한 브랜드 아이덴티티를 구축하고, 고객 신뢰를 만들고, 필요할 때 항상 {{appName}}의 지원을 받습니다."
+                }
+            ]
+        },
+        "common": {
+            "closeMenu": "메뉴 닫기"
+        }
+    },
     "navigation": {
         "home": "홈페이지",
         "overview": "개요",
@@ -9,15 +339,38 @@
         "proxyOrders": "프록시 주문",
         "rotatingProxyOrders": "로테이팅 프록시 주문",
         "purchaseHistory": "구매 내역",
+        "affiliate": "제휴 마케팅",
         "transactionHistory": "거래 내역",
         "proxyChangeHistory": "프록시 변경 내역",
         "loginHistory": "로그인 내역",
         "guide": "가이드",
+        "partner": "파트너",
         "support": "지원"
     },
     "staticProxy": {
         "title": "주거용 프록시",
-        "describe": "귀하의 요구에 맞는 프록시 패키지를 선택하세요"
+        "describe": "귀하의 요구에 맞는 프록시 패키지를 선택하세요",
+        "days": "일수",
+        "location": "위치",
+        "duration": "기간",
+        "quantity": "수량",
+        "protocol": "프로토콜",
+        "username": "사용자 이름",
+        "password": "비밀번호",
+        "total": "합계",
+        "buyNow": "지금 구매",
+        "validation": {
+            "pleaseEnterNumber": "숫자를 입력하세요",
+            "pleaseEnterDays": "일수를 입력하세요",
+            "daysMustBeInteger": "일수는 정수여야 합니다",
+            "minDays": "최소 1일",
+            "pleaseEnterQuantity": "수량을 입력하세요",
+            "quantityMustBeInteger": "수량은 정수여야 합니다",
+            "minQuantity": "최소 1개 프록시",
+            "minChars": "최소 4자",
+            "pleaseEnterUsername": "사용자 이름을 입력하세요",
+            "pleaseEnterPassword": "비밀번호를 입력하세요"
+        }
     },
     "rotatingProxy": {
         "title": "로테이팅 프록시",
@@ -36,5 +389,47 @@
         "randomLocation": "무작위",
         "quantity": "수량",
         "days": "사용 일수"
+    },
+    "auth": {
+        "email": "이메일",
+        "password": "비밀번호",
+        "username": "사용자 이름",
+        "confirmPassword": "비밀번호 확인",
+        "register": "회원가입",
+        "rememberMe": "로그인 상태 유지",
+        "loginSuccess": "로그인 성공!",
+        "loginError": "로그인 실패!",
+        "registerError": "회원가입 실패!",
+        "placeholders": {
+            "enterEmail": "이메일을 입력하세요",
+            "enterPassword": "비밀번호를 입력하세요",
+            "enterName": "이름을 입력하세요"
+        },
+        "validation": {
+            "emailRequired": "이메일을 입력하세요",
+            "emailInvalid": "유효하지 않은 이메일",
+            "passwordRequired": "비밀번호를 입력하세요",
+            "passwordMinLength": "비밀번호는 최소 6자 이상이어야 합니다",
+            "nameRequired": "이름을 입력하세요",
+            "confirmPasswordRequired": "비밀번호 확인을 입력하세요",
+            "passwordsNotMatch": "비밀번호가 일치하지 않습니다"
+        },
+        "messages": {
+            "welcomeBack": "다시 오신 것을 환영합니다!",
+            "welcomeToApp": "{{appName}}에 오신 것을 환영합니다",
+            "loginInstructions": "계속하려면 로그인하세요",
+            "registerInstructions": "새 계정 만들기",
+            "forgotPasswordTitle": "비밀번호를 잊으셨나요?",
+            "forgotPasswordInstructions": "비밀번호를 재설정하려면 이메일을 입력하세요"
+        },
+        "buttons": {
+            "login": "로그인",
+            "loading": "처리 중...",
+            "forgotPassword": "비밀번호를 잊으셨나요?",
+            "noAccount": "계정이 없으신가요?",
+            "registerNow": "지금 가입하기",
+            "hasAccount": "이미 계정이 있으신가요?",
+            "loginNow": "지금 로그인"
+        }
     }
 }

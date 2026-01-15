@@ -4,20 +4,18 @@ import { useState } from 'react'
 
 import { Link, Copy } from 'lucide-react'
 
-import { useSelector } from 'react-redux'
-
 import { toast } from 'react-toastify'
 
 import CustomIconButton from '@core/components/mui/IconButton'
 
 import BoxCustom from '@/components/UI/BoxCustom'
 import CustomTextField from '@/@core/components/mui/TextField'
-import type { RootState } from '@/store'
+import { useUserStore } from '@/stores'
 
 import UserWithdrawalTable from '@views/Client/Affiliate/UserWithdrawalTable'
 
 export default function AffiliatePage() {
-  const user = useSelector((state: RootState) => state.user.user)
+  const user = useUserStore((state) => state.user)
 
   const [copied, setCopied] = useState(false)
 

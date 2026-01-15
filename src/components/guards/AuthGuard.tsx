@@ -16,6 +16,6 @@ export default async function AuthGuard({ children, locale }: ChildrenType & { l
     return <>{children}</>
   }
 
-      // Nếu session không hợp lệ, hiển thị AuthRedirect
-      return <AuthRedirect lang={locale}>{null}</AuthRedirect>
+    // Nếu session không hợp lệ, hiển thị AuthRedirect
+    return <AuthRedirect lang={locale}>{null}</AuthRedirect>
 }

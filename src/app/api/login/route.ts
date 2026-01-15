@@ -15,8 +15,7 @@ export async function POST(req: Request) {
   let response: null | ResponseUser = null
 
   if (user) {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password: _, ...filteredUserData } = user
+    const { password: _password, ...filteredUserData } = user
 
     response = {
       ...filteredUserData

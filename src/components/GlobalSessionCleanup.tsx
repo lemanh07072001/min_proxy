@@ -1,8 +1,10 @@
 'use client'
 
-import { useSession, signOut } from 'next-auth/react'
 import { useEffect, useRef } from 'react'
+
 import { useRouter, usePathname } from 'next/navigation'
+
+import { useSession, signOut } from 'next-auth/react'
 
 /**
  * Component global để cleanup session cũ trên toàn bộ ứng dụng
@@ -27,8 +29,10 @@ const GlobalSessionCleanup = () => {
             console.log('🧹 [GlobalSessionCleanup] Found invalid session with error, cleaning up...')
             await signOut({ redirect: false })
             const lang = pathname.split('/')[1] || 'vi'
+
             router.push(`/${lang}`)
-            return
+            
+return
           }
 
           // Kiểm tra nếu không có access_token
@@ -36,8 +40,10 @@ const GlobalSessionCleanup = () => {
             console.log('🧹 [GlobalSessionCleanup] Found session without access_token, cleaning up...')
             await signOut({ redirect: false })
             const lang = pathname.split('/')[1] || 'vi'
+
             router.push(`/${lang}`)
-            return
+            
+return
           }
 
           // Kiểm tra token validity bằng cách gọi API
@@ -53,16 +59,20 @@ const GlobalSessionCleanup = () => {
             console.log('🧹 [GlobalSessionCleanup] Token is invalid, cleaning up...')
             await signOut({ redirect: false })
             const lang = pathname.split('/')[1] || 'vi'
+
             router.push(`/${lang}`)
-            return
+            
+return
           }
 
           console.log('✅ [GlobalSessionCleanup] Session is valid')
         } catch (error) {
           console.error('❌ [GlobalSessionCleanup] Error during cleanup:', error)
+
           // Nếu có lỗi, cũng cleanup session để đảm bảo
           await signOut({ redirect: false })
           const lang = pathname.split('/')[1] || 'vi'
+
           router.push(`/${lang}`)
         }
       }

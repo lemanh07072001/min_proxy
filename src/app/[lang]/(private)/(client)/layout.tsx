@@ -17,7 +17,7 @@ import Navigation from '@components/layout/vertical/Navigation'
 import Navbar from '@components/layout/vertical/Navbar'
 import LanguageSyncWrapper from '@/components/LanguageSyncWrapper'
 
-import AuthGuard from '@/hocs/AuthGuard'
+import { AuthGuard } from '@/components/guards'
 
 // Util Imports
 import { getMode, getSystemMode } from '@core/utils/serverHelpers'

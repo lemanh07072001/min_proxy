@@ -6,10 +6,10 @@ export const useCountries = () => {
     queryKey: ['countries'],
     queryFn: async () => {
       const res = await axios.get('/api/countries')
-      return res?.data?.data ?? []
+
+      
+return res?.data?.data ?? []
     },
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
-    staleTime: 10 * 60 * 1000 // Cache 10 phút
+    staleTime: 30 * 60 * 1000 // Cache 30 phút - data tĩnh
   })
 }

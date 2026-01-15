@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { RefreshCw, Copy, Check, Eye, EyeOff, Shield } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 
-import useAxiosAuth from '@/hocs/useAxiosAuth'
+import useAxiosAuth from '@/hooks/useAxiosAuth'
 
 export default function GetToken() {
   const [token, setToken] = useState('')

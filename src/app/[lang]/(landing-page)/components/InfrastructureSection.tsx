@@ -1,18 +1,24 @@
+'use client'
+
 import React from 'react'
+
 import Image from 'next/image'
 
+import { useTranslation } from 'react-i18next'
+
 const InfrastructureSection = () => {
+  const { t } = useTranslation()
+
   return (
     <section className='infrastructure-section'>
       <div className='container-lg'>
         {/* Header */}
         <div className='text-center mb-5'>
           <h2 className='infrastructure-title'>
-            <span className='text-red'>Cơ sở hạ tầng</span> của chúng tôi
+            <span className='text-red'>{t('landing.infrastructure.title.highlight')}</span> {t('landing.infrastructure.title.text')}
           </h2>
           <p className='infrastructure-subtitle'>
-            Cơ sở hạ tầng hiện đại được trang bị toàn diện các công nghệ tiên tiến nhất về máy chủ proxy, ổn định và bảo
-            mật vượt trội
+            {t('landing.infrastructure.subtitle')}
           </p>
         </div>
 
@@ -99,25 +105,25 @@ const InfrastructureSection = () => {
             <div className='col-md-3 col-6'>
               <div className='stat-item'>
                 <div className='stat-number'>99.9%</div>
-                <div className='stat-label'>Uptime</div>
+                <div className='stat-label'>{t('landing.infrastructure.stats.uptime')}</div>
               </div>
             </div>
             <div className='col-md-3 col-6'>
               <div className='stat-item'>
                 <div className='stat-number'>24/7</div>
-                <div className='stat-label'>Giám sát</div>
+                <div className='stat-label'>{t('landing.infrastructure.stats.monitoring')}</div>
               </div>
             </div>
             <div className='col-md-3 col-6'>
               <div className='stat-item'>
                 <div className='stat-number'>1000+</div>
-                <div className='stat-label'>Server</div>
+                <div className='stat-label'>{t('landing.infrastructure.stats.servers')}</div>
               </div>
             </div>
             <div className='col-md-3 col-6'>
               <div className='stat-item'>
                 <div className='stat-number'>3</div>
-                <div className='stat-label'>Nhà mạng</div>
+                <div className='stat-label'>{t('landing.infrastructure.stats.providers')}</div>
               </div>
             </div>
           </div>

@@ -78,6 +78,7 @@ export default function RechargeInputDialog({ isOpen, handleClose, onGenerateQr 
       })
     } catch (error) {
       console.error('Lỗi khi gọi API code-transactions:', error)
+
       // Vẫn tiếp tục tạo QR code ngay cả khi API lỗi
     }
 

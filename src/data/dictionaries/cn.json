@@ -1,4 +1,334 @@
 {
+  "time": {
+    "months": "月",
+    "days": "天",
+    "hours": "小时",
+    "minutes": "分钟"
+  },
+  "landing": {
+    "header": {
+      "promoBanner": {
+        "text": "{{appName}}特别优惠！",
+        "button": "立即查看"
+      },
+      "menu": {
+        "home": "首页",
+        "products": "产品",
+        "pricing": "价格",
+        "docs": "文档",
+        "about": "关于我们",
+        "cooperate": "合作",
+        "hotline": "联系我们",
+        "contact": "联系我们"
+      },
+      "buttons": {
+        "login": "登录",
+        "register": "注册",
+        "dashboard": "控制台"
+      },
+      "auth": {
+        "login": "登录",
+        "register": "注册"
+      },
+      "goToHome": "前往首页"
+    },
+    "hero": {
+      "title": {
+        "line1": "越南代理",
+        "line2": "高质量"
+      },
+      "subtitle": "稳定、高速的代理服务，真实越南IP",
+      "description": "企业和个人的专业代理解决方案",
+      "buttons": {
+        "tryFree": "免费试用",
+        "viewPricing": "查看价格"
+      },
+      "features": {
+        "coverage": "覆盖64个省份",
+        "speed": "高速",
+        "uptime": "99.9%在线率",
+        "support": "24/7支持"
+      },
+      "actions": {
+        "buyNow": "立即购买",
+        "watchDemo": "观看演示"
+      },
+      "trust": {
+        "customers": "客户",
+        "uptime": "在线率",
+        "support": "支持"
+      },
+      "floatingCards": {
+        "security": {
+          "title": "安全",
+          "desc": "端到端加密"
+        },
+        "speed": {
+          "title": "高速",
+          "desc": "无限带宽"
+        },
+        "coverage": {
+          "title": "覆盖",
+          "desc": "越南64个省份"
+        }
+      }
+    },
+    "products": {
+      "title": "代理产品",
+      "subtitle": "选择适合您需求的代理套餐",
+      "cards": {
+        "viettel": {
+          "name": "Viettel代理",
+          "badge": "热门",
+          "features": [
+            "100%真实Viettel IP",
+            "高速稳定",
+            "支持HTTP/SOCKS5",
+            "无限更换IP"
+          ]
+        },
+        "fpt": {
+          "name": "FPT代理",
+          "badge": "畅销",
+          "features": [
+            "100%真实FPT IP",
+            "无限带宽",
+            "支持HTTP/SOCKS5",
+            "99.9%在线率"
+          ]
+        },
+        "vnpt": {
+          "name": "VNPT代理",
+          "badge": "稳定",
+          "features": [
+            "100%真实VNPT IP",
+            "低延迟",
+            "支持HTTP/SOCKS5",
+            "高安全性"
+          ]
+        }
+      },
+      "actions": {
+        "buyNow": "立即购买",
+        "popular": "最受欢迎",
+        "guarantee": "24小时退款保证"
+      },
+      "cta": {
+        "title": "需要更多建议？",
+        "description": "联系我们获得最佳支持",
+        "button": "联系顾问"
+      }
+    },
+    "features": {
+      "title": "为什么选择我们",
+      "subtitle": "越南领先的代理服务",
+      "items": {
+        "speed": {
+          "title": "高速",
+          "description": "无限带宽，低延迟"
+        },
+        "security": {
+          "title": "安全",
+          "description": "端到端加密，无日志"
+        },
+        "support": {
+          "title": "24/7支持",
+          "description": "专业支持团队"
+        },
+        "uptime": {
+          "title": "99.9%在线率",
+          "description": "稳定系统，持续运行"
+        }
+      }
+    },
+    "pricing": {
+      "title": "价格",
+      "subtitle": "满足所有需求的套餐",
+      "perMonth": "/月",
+      "perDay": "/天"
+    },
+    "testimonials": {
+      "title": "客户评价",
+      "subtitle": "来自使用过我们服务的客户的评价"
+    },
+    "faq": {
+      "title": "常见问题",
+      "subtitle": "解答您的疑问"
+    },
+    "footer": {
+      "cta": {
+        "title": "今天开始",
+        "description": "注册获取特别优惠",
+        "contactAgent": "联系代理",
+        "registerNow": "立即注册"
+      },
+      "sections": {
+        "company": {
+          "title": "公司",
+          "about": "关于我们",
+          "agentOffers": "代理计划",
+          "partners": "合作伙伴",
+          "sitemap": "网站地图"
+        },
+        "products": {
+          "title": "产品",
+          "staticProxy": "静态代理",
+          "rotatingProxy": "轮换代理"
+        },
+        "locations": {
+          "title": "位置",
+          "vietnam": "越南",
+          "hcm": "胡志明市",
+          "hanoi": "河内",
+          "hungYen": "兴安",
+          "tuyenQuang": "宣光",
+          "binhDinh": "平定"
+        },
+        "support": {
+          "title": "支持",
+          "contact": "联系",
+          "faq": "常见问题"
+        },
+        "getStarted": {
+          "title": "开始使用",
+          "becomeCTV": "成为CTV",
+          "becomeAgent": "成为代理",
+          "buyCheap": "购买便宜代理",
+          "autoTrade": "自动交易系统",
+          "help": "帮助"
+        }
+      },
+      "legal": {
+        "privacy": "隐私政策",
+        "service": "服务条款",
+        "refund": "退款政策",
+        "copyright": "© 2024 {{appName}}. 保留所有权利。"
+      },
+      "contact": {
+        "title": "联系我们"
+      },
+      "copyright": "© 2024 MKT Proxy. 保留所有权利。"
+    },
+    "about": {
+      "hero": {
+        "title": {
+          "main": "关于",
+          "highlight": "我们"
+        },
+        "subtitle": "{{appName}}是越南领先的代理服务提供商，拥有超过5年的经验",
+        "features": [
+          "超过5000个信赖的客户",
+          "覆盖64个省份",
+          "99.9%在线率",
+          "24/7支持"
+        ],
+        "actions": {
+          "contact": "立即联系",
+          "pricing": "查看价格"
+        },
+        "stats": {
+          "customers": "客户",
+          "provinces": "省份",
+          "uptime": "在线率",
+          "experience": "年经验"
+        }
+      },
+      "companyInfo": {
+        "title": "公司信息",
+        "description": "MKT Proxy是越南领先的代理服务提供商"
+      }
+    },
+    "cooperate": {
+      "about": {
+        "title": "与我们合作",
+        "subtitle": "加入我们的代理计划，享受特别优惠"
+      }
+    },
+    "hotline": {
+      "hero": {
+        "title": "联系我们",
+        "subtitle": "我们随时准备为您提供支持和建议"
+      }
+    },
+    "infrastructure": {
+      "title": {
+        "highlight": "基础设施",
+        "text": "我们的"
+      },
+      "subtitle": "配备最先进代理服务器技术的现代化基础设施，卓越的稳定性和安全性",
+      "stats": {
+        "uptime": "在线率",
+        "monitoring": "监控",
+        "servers": "服务器",
+        "providers": "供应商"
+      }
+    },
+    "coverage": {
+      "title": {
+        "text": "覆盖大部分省份",
+        "highlight": "越南"
+      },
+      "subtitle": "全面覆盖全国三个地区的服务器网络，采用最现代化的技术",
+      "proxyTitle": "越南住宅代理",
+      "proxyDescription": "服务器系统位于三个地区的关键区域，逐步扩展覆盖到所有34个省份。基础设施按照高稳定性标准建设，配备完善的备份设备，随时准备就绪，最大限度减少所有故障",
+      "features": [
+        "免费支持建立您自己的网站",
+        "稳定的代理来源，多样化的IP",
+        "有竞争力的价格，诱人的利润",
+        "全自动化系统，易于管理",
+        "24/7技术和营销支持"
+      ],
+      "registerNow": "立即注册",
+      "statsLabel": "覆盖越南三个地区",
+      "regions": {
+        "north": "北部",
+        "central": "中部",
+        "south": "南部"
+      }
+    },
+    "testimonials": {
+      "titleNumber": "100+",
+      "titleText": "全国客户",
+      "stats": {
+        "customers": {
+          "number": "1000+",
+          "label": "信赖客户"
+        },
+        "uptime": {
+          "number": "99.9%",
+          "label": "运行时间"
+        },
+        "support": {
+          "number": "24/7",
+          "label": "技术支持"
+        },
+        "providers": {
+          "number": "3",
+          "label": "主要供应商"
+        }
+      },
+      "reviews": [
+        {
+          "name": "阮清平",
+          "role": "全职代理业务",
+          "content": "我从{{appName}}推出初期就成为代理商，对运营和支持的专业性感到非常惊讶。我有自己定制的网站，明确的政策和细致的关怀。这是代理领域可靠和认真的平台。"
+        },
+        {
+          "name": "阮花",
+          "role": "胡志明市代理经销商",
+          "content": "最初我因为复杂性和高成本而犹豫在线销售。但自从加入{{appName}}的私人网页代理计划后，我获得了专注的支持，免费的私人网站，经验增加了300万。现在我每月稳定销售代理，轻松起步。"
+        },
+        {
+          "name": "武辉",
+          "role": "{{appName}}私人网页合作伙伴",
+          "content": "我对找到{{appName}}代理感到满意，因为我感到真正被陪伴。不仅仅是转售产品，我获得了专业的私人网页设计支持，建立了清晰的品牌形象，创造了客户信任，并且在需要时总是得到{{appName}}的支持。"
+        }
+      ]
+    },
+    "common": {
+      "closeMenu": "关闭菜单"
+    }
+  },
   "navigation": {
     "home": "首页",
     "overview": "概览",
@@ -9,9 +339,12 @@
     "proxyOrders": "代理订单",
     "rotatingProxyOrders": "轮换代理订单",
     "purchaseHistory": "购买历史",
+    "affiliate": "联盟营销",
     "transactionHistory": "交易历史",
     "proxyChangeHistory": "代理更换历史",
+    "loginHistory": "登录历史",
     "guide": "指南",
+    "partner": "合作伙伴",
     "support": "支持",
     "docsApi": "Docs Api"
   },
@@ -57,5 +390,47 @@
     "randomLocation": "随机",
     "quantity": "数量",
     "days": "使用天数"
+  },
+  "auth": {
+    "email": "邮箱",
+    "password": "密码",
+    "username": "用户名",
+    "confirmPassword": "确认密码",
+    "register": "注册",
+    "rememberMe": "记住我",
+    "loginSuccess": "登录成功！",
+    "loginError": "登录失败！",
+    "registerError": "注册失败！",
+    "placeholders": {
+      "enterEmail": "请输入邮箱",
+      "enterPassword": "请输入密码",
+      "enterName": "请输入姓名"
+    },
+    "validation": {
+      "emailRequired": "请输入邮箱",
+      "emailInvalid": "邮箱格式无效",
+      "passwordRequired": "请输入密码",
+      "passwordMinLength": "密码至少6个字符",
+      "nameRequired": "请输入姓名",
+      "confirmPasswordRequired": "请确认密码",
+      "passwordsNotMatch": "密码不匹配"
+    },
+    "messages": {
+      "welcomeBack": "欢迎回来！",
+      "welcomeToApp": "欢迎来到 {{appName}}",
+      "loginInstructions": "登录以继续",
+      "registerInstructions": "创建新账户",
+      "forgotPasswordTitle": "忘记密码？",
+      "forgotPasswordInstructions": "输入邮箱以重置密码"
+    },
+    "buttons": {
+      "login": "登录",
+      "loading": "处理中...",
+      "forgotPassword": "忘记密码？",
+      "noAccount": "没有账户？",
+      "registerNow": "立即注册",
+      "hasAccount": "已有账户？",
+      "loginNow": "立即登录"
+    }
   }
 }

@@ -1,8 +1,10 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useSession, signOut } from 'next-auth/react'
+
 import { useRouter, usePathname } from 'next/navigation'
+
+import { useSession, signOut } from 'next-auth/react'
 
 /**
  * Hook để kiểm tra authentication trên client-side
@@ -20,14 +22,16 @@ export const useClientAuthGuard = () => {
       // Nếu đang loading, chờ
       if (status === 'loading') {
         setIsLoading(true)
-        return
+        
+return
       }
 
       // Nếu không có session
       if (!session) {
         setIsAuthenticated(false)
         setIsLoading(false)
-        return
+        
+return
       }
 
       // Kiểm tra nếu session có error (token hết hạn)
@@ -36,7 +40,8 @@ export const useClientAuthGuard = () => {
         await signOut({ redirect: false })
         setIsAuthenticated(false)
         setIsLoading(false)
-        return
+        
+return
       }
 
       // Kiểm tra nếu không có access_token
@@ -45,7 +50,8 @@ export const useClientAuthGuard = () => {
         await signOut({ redirect: false })
         setIsAuthenticated(false)
         setIsLoading(false)
-        return
+        
+return
       }
 
       // Kiểm tra token validity bằng cách gọi API
@@ -63,7 +69,8 @@ export const useClientAuthGuard = () => {
           await signOut({ redirect: false })
           setIsAuthenticated(false)
           setIsLoading(false)
-          return
+          
+return
         }
 
         if (!response.ok) {
@@ -71,7 +78,8 @@ export const useClientAuthGuard = () => {
           await signOut({ redirect: false })
           setIsAuthenticated(false)
           setIsLoading(false)
-          return
+          
+return
         }
 
         // Token hợp lệ

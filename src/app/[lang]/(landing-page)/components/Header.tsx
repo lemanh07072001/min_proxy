@@ -14,8 +14,10 @@ interface HeaderProps {
 
 const Header = ({ onToggleSidebar }: HeaderProps) => {
   const { t } = useTranslation()
+
   useLanguageSync() // Sync language with URL
-  return (
+  
+return (
     <>
       {/* Promotional Banner */}
       {/* <div className='promo-banner'>

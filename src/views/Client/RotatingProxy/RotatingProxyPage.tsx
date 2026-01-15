@@ -23,17 +23,15 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 import { toast } from 'react-toastify'
 
-import { useDispatch, useSelector } from 'react-redux'
+import { Box, Grid2, Typography, CircularProgress, TextField, InputAdornment } from '@mui/material'
 
 import ConfirmDialog from '@components/confirm-modal/ConfirmDialog'
 
 import { useModalContext } from '@/app/contexts/ModalContext'
 
-import { Box, Grid2, Typography, CircularProgress, TextField, InputAdornment } from '@mui/material'
 
 import CustomTextField from '@core/components/mui/TextField'
-import { subtractBalance } from '@/store/userSlice'
-import type { AppDispatch } from '@/store'
+import { useUserStore } from '@/stores'
 import { useCountries } from '@/hooks/apis/useCountries'
 import './styles.css'
 
@@ -174,10 +172,12 @@ const SwitchFeatureRow = ({ feature, control, planId }) => (
 const RadioFeatureRow = ({ feature, control, planId, plan }) => {
   const getDurationLabel = (key: string) => {
     const days = parseInt(key)
+
     if (days === 1) return 'Ngày'
     if (days === 7) return 'Tuần'
     if (days === 30) return 'Tháng'
-    return `${days} ngày`
+    
+return `${days} ngày`
   }
 
   // Hàm tính phần trăm giảm giá theo công thức: (1 - giá_thực_tế / giá_gốc) * 100
@@ -266,9 +266,12 @@ const RadioFeatureRow = ({ feature, control, planId, plan }) => {
                   const calculatedDiscount = feature.field === 'time' 
                     ? calculateDiscount(item.key, item.value) 
                     : null
+
                   const discount = calculatedDiscount !== null 
                     ? calculatedDiscount 
                     : (item.discount ? parseInt(item.discount) : 0)
+
+
                   // Hiển thị label: nếu là time thì dùng getDurationLabel, nếu là protocol thì dùng item.label
                   const displayLabel = feature.field === 'time' ? getDurationLabel(item.key) : item.label
 
@@ -333,7 +336,7 @@ const RadioFeatureRow = ({ feature, control, planId, plan }) => {
 const useBuyProxy = () => {
   const queryClient = useQueryClient()
   const session = useSession()
-  const dispatch = useDispatch<AppDispatch>()
+  const subtractBalance = useUserStore((state) => state.subtractBalance)
   const router = useRouter()
 
   const mutation = useMutation({
@@ -357,7 +360,7 @@ const useBuyProxy = () => {
       } else {
         const total = variables.total
 
-        dispatch(subtractBalance(total))
+        subtractBalance(total)
         toast.success(data.data.message)
 
         router.push('/history-order')

@@ -3,6 +3,7 @@
 import { useState } from 'react'
 
 import { useRouter, useParams } from 'next/navigation'
+
 import Divider from '@mui/material/Divider'
 import {
   Card,
@@ -80,9 +81,11 @@ const schema = yup.object({
     .min(1, 'Body Api là bắt buộc')
     .test('is-valid-json', 'Body Api phải là JSON hợp lệ', function (value) {
       if (!value) return true
+
       try {
         JSON.parse(value)
-        return true
+        
+return true
       } catch (error) {
         return false
       }
@@ -112,7 +115,9 @@ export default function CreateServicePage() {
     resolver: async (data, context, options) => {
       try {
         const values = await schema.validate(data, { abortEarly: false })
-        return { values, errors: {} }
+
+        
+return { values, errors: {} }
       } catch (err: any) {
         const formattedErrors = err.inner.reduce(
           (allErrors: any, currentError: any) => ({
@@ -124,7 +129,9 @@ export default function CreateServicePage() {
           }),
           {}
         )
-        return { values: {}, errors: formattedErrors }
+
+        
+return { values: {}, errors: formattedErrors }
       }
     },
     mode: 'onSubmit',
@@ -146,17 +153,20 @@ export default function CreateServicePage() {
   })
 
   const [isMultiInputModalOpen, setIsMultiInputModalOpen] = useState(false)
+
   const [multiInputFields, setMultiInputFields] = useState<Array<{ key: string; value: string }>>([
     { key: '', value: '' }
   ])
 
   const [isPriceModalOpen, setIsPriceModalOpen] = useState(false)
+
   const [priceFields, setPriceFields] = useState<Array<{ key: string; value: string; cost?: string }>>([
     { key: '', value: '', cost: '' }
   ])
 
   const ITEM_HEIGHT = 48
   const ITEM_PADDING_TOP = 8
+
   const MenuProps = {
     PaperProps: {
       style: {
@@ -303,6 +313,7 @@ export default function CreateServicePage() {
                       value={field.value}
                       onChange={e => {
                         const value = e.target.value === '' ? null : Number(e.target.value)
+
                         field.onChange(value)
                       }}
                       size='medium'
@@ -595,14 +606,19 @@ export default function CreateServicePage() {
                           MenuProps,
                           renderValue: selected => {
                             const values = selected as unknown as string[]
+
                             if (!values || values.length === 0) {
                               return <em>Chọn giao thức</em>
                             }
-                            return (
+
+                            
+return (
                               <div className='flex flex-wrap gap-1'>
                                 {values.map(val => {
                                   const protocol = protocols.find(p => p.value === val)
-                                  return <Chip key={val} label={protocol?.label || val} size='small' />
+
+                                  
+return <Chip key={val} label={protocol?.label || val} size='small' />
                                 })}
                               </div>
                             )

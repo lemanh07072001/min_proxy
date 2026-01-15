@@ -40,10 +40,9 @@ export default function QrCodeDisplayDialog({
   rechargeAmount,
   transactionCode
 }: QrCodeDisplayDialogProps) {
-  if (!qrDataUrl) return null
-
   const { data: session } = useSession()
   const userId = (session?.user as any)?.id ?? ''
+  const [, copy] = useCopy()
 
   // Thông tin ngân hàng cơ bản
   const BANK_INFO_BASE = {
@@ -59,7 +58,7 @@ export default function QrCodeDisplayDialog({
     note: transactionCode || getBankNumber(userId).note
   }
 
-  const [, copy] = useCopy()
+  if (!qrDataUrl) return null
 
   const handleCopyAll = () => {
     // Ghép các chuỗi lại theo đúng định dạng bạn muốn

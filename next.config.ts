@@ -9,14 +9,19 @@ const nextConfig: NextConfig = {
     root: process.cwd()
   },
   images: {
-    unoptimized: true,
+    unoptimized: false, // Bật image optimization
     remotePatterns: [
       {
         protocol: 'https',
         hostname: 'images.pexels.com',
         pathname: '/photos/**'
+      },
+      {
+        protocol: 'https',
+        hostname: 'api.mktproxy.com'
       }
-    ]
+    ],
+    formats: ['image/avif', 'image/webp']
   },
 
   async redirects() {

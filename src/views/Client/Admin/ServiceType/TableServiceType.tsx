@@ -35,9 +35,10 @@ import {
   IconButton
 } from '@mui/material'
 
-import useAxiosAuth from '@/hocs/useAxiosAuth'
-import { useCopyServiceType, useDeleteServiceType } from '@/hooks/apis/useServiceType'
 import { toast } from 'react-toastify'
+
+import useAxiosAuth from '@/hooks/useAxiosAuth'
+import { useCopyServiceType, useDeleteServiceType } from '@/hooks/apis/useServiceType'
 
 export default function TableServiceType() {
   const [columnFilters, setColumnFilters] = useState<any[]>([])
@@ -143,6 +144,7 @@ export default function TableServiceType() {
 
     // Parse price_by_duration nếu là string JSON
     let priceDurations: any[] = []
+
     try {
       priceDurations =
         typeof rowData.price_by_duration === 'string'
@@ -278,7 +280,9 @@ export default function TableServiceType() {
         cell: ({ row }: { row: any }) => {
           const type = row.original?.type
           const displayText = type === 0 || type === '0' ? 'Tĩnh' : type === 1 || type === '1' ? 'Xoay' : type || '-'
-          return (
+
+          
+return (
             <div>
               <div className='font-bold'>{displayText}</div>
             </div>
@@ -290,7 +294,9 @@ export default function TableServiceType() {
         header: 'Proxy Type',
         cell: ({ row }: { row: any }) => {
           const proxyType = row.original?.proxy_type
-          return (
+
+          
+return (
             <div>
               <div className='font-bold'>
                 {proxyType === 'residential' ? 'Dân cư' : proxyType === 'datacenter' ? 'Datacenter' : proxyType || '-'}
@@ -304,7 +310,9 @@ export default function TableServiceType() {
         header: 'IP Version',
         cell: ({ row }: { row: any }) => {
           const ipVersion = row.original?.ip_version
-          return (
+
+          
+return (
             <div>
               <div className='font-bold'>
                 {ipVersion === 'ipv4' ? 'IPv4' : ipVersion === 'ipv6' ? 'IPv6' : ipVersion || '-'}
@@ -318,10 +326,13 @@ export default function TableServiceType() {
         header: 'Protocols',
         cell: ({ row }: { row: any }) => {
           const protocols = row.original?.protocols
+
           if (!protocols || protocols.length === 0) {
             return <div>-</div>
           }
-          return (
+
+          
+return (
             <div className='flex flex-wrap gap-1'>
               {protocols.map((protocol: string, index: number) => (
                 <Chip

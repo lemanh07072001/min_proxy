@@ -1,7 +1,9 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+
 import { TrendingUp, TrendingDown } from 'lucide-react'
+
 import { formatCurrency, formatNumber } from '@/utils/formatters'
 import { KPICardProps } from '@/types/dashboard'
 

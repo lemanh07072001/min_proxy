@@ -16,6 +16,7 @@ const Hero = () => {
   const params = useParams()
   const { lang: locale } = params
   const { t } = useTranslation()
+
   useLanguageSync() // Sync language with URL
 
   return (
