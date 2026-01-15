@@ -27,6 +27,7 @@ interface Profile {
   role: string
   created_at: string
 }
+
 interface ProfileProps {
   dataProfile: Profile
 }
