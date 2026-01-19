@@ -18,6 +18,7 @@ import {
   ArrowRightLeft,
   Wallet,
   Layers,
+  Globe,
 
   // Admin icons
   Users,
@@ -365,6 +366,16 @@ const VerticalMenu = ({ scrollMenu, dictionary }: Props) => {
                 href={`/${locale}/admin/service-type`}
               >
                 Dịch vụ
+              </MenuItem>
+            )}
+
+            {hasPermission('admin.proxies') && (
+              <MenuItem
+                icon={<Globe size={20} strokeWidth={1.5} />}
+                rootStyles={getMenuItemStyles('admin/proxies')}
+                href={`/${locale}/admin/proxies`}
+              >
+                Danh sách Proxy
               </MenuItem>
             )}
 
