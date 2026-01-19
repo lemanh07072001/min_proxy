@@ -1,12 +1,13 @@
 'use client'
 
-import { useMemo, useState, useEffect } from 'react'
+import { useMemo, useState, useCallback, useEffect } from 'react'
 
 import Image from 'next/image'
 
 import { List, House, RotateCw, Settings2, Search } from 'lucide-react'
 
 import Checkbox from '@mui/material/Checkbox'
+import LinearProgress from '@mui/material/LinearProgress'
 
 import {
   useReactTable,
@@ -19,7 +20,15 @@ import {
   getFacetedUniqueValues
 } from '@tanstack/react-table'
 
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+
 import Pagination from '@mui/material/Pagination'
+
+// Cache để lưu dữ liệu đã tải
+const proxyCache: Record<string, any[]> = {
+  static: [],
+  rotating: []
+}
 
 interface ProxiesPageProps {
   initialData: {
@@ -30,8 +39,6 @@ interface ProxiesPageProps {
 
 export default function ProxiesPage({ initialData }: ProxiesPageProps) {
   const [activeTab, setActiveTab] = useState<'static' | 'rotating'>('static')
-  const [proxyData, setProxyData] = useState<any[]>(initialData.static)
-  const [isLoading, setIsLoading] = useState(false)
   const [columnFilters, setColumnFilters] = useState<any[]>([])
   const [rowSelection, setRowSelection] = useState({})
   const [sorting, setSorting] = useState<any[]>([])
@@ -52,13 +59,55 @@ export default function ProxiesPage({ initialData }: ProxiesPageProps) {
     pageSize: 10
   })
 
+  const queryClient = useQueryClient()
+
+  // Initialize cache with initial data
+  useEffect(() => {
+    if (initialData.static.length > 0 && proxyCache.static.length === 0) {
+      proxyCache.static = initialData.static
+    }
+
+    if (initialData.rotating.length > 0 && proxyCache.rotating.length === 0) {
+      proxyCache.rotating = initialData.rotating
+    }
+  }, [initialData])
+
+  // React Query for fetching proxies with caching
+  const { data: proxyData = [], isLoading, isFetching } = useQuery({
+    queryKey: ['proxies', activeTab],
+    queryFn: async () => {
+      // Return cached data if available
+      if (proxyCache[activeTab].length > 0) {
+        return proxyCache[activeTab]
+      }
+
+      const res = await fetch(`/api/proxies?type=${activeTab}`)
+      const data = await res.json()
+      const proxies = data?.data ?? []
+
+      // Update cache
+      proxyCache[activeTab] = proxies
+
+      return proxies
+    },
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+    gcTime: 10 * 60 * 1000, // Keep in cache for 10 minutes
+    refetchOnWindowFocus: false
+  })
+
+  // Refresh data
+  const refreshData = useCallback(() => {
+    proxyCache[activeTab] = []
+    queryClient.invalidateQueries({ queryKey: ['proxies', activeTab] })
+  }, [activeTab, queryClient])
+
   // Client-side filtered data based on search value
   const filteredData = useMemo(() => {
     if (!searchValue.trim()) return proxyData
 
     const searchLower = searchValue.toLowerCase().trim()
 
-    return proxyData.filter(item => {
+    return proxyData.filter((item: any) => {
       // Search by proxy (HTTP)
       const proxy = item?.proxys?.HTTP?.toLowerCase() || ''
 
@@ -83,28 +132,13 @@ export default function ProxiesPage({ initialData }: ProxiesPageProps) {
     })
   }, [proxyData, searchValue])
 
-  const fetchProxies = async (type: 'static' | 'rotating') => {
-    setIsLoading(true)
-
-    try {
-      const res = await fetch(`/api/proxies?type=${type}`)
-      const data = await res.json()
-
-      setProxyData(data?.data ?? [])
-    } catch (error) {
-      console.error('Error fetching proxies:', error)
-      setProxyData([])
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
   const handleTabChange = async (type: 'static' | 'rotating') => {
     if (type === activeTab) return
 
     setActiveTab(type)
     setPagination({ pageIndex: 0, pageSize: 10 })
-    await fetchProxies(type)
+    setRowSelection({})
+    setSearchValue('')
   }
 
   const columns = useMemo(
@@ -242,9 +276,18 @@ export default function ProxiesPage({ initialData }: ProxiesPageProps) {
   const startRow = pageIndex * pageSize + 1
   const endRow = Math.min(startRow + pageSize - 1, totalRows)
 
+  const showLoadingBar = isLoading || isFetching
+
   return (
     <div className='orders-content'>
       <div className='table-container'>
+        {/* Loading bar at top */}
+        {showLoadingBar && (
+          <div className='absolute top-0 left-0 right-0 z-50'>
+            <LinearProgress color='primary' />
+          </div>
+        )}
+
         <div className='table-toolbar'>
           <div className='header-left'>
             <div className='page-icon'>
@@ -253,6 +296,23 @@ export default function ProxiesPage({ initialData }: ProxiesPageProps) {
             <div className='flex justify-between align-middle w-full'>
               <h5 className='mb-0 font-semibold'>Danh sách Proxy</h5>
             </div>
+          </div>
+
+          {/* Data info */}
+          <div className='flex items-center gap-2 text-sm text-slate-500'>
+            {proxyData.length > 0 && (
+              <span className='bg-emerald-100 text-emerald-700 px-2 py-1 rounded-md'>
+                {proxyData.length.toLocaleString()} bản ghi
+              </span>
+            )}
+            <button
+              onClick={refreshData}
+              disabled={isLoading || isFetching}
+              className='p-1.5 hover:bg-slate-100 rounded-lg transition-all disabled:opacity-50'
+              title='Làm mới dữ liệu'
+            >
+              <RotateCw size={16} className={isFetching ? 'animate-spin' : ''} />
+            </button>
           </div>
         </div>
 
@@ -269,6 +329,11 @@ export default function ProxiesPage({ initialData }: ProxiesPageProps) {
             >
               <House size={18} />
               Proxy Tĩnh
+              {proxyCache.static.length > 0 && (
+                <span className='text-xs bg-slate-200 px-1.5 py-0.5 rounded'>
+                  {proxyCache.static.length.toLocaleString()}
+                </span>
+              )}
             </button>
             <button
               onClick={() => handleTabChange('rotating')}
@@ -281,6 +346,11 @@ export default function ProxiesPage({ initialData }: ProxiesPageProps) {
             >
               <RotateCw size={18} />
               Proxy Xoay
+              {proxyCache.rotating.length > 0 && (
+                <span className='text-xs bg-slate-200 px-1.5 py-0.5 rounded'>
+                  {proxyCache.rotating.length.toLocaleString()}
+                </span>
+              )}
             </button>
           </div>
 
