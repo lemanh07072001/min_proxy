@@ -35,6 +35,7 @@ export default function ProxiesPage({ initialData }: ProxiesPageProps) {
   const [columnFilters, setColumnFilters] = useState<any[]>([])
   const [rowSelection, setRowSelection] = useState({})
   const [sorting, setSorting] = useState<any[]>([])
+
   const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>({
     partner: false,
     email: false,
@@ -42,6 +43,7 @@ export default function ProxiesPage({ initialData }: ProxiesPageProps) {
     api_key: false,
     cooldown: false
   })
+
   const [showColumnPopup, setShowColumnPopup] = useState(false)
   const [searchValue, setSearchValue] = useState('')
 
@@ -59,18 +61,22 @@ export default function ProxiesPage({ initialData }: ProxiesPageProps) {
     return proxyData.filter(item => {
       // Search by proxy (HTTP)
       const proxy = item?.proxys?.HTTP?.toLowerCase() || ''
+
       if (proxy.includes(searchLower)) return true
 
       // Search by partner (id_order_partner, id_proxy_partner)
       const mapping = item?.parent_api_mapping
+
       if (mapping) {
         const idOrderPartner = mapping.id_order_partner?.toLowerCase() || ''
         const idProxyPartner = String(mapping.id_proxy_partner || '').toLowerCase()
+
         if (idOrderPartner.includes(searchLower) || idProxyPartner.includes(searchLower)) return true
       }
 
       // Search by email
       const email = item?.user?.email?.toLowerCase() || ''
+
       if (email.includes(searchLower)) return true
 
       return false
@@ -150,9 +156,11 @@ export default function ProxiesPage({ initialData }: ProxiesPageProps) {
         size: 800,
         cell: ({ row }: { row: any }) => {
           const mapping = row.original?.parent_api_mapping
+
           if (!mapping) return '-'
 
           const parts = []
+
           if (mapping.id_order_partner) parts.push(`id_order_partner: ${mapping.id_order_partner}`)
           if (mapping.id_proxy_partner) parts.push(`id_proxy_partner: ${mapping.id_proxy_partner}`)
 

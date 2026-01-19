@@ -9,6 +9,7 @@ export async function GET(request: Request) {
     const search = searchParams.get('search') || ''
 
     const params = new URLSearchParams({ type })
+
     if (search) {
       params.append('search', search)
       params.append('search_fields', 'proxy,partner,email')
