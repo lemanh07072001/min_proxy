@@ -44,7 +44,9 @@ const DetailProxy = ({ isOpen, handleClose, apiKey }: DetailModalProps) => {
     try {
       const res = await axiosAuth.post('/proxies/new', { key: apiKey })
 
-      setProxyData(res.data?.data ?? null)
+      console.log(res);
+      
+      setProxyData(res.datd ?? null)
     } catch (err: any) {
       console.error('Lỗi khi lấy proxy:', err)
       setError('Không thể tải dữ liệu proxy')
