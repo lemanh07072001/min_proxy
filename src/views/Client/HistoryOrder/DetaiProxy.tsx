@@ -42,7 +42,7 @@ const DetailProxy = ({ isOpen, handleClose, apiKey }: DetailModalProps) => {
     setError(null)
 
     try {
-      const res = await axiosAuth.post('/api/proxies/new', { key: apiKey })
+      const res = await axiosAuth.post('/proxies/new', { key: apiKey })
 
       setProxyData(res.data?.data ?? null)
     } catch (err: any) {
