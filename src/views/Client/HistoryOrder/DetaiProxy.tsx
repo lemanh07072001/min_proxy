@@ -18,7 +18,6 @@ import { CheckCheck, Copy } from 'lucide-react'
 import TimeProxyDie from './TimeProxyDie'
 
 import DialogCloseButton from '@components/modals/DialogCloseButton'
-import useAxiosAuth from '@/hooks/useAxiosAuth'
 import { useCopy } from '@/app/hooks/useCopy'
 
 interface DetailModalProps {
@@ -28,7 +27,6 @@ interface DetailModalProps {
 }
 
 const DetailProxy = ({ isOpen, handleClose, apiKey }: DetailModalProps) => {
-  const axiosAuth = useAxiosAuth()
   const [proxyData, setProxyData] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -42,11 +40,15 @@ const DetailProxy = ({ isOpen, handleClose, apiKey }: DetailModalProps) => {
     setError(null)
 
     try {
-      const res = await axiosAuth.post('/proxies/new', { key: apiKey })
+      const res = await fetch('/api/proxies/new', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key: apiKey })
+      })
 
-      console.log(res);
-      
-      setProxyData(res.datd ?? null)
+      const data = await res.json()
+
+      setProxyData(data?.data ?? null)
     } catch (err: any) {
       console.error('Lỗi khi lấy proxy:', err)
       setError('Không thể tải dữ liệu proxy')
