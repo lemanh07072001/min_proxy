@@ -10,7 +10,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, message: 'Key is required' }, { status: 400 })
     }
 
-    const response = await axios.post('https://api.mktproxy.com/api/get-proxy-rotating', { key })
+    const response = await axios.post('https://api.mktproxy.com/api/new', { key })
 
     return NextResponse.json(response.data)
   } catch (error: any) {
