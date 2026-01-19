@@ -29,7 +29,7 @@ interface DetailModalProps {
 
 const DetailProxy = ({ isOpen, handleClose, apiKey }: DetailModalProps) => {
   const axiosAuth = useAxiosAuth()
-  const [proxyData, setProxyData] = useState<any[]>([])
+  const [proxyData, setProxyData] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [isHttpCopied, copyHttp] = useCopy()
@@ -42,26 +42,25 @@ const DetailProxy = ({ isOpen, handleClose, apiKey }: DetailModalProps) => {
     setError(null)
 
     try {
-      const res = await axiosAuth.get(`/get-proxy-rotating/${apiKey}`)
+      const res = await axiosAuth.post('/api/proxies/new', { key: apiKey })
 
-      setProxyData(res.data?.data ? (Array.isArray(res.data.data) ? res.data.data : [res.data.data]) : [])
+      setProxyData(res.data?.data ?? null)
     } catch (err: any) {
       console.error('Lỗi khi lấy proxy:', err)
       setError('Không thể tải dữ liệu proxy')
-      setProxyData([])
+      setProxyData(null)
     } finally {
       setIsLoading(false)
     }
   }
 
-  console.log(proxyData)
   useEffect(() => {
     if (!isOpen || !apiKey) return
     fetchProxyData()
 
     // Cleanup khi đóng modal => reset data
     return () => {
-      setProxyData([])
+      setProxyData(null)
       setError(null)
       setIsLoading(false)
     }
@@ -93,7 +92,7 @@ const DetailProxy = ({ isOpen, handleClose, apiKey }: DetailModalProps) => {
               {error}
             </Typography>
           )}
-          {proxyData.length > 0 ? (
+          {proxyData ? (
             <Box
               sx={{
                 display: 'flex',
@@ -101,7 +100,7 @@ const DetailProxy = ({ isOpen, handleClose, apiKey }: DetailModalProps) => {
                 gap: '10px'
               }}
             >
-              {(proxyData[0]?.http || proxyData[0]?.HTTP) && (
+              {(proxyData?.http || proxyData?.HTTP) && (
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <div className='group w-full'>
                     <label className='flex items-center gap-2 text-sm font-semibold text-slate-700 mb-3'>
@@ -110,12 +109,12 @@ const DetailProxy = ({ isOpen, handleClose, apiKey }: DetailModalProps) => {
                     <div className='relative'>
                       <input
                         type='text'
-                        value={proxyData[0].http ?? proxyData[0].HTTP ?? '-'}
+                        value={proxyData.http ?? proxyData.HTTP ?? '-'}
                         readOnly
                         className='w-full px-4 py-3.5 pr-12 bg-slate-50 border-2 border-slate-200 rounded-xl text-slate-700 font-mono text-sm focus:outline-none focus:border-emerald-500 focus:bg-white transition-all'
                       />
                       <button
-                        onClick={() => copyHttp(String(proxyData[0].http ?? proxyData[0].HTTP ?? ''))}
+                        onClick={() => copyHttp(String(proxyData.http ?? proxyData.HTTP ?? ''))}
                         className='absolute right-2 top-1/2 -translate-y-1/2 p-2.5 hover:bg-slate-200 rounded-lg transition-colors group'
                         title='Copy to clipboard'
                       >
@@ -131,7 +130,7 @@ const DetailProxy = ({ isOpen, handleClose, apiKey }: DetailModalProps) => {
               )}
 
 
-              {(proxyData[0]?.socks5 || proxyData[0]?.SOCKS5) && (
+              {(proxyData?.socks5 || proxyData?.SOCKS5) && (
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <div className='group w-full'>
                     <label className='flex items-center gap-2 text-sm font-semibold text-slate-700 mb-3'>
@@ -140,12 +139,12 @@ const DetailProxy = ({ isOpen, handleClose, apiKey }: DetailModalProps) => {
                     <div className='relative'>
                       <input
                         type='text'
-                        value={proxyData[0].socks5 ?? proxyData[0].SOCKS5 ?? '-'}
+                        value={proxyData.socks5 ?? proxyData.SOCKS5 ?? '-'}
                         readOnly
                         className='w-full px-4 py-3.5 pr-12 bg-slate-50 border-2 border-slate-200 rounded-xl text-slate-700 font-mono text-sm focus:outline-none focus:border-emerald-500 focus:bg-white transition-all'
                       />
                       <button
-                        onClick={() => copySocks(String(proxyData[0].socks5 ?? proxyData[0].SOCKS5 ?? ''))}
+                        onClick={() => copySocks(String(proxyData.socks5 ?? proxyData.SOCKS5 ?? ''))}
                         className='absolute right-2 top-1/2 -translate-y-1/2 p-2.5 hover:bg-slate-200 rounded-lg transition-colors group'
                         title='Copy to clipboard'
                       >
@@ -161,7 +160,7 @@ const DetailProxy = ({ isOpen, handleClose, apiKey }: DetailModalProps) => {
               )}
 
 
-              {proxyData[0]?.realIpAddress && (
+              {proxyData?.realIpAddress && (
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <div className='group w-full'>
                     <label className='flex items-center gap-2 text-sm font-semibold text-slate-700 mb-3'>
@@ -170,12 +169,12 @@ const DetailProxy = ({ isOpen, handleClose, apiKey }: DetailModalProps) => {
                     <div className='relative'>
                       <input
                         type='text'
-                        value={proxyData[0].realIpAddress}
+                        value={proxyData.realIpAddress}
                         readOnly
                         className='w-full px-4 py-3.5 pr-12 bg-slate-50 border-2 border-slate-200 rounded-xl text-slate-700 font-mono text-sm focus:outline-none focus:border-emerald-500 focus:bg-white transition-all'
                       />
                       <button
-                        onClick={() => copyIp(String(proxyData[0].realIpAddress))}
+                        onClick={() => copyIp(String(proxyData.realIpAddress))}
                         className='absolute right-2 top-1/2 -translate-y-1/2 p-2.5 hover:bg-slate-200 rounded-lg transition-colors group'
                         title='Copy to clipboard'
                       >
@@ -190,7 +189,7 @@ const DetailProxy = ({ isOpen, handleClose, apiKey }: DetailModalProps) => {
                 </Box>
               )}
 
-              {proxyData[0]?.location && (
+              {proxyData?.location && (
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <div className='group w-full'>
                     <label className='flex items-center gap-2 text-sm font-semibold text-slate-700 mb-3'>
@@ -199,12 +198,12 @@ const DetailProxy = ({ isOpen, handleClose, apiKey }: DetailModalProps) => {
                     <div className='relative'>
                       <input
                         type='text'
-                        value={proxyData[0].location}
+                        value={proxyData.location}
                         readOnly
                         className='w-full px-4 py-3.5 pr-12 bg-slate-50 border-2 border-slate-200 rounded-xl text-slate-700 font-mono text-sm focus:outline-none focus:border-emerald-500 focus:bg-white transition-all'
                       />
                       <button
-                        onClick={() => copyIp(String(proxyData[0].location))}
+                        onClick={() => copyIp(String(proxyData.location))}
                         className='absolute right-2 top-1/2 -translate-y-1/2 p-2.5 hover:bg-slate-200 rounded-lg transition-colors group'
                         title='Copy to clipboard'
                       >
@@ -219,7 +218,7 @@ const DetailProxy = ({ isOpen, handleClose, apiKey }: DetailModalProps) => {
                 </Box>
               )}
 
-              {proxyData[0]?.network && (
+              {proxyData?.network && (
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <div className='group w-full'>
                     <label className='flex items-center gap-2 text-sm font-semibold text-slate-700 mb-3'>
@@ -228,12 +227,12 @@ const DetailProxy = ({ isOpen, handleClose, apiKey }: DetailModalProps) => {
                     <div className='relative'>
                       <input
                         type='text'
-                        value={proxyData[0].network}
+                        value={proxyData.network}
                         readOnly
                         className='w-full px-4 py-3.5 pr-12 bg-slate-50 border-2 border-slate-200 rounded-xl text-slate-700 font-mono text-sm focus:outline-none focus:border-emerald-500 focus:bg-white transition-all'
                       />
                       <button
-                        onClick={() => copyIp(String(proxyData[0].network))}
+                        onClick={() => copyIp(String(proxyData.network))}
                         className='absolute right-2 top-1/2 -translate-y-1/2 p-2.5 hover:bg-slate-200 rounded-lg transition-colors group'
                         title='Copy to clipboard'
                       >
@@ -248,8 +247,25 @@ const DetailProxy = ({ isOpen, handleClose, apiKey }: DetailModalProps) => {
                 </Box>
               )}
 
+              {proxyData?.message && (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <div className='group w-full'>
+                    <label className='flex items-center gap-2 text-sm font-semibold text-slate-700 mb-3'>
+                      Thông báo
+                    </label>
+                    <div className='relative'>
+                      <input
+                        type='text'
+                        value={proxyData.message}
+                        readOnly
+                        className='w-full px-4 py-3.5 bg-slate-50 border-2 border-slate-200 rounded-xl text-slate-700 font-mono text-sm focus:outline-none focus:border-emerald-500 focus:bg-white transition-all'
+                      />
+                    </div>
+                  </div>
+                </Box>
+              )}
 
-              {/*<TimeProxyDie expiresAt={proxyData[0]?.time_die ?? 0} />*/}
+              {/*<TimeProxyDie expiresAt={proxyData?.time_die ?? 0} />*/}
 
             </Box>
           ) : (
