@@ -386,8 +386,7 @@ return (
 
                           copyToClipboard(apiKeysToCopy, 'header')
                         }}
-                        disabled={Object.keys(rowSelection).length === 0}
-                        className='px-3 py-1.5 text-sm rounded-lg font-medium text-white bg-orange-500 hover:bg-orange-600 transition-colors flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-orange-500'
+                        className='px-3 py-1.5 text-sm rounded-lg font-medium text-white bg-orange-500 hover:bg-orange-600 transition-colors flex items-center gap-1.5'
                       >
                         {copiedField === 'header' ? (
                           <>
@@ -399,19 +398,18 @@ return (
                             <Copy size={14} />
                             {Object.keys(rowSelection).length > 0
                               ? `Copy ${Object.keys(rowSelection).length} keys`
-                              : 'Copy keys'}
+                              : 'Copy tất cả'}
                           </>
                         )}
                       </button>
                       <button
                         onClick={downloadApiKeys}
-                        disabled={Object.keys(rowSelection).length === 0}
-                        className='px-3 py-1.5 text-sm rounded-lg font-medium text-white bg-blue-500 hover:bg-blue-600 transition-colors flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-blue-500'
+                        className='px-3 py-1.5 text-sm rounded-lg font-medium text-white bg-blue-500 hover:bg-blue-600 transition-colors flex items-center gap-1.5'
                       >
                         <Download size={14} />
                         {Object.keys(rowSelection).length > 0
                           ? `Tải ${Object.keys(rowSelection).length} keys`
-                          : 'Tải keys'}
+                          : 'Tải tất cả'}
                       </button>
                     </div>
                   </div>

@@ -4,7 +4,7 @@ import { useMemo, useState, useCallback, useEffect } from 'react'
 
 import Image from 'next/image'
 
-import { List, House, RotateCw, Settings2, Search } from 'lucide-react'
+import { List, House, RotateCw, Settings2, Search, Copy, Download, CheckCircle } from 'lucide-react'
 
 import Checkbox from '@mui/material/Checkbox'
 import LinearProgress from '@mui/material/LinearProgress'
@@ -53,6 +53,7 @@ export default function ProxiesPage({ initialData }: ProxiesPageProps) {
 
   const [showColumnPopup, setShowColumnPopup] = useState(false)
   const [searchValue, setSearchValue] = useState('')
+  const [copiedField, setCopiedField] = useState<string | null>(null)
 
   const [pagination, setPagination] = useState({
     pageIndex: 0,
@@ -127,6 +128,11 @@ export default function ProxiesPage({ initialData }: ProxiesPageProps) {
       const email = item?.user?.email?.toLowerCase() || ''
 
       if (email.includes(searchLower)) return true
+
+      // Search by api_key
+      const apiKey = item?.api_key?.toLowerCase() || ''
+
+      if (apiKey.includes(searchLower)) return true
 
       return false
     })
@@ -278,6 +284,49 @@ export default function ProxiesPage({ initialData }: ProxiesPageProps) {
 
   const showLoadingBar = isLoading || isFetching
 
+  // Copy to clipboard function
+  const copyToClipboard = useCallback(
+    (text: string, field: string) => {
+      navigator.clipboard.writeText(text)
+      setCopiedField(field)
+      setTimeout(() => setCopiedField(null), 2000)
+    },
+    [setCopiedField]
+  )
+
+  // Copy proxies function
+  const copyProxies = useCallback(() => {
+    const selectedRows = table.getFilteredSelectedRowModel().rows
+
+    const proxiesToCopy =
+      selectedRows.length > 0
+        ? selectedRows.map((row: any) => row.original?.proxys?.HTTP || '').filter(Boolean).join('\n')
+        : filteredData.map((item: any) => item?.proxys?.HTTP || '').filter(Boolean).join('\n')
+
+    copyToClipboard(proxiesToCopy, 'proxies')
+  }, [table, filteredData, copyToClipboard])
+
+  // Download proxies function
+  const downloadProxies = useCallback(() => {
+    const selectedRows = table.getFilteredSelectedRowModel().rows
+
+    const proxiesToDownload =
+      selectedRows.length > 0
+        ? selectedRows.map((row: any) => row.original?.proxys?.HTTP || '').filter(Boolean).join('\n')
+        : filteredData.map((item: any) => item?.proxys?.HTTP || '').filter(Boolean).join('\n')
+
+    const blob = new Blob([proxiesToDownload], { type: 'text/plain' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+
+    link.href = url
+    link.download = `proxies-${activeTab}-${new Date().getTime()}.txt`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+  }, [table, filteredData, activeTab])
+
   return (
     <div className='orders-content'>
       <div className='table-container'>
@@ -355,6 +404,35 @@ export default function ProxiesPage({ initialData }: ProxiesPageProps) {
           </div>
 
           <div className='flex items-center gap-3'>
+            {/* Copy and Download buttons */}
+            <button
+              onClick={copyProxies}
+              className='px-3 py-2 text-sm rounded-lg font-medium text-white bg-orange-500 hover:bg-orange-600 transition-colors flex items-center gap-1.5'
+            >
+              {copiedField === 'proxies' ? (
+                <>
+                  <CheckCircle size={14} />
+                  Đã copy
+                </>
+              ) : (
+                <>
+                  <Copy size={14} />
+                  {Object.keys(rowSelection).length > 0
+                    ? `Copy ${Object.keys(rowSelection).length} proxies`
+                    : 'Copy tất cả'}
+                </>
+              )}
+            </button>
+            <button
+              onClick={downloadProxies}
+              className='px-3 py-2 text-sm rounded-lg font-medium text-white bg-blue-500 hover:bg-blue-600 transition-colors flex items-center gap-1.5'
+            >
+              <Download size={14} />
+              {Object.keys(rowSelection).length > 0
+                ? `Tải ${Object.keys(rowSelection).length} proxies`
+                : 'Tải tất cả'}
+            </button>
+
             <div className='relative'>
               <Search size={16} className='absolute left-3 top-1/2 -translate-y-1/2 text-slate-400' />
               <input
