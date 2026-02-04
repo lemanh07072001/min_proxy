@@ -12,7 +12,7 @@ import * as yup from 'yup'
 
 import { yupResolver } from '@hookform/resolvers/yup'
 
-import { MapPin, Clock, Users, CheckCircle, ShoppingCart, Loader, User } from 'lucide-react'
+import { MapPin, Clock, Users, CheckCircle, ShoppingCart, Loader, User, Info } from 'lucide-react'
 import Chip from '@mui/material/Chip'
 
 import MenuItem from '@mui/material/MenuItem'
@@ -124,6 +124,8 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, isFirstCard = false, co
   const randomString = useRandomString(6)
   const [openConfirm, setOpenConfirm] = useState(false)
   const [formData, setFormData] = useState(null)
+  const [showTooltip, setShowTooltip] = useState(false)
+  const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 })
 
   // Xác định chế độ select
   const isSelectMode = provider.show_time == 1
@@ -354,7 +356,7 @@ return totalPrice * quantity
     if (provider?.price_by_duration && provider.price_by_duration.length > 0) {
       const selectedDuration = provider.price_by_duration.find(item => item.key === watchedDays)
 
-      
+
 return selectedDuration ? parseInt(selectedDuration.value, 10) : parseInt(provider?.price, 10) || 0
     }
 
@@ -363,12 +365,50 @@ return selectedDuration ? parseInt(selectedDuration.value, 10) : parseInt(provid
     return parseInt(provider?.price, 10) || 0
   }
 
+  // Handle mouse enter for tooltip
+  const handleMouseEnter = (e: React.MouseEvent) => {
+    if (provider?.note) {
+      const rect = e.currentTarget.getBoundingClientRect()
+      setTooltipPosition({
+        x: rect.right + 10,
+        y: rect.top
+      })
+      setShowTooltip(true)
+    }
+  }
+
+  // Handle mouse leave for tooltip
+  const handleMouseLeave = () => {
+    setShowTooltip(false)
+  }
+
   return (
     <>
+      {/* Tooltip for note */}
+      {showTooltip && provider?.note && (
+        <div
+          className='fixed z-50 bg-emerald-50 border-2 border-emerald-600 rounded-lg shadow-lg p-4 max-w-md'
+          style={{
+            left: `${tooltipPosition.x}px`,
+            top: `${tooltipPosition.y}px`,
+            transform: 'translateY(-10%)',
+            pointerEvents: 'none'
+          }}
+        >
+          <div className='flex items-center gap-2 text-base font-bold text-emerald-700 mb-2'>
+            <Info size={18} />
+            Ghi chú
+          </div>
+          <div className='text-sm text-emerald-900 whitespace-pre-wrap'>{provider.note}</div>
+        </div>
+      )}
+
       <form
         onSubmit={handleSubmit(onSubmit)}
         className={`proxy-card-column `}
         style={{ display: 'flex', flexDirection: 'column', height: '100%' }}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
       >
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
           {/* Header với logo và giá */}

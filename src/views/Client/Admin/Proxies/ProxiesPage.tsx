@@ -4,7 +4,7 @@ import { useMemo, useState, useCallback, useEffect } from 'react'
 
 import Image from 'next/image'
 
-import { List, House, RotateCw, Settings2, Search, Copy, Download, CheckCircle } from 'lucide-react'
+import { List, House, RotateCw, Settings2, Search, Copy, Download, CheckCircle, Info } from 'lucide-react'
 
 import Checkbox from '@mui/material/Checkbox'
 import LinearProgress from '@mui/material/LinearProgress'
@@ -54,6 +54,8 @@ export default function ProxiesPage({ initialData }: ProxiesPageProps) {
   const [showColumnPopup, setShowColumnPopup] = useState(false)
   const [searchValue, setSearchValue] = useState('')
   const [copiedField, setCopiedField] = useState<string | null>(null)
+  const [hoveredRow, setHoveredRow] = useState<any>(null)
+  const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 })
 
   const [pagination, setPagination] = useState({
     pageIndex: 0,
@@ -358,9 +360,41 @@ export default function ProxiesPage({ initialData }: ProxiesPageProps) {
     URL.revokeObjectURL(url)
   }, [table, filteredData, activeTab, getProxyFromItem])
 
+  // Handle row hover for tooltip
+  const handleRowMouseEnter = useCallback((e: React.MouseEvent, rowData: any) => {
+    const rect = e.currentTarget.getBoundingClientRect()
+    setTooltipPosition({
+      x: rect.right + 10,
+      y: rect.top
+    })
+    setHoveredRow(rowData)
+  }, [])
+
+  const handleRowMouseLeave = useCallback(() => {
+    setHoveredRow(null)
+  }, [])
+
   return (
     <div className='orders-content'>
       <div className='table-container'>
+        {/* Tooltip for note */}
+        {hoveredRow && hoveredRow.note && (
+          <div
+            className='fixed z-50 bg-emerald-50 border-2 border-emerald-600 rounded-lg shadow-lg p-4 max-w-md'
+            style={{
+              left: `${tooltipPosition.x}px`,
+              top: `${tooltipPosition.y}px`,
+              transform: 'translateY(-50%)'
+            }}
+          >
+            <div className='flex items-center gap-2 text-base font-bold text-emerald-700 mb-2'>
+              <Info size={18} />
+              Ghi chú
+            </div>
+            <div className='text-sm text-emerald-900 whitespace-pre-wrap'>{hoveredRow.note}</div>
+          </div>
+        )}
+
         {/* Loading bar at top */}
         {showLoadingBar && (
           <div className='absolute top-0 left-0 right-0 z-50'>
@@ -562,7 +596,12 @@ export default function ProxiesPage({ initialData }: ProxiesPageProps) {
                 </tr>
               ) : (
                 table.getRowModel().rows.map(row => (
-                  <tr className='table-row' key={row.id}>
+                  <tr
+                    className='table-row'
+                    key={row.id}
+                    onMouseEnter={(e) => handleRowMouseEnter(e, row.original)}
+                    onMouseLeave={handleRowMouseLeave}
+                  >
                     {row.getVisibleCells().map(cell => (
                       <td className='table-cell whitespace-nowrap' key={cell.id}>
                         {flexRender(cell.column.columnDef.cell, cell.getContext())}

@@ -9,7 +9,7 @@ import { useTranslation } from 'react-i18next'
 import { useForm, Controller, useWatch } from 'react-hook-form'
 import * as yup from 'yup'
 import { yupResolver } from '@hookform/resolvers/yup'
-import { CheckCircle, ShoppingCart, User, Loader, Search, Shield, Clock } from 'lucide-react'
+import { CheckCircle, ShoppingCart, User, Loader, Search, Shield, Clock, Info } from 'lucide-react'
 import Switch from '@mui/material/Switch'
 import MenuItem from '@mui/material/MenuItem'
 import Radio from '@mui/material/Radio'
@@ -387,6 +387,8 @@ const PlanCard = ({ plan }) => {
   const [formData, setFormData] = useState()
   const { openAuthModal } = useModalContext()
   const session = useSession()
+  const [showTooltip, setShowTooltip] = useState(false)
+  const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 })
 
   // Tìm feature time để lấy defaultValue
   const timeFeature = plan.features.find((f: any) => f.field === 'time')
@@ -477,9 +479,50 @@ const PlanCard = ({ plan }) => {
     }
   }
 
+  // Handle mouse enter for tooltip
+  const handleMouseEnter = (e: React.MouseEvent) => {
+    if (plan?.note) {
+      const rect = e.currentTarget.getBoundingClientRect()
+      setTooltipPosition({
+        x: rect.right + 10,
+        y: rect.top
+      })
+      setShowTooltip(true)
+    }
+  }
+
+  // Handle mouse leave for tooltip
+  const handleMouseLeave = () => {
+    setShowTooltip(false)
+  }
+
   return (
     <>
-      <form onSubmit={handleSubmit(onSubmit)} className={`proxy-plan-card ${plan.color}`}>
+      {/* Tooltip for note */}
+      {showTooltip && plan?.note && (
+        <div
+          className='fixed z-50 bg-emerald-50 border-2 border-emerald-600 rounded-lg shadow-lg p-4 max-w-md'
+          style={{
+            left: `${tooltipPosition.x}px`,
+            top: `${tooltipPosition.y}px`,
+            transform: 'translateY(-10%)',
+            pointerEvents: 'none'
+          }}
+        >
+          <div className='flex items-center gap-2 text-base font-bold text-emerald-700 mb-2'>
+            <Info size={18} />
+            Ghi chú
+          </div>
+          <div className='text-sm text-emerald-900 whitespace-pre-wrap'>{plan.note}</div>
+        </div>
+      )}
+
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className={`proxy-plan-card ${plan.color}`}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+      >
         <div className='plan-header'>
           <h3 className='plan-title'>{plan.title}</h3>
         </div>
