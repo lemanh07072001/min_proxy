@@ -189,6 +189,7 @@ export default function ProxiesPage({ initialData }: ProxiesPageProps) {
           if (proxys) {
             // Kiểm tra proxys.HTTP trước
             if (proxys.HTTP) return proxys.HTTP
+
             // Nếu không có HTTP, thử SOCKS5
             if (proxys.SOCKS5 || proxys.SOCK5) return proxys.SOCKS5 || proxys.SOCK5
           }
