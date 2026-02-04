@@ -107,6 +107,7 @@ export default async function RotatingProxy({ params }: { params: Promise<{ lang
       proxy_type: plan.proxy_type,
       country: plan.country,
       protocols: plan.protocols,
+      note: plan.note,
       features
     }
   })
