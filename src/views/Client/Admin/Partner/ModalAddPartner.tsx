@@ -48,7 +48,6 @@ export default function ModalAddPartner({ open, onClose, type, partnerData }: Mo
 
   useEffect(() => {
     if (open && type === 'edit' && partnerData) {
-      console.log('Partner data for edit:', partnerData)
       reset({
         title: partnerData.title || partnerData.name || '',
         token_api: partnerData.token_api || partnerData.token || partnerData.api_token || '',

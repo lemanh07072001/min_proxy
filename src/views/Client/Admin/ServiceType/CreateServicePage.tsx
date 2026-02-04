@@ -208,8 +208,6 @@ return { values: {}, errors: formattedErrors }
       price_by_duration: formattedPriceFields
     }
 
-    console.log('Submit Data:', submitData)
-    console.log('Price Fields with Cost:', formattedPriceFields)
 
     createMutation.mutate(submitData, {
       onSuccess: handleCreateSuccess,
@@ -237,7 +235,6 @@ return { values: {}, errors: formattedErrors }
   }
 
   const handleSaveMultiInputs = (fields: Array<{ key: string; value: string }>) => {
-    console.log('Multi Input Fields:', fields)
     toast.success(`Đã lưu ${fields.length} trường thành công!`)
     handleCloseMultiInputModal()
   }
@@ -253,7 +250,6 @@ return { values: {}, errors: formattedErrors }
 
   const handleSavePrices = (fields: Array<{ key: string; value: string; cost?: string }>) => {
     setPriceFields(fields)
-    console.log('Price Fields:', fields)
     toast.success('Đã lưu giá thành công!')
     handleClosePriceModal()
   }
@@ -592,7 +588,6 @@ return { values: {}, errors: formattedErrors }
                       label='Giao thức'
                       value={field.value || []}
                       onChange={e => {
-                        console.log('Protocols onChange:', e.target.value)
                         field.onChange(e)
                       }}
                       onBlur={field.onBlur}

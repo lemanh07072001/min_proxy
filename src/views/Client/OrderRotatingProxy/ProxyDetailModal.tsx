@@ -21,7 +21,14 @@ import { useCopy } from '@/app/hooks/useCopy'
 interface ProxyDetailModalProps {
   open: boolean
   onClose: () => void
-  proxy: null
+  proxy: {
+    status?: string
+    message?: string
+    proxy?: string
+    ip?: string
+    lastRotate?: string
+    timeRemaining?: number
+  } | null
 }
 
 const ProxyDetailModal: React.FC<ProxyDetailModalProps> = ({ open, onClose, proxy }) => {
@@ -88,178 +95,150 @@ const ProxyDetailModal: React.FC<ProxyDetailModalProps> = ({ open, onClose, prox
                 </Button>
               </Box>
 
-              {/* HTTP Proxy */}
-              {proxy.proxys?.http && (
-                <Box sx={{ mb: 2 }}>
-                  <Typography variant='body2' color='text.secondary' sx={{ mb: 1 }}>
-                    HTTP Proxy:
-                  </Typography>
-                  <Box
-                    sx={{
-                      p: 2,
-                      bgcolor: 'grey.50',
-                      borderRadius: 1,
-                      border: '1px solid',
-                      borderColor: 'grey.300'
-                    }}
-                  >
-                    <div className='flex items-center gap-2'>
-                      <Typography
-                        variant='body1'
-                        sx={{
-                          flex: 1,
-                          fontFamily: 'monospace',
-                          wordBreak: 'break-all',
-                          fontSize: '0.9rem'
-                        }}
-                      >
-                        {proxy.proxys.http}
-                      </Typography>
-                      <Button
-                        variant='outlined'
-                        size='small'
-                        startIcon={<Copy size={14} />}
-                        onClick={() => copy(proxy.proxys.http, 'Đã copy HTTP proxy!')}
-                      >
-                        Copy
-                      </Button>
-                    </div>
-                  </Box>
-                </Box>
-              )}
-
-              {/* SOCKS5 Proxy */}
-              {proxy.proxys?.socks5 && (
-                <Box sx={{ mb: 2 }}>
-                  <Typography variant='body2' color='text.secondary' sx={{ mb: 1 }}>
-                    SOCKS5 Proxy:
-                  </Typography>
-                  <Box
-                    sx={{
-                      p: 2,
-                      bgcolor: 'grey.50',
-                      borderRadius: 1,
-                      border: '1px solid',
-                      borderColor: 'grey.300'
-                    }}
-                  >
-                    <div className='flex items-center gap-2'>
-                      <Typography
-                        variant='body1'
-                        sx={{
-                          flex: 1,
-                          fontFamily: 'monospace',
-                          wordBreak: 'break-all',
-                          fontSize: '0.9rem'
-                        }}
-                      >
-                        {proxy.proxys.socks5}
-                      </Typography>
-                      <Button
-                        variant='outlined'
-                        size='small'
-                        startIcon={<Copy size={14} />}
-                        onClick={() => copy(proxy.proxys.socks5, 'Đã copy SOCKS5 proxy!')}
-                      >
-                        Copy
-                      </Button>
-                    </div>
-                  </Box>
-                </Box>
-              )}
-
-              {/* Demo Proxy Information */}
-              {!proxy.proxys?.http && !proxy.proxys?.socks5 && (
-                <Box sx={{ mb: 2 }}>
-                  <Typography variant='body2' color='text.secondary' sx={{ mb: 1 }}>
-                    HTTP Proxy:
-                  </Typography>
-                  <Box
-                    sx={{
-                      p: 2,
-                      bgcolor: 'grey.50',
-                      borderRadius: 1,
-                      border: '1px solid',
-                      borderColor: 'grey.300',
-                      mb: 2
-                    }}
-                  >
-                    <div className='flex items-center gap-2'>
-                      <Typography
-                        variant='body1'
-                        sx={{
-                          flex: 1,
-                          fontFamily: 'monospace',
-                          wordBreak: 'break-all',
-                          fontSize: '0.9rem'
-                        }}
-                      >
-                        {proxy.http}
-                      </Typography>
-                      <Button
-                        variant='outlined'
-                        size='small'
-                        startIcon={<Copy size={14} />}
-                        onClick={() => copy(proxy.http, 'Đã copy HTTP proxy!')}
-                      >
-                        Copy
-                      </Button>
-                    </div>
-                  </Box>
-
-                  <Typography variant='body2' color='text.secondary' sx={{ mb: 1 }}>
-                    SOCKS5 Proxy:
-                  </Typography>
-                  <Box
-                    sx={{
-                      p: 2,
-                      bgcolor: 'grey.50',
-                      borderRadius: 1,
-                      border: '1px solid',
-                      borderColor: 'grey.300',
-                      mb: 2
-                    }}
-                  >
-                    <div className='flex items-center gap-2'>
-                      <Typography
-                        variant='body1'
-                        sx={{
-                          flex: 1,
-                          fontFamily: 'monospace',
-                          wordBreak: 'break-all',
-                          fontSize: '0.9rem'
-                        }}
-                      >
-                        {proxy.socks5}
-                      </Typography>
-                      <Button
-                        variant='outlined'
-                        size='small'
-                        startIcon={<Copy size={14} />}
-                        onClick={() => copy(proxy.socks5, 'Đã copy SOCKS5 proxy!')}
-                      >
-                        Copy
-                      </Button>
-                    </div>
-                  </Box>
-                </Box>
-              )}
-
-              {/* No proxy data */}
-              {!proxy && !proxy.http && !proxy.socks5 && (
+              {/* Status Message */}
+              {proxy.message && (
                 <Box
                   sx={{
-                    p: 3,
-                    bgcolor: 'grey.100',
-                    borderRadius: 2,
+                    mb: 2,
+                    p: 2,
+                    bgcolor: proxy.status === 'success' ? 'success.50' : 'warning.50',
+                    borderRadius: 1,
                     border: '1px solid',
-                    borderColor: 'grey.300',
-                    textAlign: 'center'
+                    borderColor: proxy.status === 'success' ? 'success.300' : 'warning.300'
                   }}
                 >
-                  <Typography variant='body1' color='text.secondary'>
-                    📭 Chưa có thông tin proxy
+                  <Typography variant='body2' sx={{ fontWeight: 500 }}>
+                    {proxy.message}
                   </Typography>
+                </Box>
+              )}
+
+              {/* Proxy Information */}
+              {proxy.proxy && (
+                <Box sx={{ mb: 2 }}>
+                  <Typography variant='body2' color='text.secondary' sx={{ mb: 1 }}>
+                    Proxy:
+                  </Typography>
+                  <Box
+                    sx={{
+                      p: 2,
+                      bgcolor: 'grey.50',
+                      borderRadius: 1,
+                      border: '1px solid',
+                      borderColor: 'grey.300'
+                    }}
+                  >
+                    <div className='flex items-center gap-2'>
+                      <Typography
+                        variant='body1'
+                        sx={{
+                          flex: 1,
+                          fontFamily: 'monospace',
+                          wordBreak: 'break-all',
+                          fontSize: '0.9rem'
+                        }}
+                      >
+                        {proxy.proxy}
+                      </Typography>
+                      <Button
+                        variant='outlined'
+                        size='small'
+                        startIcon={<Copy size={14} />}
+                        onClick={() => copy(proxy.proxy!, 'Đã copy proxy!')}
+                      >
+                        Copy
+                      </Button>
+                    </div>
+                  </Box>
+                </Box>
+              )}
+
+              {/* Current IP */}
+              {proxy.ip && (
+                <Box sx={{ mb: 2 }}>
+                  <Typography variant='body2' color='text.secondary' sx={{ mb: 1 }}>
+                    IP hiện tại:
+                  </Typography>
+                  <Box
+                    sx={{
+                      p: 2,
+                      bgcolor: 'grey.50',
+                      borderRadius: 1,
+                      border: '1px solid',
+                      borderColor: 'grey.300'
+                    }}
+                  >
+                    <div className='flex items-center gap-2'>
+                      <Typography
+                        variant='body1'
+                        sx={{
+                          flex: 1,
+                          fontFamily: 'monospace',
+                          fontSize: '0.9rem'
+                        }}
+                      >
+                        {proxy.ip}
+                      </Typography>
+                      <Button
+                        variant='outlined'
+                        size='small'
+                        startIcon={<Copy size={14} />}
+                        onClick={() => copy(proxy.ip!, 'Đã copy IP!')}
+                      >
+                        Copy
+                      </Button>
+                    </div>
+                  </Box>
+                </Box>
+              )}
+
+              {/* Last Rotate Time */}
+              {proxy.lastRotate && (
+                <Box sx={{ mb: 2 }}>
+                  <Typography variant='body2' color='text.secondary' sx={{ mb: 1 }}>
+                    Lần xoay cuối:
+                  </Typography>
+                  <Box
+                    sx={{
+                      p: 2,
+                      bgcolor: 'grey.50',
+                      borderRadius: 1,
+                      border: '1px solid',
+                      borderColor: 'grey.300'
+                    }}
+                  >
+                    <div className='flex items-center gap-1'>
+                      <Clock3 size={16} />
+                      <Typography variant='body1' sx={{ fontFamily: 'monospace', fontSize: '0.9rem' }}>
+                        {formatDateTimeLocal(proxy.lastRotate)}
+                      </Typography>
+                    </div>
+                  </Box>
+                </Box>
+              )}
+
+              {/* Time Remaining */}
+              {proxy.timeRemaining !== undefined && (
+                <Box sx={{ mb: 2 }}>
+                  <Typography variant='body2' color='text.secondary' sx={{ mb: 1 }}>
+                    Thời gian còn lại:
+                  </Typography>
+                  <Box
+                    sx={{
+                      p: 2,
+                      bgcolor: 'orange.50',
+                      borderRadius: 1,
+                      border: '1px solid',
+                      borderColor: 'orange.300'
+                    }}
+                  >
+                    <div className='flex items-center gap-1'>
+                      <Clock size={16} />
+                      <Typography variant='body1' sx={{ fontWeight: 600, fontSize: '0.9rem' }}>
+                        {proxy.timeRemaining}s
+                      </Typography>
+                    </div>
+                  </Box>
                 </Box>
               )}
             </Box>

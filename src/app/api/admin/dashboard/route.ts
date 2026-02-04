@@ -6,7 +6,6 @@ export async function GET(request: NextRequest) {
   try {
     const authToken = request.headers.get('Authorization')
 
-    console.log('[DEBUG] Auth Token:', authToken)
 
     if (!authToken) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
@@ -14,7 +13,6 @@ export async function GET(request: NextRequest) {
 
     const laravelApiUrl = 'get-dashboard'
 
-    console.log('[DEBUG] Calling:', `${axiosInstance.defaults.baseURL}/${laravelApiUrl}`)
 
     const response = await axiosInstance.get(laravelApiUrl, {
       headers: {
@@ -24,7 +22,6 @@ export async function GET(request: NextRequest) {
       }
     })
 
-    console.log('[DEBUG] Response:', response.data)
 
     return NextResponse.json(response.data)
   } catch (error: any) {

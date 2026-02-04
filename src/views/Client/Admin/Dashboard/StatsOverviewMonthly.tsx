@@ -72,7 +72,6 @@ export default function StatsOverviewMonthly() {
   // Convert date to timestamp (seconds)
   const dateTimestamp = startDate ? format(startDate, 'dd/MM/yyyy') : undefined
 
-  console.log(dateTimestamp);
   
   // Use custom hook to fetch dashboard data
   const { data } = useDashboardMonthly(
@@ -95,7 +94,6 @@ export default function StatsOverviewMonthly() {
     setEndDate(undefined)
   }
 
-  console.log(data)
 
   return (
     <div className='mb-8'>

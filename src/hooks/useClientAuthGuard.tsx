@@ -36,7 +36,6 @@ return
 
       // Kiểm tra nếu session có error (token hết hạn)
       if (session.error === 'TokenExpiredError') {
-        console.log('🔒 [useClientAuthGuard] Token expired, logging out...')
         await signOut({ redirect: false })
         setIsAuthenticated(false)
         setIsLoading(false)
@@ -46,7 +45,6 @@ return
 
       // Kiểm tra nếu không có access_token
       if (!session.access_token) {
-        console.log('🔒 [useClientAuthGuard] No access token, logging out...')
         await signOut({ redirect: false })
         setIsAuthenticated(false)
         setIsLoading(false)
@@ -65,7 +63,6 @@ return
         })
 
         if (response.status === 401) {
-          console.log('🔒 [useClientAuthGuard] Token invalid, logging out...')
           await signOut({ redirect: false })
           setIsAuthenticated(false)
           setIsLoading(false)
@@ -74,7 +71,6 @@ return
         }
 
         if (!response.ok) {
-          console.log('🔒 [useClientAuthGuard] API error, logging out...')
           await signOut({ redirect: false })
           setIsAuthenticated(false)
           setIsLoading(false)

@@ -33,7 +33,6 @@ export default function StaticProxyPage({ data }: StaticProxyPageProps) {
   const queryClient = useQueryClient()
   const { data: countries, isLoading: isLoadingCountries } = useCountries()
 
-  console.log(countries);
   
 
   // Lọc danh sách quốc gia theo search
@@ -77,7 +76,6 @@ export default function StaticProxyPage({ data }: StaticProxyPageProps) {
     }
   }, [currentView, status, queryClient])
 
-  console.log(filteredProviders);
   
   return (
     <div className='flex flex-col'>

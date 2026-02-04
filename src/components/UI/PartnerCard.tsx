@@ -16,7 +16,6 @@ interface PartnerCardProps {
 }
 
 export const PartnerCard: React.FC<PartnerCardProps> = ({ partner }) => {
-  console.log(partner.logoUrl)
 
   return (
     <div className='bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100 group'>

@@ -20,13 +20,11 @@ const SessionCleanup = () => {
     // Chỉ kiểm tra một lần khi component mount
     if (status === 'authenticated' && !hasCheckedRef.current) {
       hasCheckedRef.current = true
-      console.log('🧹 [SessionCleanup] Checking session validity on mount...')
 
       const cleanupSession = async () => {
         try {
           // Kiểm tra nếu session có error
           if (session?.error === 'TokenExpiredError') {
-            console.log('🧹 [SessionCleanup] Found invalid session with error, cleaning up...')
             await signOut({ redirect: false })
             const lang = pathname.split('/')[1] || 'vi'
 
@@ -37,7 +35,6 @@ return
 
           // Kiểm tra nếu không có access_token
           if (!session?.access_token) {
-            console.log('🧹 [SessionCleanup] Found session without access_token, cleaning up...')
             await signOut({ redirect: false })
             const lang = pathname.split('/')[1] || 'vi'
 
@@ -56,7 +53,6 @@ return
           })
 
           if (response.status === 401) {
-            console.log('🧹 [SessionCleanup] Token is invalid, cleaning up...')
             await signOut({ redirect: false })
             const lang = pathname.split('/')[1] || 'vi'
 
@@ -65,7 +61,6 @@ return
 return
           }
 
-          console.log('✅ [SessionCleanup] Session is valid')
         } catch (error) {
           console.error('❌ [SessionCleanup] Error during cleanup:', error)
 

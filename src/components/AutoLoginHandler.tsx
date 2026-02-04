@@ -23,7 +23,6 @@ export default function AutoLoginHandler() {
         
         // Có thể thêm logic để lưu token vào session ở đây
         // hoặc gọi API để lấy thông tin user và tạo session
-        console.log('Auto login với token:', tempToken)
       }
     }
   }, [autoLogin])

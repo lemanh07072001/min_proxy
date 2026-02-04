@@ -12,7 +12,6 @@ import { authOptions } from '@/libs/auth'
 export default async function ServerSessionExample() {
   const session = await getServerSession(authOptions)
 
-  console.log('Server Session:', session)
 
   if (!session) {
     return (
@@ -79,8 +78,6 @@ export async function POST(request: Request) {
   const body = await request.json()
   
   // Xử lý logic với session.user.id hoặc session.accessToken
-  console.log('User ID:', session.user?.id)
-  console.log('Access Token:', session.accessToken)
 
   return NextResponse.json({ 
     message: 'Data processed successfully',
@@ -135,8 +132,6 @@ import { withAuth } from 'next-auth/middleware'
 export default withAuth(
   function middleware(req) {
     // Logic middleware ở đây
-    console.log('Token:', req.nextauth.token)
-    console.log('User:', req.nextauth.token?.user)
   },
   {
     callbacks: {
@@ -175,9 +170,6 @@ export async function updateUserProfile(formData: FormData) {
   const email = formData.get('email') as string
 
   // Cập nhật thông tin user
-  console.log('Updating user:', session.user?.id)
-  console.log('New name:', name)
-  console.log('New email:', email)
 
   // Logic cập nhật database ở đây...
 

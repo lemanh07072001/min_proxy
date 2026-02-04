@@ -199,7 +199,7 @@ return totalPrice * quantity
     const selectedDuration = provider?.price_by_duration?.find(item => item.key === data.days)
     const priceForDuration = selectedDuration ? parseInt(selectedDuration.value, 10) : 0
 
-    console.log('DEBUG - Price calculation:', {
+    console.log({
       days: data.days,
       provider_price_by_duration: provider?.price_by_duration,
       selectedDuration,
@@ -219,7 +219,6 @@ return totalPrice * quantity
       isPrivate: 'true'
     }
 
-    console.log('Data gửi lên server:', itemData)
     setFormData(itemData) // Lưu dữ liệu vào state
     setOpenConfirm(true) // Mở dialog xác nhận
   }

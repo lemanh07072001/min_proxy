@@ -13,7 +13,6 @@ export const usePartners = () => {
       const res = await axiosAuth.get('/get-partner')
       const data = res?.data?.data ?? res?.data ?? []
 
-      console.log('Partners data from API:', data)
       
 return data
     },

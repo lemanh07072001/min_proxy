@@ -50,7 +50,6 @@ export default function DailyStats() {
     !!date
   )
 
-  console.log(dashboardData)
 
   return (
     <section aria-labelledby='daily-heading' className='lg:col-span-2'>

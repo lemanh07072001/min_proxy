@@ -36,7 +36,6 @@ export default function LogModal({
     return <Chip label={label} size='small' icon={<BadgeMinus />} color={color as any} />
   }
 
-  console.log(data)
 
   // Demo log data nếu không có log thật
   const demoLogs = [

@@ -146,51 +146,55 @@ const OrderDetail: React.FC<OrderDetailProps> = ({ open, onClose, order }) => {
       },
 
       {
-        accessorKey: 'proxy',
-        header: order?.type_servi?.type === '0' ? 'Proxy' : 'Proxy API',
+        accessorKey: 'api_key',
+        header: 'API Key',
         cell: ({ row }: { row: any }) => {
-          if (order?.type_servi?.type === '0') {
-            // ----- Dữ liệu Proxy thông thường -----
-            const proxys = row.original.proxys || {}
+          const api_key = row.original.api_key || '-'
 
-            const proxyValues = Object.entries(proxys)
-              .filter(([key]) => key !== 'loaiproxy')
-              .map(([_, value]) => value)
+          return (
+            <div className='flex items-center gap-2'>
+              <span className='flex-1 truncate text-red-600 font-medium'>{String(api_key)}</span>
+              {api_key !== '-' && (
+                <button
+                  className='flex items-center justify-center w-6 h-6 text-orange-500 hover:text-orange-700 hover:bg-orange-50 rounded transition-colors duration-200'
+                  onClick={() => copy(String(api_key), 'Đã copy API key!')}
+                  title='Copy API key'
+                >
+                  <Copy size={14} />
+                </button>
+              )}
+            </div>
+          )
+        },
+        size: 300
+      },
+      {
+        accessorKey: 'proxy',
+        header: 'Proxy',
+        cell: ({ row }: { row: any }) => {
+          // Lấy proxy từ proxys object
+          const proxys = row.original.proxys || {}
 
-            const firstProxy = proxyValues[0] || '-'
+          const proxyValues = Object.entries(proxys)
+            .filter(([key]) => key !== 'loaiproxy')
+            .map(([_, value]) => value)
 
-            return (
-              <div className='flex items-center gap-2'>
-                <span className='flex-1 truncate'>{String(firstProxy)}</span>
-                {firstProxy !== '-' && (
-                  <button
-                    className='flex items-center justify-center w-6 h-6 text-blue-500 hover:text-blue-700 hover:bg-blue-50 rounded transition-colors duration-200'
-                    onClick={() => copy(String(firstProxy), 'Đã copy proxy!')}
-                    title='Copy proxy'
-                  >
-                    <Copy size={14} />
-                  </button>
-                )}
-              </div>
-            )
-          } else {
-            const apiProxy = row.original?.api_key || '-'
+          const firstProxy = proxyValues[0] || '-'
 
-            return (
-              <div className='flex items-center gap-2'>
-                <span className='flex-1 truncate text-red-600'>{apiProxy}</span>
-                {apiProxy !== '-' && (
-                  <button
-                    className='flex items-center justify-center w-6 h-6 text-blue-500 hover:text-blue-700 hover:bg-blue-50 rounded transition-colors duration-200'
-                    onClick={() => copy(apiProxy, 'Đã copy API key!')}
-                    title='Copy API key'
-                  >
-                    <Copy size={14} />
-                  </button>
-                )}
-              </div>
-            )
-          }
+          return (
+            <div className='flex items-center gap-2'>
+              <span className='flex-1 truncate'>{String(firstProxy)}</span>
+              {firstProxy !== '-' && (
+                <button
+                  className='flex items-center justify-center w-6 h-6 text-orange-500 hover:text-orange-700 hover:bg-orange-50 rounded transition-colors duration-200'
+                  onClick={() => copy(String(firstProxy), 'Đã copy proxy!')}
+                  title='Copy proxy'
+                >
+                  <Copy size={14} />
+                </button>
+              )}
+            </div>
+          )
         },
         size: 350
       },
@@ -212,13 +216,6 @@ const OrderDetail: React.FC<OrderDetailProps> = ({ open, onClose, order }) => {
           return 'HTTP/SOCKS5'
         },
         size: 80
-      },
-      {
-        header: 'Giá tiền',
-        cell: ({ row }: { row: any }) => (
-          <div>{new Intl.NumberFormat('vi-VN').format(order?.type_servi?.price || 0) + ' đ'}</div>
-        ),
-        size: 200
       },
       {
         header: 'Ip Version',
@@ -284,7 +281,7 @@ const OrderDetail: React.FC<OrderDetailProps> = ({ open, onClose, order }) => {
 
   const selectedCount = table.getFilteredSelectedRowModel().rows.length
 
-  // Function to copy all selected API keys
+  // Function to copy all selected proxies
   const handleCopySelected = () => {
     const selectedRows = table.getFilteredSelectedRowModel().rows
 
@@ -292,75 +289,50 @@ const OrderDetail: React.FC<OrderDetailProps> = ({ open, onClose, order }) => {
 
     let textToCopy = ''
 
-    if (order?.type_servi?.type === '0') {
-      // For regular proxies
-      selectedRows.forEach((row, index) => {
-        const proxys = row.original.proxys || {}
+    // Always get proxy from proxys object
+    selectedRows.forEach((row, index) => {
+      const proxys = row.original.proxys || {}
 
-        const proxyValues = Object.entries(proxys)
-          .filter(([key]) => key !== 'loaiproxy')
-          .map(([_, value]) => value)
+      const proxyValues = Object.entries(proxys)
+        .filter(([key]) => key !== 'loaiproxy')
+        .map(([_, value]) => value)
 
-        const firstProxy = proxyValues[0]
+      const firstProxy = proxyValues[0]
 
-        if (firstProxy && firstProxy !== '-') {
-          textToCopy += firstProxy
-          if (index < selectedRows.length - 1) textToCopy += '\n'
-        }
-      })
-    } else {
-      // For API keys
-      selectedRows.forEach((row, index) => {
-        const apiKey = row.original?.api_key
-
-        if (apiKey && apiKey !== '-') {
-          textToCopy += apiKey
-          if (index < selectedRows.length - 1) textToCopy += '\n'
-        }
-      })
-    }
+      if (firstProxy && firstProxy !== '-') {
+        textToCopy += firstProxy
+        if (index < selectedRows.length - 1) textToCopy += '\n'
+      }
+    })
 
     if (textToCopy) {
-      copy(textToCopy, `Đã copy ${selectedCount} ${order?.type_servi?.type === '0' ? 'proxy' : 'API key'}!`)
+      copy(textToCopy, `Đã copy ${selectedCount} proxy!`)
     }
   }
 
-  // Function to download selected API keys as .txt file
+  // Function to download selected proxies as .txt file
   const handleDownloadSelected = () => {
     const selectedRows = table.getFilteredSelectedRowModel().rows
 
     if (selectedRows.length === 0) return
 
     let content = ''
-    const itemType = order?.type_servi?.type === '0' ? 'proxy' : 'api_key'
 
-    if (order?.type_servi?.type === '0') {
-      // For regular proxies
-      selectedRows.forEach((row, index) => {
-        const proxys = row.original.proxys || {}
+    // Always get proxy from proxys object
+    selectedRows.forEach((row, index) => {
+      const proxys = row.original.proxys || {}
 
-        const proxyValues = Object.entries(proxys)
-          .filter(([key]) => key !== 'loaiproxy')
-          .map(([_, value]) => value)
+      const proxyValues = Object.entries(proxys)
+        .filter(([key]) => key !== 'loaiproxy')
+        .map(([_, value]) => value)
 
-        const firstProxy = proxyValues[0]
+      const firstProxy = proxyValues[0]
 
-        if (firstProxy && firstProxy !== '-') {
-          content += firstProxy
-          if (index < selectedRows.length - 1) content += '\n'
-        }
-      })
-    } else {
-      // For API keys
-      selectedRows.forEach((row, index) => {
-        const apiKey = row.original?.api_key
-
-        if (apiKey && apiKey !== '-') {
-          content += apiKey
-          if (index < selectedRows.length - 1) content += '\n'
-        }
-      })
-    }
+      if (firstProxy && firstProxy !== '-') {
+        content += firstProxy
+        if (index < selectedRows.length - 1) content += '\n'
+      }
+    })
 
     if (content) {
       // Create blob and download
@@ -369,14 +341,14 @@ const OrderDetail: React.FC<OrderDetailProps> = ({ open, onClose, order }) => {
       const link = document.createElement('a')
 
       link.href = url
-      link.download = `${order?.order_code || 'order'}_${itemType}s_${new Date().toISOString().split('T')[0]}.txt`
+      link.download = `${order?.order_code || 'order'}_proxies_${new Date().toISOString().split('T')[0]}.txt`
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
       window.URL.revokeObjectURL(url)
 
       // Show success message
-      copy('', `Đã tải xuống ${selectedCount} key`)
+      copy('', `Đã tải xuống ${selectedCount} proxy`)
     }
   }
 

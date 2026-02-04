@@ -17,11 +17,9 @@ export const useLanguageSync = () => {
 
   useEffect(() => {
     if (i18n.isInitialized && currentLocale && currentLocale !== i18n.language) {
-      console.log('Changing language from', i18n.language, 'to', currentLocale)
       i18n
         .changeLanguage(currentLocale)
         .then(() => {
-          console.log('Language changed successfully to', currentLocale)
           setIsSynced(true)
         })
         .catch(error => {

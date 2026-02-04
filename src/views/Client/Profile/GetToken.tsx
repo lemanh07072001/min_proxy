@@ -13,7 +13,6 @@ export default function GetToken() {
 
   const { data: session, update } = useSession() // ✅ cần update
 
-  console.log(session)
   const axiosAuth = useAxiosAuth()
 
   useEffect(() => {
@@ -27,7 +26,6 @@ export default function GetToken() {
       const res = await axiosAuth.post('/get-new-token')
 
       if (res?.data?.access_token) {
-        console.log('✅ Token mới:', res.data.access_token)
 
         // ✅ Cập nhật token mới vào NextAuth session
         await update({

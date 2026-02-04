@@ -49,20 +49,33 @@ export default function OrderDetailModal({ isOpen, onClose, orderData, isLoading
     setTimeout(() => setCopiedField(null), 2000)
   }
 
+  // Helper function to extract proxy from item
+  const getProxyFromItem = (item: any) => {
+    const proxys = item?.proxys
+
+    if (proxys && typeof proxys === 'object') {
+      return proxys.HTTP || proxys.SOCKS5 || proxys.SOCK5 || ''
+    }
+
+    if (typeof proxys === 'string') return proxys
+
+    return ''
+  }
+
   const downloadApiKeys = () => {
     const selectedRows = table.getFilteredSelectedRowModel().rows
 
-    const apiKeysToDownload =
+    const proxiesToDownload =
       selectedRows.length > 0
-        ? selectedRows.map((row: any) => row.original.api_key).join('\n')
-        : dataApiKeys.map((item: any) => item.api_key).join('\n')
+        ? selectedRows.map((row: any) => getProxyFromItem(row.original)).filter(Boolean).join('\n')
+        : dataApiKeys.map((item: any) => getProxyFromItem(item)).filter(Boolean).join('\n')
 
-    const blob = new Blob([apiKeysToDownload], { type: 'text/plain' })
+    const blob = new Blob([proxiesToDownload], { type: 'text/plain' })
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
 
     link.href = url
-    link.download = `api-keys-${orderData?.order?.order_code || 'export'}.txt`
+    link.download = `proxies-${orderData?.order?.order_code || 'export'}.txt`
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
@@ -158,24 +171,55 @@ export default function OrderDetailModal({ isOpen, onClose, orderData, isLoading
         size: 50
       },
       {
-        header: 'ApiKey / Proxy',
-        size: 200,
+        header: 'API Key',
+        size: 250,
         cell: ({ row }: { row: any }) => {
-          // Nếu api_key rỗng hoặc null → hiển thị Proxy
-          if (!row.original.api_key) {
-            // Kiểm tra nếu proxys là object thì lấy http hoặc socks5
-            const proxys = row.original.proxys
+          const api_key = row.original.api_key || '-'
 
-            if (proxys && typeof proxys === 'object') {
-              return proxys.HTTP || proxys.SOCK5 || '-'
-            }
+          return (
+            <div className='flex items-center gap-2'>
+              <span className='flex-1 truncate text-red-600 font-medium text-sm'>{api_key}</span>
+              {api_key !== '-' && (
+                <button
+                  className='flex items-center justify-center w-6 h-6 text-orange-500 hover:text-orange-700 hover:bg-orange-50 rounded transition-colors duration-200'
+                  onClick={() => copyToClipboard(api_key, `api_key_${row.id}`)}
+                  title='Copy API key'
+                >
+                  <Copy size={14} />
+                </button>
+              )}
+            </div>
+          )
+        }
+      },
+      {
+        header: 'Proxy',
+        size: 250,
+        cell: ({ row }: { row: any }) => {
+          // Luôn lấy proxy từ proxys object
+          const proxys = row.original.proxys
+          let proxy = '-'
 
-            
-return proxys || '-'
+          if (proxys && typeof proxys === 'object') {
+            proxy = proxys.HTTP || proxys.SOCKS5 || proxys.SOCK5 || '-'
+          } else if (typeof proxys === 'string') {
+            proxy = proxys
           }
 
-          // Nếu có api_key → hiển thị api_key
-          return row.original.api_key
+          return (
+            <div className='flex items-center gap-2'>
+              <span className='flex-1 truncate text-sm'>{proxy}</span>
+              {proxy !== '-' && (
+                <button
+                  className='flex items-center justify-center w-6 h-6 text-orange-500 hover:text-orange-700 hover:bg-orange-50 rounded transition-colors duration-200'
+                  onClick={() => copyToClipboard(proxy, `proxy_${row.id}`)}
+                  title='Copy proxy'
+                >
+                  <Copy size={14} />
+                </button>
+              )}
+            </div>
+          )
         }
       },
       {
@@ -194,20 +238,6 @@ return proxys || '-'
           } else {
             return <Chip label='Hết hạn' size='small' icon={<CircleX />} color='error' />
           }
-        }
-      },
-      {
-        header: 'Ngày mua',
-        size: 200,
-        cell: ({ row }: { row: any }) => {
-          return (
-            <>
-              <div className='d-flex align-items-center  gap-1 '>
-                <Clock3 size={14} />
-                <div style={{ marginTop: '2px' }}>{formatDateTimeLocal(row.original.buy_at)}</div>
-              </div>
-            </>
-          )
         }
       },
       {
@@ -379,12 +409,12 @@ return (
                         onClick={() => {
                           const selectedRows = table.getFilteredSelectedRowModel().rows
 
-                          const apiKeysToCopy =
+                          const proxiesToCopy =
                             selectedRows.length > 0
-                              ? selectedRows.map((row: any) => row.original.api_key).join('\n')
-                              : dataApiKeys.map((item: any) => item.api_key).join('\n')
+                              ? selectedRows.map((row: any) => getProxyFromItem(row.original)).filter(Boolean).join('\n')
+                              : dataApiKeys.map((item: any) => getProxyFromItem(item)).filter(Boolean).join('\n')
 
-                          copyToClipboard(apiKeysToCopy, 'header')
+                          copyToClipboard(proxiesToCopy, 'header')
                         }}
                         className='px-3 py-1.5 text-sm rounded-lg font-medium text-white bg-orange-500 hover:bg-orange-600 transition-colors flex items-center gap-1.5'
                       >
@@ -397,7 +427,7 @@ return (
                           <>
                             <Copy size={14} />
                             {Object.keys(rowSelection).length > 0
-                              ? `Copy ${Object.keys(rowSelection).length} keys`
+                              ? `Copy ${Object.keys(rowSelection).length} proxies`
                               : 'Copy tất cả'}
                           </>
                         )}
@@ -408,7 +438,7 @@ return (
                       >
                         <Download size={14} />
                         {Object.keys(rowSelection).length > 0
-                          ? `Tải ${Object.keys(rowSelection).length} keys`
+                          ? `Tải ${Object.keys(rowSelection).length} proxies`
                           : 'Tải tất cả'}
                       </button>
                     </div>

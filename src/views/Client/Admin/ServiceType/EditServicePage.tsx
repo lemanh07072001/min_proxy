@@ -288,8 +288,6 @@ return Array.from(allProtocols).map(protocol => ({
       price_by_duration: formattedPriceFields
     }
 
-    console.log('Submit Data:', submitData)
-    console.log('Price Fields with Cost:', formattedPriceFields)
 
     updateMutation.mutate(submitData, {
       onSuccess: handleUpdateSuccess,
@@ -317,7 +315,6 @@ return Array.from(allProtocols).map(protocol => ({
   }
 
   const handleSaveMultiInputs = (fields: Array<{ key: string; value: string }>) => {
-    console.log('Multi Input Fields:', fields)
     toast.success(`Đã lưu ${fields.length} trường thành công!`)
     handleCloseMultiInputModal()
   }
@@ -333,7 +330,6 @@ return Array.from(allProtocols).map(protocol => ({
 
   const handleSavePrices = (fields: Array<{ key: string; value: string; cost?: string }>) => {
     setPriceFields(fields)
-    console.log('Price Fields:', fields)
     toast.success('Đã lưu giá thành công!')
     handleClosePriceModal()
   }

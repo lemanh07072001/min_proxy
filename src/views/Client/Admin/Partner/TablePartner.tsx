@@ -98,7 +98,6 @@ export default function TablePartner({ onOpenModal }: TablePartnerProps) {
     (partnerId: number) => {
       const partner = dataPartners.find((p: any) => p.id === partnerId)
 
-      console.log('Partner data when edit clicked:', partner)
 
       if (onOpenModal && partner) {
         onOpenModal('edit', partner)
@@ -138,7 +137,6 @@ export default function TablePartner({ onOpenModal }: TablePartnerProps) {
   const handleConfirmRecharge = useCallback(() => {
     if (partnerToRecharge && rechargeAmount && Number(rechargeAmount) > 0) {
       // TODO: Implement API call to recharge partner
-      console.log('Recharge partner:', partnerToRecharge.id, 'Amount:', rechargeAmount)
       toast.success(`Nạp tiền ${new Intl.NumberFormat('vi-VN').format(Number(rechargeAmount))} đ cho đối tác thành công!`)
       handleCloseRechargeDialog()
     } else {

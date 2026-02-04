@@ -83,7 +83,6 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onClose }) 
 
   const onSubmit = (data: { password: string; confirmPassword: string }) => {
     return new Promise<void>(resolve => {
-      console.log('Dữ liệu form hợp lệ:', data)
       alert('Đổi mật khẩu thành công!')
       
       // Đóng modal profile ngay lập tức

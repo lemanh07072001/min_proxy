@@ -211,7 +211,7 @@ export default function OrderRotatingProxyPage() {
     setLoadingId(key)
 
     try {
-      const res = await axiosAuth.post('/proxies/new', { key })
+      const res = await axiosAuth.post('/api/proxies/rotate-ip', { key })
 
       if (res.data.success) {
         setSelectedProxy(res.data.data)
@@ -303,12 +303,21 @@ export default function OrderRotatingProxyPage() {
       },
       {
         accessorKey: 'api_key',
-        header: 'Api key',
+        header: 'Key',
         cell: ({ row }: { row: any }) => {
           const api_key = row.original.api_key
 
           return api_key ? (
-            <span className='text-red-600 font-medium'>{api_key}</span>
+            <div className='flex items-center gap-2'>
+              <span className='flex-1 truncate text-red-600 font-medium'>{api_key}</span>
+              <button
+                className='flex items-center justify-center w-6 h-6 text-orange-500 hover:text-orange-700 hover:bg-orange-50 rounded transition-colors duration-200'
+                onClick={() => copy(api_key, 'Đã copy key!')}
+                title='Copy key'
+              >
+                <Copy size={14} />
+              </button>
+            </div>
           ) : (
             <div className='flex items-center gap-1 text-gray-500'>
               <Loader className='animate-spin text-gray-400' size={18} />
@@ -317,6 +326,51 @@ export default function OrderRotatingProxyPage() {
           )
         },
         size: 300
+      },
+      {
+        header: 'Proxy',
+        cell: ({ row }: { row: any }) => {
+          // Lấy proxy từ proxys object
+          const proxys = row.original.proxys
+
+          if (proxys && typeof proxys === 'object') {
+            const proxy = proxys.HTTP || proxys.SOCKS5 || proxys.SOCK5
+
+            return proxy ? (
+              <div className='flex items-center gap-2'>
+                <span className='flex-1 truncate font-medium'>{proxy}</span>
+                <button
+                  className='flex items-center justify-center w-6 h-6 text-orange-500 hover:text-orange-700 hover:bg-orange-50 rounded transition-colors duration-200'
+                  onClick={() => copy(proxy, 'Đã copy proxy!')}
+                  title='Copy proxy'
+                >
+                  <Copy size={14} />
+                </button>
+              </div>
+            ) : (
+              <span>-</span>
+            )
+          }
+
+          // Nếu proxys là string
+          if (typeof proxys === 'string' && proxys) {
+            return (
+              <div className='flex items-center gap-2'>
+                <span className='flex-1 truncate font-medium'>{proxys}</span>
+                <button
+                  className='flex items-center justify-center w-6 h-6 text-orange-500 hover:text-orange-700 hover:bg-orange-50 rounded transition-colors duration-200'
+                  onClick={() => copy(proxys, 'Đã copy proxy!')}
+                  title='Copy proxy'
+                >
+                  <Copy size={14} />
+                </button>
+              </div>
+            )
+          }
+
+          return <span>-</span>
+        },
+        size: 350
       },
       {
         accessorKey: 'protocol',
@@ -376,6 +430,7 @@ export default function OrderRotatingProxyPage() {
         size: 150
       },
       {
+        id: 'action',
         header: 'Action',
         cell: ({ row }: { row: any }) => {
           const isRowLoading = loadingId === row.original.api_key
@@ -394,7 +449,10 @@ export default function OrderRotatingProxyPage() {
             )
           }
         },
-        size: 120
+        size: 120,
+        meta: {
+          sticky: 'right'
+        }
       }
     ],
     []
@@ -437,7 +495,6 @@ export default function OrderRotatingProxyPage() {
       secure: true
     })
 
-    socket.on('connect', () => console.log('✅ Connected to socket:', socket.id))
 
     socket.on('order_completed', data => {
       queryClient.invalidateQueries({ queryKey: ['proxyData'] })

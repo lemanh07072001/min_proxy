@@ -45,7 +45,6 @@ interface StatsOverviewProps {
 }
 
 export default function StatsOverview({ data }: StatsOverviewProps) {
-  console.log(data)
 
   return (
     <div className=''>

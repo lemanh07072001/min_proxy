@@ -31,7 +31,6 @@ const useAxiosAuth = () => {
           errMsg?.includes('JWE') ||
           errMsg?.includes('decryption')
         ) {
-          console.warn('Token lỗi hoặc session hỏng → logout...')
           await signOut({ callbackUrl: '/login' })
         }
 

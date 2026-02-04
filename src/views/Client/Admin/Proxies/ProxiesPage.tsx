@@ -182,7 +182,23 @@ export default function ProxiesPage({ initialData }: ProxiesPageProps) {
         id: 'proxy',
         header: 'Proxy',
         size: 350,
-        cell: ({ row }: { row: any }) => row.original?.proxys?.HTTP ?? '-'
+        cell: ({ row }: { row: any }) => {
+          // Ưu tiên hiển thị proxy từ proxys.HTTP, nếu không có thì hiển thị từ các trường khác
+          const proxys = row.original?.proxys
+
+          if (proxys) {
+            // Kiểm tra proxys.HTTP trước
+            if (proxys.HTTP) return proxys.HTTP
+            // Nếu không có HTTP, thử SOCKS5
+            if (proxys.SOCKS5 || proxys.SOCK5) return proxys.SOCKS5 || proxys.SOCK5
+          }
+
+          // Nếu proxys là string thì trả về luôn
+          if (typeof row.original?.proxys === 'string') return row.original.proxys
+
+          // Cuối cùng mới thử api_key (nhưng không hiển thị cho proxy xoay nữa)
+          return '-'
+        }
       },
       {
         id: 'loaiproxy',
@@ -294,17 +310,31 @@ export default function ProxiesPage({ initialData }: ProxiesPageProps) {
     [setCopiedField]
   )
 
+  // Extract proxy from item (same logic as column cell)
+  const getProxyFromItem = useCallback((item: any) => {
+    const proxys = item?.proxys
+
+    if (proxys) {
+      if (proxys.HTTP) return proxys.HTTP
+      if (proxys.SOCKS5 || proxys.SOCK5) return proxys.SOCKS5 || proxys.SOCK5
+    }
+
+    if (typeof item?.proxys === 'string') return item.proxys
+
+    return ''
+  }, [])
+
   // Copy proxies function
   const copyProxies = useCallback(() => {
     const selectedRows = table.getFilteredSelectedRowModel().rows
 
     const proxiesToCopy =
       selectedRows.length > 0
-        ? selectedRows.map((row: any) => row.original?.proxys?.HTTP || '').filter(Boolean).join('\n')
-        : filteredData.map((item: any) => item?.proxys?.HTTP || '').filter(Boolean).join('\n')
+        ? selectedRows.map((row: any) => getProxyFromItem(row.original)).filter(Boolean).join('\n')
+        : filteredData.map((item: any) => getProxyFromItem(item)).filter(Boolean).join('\n')
 
     copyToClipboard(proxiesToCopy, 'proxies')
-  }, [table, filteredData, copyToClipboard])
+  }, [table, filteredData, copyToClipboard, getProxyFromItem])
 
   // Download proxies function
   const downloadProxies = useCallback(() => {
@@ -312,8 +342,8 @@ export default function ProxiesPage({ initialData }: ProxiesPageProps) {
 
     const proxiesToDownload =
       selectedRows.length > 0
-        ? selectedRows.map((row: any) => row.original?.proxys?.HTTP || '').filter(Boolean).join('\n')
-        : filteredData.map((item: any) => item?.proxys?.HTTP || '').filter(Boolean).join('\n')
+        ? selectedRows.map((row: any) => getProxyFromItem(row.original)).filter(Boolean).join('\n')
+        : filteredData.map((item: any) => getProxyFromItem(item)).filter(Boolean).join('\n')
 
     const blob = new Blob([proxiesToDownload], { type: 'text/plain' })
     const url = URL.createObjectURL(blob)
@@ -325,7 +355,7 @@ export default function ProxiesPage({ initialData }: ProxiesPageProps) {
     link.click()
     document.body.removeChild(link)
     URL.revokeObjectURL(url)
-  }, [table, filteredData, activeTab])
+  }, [table, filteredData, activeTab, getProxyFromItem])
 
   return (
     <div className='orders-content'>

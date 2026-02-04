@@ -15,7 +15,6 @@ const ReferralHandler = () => {
       localStorage.setItem('referralCode', referralCode)
       
       // Có thể thêm logic khác như tracking, analytics, etc.
-      console.log('Referral code detected:', referralCode)
     }
   }, [searchParams])
 

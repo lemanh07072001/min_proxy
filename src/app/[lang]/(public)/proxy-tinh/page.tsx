@@ -19,7 +19,6 @@ export default async function StaticProxy() {
 
     proxyPlans = response.data.data
   } catch (error) {
-    console.log(error)
   }
 
   const proxyProviders = {

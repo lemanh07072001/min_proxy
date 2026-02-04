@@ -52,7 +52,6 @@ function ClientSideExample() {
   // 2. API call to /api/auth/session
   // 3. Second render: status = "authenticated", session = data
   
-  console.log('Client render - Status:', status, 'Session:', !!session)
 
   if (status === 'loading') {
     return (
@@ -107,7 +106,6 @@ function ServerSideExample({ session }: ServerSideExampleProps) {
   // - Component chỉ render 1 lần duy nhất
   // - Không có loading state
   
-  console.log('Server render - Session:', !!session)
 
   if (!session) {
     return (

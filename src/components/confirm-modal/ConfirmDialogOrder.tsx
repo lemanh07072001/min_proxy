@@ -1,4 +1,3 @@
-import { log } from 'console'
 
 import React from 'react'
 
@@ -33,7 +32,6 @@ export const ConfirmDialogOrder: React.FC<ConfirmationModalProps> = ({
 }) => {
   if (!isOpen) return null
 
-  console.log(daysInNumber)
 
   return (
     <div className='fixed inset-0 z-[5000] flex items-center justify-center'>

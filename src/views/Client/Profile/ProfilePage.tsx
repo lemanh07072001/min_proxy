@@ -64,7 +64,6 @@ export default function ProfilePage({ dataProfile }: ProfileProps) {
       })
 
       setMessage('Đổi ảnh thành công! Vui lòng đăng xuất để cập nhật.')
-      console.log('Avatar uploaded:', res.data)
     } catch (error: any) {
       console.error('❌ Upload failed:', error.response?.data || error.message)
     }

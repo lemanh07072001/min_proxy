@@ -16,7 +16,6 @@ export function useCopy(timeout = 2000) {
         await navigator.clipboard.writeText(text)
         copySuccessful = true
       } catch (error) {
-        console.warn('Clipboard API failed (likely due to insecure context or permissions). Trying fallback.', error)
       }
     }
 
@@ -42,7 +41,6 @@ export function useCopy(timeout = 2000) {
           throw new Error('execCommand failed')
         }
       } catch (error) {
-        console.warn('Fallback copy method failed', error)
         copySuccessful = false
       }
     }

@@ -20,13 +20,11 @@ const GlobalSessionCleanup = () => {
   useEffect(() => {
     // Chỉ kiểm tra khi có session
     if (status === 'authenticated' && session) {
-      console.log('🧹 [GlobalSessionCleanup] Checking session validity...')
 
       const cleanupSession = async () => {
         try {
           // Kiểm tra nếu session có error
           if (session?.error === 'TokenExpiredError') {
-            console.log('🧹 [GlobalSessionCleanup] Found invalid session with error, cleaning up...')
             await signOut({ redirect: false })
             const lang = pathname.split('/')[1] || 'vi'
 
@@ -37,7 +35,6 @@ return
 
           // Kiểm tra nếu không có access_token
           if (!session?.access_token) {
-            console.log('🧹 [GlobalSessionCleanup] Found session without access_token, cleaning up...')
             await signOut({ redirect: false })
             const lang = pathname.split('/')[1] || 'vi'
 
@@ -56,7 +53,6 @@ return
           })
 
           if (response.status === 401) {
-            console.log('🧹 [GlobalSessionCleanup] Token is invalid, cleaning up...')
             await signOut({ redirect: false })
             const lang = pathname.split('/')[1] || 'vi'
 
@@ -65,7 +61,6 @@ return
 return
           }
 
-          console.log('✅ [GlobalSessionCleanup] Session is valid')
         } catch (error) {
           console.error('❌ [GlobalSessionCleanup] Error during cleanup:', error)
 

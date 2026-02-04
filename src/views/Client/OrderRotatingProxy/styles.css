@@ -286,3 +286,18 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+/* Sticky Action Column */
+.data-table th:last-child,
+.data-table td:last-child {
+  position: sticky;
+  right: 0;
+  background: white;
+  z-index: 10;
+  box-shadow: -2px 0 4px rgba(0, 0, 0, 0.05);
+}
+
+.data-table thead th:last-child {
+  background: #f8fafc;
+  z-index: 11;
+}

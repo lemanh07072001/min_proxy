@@ -83,7 +83,6 @@ return
       cost: field.cost || ''
     }))
 
-    console.log('Saving price fields with cost:', formattedFields)
     onSave(formattedFields)
     onClose()
   }

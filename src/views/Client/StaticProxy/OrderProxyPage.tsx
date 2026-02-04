@@ -85,7 +85,6 @@ export default function OrderProxyPage() {
       secure: true
     })
 
-    socket.on('connect', () => console.log('✅ Connected to socket:', socket.id))
     socket.on('order_completed', data => {
       // Invalidate và refetch có độ trễ nhỏ để chờ backend cập nhật xong
       queryClient.invalidateQueries({ queryKey: ['orderProxyStatic'] })

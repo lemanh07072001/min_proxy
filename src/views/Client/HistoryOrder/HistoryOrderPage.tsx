@@ -111,7 +111,6 @@ export default function HistoryOrderPage() {
         accessorKey: 'status',
         header: 'Trạng thái',
         cell: ({ row }: { row: any }) => {
-          console.log(row)
           
 return getStatusBadge(row.original.status)
         },
@@ -212,7 +211,6 @@ return getStatusBadge(row.original.status)
       secure: true
     })
 
-    socket.on('connect', () => console.log('✅ Connected to socket:', socket.id))
     socket.on('order_completed', data => {
       queryClient.invalidateQueries({ queryKey: ['orderProxyStatic'] })
       setTimeout(() => {
