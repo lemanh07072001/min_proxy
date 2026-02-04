@@ -506,14 +506,17 @@ const PlanCard = ({ plan }) => {
             left: `${tooltipPosition.x}px`,
             top: `${tooltipPosition.y}px`,
             transform: 'translateY(-10%)',
-            pointerEvents: 'none'
+            pointerEvents: 'none',
+            wordBreak: 'break-word'
           }}
         >
           <div className='flex items-center gap-2 text-base font-bold text-emerald-700 mb-2'>
             <Info size={18} />
             Ghi chú
           </div>
-          <div className='text-sm text-emerald-900 whitespace-pre-wrap'>{plan.note}</div>
+          <div className='text-sm text-emerald-900' style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', lineHeight: '1.8' }}>
+            {plan.note}
+          </div>
         </div>
       )}
 
