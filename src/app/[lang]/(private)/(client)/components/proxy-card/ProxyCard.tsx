@@ -369,6 +369,7 @@ return selectedDuration ? parseInt(selectedDuration.value, 10) : parseInt(provid
   const handleMouseEnter = (e: React.MouseEvent) => {
     if (provider?.note) {
       const rect = e.currentTarget.getBoundingClientRect()
+
       setTooltipPosition({
         x: rect.right + 10,
         y: rect.top

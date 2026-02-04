@@ -363,6 +363,7 @@ export default function ProxiesPage({ initialData }: ProxiesPageProps) {
   // Handle row hover for tooltip
   const handleRowMouseEnter = useCallback((e: React.MouseEvent, rowData: any) => {
     const rect = e.currentTarget.getBoundingClientRect()
+
     setTooltipPosition({
       x: rect.right + 10,
       y: rect.top

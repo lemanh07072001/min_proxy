@@ -483,6 +483,7 @@ const PlanCard = ({ plan }) => {
   const handleMouseEnter = (e: React.MouseEvent) => {
     if (plan?.note) {
       const rect = e.currentTarget.getBoundingClientRect()
+
       setTooltipPosition({
         x: rect.right + 10,
         y: rect.top
