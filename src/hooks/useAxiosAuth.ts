@@ -34,6 +34,7 @@ const useAxiosAuth = () => {
           console.warn('🔴 Token lỗi hoặc session hỏng → logout...')
           const currentPath = window.location.pathname
           const callbackUrl = currentPath.includes('/login') ? '/' : currentPath
+
           await signOut({ callbackUrl })
         }
 
