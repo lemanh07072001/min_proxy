@@ -35,7 +35,7 @@ async function getDashboardData() {
         Accept: 'application/json'
       }
     })
-    
+
     return response?.data?.data ?? null
   } catch (error: any) {
     console.error('[Dashboard] Error fetching data:', error.message)
@@ -46,7 +46,7 @@ async function getDashboardData() {
 export default async function DashboardPage() {
   const data = await getDashboardData()
 
-  // Default values if no data
+  // Default values
   const cumulative = data ?? {
     total_revenue: 0,
     total_profit: 0,
@@ -91,14 +91,24 @@ export default async function DashboardPage() {
                     icon={<TrendingUp size={24} />}
                     color='green'
                   />
-                  <KPICard label='Tổng Chi Phí' value={data?.total_cost ?? 0} icon={<TrendingDown size={24} />} color='red' />
+                  <KPICard
+                    label='Tổng Chi Phí'
+                    value={data?.total_cost ?? 0}
+                    icon={<TrendingDown size={24} />}
+                    color='red'
+                  />
                 </div>
               </div>
 
               <div className='bg-white/80 backdrop-blur-sm rounded-xl p-4 border-l-4 border-green-500 shadow-lg'>
                 <h3 className='text-xs font-semibold text-gray-600 uppercase tracking-wide mb-3'>Nạp Tiền</h3>
                 <div className='space-y-3'>
-                  <KPICard label='Tổng Tiền Nạp' value={data?.total_deposit ?? 0} icon={<Wallet size={24} />} color='green' />
+                  <KPICard
+                    label='Tổng Tiền Nạp'
+                    value={data?.total_deposit ?? 0}
+                    icon={<Wallet size={24} />}
+                    color='green'
+                  />
                   <KPICard
                     label='Số Giao Dịch Nạp'
                     value={data?.total_deposit_count ?? 0}
