@@ -49,9 +49,14 @@ export async function middleware(req: NextRequest) {
     secret: process.env.NEXTAUTH_SECRET
   })
 
-  // User đã login cố vào login/register -> redirect về overview
+  // Chưa đăng nhập + truy cập /login -> redirect về trang chủ
+  if (!token && route === 'login') {
+    return NextResponse.redirect(new URL(`/${lang}`, req.url))
+  }
+
+  // User đã login cố vào login/register -> redirect về trang chủ
   if (token && isAuthRoute) {
-    return NextResponse.redirect(new URL(`/${lang}/overview`, req.url))
+    return NextResponse.redirect(new URL(`/${lang}`, req.url))
   }
 
   // Chưa login cố vào private route -> redirect về login
@@ -64,7 +69,7 @@ export async function middleware(req: NextRequest) {
     const tokenAny = token as any
 
     if (!tokenAny?.access_token || tokenAny?.error) {
-      return NextResponse.redirect(new URL(`/${lang}/login`, req.url))
+      return NextResponse.redirect(new URL(`/${lang}`, req.url))
     }
 
     // Admin route check

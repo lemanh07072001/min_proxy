@@ -24,14 +24,17 @@ const useAxiosAuth = () => {
       async error => {
         const errMsg = error?.response?.data?.error || error?.message
 
-        // Nếu backend báo JWT lỗi, tự logout
+        // 🟥 Nếu backend báo JWT lỗi, tự logout
         if (
           error.response?.status === 401 ||
           errMsg?.includes('JWT') ||
           errMsg?.includes('JWE') ||
           errMsg?.includes('decryption')
         ) {
-          await signOut({ callbackUrl: '/login' })
+          console.warn('🔴 Token lỗi hoặc session hỏng → logout...')
+          const currentPath = window.location.pathname
+          const callbackUrl = currentPath.includes('/login') ? '/' : currentPath
+          await signOut({ callbackUrl })
         }
 
         return Promise.reject(error)
