@@ -43,13 +43,15 @@ export default function AffiliateWithdrawalTable({ dictionary }: AffiliateWithdr
   const axiosAuth = useAxiosAuth()
   const queryClient = useQueryClient()
 
-  const { data: withdrawalRequests, isLoading } = useQuery({
+  const { data: withdrawalResponse, isLoading } = useQuery({
     queryKey: ['admin-affiliate-withdrawals'],
     queryFn: async () => {
-      const response = await axiosAuth.get('/admin/affiliate-withdrawals')
+      const response = await axiosAuth.get('/admin/withdrawal-requests')
       return response.data
     }
   })
+
+  const withdrawalRequests = withdrawalResponse?.data || []
 
   // Approve withdrawal mutation
   const approveMutation = useMutation({
@@ -145,16 +147,29 @@ export default function AffiliateWithdrawalTable({ dictionary }: AffiliateWithdr
         size: 150
       },
       {
-        header: t.columnCommission || 'Hoa hồng từ',
+        header: t.columnPercent || 'Tỷ lệ HH',
+        cell: ({ row }) => {
+          return <span className='text-blue-600 font-semibold'>{row.original.affiliate_percent}%</span>
+        },
+        size: 100
+      },
+      {
+        header: t.columnReferrals || 'Người giới thiệu',
+        cell: ({ row }) => {
+          return <span className='font-medium'>{row.original.referred_users_count || 0}</span>
+        },
+        size: 120
+      },
+      {
+        header: t.columnPendingOrders || 'Đơn chờ',
         cell: ({ row }) => {
           return (
             <div className='text-sm'>
               <div>
-                {t.totalOrders || 'Tổng đơn'}: <span className='font-medium'>{row.original.total_orders}</span>
+                <span className='font-medium'>{row.original.pending_orders_count || 0}</span> {t.orders || 'đơn'}
               </div>
-              <div className='text-gray-500'>
-                {t.totalValue || 'Giá trị'}:{' '}
-                {new Intl.NumberFormat('vi-VN').format(row.original.total_order_value) + ' đ'}
+              <div className='text-gray-500 text-xs'>
+                {new Intl.NumberFormat('vi-VN').format(row.original.total_pending_order_amount || 0) + ' đ'}
               </div>
             </div>
           )

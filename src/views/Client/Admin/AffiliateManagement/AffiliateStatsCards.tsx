@@ -1,6 +1,6 @@
 'use client'
 
-import { Users, DollarSign, TrendingUp, AlertCircle } from 'lucide-react'
+import { DollarSign, Clock, BanknoteArrowDown, Package } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 
 import BoxCustom from '@/components/UI/BoxCustom'
@@ -14,43 +14,45 @@ export default function AffiliateStatsCards({ dictionary }: AffiliateStatsCardsP
   const axiosAuth = useAxiosAuth()
   const t = dictionary.adminAffiliatePage?.stats || {}
 
-  const { data: stats, isLoading } = useQuery({
+  const { data: statsResponse, isLoading } = useQuery({
     queryKey: ['admin-affiliate-stats'],
     queryFn: async () => {
-      const response = await axiosAuth.get('/admin/affiliate-stats')
+      const response = await axiosAuth.get('/admin/get-affiliate')
       return response.data
     }
   })
 
+  const stats = statsResponse?.data
+
   const statsData = [
     {
-      title: t.totalAffiliates || 'Tổng Affiliates',
-      value: stats?.total_affiliates || 0,
-      icon: Users,
-      color: 'blue',
-      bgColor: 'bg-blue-100',
-      textColor: 'text-blue-600'
-    },
-    {
-      title: t.totalCommission || 'Tổng hoa hồng',
-      value: new Intl.NumberFormat('vi-VN').format(stats?.total_commission || 0) + ' đ',
+      title: t.totalAffiliateEarnings || 'Tổng số tiền affiliate',
+      value: new Intl.NumberFormat('vi-VN').format(stats?.total || 0) + ' đ',
       icon: DollarSign,
       color: 'green',
       bgColor: 'bg-green-100',
       textColor: 'text-green-600'
     },
     {
-      title: t.pendingWithdrawals || 'Yêu cầu rút tiền chờ',
-      value: stats?.pending_withdrawals || 0,
-      icon: AlertCircle,
+      title: t.totalPendingWithdrawal || 'Tổng tiền chưa rút',
+      value: new Intl.NumberFormat('vi-VN').format(stats?.pending_withdrawal || 0) + ' đ',
+      icon: Clock,
       color: 'orange',
       bgColor: 'bg-orange-100',
       textColor: 'text-orange-600'
     },
     {
-      title: t.monthlyGrowth || 'Tăng trưởng tháng này',
-      value: `+${stats?.monthly_growth || 0}%`,
-      icon: TrendingUp,
+      title: t.totalWithdrawn || 'Tổng tiền đã rút',
+      value: new Intl.NumberFormat('vi-VN').format(stats?.total_withdrawn || 0) + ' đ',
+      icon: BanknoteArrowDown,
+      color: 'blue',
+      bgColor: 'bg-blue-100',
+      textColor: 'text-blue-600'
+    },
+    {
+      title: t.totalWithdrawalRequests || 'Tổng số lượng yêu cầu rút',
+      value: stats?.total_withdrawal_requests || 0,
+      icon: Package,
       color: 'purple',
       bgColor: 'bg-purple-100',
       textColor: 'text-purple-600'

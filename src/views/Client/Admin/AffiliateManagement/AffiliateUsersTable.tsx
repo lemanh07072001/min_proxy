@@ -7,6 +7,8 @@ import Image from 'next/image'
 import { Tooltip } from '@mui/material'
 import { Eye, Clock3, User, Mail, DollarSign, Users, ShoppingCart } from 'lucide-react'
 
+import AffiliateOrdersModal from './AffiliateOrdersModal'
+
 import {
   flexRender,
   getCoreRowModel,
@@ -32,6 +34,8 @@ export default function AffiliateUsersTable({ dictionary }: AffiliateUsersTableP
   const [columnFilters, setColumnFilters] = useState([])
   const [rowSelection, setRowSelection] = useState({})
   const [sorting, setSorting] = useState([])
+  const [selectedAffiliateId, setSelectedAffiliateId] = useState<number | null>(null)
+  const [modalOpen, setModalOpen] = useState(false)
 
   const [pagination, setPagination] = useState({
     pageIndex: 0,
@@ -40,29 +44,28 @@ export default function AffiliateUsersTable({ dictionary }: AffiliateUsersTableP
 
   const axiosAuth = useAxiosAuth()
 
-  const { data: affiliateUsers, isLoading } = useQuery({
+  const handleViewDetails = (affiliateId: number) => {
+    setSelectedAffiliateId(affiliateId)
+    setModalOpen(true)
+  }
+
+  const handleCloseModal = () => {
+    setModalOpen(false)
+    setSelectedAffiliateId(null)
+  }
+
+  const { data: affiliateResponse, isLoading } = useQuery({
     queryKey: ['admin-affiliate-users'],
     queryFn: async () => {
-      const response = await axiosAuth.get('/admin/affiliate-users')
+      const response = await axiosAuth.get('/admin/affiliates')
       return response.data
     }
   })
 
+  const affiliateUsers = affiliateResponse?.data?.affiliates || []
+
   const columns = useMemo(
     () => [
-      {
-        accessorKey: 'created_at',
-        header: t.columnJoinDate || 'Ngày tham gia',
-        cell: ({ row }) => {
-          return (
-            <div className='d-flex align-items-center gap-1'>
-              <Clock3 size={14} />
-              <div style={{ marginTop: '2px' }}>{formatDateTimeLocal(row.original?.created_at)}</div>
-            </div>
-          )
-        },
-        size: 180
-      },
       {
         accessorKey: 'user',
         header: t.columnUser || 'Người dùng',
@@ -83,58 +86,68 @@ export default function AffiliateUsersTable({ dictionary }: AffiliateUsersTableP
         size: 250
       },
       {
-        header: t.columnReferrals || 'Người giới thiệu',
+        header: t.columnReferrals || 'Số lượng giới thiệu',
         cell: ({ row }) => {
           return (
             <div className='flex items-center gap-1'>
               <Users size={14} className='text-blue-600' />
-              <span className='font-semibold'>{row.original.total_referrals || 0}</span>
+              <span className='font-semibold'>{row.original.soluongdangky || 0}</span>
             </div>
           )
         },
         size: 150
       },
       {
-        header: t.columnOrders || 'Tổng đơn hàng',
+        header: t.columnPercent || 'Tỷ lệ hoa hồng',
         cell: ({ row }) => {
           return (
-            <div className='flex items-center gap-1'>
-              <ShoppingCart size={14} className='text-purple-600' />
-              <span className='font-semibold'>{row.original.total_orders || 0}</span>
-            </div>
+            <span className='text-blue-600 font-semibold'>
+              {row.original.affiliate_percent || 0}%
+            </span>
           )
         },
-        size: 150
+        size: 120
       },
       {
-        header: t.columnRevenue || 'Doanh thu tạo ra',
+        header: t.columnOrderValue || 'Giá trị đơn chờ',
         cell: ({ row }) => {
           return (
             <span className='text-purple-600 font-semibold'>
-              {new Intl.NumberFormat('vi-VN').format(row.original.total_revenue || 0) + ' đ'}
+              {new Intl.NumberFormat('vi-VN').format(row.original.tong_don_hang || 0) + ' đ'}
             </span>
           )
         },
         size: 180
       },
       {
-        header: t.columnCommission || 'Hoa hồng đã nhận',
+        header: t.columnBalance || 'Số dư',
         cell: ({ row }) => {
           return (
             <span className='text-green-600 font-semibold flex items-center gap-1'>
               <DollarSign size={14} />
-              {new Intl.NumberFormat('vi-VN').format(row.original.total_commission || 0) + ' đ'}
+              {new Intl.NumberFormat('vi-VN').format(row.original.sodu || 0) + ' đ'}
             </span>
           )
         },
-        size: 180
+        size: 150
       },
       {
-        header: t.columnPending || 'Hoa hồng chờ',
+        header: t.columnDeposit || 'Tổng nạp',
+        cell: ({ row }) => {
+          return (
+            <span className='text-blue-600 font-semibold'>
+              {new Intl.NumberFormat('vi-VN').format(row.original.sotiennap || 0) + ' đ'}
+            </span>
+          )
+        },
+        size: 150
+      },
+      {
+        header: t.columnSpent || 'Tổng chi tiêu',
         cell: ({ row }) => {
           return (
             <span className='text-orange-600 font-semibold'>
-              {new Intl.NumberFormat('vi-VN').format(row.original.pending_commission || 0) + ' đ'}
+              {new Intl.NumberFormat('vi-VN').format(row.original.chitieu || 0) + ' đ'}
             </span>
           )
         },
@@ -145,8 +158,14 @@ export default function AffiliateUsersTable({ dictionary }: AffiliateUsersTableP
         cell: ({ row }) => {
           return (
             <div className='flex gap-2 items-center justify-center'>
-              <Tooltip title={t.tooltipViewDetails || 'Xem chi tiết'} arrow placement='top'>
-                <button className='p-2 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-md transition-all duration-200 hover:scale-110 active:scale-95'>
+              <Tooltip title={t.tooltipViewDetails || 'Xem chi tiết đơn hàng'} arrow placement='top'>
+                <button
+                  className='p-2 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-md transition-all duration-200 hover:scale-110 active:scale-95'
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleViewDetails(row.original.id)
+                  }}
+                >
                   <Eye size={16} />
                 </button>
               </Tooltip>
@@ -183,9 +202,19 @@ export default function AffiliateUsersTable({ dictionary }: AffiliateUsersTableP
   })
 
   return (
-    <div className='table-container' style={{ boxShadow: 'none' }}>
-      {/* Table */}
-      <div className='table-wrapper'>
+    <>
+      {modalOpen && (
+        <AffiliateOrdersModal
+          open={modalOpen}
+          onClose={handleCloseModal}
+          affiliateId={selectedAffiliateId}
+          dictionary={dictionary}
+        />
+      )}
+
+      <div className='table-container' style={{ boxShadow: 'none' }}>
+        {/* Table */}
+        <div className='table-wrapper'>
         <table
           className='data-table'
           style={isLoading || affiliateUsers?.length === 0 ? { height: '100%' } : {}}
@@ -256,6 +285,7 @@ export default function AffiliateUsersTable({ dictionary }: AffiliateUsersTableP
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   )
 }
