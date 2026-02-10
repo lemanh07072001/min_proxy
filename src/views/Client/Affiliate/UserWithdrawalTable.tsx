@@ -88,7 +88,7 @@ export default function UserWithdrawalTable() {
         cell: ({ row }) => {
           return (
             <span className='text-red'>
-              {new Intl.NumberFormat('vi-VN').format(row.original.sotienthaydoi) + ' đ' ?? 0}
+              {new Intl.NumberFormat('vi-VN').format(row.original.tong_don_hang) + ' đ' ?? 0}
             </span>
           )
         },
@@ -97,7 +97,7 @@ export default function UserWithdrawalTable() {
       {
         header: 'Tổng số giao dịch',
         cell: ({ row }) => {
-          return <span className='text-red'>{row.original.tonggiaodich}</span>
+          return <span className='text-red'>{row.original.tong_don}</span>
         },
         size: 10
       }
