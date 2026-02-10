@@ -8,7 +8,7 @@ export default function Contact() {
       name: 'Facebook',
       imageSrc: '/images/infos/fb.png',
       value: process.env.NEXT_PUBLIC_APP_NAME,
-      link: 'https://www.facebook.com/profile.php?id=61580520613559&rdid=i9CpOabA3H93IvUC&share_url=https%3A%2F%2Fwww.facebook.com%2Fshare%2F1G4yA8H9N3%2F#',
+      link: 'https://www.facebook.com/profile.php?id=61584271979066',
       iconColor: 'text-white'
     },
     {

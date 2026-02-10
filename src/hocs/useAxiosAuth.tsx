@@ -32,7 +32,9 @@ const useAxiosAuth = () => {
           errMsg?.includes('decryption')
         ) {
           console.warn('🔴 Token lỗi hoặc session hỏng → logout...')
-          await signOut({ callbackUrl: '/login' })
+          const currentPath = window.location.pathname
+          const callbackUrl = currentPath.includes('/login') ? '/' : currentPath
+          await signOut({ callbackUrl })
         }
 
         return Promise.reject(error)

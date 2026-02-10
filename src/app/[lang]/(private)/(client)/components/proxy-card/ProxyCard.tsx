@@ -475,11 +475,7 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, isFirstCard = false, co
                   </span>
                 }
                 value={
-                  getCountryName() ||
-                  provider?.country_name ||
-                  provider?.country ||
-                  provider?.country_code ||
-                  'N/A'
+                  getCountryName() || provider?.country_name || provider?.country || provider?.country_code || 'N/A'
                 }
                 sx={{
                   // Nhắm đến thẻ label của component này
