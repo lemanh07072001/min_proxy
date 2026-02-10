@@ -7,7 +7,8 @@
       "Bash(npm run build:*)",
       "Bash(xargs sed:*)",
       "Bash(pkill:*)",
-      "Bash(npm run lint:*)"
+      "Bash(npm run lint:*)",
+      "Bash(copy:*)"
     ],
     "deny": [],
     "ask": []

@@ -432,5 +432,127 @@
       "hasAccount": "Đã có tài khoản?",
       "loginNow": "Đăng nhập ngay"
     }
+  },
+  "affiliatePage": {
+    "stats": {
+      "totalAffiliateEarnings": "Tổng số tiền affiliate",
+      "totalPendingWithdrawal": "Tổng tiền chưa rút",
+      "totalWithdrawn": "Tổng tiền đã rút",
+      "totalWithdrawalRequests": "Tổng số lượng yêu cầu rút"
+    },
+    "referralLink": {
+      "title": "Link Giới Thiệu",
+      "yourCode": "Mã giới thiệu của bạn",
+      "placeholder": "Nhập mã giới thiệu",
+      "copied": "Copied!"
+    },
+    "policy": {
+      "title": "Chính sách hoa hồng",
+      "rate": "Tỷ lệ hoa hồng:",
+      "rateDetail": "10% giá trị đơn hàng từ người dùng bạn giới thiệu",
+      "condition": "Điều kiện:",
+      "conditionDetail": "Đơn hàng phải được hoàn thành (không bị hủy hoặc hoàn trả)",
+      "payment": "Nhận tiền:",
+      "paymentDetail": "Hoa hồng sẽ tự động chuyển vào số dư tài khoản của bạn",
+      "withdrawal": "Rút tiền:",
+      "withdrawalDetail": "Vui lòng liên hệ Admin để được hỗ trợ rút tiền"
+    },
+    "withdrawalHistory": {
+      "title": "Lịch sử rút tiền"
+    },
+    "commissionHistory": {
+      "title": "Lịch sử hoa hồng",
+      "columns": {
+        "date": "Ngày",
+        "email": "Email",
+        "totalOrderValue": "Tổng giá trị đơn hàng",
+        "totalOrders": "Số đơn hàng",
+        "commissionReceived": "Hoa hồng nhận được",
+        "actions": "Thao tác"
+      },
+      "actions": {
+        "viewDetails": "Xem chi tiết đơn hàng của",
+        "contactAdmin": "Liên hệ Admin để rút tiền"
+      }
+    },
+    "orderHistory": {
+      "title": "Lịch sử đơn hàng",
+      "backButton": "Quay lại lịch sử hoa hồng",
+      "columns": {
+        "orderDate": "Ngày đặt",
+        "orderId": "Mã đơn hàng",
+        "orderValue": "Giá trị đơn hàng",
+        "commission": "Hoa hồng (10%)",
+        "status": "Trạng thái",
+        "paymentStatus": "Đã thanh toán"
+      },
+      "status": {
+        "completed": "Hoàn thành",
+        "partialComplete": "Hoàn thành 1 phần",
+        "fullComplete": "Hoàn thành toàn bộ",
+        "inUse": "Đang sử dụng",
+        "pending": "Đang xử lý",
+        "cancelled": "Đã hủy",
+        "expired": "Hết hạn",
+        "unknown": "Không xác định"
+      },
+      "paymentStatus": {
+        "paid": "Đã thanh toán",
+        "unpaid": "Chưa thanh toán"
+      }
+    },
+    "noData": "Không có dữ liệu",
+    "loading": "Đang tải dữ liệu..."
+  },
+  "adminAffiliatePage": {
+    "title": "Quản lý Affiliate",
+    "subtitle": "Quản lý yêu cầu rút tiền và theo dõi hiệu suất affiliate",
+    "tabs": {
+      "withdrawals": "Yêu cầu rút tiền",
+      "users": "Danh sách Affiliates"
+    },
+    "stats": {
+      "totalAffiliates": "Tổng Affiliates",
+      "totalCommission": "Tổng hoa hồng",
+      "pendingWithdrawals": "Yêu cầu rút tiền chờ",
+      "monthlyGrowth": "Tăng trưởng tháng này"
+    },
+    "withdrawalTable": {
+      "columnDate": "Ngày yêu cầu",
+      "columnUser": "Người dùng",
+      "columnAmount": "Số tiền",
+      "columnCommission": "Hoa hồng từ",
+      "columnStatus": "Trạng thái",
+      "columnActions": "Thao tác",
+      "totalOrders": "Tổng đơn",
+      "totalValue": "Giá trị",
+      "statusPending": "Chờ duyệt",
+      "statusApproved": "Đã duyệt",
+      "statusRejected": "Đã từ chối",
+      "statusCompleted": "Hoàn thành",
+      "statusUnknown": "Không xác định",
+      "tooltipApprove": "Duyệt yêu cầu",
+      "tooltipReject": "Từ chối yêu cầu",
+      "tooltipViewDetails": "Xem chi tiết",
+      "approveSuccess": "Đã duyệt yêu cầu rút tiền",
+      "approveError": "Lỗi khi duyệt yêu cầu",
+      "rejectSuccess": "Đã từ chối yêu cầu rút tiền",
+      "rejectError": "Lỗi khi từ chối yêu cầu",
+      "loading": "Đang tải dữ liệu...",
+      "noData": "Không có dữ liệu"
+    },
+    "usersTable": {
+      "columnJoinDate": "Ngày tham gia",
+      "columnUser": "Người dùng",
+      "columnReferrals": "Người giới thiệu",
+      "columnOrders": "Tổng đơn hàng",
+      "columnRevenue": "Doanh thu tạo ra",
+      "columnCommission": "Hoa hồng đã nhận",
+      "columnPending": "Hoa hồng chờ",
+      "columnActions": "Thao tác",
+      "tooltipViewDetails": "Xem chi tiết",
+      "loading": "Đang tải dữ liệu...",
+      "noData": "Không có dữ liệu"
+    }
   }
 }

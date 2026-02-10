@@ -10,7 +10,8 @@ const dictionaries = {
   vi: () => import('@/data/dictionaries/vi.json').then(module => module.default),
   cn: () => import('@/data/dictionaries/cn.json').then(module => module.default),
   ko: () => import('@/data/dictionaries/ko.json').then(module => module.default),
-  ja: () => import('@/data/dictionaries/ja.json').then(module => module.default)
+  ja: () => import('@/data/dictionaries/ja.json').then(module => module.default),
+  th: () => import('@/data/dictionaries/th.json').then(module => module.default)
 }
 
 // Hàm để lấy từ điển dựa trên locale

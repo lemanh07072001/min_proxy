@@ -1,0 +1,558 @@
+{
+  "time": {
+    "months": "เดือน",
+    "days": "วัน",
+    "hours": "ชั่วโมง",
+    "minutes": "นาที"
+  },
+  "landing": {
+    "header": {
+      "promoBanner": {
+        "text": "โปรโมชั่นพิเศษจาก {{appName}}!",
+        "button": "ดูเลย"
+      },
+      "menu": {
+        "home": "หน้าแรก",
+        "products": "ผลิตภัณฑ์",
+        "pricing": "ราคา",
+        "docs": "เอกสาร",
+        "about": "เกี่ยวกับเรา",
+        "cooperate": "ความร่วมมือ",
+        "hotline": "ติดต่อ",
+        "contact": "ติดต่อ"
+      },
+      "buttons": {
+        "login": "เข้าสู่ระบบ",
+        "register": "ลงทะเบียน",
+        "dashboard": "แดชบอร์ด"
+      },
+      "auth": {
+        "login": "เข้าสู่ระบบ",
+        "register": "ลงทะเบียน"
+      },
+      "goToHome": "ไปที่หน้าแรก"
+    },
+    "hero": {
+      "title": {
+        "line1": "พร็อกซีเวียดนาม",
+        "line2": "คุณภาพสูง"
+      },
+      "subtitle": "บริการพร็อกซีที่มีเสถียรภาพและความเร็วสูงด้วย IP เวียดนามแท้",
+      "description": "โซลูชันพร็อกซีมืออาชีพสำหรับธุรกิจและบุคคลทั่วไป",
+      "buttons": {
+        "tryFree": "ทดลองใช้ฟรี",
+        "viewPricing": "ดูราคา"
+      },
+      "features": {
+        "coverage": "ครอบคลุม 64 จังหวัด",
+        "speed": "ความเร็วสูง",
+        "uptime": "Uptime 99.9%",
+        "support": "สนับสนุน 24/7"
+      },
+      "actions": {
+        "buyNow": "ซื้อเลย",
+        "watchDemo": "ดูเดโม"
+      },
+      "trust": {
+        "customers": "ลูกค้า",
+        "uptime": "Uptime",
+        "support": "สนับสนุน"
+      },
+      "floatingCards": {
+        "security": {
+          "title": "ความปลอดภัย",
+          "desc": "การเข้ารหัสแบบ end-to-end"
+        },
+        "speed": {
+          "title": "ความเร็วสูง",
+          "desc": "แบนด์วิดธ์ไม่จำกัด"
+        },
+        "coverage": {
+          "title": "ครอบคลุม",
+          "desc": "64 จังหวัดในเวียดนาม"
+        }
+      }
+    },
+    "products": {
+      "title": "ผลิตภัณฑ์พร็อกซี",
+      "subtitle": "เลือกแพ็คเกจพร็อกซีที่เหมาะกับความต้องการของคุณ",
+      "cards": {
+        "viettel": {
+          "name": "Viettel Proxy",
+          "badge": "ยอดนิยม",
+          "features": [
+            "IP Viettel แท้ 100%",
+            "ความเร็วสูงและมีเสถียรภาพ",
+            "รองรับ HTTP/SOCKS5",
+            "เปลี่ยน IP ไม่จำกัด"
+          ]
+        },
+        "fpt": {
+          "name": "FPT Proxy",
+          "badge": "ขายดี",
+          "features": [
+            "IP FPT แท้ 100%",
+            "แบนด์วิดธ์ไม่จำกัด",
+            "รองรับ HTTP/SOCKS5",
+            "Uptime 99.9%"
+          ]
+        },
+        "vnpt": {
+          "name": "VNPT Proxy",
+          "badge": "เสถียร",
+          "features": [
+            "IP VNPT แท้ 100%",
+            "เวลาแฝงต่ำ",
+            "รองรับ HTTP/SOCKS5",
+            "ความปลอดภัยสูง"
+          ]
+        }
+      },
+      "actions": {
+        "buyNow": "ซื้อเลย",
+        "popular": "ยอดนิยมที่สุด",
+        "guarantee": "รับประกันคืนเงิน 24 ชั่วโมง"
+      },
+      "cta": {
+        "title": "ต้องการคำแนะนำเพิ่มเติม?",
+        "description": "ติดต่อเราเพื่อรับการสนับสนุนที่ดีที่สุด",
+        "button": "ติดต่อที่ปรึกษา"
+      }
+    },
+    "features": {
+      "title": "ทำไมต้องเลือกเรา",
+      "subtitle": "บริการพร็อกซีชั้นนำในเวียดนาม",
+      "items": {
+        "speed": {
+          "title": "ความเร็วสูง",
+          "description": "แบนด์วิดธ์ไม่จำกัด เวลาแฝงต่ำ"
+        },
+        "security": {
+          "title": "ความปลอดภัย",
+          "description": "การเข้ารหัสแบบ end-to-end ไม่มี logs"
+        },
+        "support": {
+          "title": "สนับสนุน 24/7",
+          "description": "ทีมสนับสนุนมืออาชีพ"
+        },
+        "uptime": {
+          "title": "Uptime 99.9%",
+          "description": "ระบบเสถียร ทำงานต่อเนื่อง"
+        }
+      }
+    },
+    "pricing": {
+      "title": "ราคา",
+      "subtitle": "แผนสำหรับทุกความต้องการ",
+      "perMonth": "/เดือน",
+      "perDay": "/วัน"
+    },
+    "testimonials": {
+      "title": "ลูกค้าพูดถึงเรา",
+      "subtitle": "รีวิวจากลูกค้าที่ใช้บริการของเรา"
+    },
+    "faq": {
+      "title": "คำถามที่พบบ่อย",
+      "subtitle": "คำตอบสำหรับคำถามของคุณ"
+    },
+    "footer": {
+      "cta": {
+        "title": "เริ่มต้นวันนี้",
+        "description": "ลงทะเบียนเพื่อรับข้อเสนอพิเศษ",
+        "contactAgent": "ติดต่อตัวแทน",
+        "registerNow": "ลงทะเบียนตอนนี้"
+      },
+      "sections": {
+        "company": {
+          "title": "บริษัท",
+          "about": "เกี่ยวกับเรา",
+          "agentOffers": "โปรแกรมตัวแทน",
+          "partners": "พาร์ทเนอร์",
+          "sitemap": "แผนผังไซต์"
+        },
+        "products": {
+          "title": "ผลิตภัณฑ์",
+          "staticProxy": "พร็อกซีแบบคงที่",
+          "rotatingProxy": "พร็อกซีแบบหมุน"
+        },
+        "locations": {
+          "title": "สถานที่",
+          "vietnam": "เวียดนาม",
+          "hcm": "นครโฮจิมินห์",
+          "hanoi": "ฮานอย",
+          "hungYen": "ฮุงเยน",
+          "tuyenQuang": "ตวยเอนกวาง",
+          "binhDinh": "บินห์ดินห์"
+        },
+        "support": {
+          "title": "สนับสนุน",
+          "contact": "ติดต่อ",
+          "faq": "คำถามที่พบบ่อย"
+        },
+        "getStarted": {
+          "title": "เริ่มต้น",
+          "becomeCTV": "เป็น CTV",
+          "becomeAgent": "เป็นตัวแทน",
+          "buyCheap": "ซื้อพร็อกซีราคาถูก",
+          "autoTrade": "ระบบซื้อขายอัตโนมัติ",
+          "help": "ช่วยเหลือ"
+        }
+      },
+      "legal": {
+        "privacy": "นโยบายความเป็นส่วนตัว",
+        "service": "ข้อกำหนดการใช้งาน",
+        "refund": "นโยบายการคืนเงิน",
+        "copyright": "© 2024 {{appName}} สงวนลิขสิทธิ์"
+      },
+      "contact": {
+        "title": "ติดต่อเรา"
+      },
+      "copyright": "© 2024 MKT Proxy สงวนลิขสิทธิ์"
+    },
+    "about": {
+      "hero": {
+        "title": {
+          "main": "เกี่ยวกับ",
+          "highlight": "เรา"
+        },
+        "subtitle": "{{appName}} เป็นผู้ให้บริการพร็อกซีชั้นนำในเวียดนามด้วยประสบการณ์กว่า 5 ปี",
+        "features": [
+          "ลูกค้าที่ไว้วางใจกว่า 5000 ราย",
+          "ครอบคลุม 64 จังหวัด",
+          "Uptime 99.9%",
+          "สนับสนุน 24/7"
+        ],
+        "actions": {
+          "contact": "ติดต่อตอนนี้",
+          "pricing": "ดูราคา"
+        },
+        "stats": {
+          "customers": "ลูกค้า",
+          "provinces": "จังหวัด",
+          "uptime": "Uptime",
+          "experience": "ปีประสบการณ์"
+        }
+      },
+      "companyInfo": {
+        "title": "ข้อมูลบริษัท",
+        "description": "MKT Proxy เป็นผู้ให้บริการพร็อกซีชั้นนำในเวียดนาม"
+      }
+    },
+    "cooperate": {
+      "about": {
+        "title": "ร่วมงานกับเรา",
+        "subtitle": "เข้าร่วมโปรแกรมตัวแทนของเราและรับข้อเสนอพิเศษ"
+      }
+    },
+    "hotline": {
+      "hero": {
+        "title": "ติดต่อเรา",
+        "subtitle": "เราพร้อมให้การสนับสนุนและคำแนะนำตลอดเวลา"
+      }
+    },
+    "infrastructure": {
+      "title": {
+        "highlight": "โครงสร้างพื้นฐาน",
+        "text": "ของเรา"
+      },
+      "subtitle": "โครงสร้างพื้นฐานที่ทันสมัยพร้อมเทคโนโลยีเซิร์ฟเวอร์พร็อกซีที่ล้ำสมัยที่สุด มีเสถียรภาพและความปลอดภัยโดดเด่น",
+      "stats": {
+        "uptime": "Uptime",
+        "monitoring": "การตรวจสอบ",
+        "servers": "เซิร์ฟเวอร์",
+        "providers": "ผู้ให้บริการ"
+      }
+    },
+    "coverage": {
+      "title": {
+        "text": "มีอยู่ในจังหวัดส่วนใหญ่ของ",
+        "highlight": "เวียดนาม"
+      },
+      "subtitle": "เครือข่ายเซิร์ฟเวอร์ที่ครอบคลุมทั้ง 3 ภูมิภาคของประเทศด้วยเทคโนโลยีที่ทันสมัยที่สุด",
+      "proxyTitle": "พร็อกซีที่อยู่อาศัยเวียดนาม",
+      "proxyDescription": "ระบบเซิร์ฟเวอร์ตั้งอยู่ในพื้นที่หลักทั่วทั้ง 3 ภูมิภาค ขยายความครอบคลุมไปยังทั้ง 34 จังหวัดอย่างต่อเนื่อง โครงสร้างพื้นฐานที่สร้างด้วยมาตรฐานเสถียรภาพสูง พร้อมอุปกรณ์สำรองเพื่อพร้อมใช้งานตลอดเวลาและลดเหตุการณ์ทั้งหมด",
+      "features": [
+        "สนับสนุนฟรีในการสร้างเว็บไซต์ของคุณเอง",
+        "แหล่งพร็อกซีที่มีเสถียรภาพ IP ที่หลากหลาย",
+        "ราคาที่แข่งขันได้ กำไรที่น่าสนใจ",
+        "ระบบอัตโนมัติทั้งหมด จัดการง่าย",
+        "สนับสนุนด้านเทคนิคและการตลาด 24/7"
+      ],
+      "registerNow": "ลงทะเบียนตอนนี้",
+      "statsLabel": "ครอบคลุมทั้ง 3 ภูมิภาคของเวียดนาม",
+      "regions": {
+        "north": "ภาคเหนือ",
+        "central": "ภาคกลาง",
+        "south": "ภาคใต้"
+      }
+    },
+    "testimonials": {
+      "titleNumber": "100+",
+      "titleText": "ลูกค้าทั่วประเทศ",
+      "stats": {
+        "customers": {
+          "number": "1000+",
+          "label": "ลูกค้าที่ไว้วางใจ"
+        },
+        "uptime": {
+          "number": "99.9%",
+          "label": "Uptime"
+        },
+        "support": {
+          "number": "24/7",
+          "label": "สนับสนุนด้านเทคนิค"
+        },
+        "providers": {
+          "number": "3",
+          "label": "ผู้ให้บริการหลัก"
+        }
+      },
+      "reviews": [
+        {
+          "name": "Nguyen Thanh Binh",
+          "role": "ธุรกิจพร็อกซีเต็มเวลา",
+          "content": "ฉันเป็นตัวแทนตั้งแต่วันแรกที่ {{appName}} เปิดตัวและประหลาดใจมากกับความเป็นมืออาชีพในการดำเนินงานและการสนับสนุน มีเว็บไซต์ที่กำหนดเอง นโยบายที่ชัดเจน และการดูแลอย่างรอบคอบ นี่คือแพลตฟอร์มที่เชื่อถือได้และจริงจังในด้านพร็อกซี"
+        },
+        {
+          "name": "Nguyen Hoa",
+          "role": "ผู้ค้าพร็อกซีใน HCMC",
+          "content": "ตอนแรกฉันลังเลที่จะขายออนไลน์เพราะความซับซ้อนและต้นทุนสูง แต่ตั้งแต่เข้าร่วมโปรแกรมตัวแทนเว็บส่วนตัวของ {{appName}} ฉันได้รับการสนับสนุนอย่างมุ่งมั่น เว็บไซต์ส่วนตัวฟรีและเพิ่มประสบการณ์ 3 ล้าน ตอนนี้ฉันขายพร็อกซีอย่างมีเสถียรภาพทุกเดือน เริ่มต้นง่าย"
+        },
+        {
+          "name": "Vu Huy",
+          "role": "พาร์ทเนอร์เว็บส่วนตัว {{appName}}",
+          "content": "ฉันพึงพอใจเมื่อพบตัวแทน {{appName}} เพราะรู้สึกว่าได้รับการสนับสนุนอย่างแท้จริง ไม่ใช่แค่การขายผลิตภัณฑ์ต่อ แต่ได้รับการสนับสนุนการออกแบบเว็บส่วนตัวอย่างมืออาชีพ สร้างเอกลักษณ์ของแบรนด์ที่ชัดเจน สร้างความไว้วางใจของลูกค้า และได้รับการสนับสนุนจาก {{appName}} เสมอเมื่อต้องการ"
+        }
+      ]
+    },
+    "common": {
+      "closeMenu": "ปิดเมนู"
+    }
+  },
+  "navigation": {
+    "home": "หน้าแรก",
+    "overview": "ภาพรวม",
+    "proxy": "พร็อกซี",
+    "staticProxy": "พร็อกซีแบบคงที่",
+    "rotatingProxy": "พร็อกซีแบบหมุน",
+    "checkProxy": "ตรวจสอบพร็อกซี",
+    "proxyOrders": "คำสั่งซื้อพร็อกซี",
+    "rotatingProxyOrders": "คำสั่งซื้อพร็อกซีแบบหมุน",
+    "purchaseHistory": "ประวัติการซื้อ",
+    "affiliate": "พันธมิตร",
+    "transactionHistory": "ประวัติการทำธุรกรรม",
+    "proxyChangeHistory": "ประวัติการเปลี่ยนพร็อกซี",
+    "loginHistory": "ประวัติการเข้าสู่ระบบ",
+    "guide": "คู่มือ",
+    "partner": "พาร์ทเนอร์",
+    "support": "สนับสนุน",
+    "docsApi": "เอกสาร API"
+  },
+  "staticProxy": {
+    "title": "พร็อกซีที่อยู่อาศัย",
+    "describe": "เลือกแพ็คเกจพร็อกซีที่เหมาะกับความต้องการของคุณ",
+    "days": "วัน",
+    "location": "สถานที่",
+    "duration": "ระยะเวลา",
+    "quantity": "จำนวน",
+    "protocol": "โปรโตคอล",
+    "username": "ชื่อผู้ใช้",
+    "password": "รหัสผ่าน",
+    "total": "รวม",
+    "buyNow": "ซื้อเลย",
+    "validation": {
+      "pleaseEnterNumber": "กรุณาใส่ตัวเลข",
+      "pleaseEnterDays": "กรุณาใส่จำนวนวัน",
+      "daysMustBeInteger": "จำนวนวันต้องเป็นจำนวนเต็ม",
+      "minDays": "อย่างน้อย 1 วัน",
+      "pleaseEnterQuantity": "กรุณาใส่จำนวน",
+      "quantityMustBeInteger": "จำนวนต้องเป็นจำนวนเต็ม",
+      "minQuantity": "อย่างน้อย 1 พร็อกซี",
+      "minChars": "อย่างน้อย 4 ตัวอักษร",
+      "pleaseEnterUsername": "กรุณาใส่ชื่อผู้ใช้",
+      "pleaseEnterPassword": "กรุณาใส่รหัสผ่าน"
+    }
+  },
+  "rotatingProxy": {
+    "title": "พร็อกซีแบบหมุน",
+    "describe": "เลือกแพ็คเกจพร็อกซีแบบหมุนที่เหมาะกับความต้องการของคุณ",
+    "networkType": "ประเภทเครือข่าย",
+    "fiberOptic": "ไฟเบอร์ออปติก",
+    "provider": "ผู้ให้บริการ",
+    "providers": "Viettel, FPT, VNPT",
+    "minChangeTime": "เวลาเปลี่ยน IP ขั้นต่ำ",
+    "changeTimeValue": "60 วินาที / ครั้ง",
+    "minLifetime": "อายุขั้นต่ำ",
+    "minLifetimeValue": "15 นาที",
+    "maxLifetime": "อายุสูงสุด",
+    "maxLifetimeValue": "30 นาที",
+    "location": "สถานที่",
+    "randomLocation": "สุ่ม",
+    "quantity": "จำนวน",
+    "days": "วัน"
+  },
+  "auth": {
+    "email": "อีเมล",
+    "password": "รหัสผ่าน",
+    "username": "ชื่อผู้ใช้",
+    "confirmPassword": "ยืนยันรหัสผ่าน",
+    "register": "ลงทะเบียน",
+    "rememberMe": "จำฉันไว้",
+    "loginSuccess": "เข้าสู่ระบบสำเร็จ!",
+    "loginError": "เข้าสู่ระบบล้มเหลว!",
+    "registerError": "ลงทะเบียนล้มเหลว!",
+    "placeholders": {
+      "enterEmail": "ใส่อีเมลของคุณ",
+      "enterPassword": "ใส่รหัสผ่านของคุณ",
+      "enterName": "ใส่ชื่อของคุณ"
+    },
+    "validation": {
+      "emailRequired": "กรุณาใส่อีเมล",
+      "emailInvalid": "อีเมลไม่ถูกต้อง",
+      "passwordRequired": "กรุณาใส่รหัสผ่าน",
+      "passwordMinLength": "รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร",
+      "nameRequired": "กรุณาใส่ชื่อ",
+      "confirmPasswordRequired": "กรุณายืนยันรหัสผ่าน",
+      "passwordsNotMatch": "รหัสผ่านไม่ตรงกัน"
+    },
+    "messages": {
+      "welcomeBack": "ยินดีต้อนรับกลับ!",
+      "welcomeToApp": "ยินดีต้อนรับสู่ {{appName}}",
+      "loginInstructions": "เข้าสู่ระบบเพื่อดำเนินการต่อ",
+      "registerInstructions": "สร้างบัญชีใหม่",
+      "forgotPasswordTitle": "ลืมรหัสผ่าน?",
+      "forgotPasswordInstructions": "ใส่อีเมลเพื่อรีเซ็ตรหัสผ่าน"
+    },
+    "buttons": {
+      "login": "เข้าสู่ระบบ",
+      "loading": "กำลังประมวลผล...",
+      "forgotPassword": "ลืมรหัสผ่าน?",
+      "noAccount": "ยังไม่มีบัญชี?",
+      "registerNow": "ลงทะเบียนเลย",
+      "hasAccount": "มีบัญชีแล้ว?",
+      "loginNow": "เข้าสู่ระบบเลย"
+    }
+  },
+  "affiliatePage": {
+    "stats": {
+      "totalAffiliateEarnings": "รายได้ Affiliate ทั้งหมด",
+      "totalPendingWithdrawal": "จำนวนเงินที่รอถอน",
+      "totalWithdrawn": "จำนวนเงินที่ถอนแล้ว",
+      "totalWithdrawalRequests": "จำนวนคำขอถอนเงิน"
+    },
+    "referralLink": {
+      "title": "ลิงก์แนะนำ",
+      "yourCode": "รหัสแนะนำของคุณ",
+      "placeholder": "ใส่รหัสแนะนำ",
+      "copied": "คัดลอกแล้ว!"
+    },
+    "policy": {
+      "title": "นโยบายค่าคอมมิชชั่น",
+      "rate": "อัตราค่าคอมมิชชั่น:",
+      "rateDetail": "10% ของมูลค่าคำสั่งซื้อจากผู้ใช้ที่คุณแนะนำ",
+      "condition": "เงื่อนไข:",
+      "conditionDetail": "คำสั่งซื้อต้องเสร็จสมบูรณ์ (ไม่ถูกยกเลิกหรือคืนเงิน)",
+      "payment": "การชำระเงิน:",
+      "paymentDetail": "ค่าคอมมิชชั่นจะถูกเพิ่มเข้าบัญชีของคุณโดยอัตโนมัติ",
+      "withdrawal": "การถอนเงิน:",
+      "withdrawalDetail": "กรุณาติดต่อผู้ดูแลระบบเพื่อรับการสนับสนุนการถอนเงิน"
+    },
+    "withdrawalHistory": {
+      "title": "ประวัติการถอนเงิน"
+    },
+    "commissionHistory": {
+      "title": "ประวัติค่าคอมมิชชั่น",
+      "columns": {
+        "date": "วันที่",
+        "email": "อีเมล",
+        "totalOrderValue": "มูลค่าคำสั่งซื้อรวม",
+        "totalOrders": "คำสั่งซื้อทั้งหมด",
+        "commissionReceived": "ค่าคอมมิชชั่นที่ได้รับ",
+        "actions": "การดำเนินการ"
+      },
+      "actions": {
+        "viewDetails": "ดูรายละเอียดคำสั่งซื้อสำหรับ",
+        "contactAdmin": "ติดต่อผู้ดูแลระบบเพื่อถอนเงิน"
+      }
+    },
+    "orderHistory": {
+      "title": "ประวัติคำสั่งซื้อ",
+      "backButton": "กลับไปที่ประวัติค่าคอมมิชชั่น",
+      "columns": {
+        "orderDate": "วันที่สั่งซื้อ",
+        "orderId": "รหัสคำสั่งซื้อ",
+        "orderValue": "มูลค่าคำสั่งซื้อ",
+        "commission": "ค่าคอมมิชชั่น (10%)",
+        "status": "สถานะ",
+        "paymentStatus": "สถานะการชำระเงิน"
+      },
+      "status": {
+        "completed": "เสร็จสมบูรณ์",
+        "partialComplete": "เสร็จสมบูรณ์บางส่วน",
+        "fullComplete": "เสร็จสมบูรณ์ทั้งหมด",
+        "inUse": "กำลังใช้งาน",
+        "pending": "รอดำเนินการ",
+        "cancelled": "ยกเลิกแล้ว",
+        "expired": "หมดอายุ",
+        "unknown": "ไม่ทราบ"
+      },
+      "paymentStatus": {
+        "paid": "ชำระแล้ว",
+        "unpaid": "ยังไม่ชำระ"
+      }
+    },
+    "noData": "ไม่มีข้อมูล",
+    "loading": "กำลังโหลดข้อมูล..."
+  },
+  "adminAffiliatePage": {
+    "title": "การจัดการพันธมิตร",
+    "subtitle": "จัดการคำขอถอนเงินและติดตามประสิทธิภาพของพันธมิตร",
+    "tabs": {
+      "withdrawals": "คำขอถอนเงิน",
+      "users": "รายชื่อพันธมิตร"
+    },
+    "stats": {
+      "totalAffiliates": "พันธมิตรทั้งหมด",
+      "totalCommission": "ค่าคอมมิชชั่นทั้งหมด",
+      "pendingWithdrawals": "คำขอถอนเงินที่รอดำเนินการ",
+      "monthlyGrowth": "การเติบโตรายเดือน"
+    },
+    "withdrawalTable": {
+      "columnDate": "วันที่ขอ",
+      "columnUser": "ผู้ใช้",
+      "columnAmount": "จำนวนเงิน",
+      "columnCommission": "ค่าคอมมิชชั่นจาก",
+      "columnStatus": "สถานะ",
+      "columnActions": "การดำเนินการ",
+      "totalOrders": "คำสั่งซื้อทั้งหมด",
+      "totalValue": "มูลค่า",
+      "statusPending": "รอดำเนินการ",
+      "statusApproved": "อนุมัติแล้ว",
+      "statusRejected": "ปฏิเสธแล้ว",
+      "statusCompleted": "เสร็จสมบูรณ์",
+      "statusUnknown": "ไม่ทราบ",
+      "tooltipApprove": "อนุมัติคำขอ",
+      "tooltipReject": "ปฏิเสธคำขอ",
+      "tooltipViewDetails": "ดูรายละเอียด",
+      "approveSuccess": "อนุมัติคำขอถอนเงินแล้ว",
+      "approveError": "เกิดข้อผิดพลาดในการอนุมัติคำขอ",
+      "rejectSuccess": "ปฏิเสธคำขอถอนเงินแล้ว",
+      "rejectError": "เกิดข้อผิดพลาดในการปฏิเสธคำขอ",
+      "loading": "กำลังโหลดข้อมูล...",
+      "noData": "ไม่มีข้อมูล"
+    },
+    "usersTable": {
+      "columnJoinDate": "วันที่เข้าร่วม",
+      "columnUser": "ผู้ใช้",
+      "columnReferrals": "การแนะนำ",
+      "columnOrders": "คำสั่งซื้อทั้งหมด",
+      "columnRevenue": "รายได้ที่สร้างขึ้น",
+      "columnCommission": "ค่าคอมมิชชั่นที่ได้รับ",
+      "columnPending": "ค่าคอมมิชชั่นที่รอดำเนินการ",
+      "columnActions": "การดำเนินการ",
+      "tooltipViewDetails": "ดูรายละเอียด",
+      "loading": "กำลังโหลดข้อมูล...",
+      "noData": "ไม่มีข้อมูล"
+    }
+  }
+}

@@ -22,7 +22,8 @@ import {
 
   // Admin icons
   Users,
-  BarChart3
+  BarChart3,
+  HandCoins
 } from 'lucide-react'
 
 // MUI Imports
@@ -376,6 +377,16 @@ const VerticalMenu = ({ scrollMenu, dictionary }: Props) => {
                 href={`/${locale}/admin/proxies`}
               >
                 Danh sách Proxy
+              </MenuItem>
+            )}
+
+            {hasPermission('admin.affiliate') && (
+              <MenuItem
+                icon={<HandCoins size={20} strokeWidth={1.5} />}
+                rootStyles={getMenuItemStyles('admin/affiliate-management')}
+                href={`/${locale}/admin/affiliate-management`}
+              >
+                Quản lý Affiliate
               </MenuItem>
             )}
 

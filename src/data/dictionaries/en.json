@@ -432,5 +432,127 @@
       "hasAccount": "Already have an account?",
       "loginNow": "Login now"
     }
+  },
+  "affiliatePage": {
+    "stats": {
+      "totalAffiliateEarnings": "Total Affiliate Earnings",
+      "totalPendingWithdrawal": "Total Pending Withdrawal",
+      "totalWithdrawn": "Total Withdrawn",
+      "totalWithdrawalRequests": "Total Withdrawal Requests"
+    },
+    "referralLink": {
+      "title": "Referral Link",
+      "yourCode": "Your referral code",
+      "placeholder": "Enter referral code",
+      "copied": "Copied!"
+    },
+    "policy": {
+      "title": "Commission Policy",
+      "rate": "Commission rate:",
+      "rateDetail": "10% of order value from users you refer",
+      "condition": "Condition:",
+      "conditionDetail": "Order must be completed (not cancelled or refunded)",
+      "payment": "Payment:",
+      "paymentDetail": "Commission will be automatically added to your account balance",
+      "withdrawal": "Withdrawal:",
+      "withdrawalDetail": "Please contact Admin for withdrawal support"
+    },
+    "withdrawalHistory": {
+      "title": "Withdrawal History"
+    },
+    "commissionHistory": {
+      "title": "Commission History",
+      "columns": {
+        "date": "Date",
+        "email": "Email",
+        "totalOrderValue": "Total Order Value",
+        "totalOrders": "Total Orders",
+        "commissionReceived": "Commission Received",
+        "actions": "Actions"
+      },
+      "actions": {
+        "viewDetails": "View order details for",
+        "contactAdmin": "Contact Admin to withdraw"
+      }
+    },
+    "orderHistory": {
+      "title": "Order History",
+      "backButton": "Back to commission history",
+      "columns": {
+        "orderDate": "Order Date",
+        "orderId": "Order ID",
+        "orderValue": "Order Value",
+        "commission": "Commission (10%)",
+        "status": "Status",
+        "paymentStatus": "Payment Status"
+      },
+      "status": {
+        "completed": "Completed",
+        "partialComplete": "Partially Completed",
+        "fullComplete": "Fully Completed",
+        "inUse": "In Use",
+        "pending": "Pending",
+        "cancelled": "Cancelled",
+        "expired": "Expired",
+        "unknown": "Unknown"
+      },
+      "paymentStatus": {
+        "paid": "Paid",
+        "unpaid": "Unpaid"
+      }
+    },
+    "noData": "No data available",
+    "loading": "Loading data..."
+  },
+  "adminAffiliatePage": {
+    "title": "Affiliate Management",
+    "subtitle": "Manage withdrawal requests and track affiliate performance",
+    "tabs": {
+      "withdrawals": "Withdrawal Requests",
+      "users": "Affiliates List"
+    },
+    "stats": {
+      "totalAffiliates": "Total Affiliates",
+      "totalCommission": "Total Commission",
+      "pendingWithdrawals": "Pending Withdrawals",
+      "monthlyGrowth": "Monthly Growth"
+    },
+    "withdrawalTable": {
+      "columnDate": "Request Date",
+      "columnUser": "User",
+      "columnAmount": "Amount",
+      "columnCommission": "Commission From",
+      "columnStatus": "Status",
+      "columnActions": "Actions",
+      "totalOrders": "Total Orders",
+      "totalValue": "Value",
+      "statusPending": "Pending",
+      "statusApproved": "Approved",
+      "statusRejected": "Rejected",
+      "statusCompleted": "Completed",
+      "statusUnknown": "Unknown",
+      "tooltipApprove": "Approve request",
+      "tooltipReject": "Reject request",
+      "tooltipViewDetails": "View details",
+      "approveSuccess": "Withdrawal request approved",
+      "approveError": "Error approving request",
+      "rejectSuccess": "Withdrawal request rejected",
+      "rejectError": "Error rejecting request",
+      "loading": "Loading data...",
+      "noData": "No data available"
+    },
+    "usersTable": {
+      "columnJoinDate": "Join Date",
+      "columnUser": "User",
+      "columnReferrals": "Referrals",
+      "columnOrders": "Total Orders",
+      "columnRevenue": "Revenue Generated",
+      "columnCommission": "Commission Earned",
+      "columnPending": "Pending Commission",
+      "columnActions": "Actions",
+      "tooltipViewDetails": "View details",
+      "loading": "Loading data...",
+      "noData": "No data available"
+    }
   }
 }

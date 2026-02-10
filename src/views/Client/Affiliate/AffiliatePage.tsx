@@ -12,10 +12,13 @@ import BoxCustom from '@/components/UI/BoxCustom'
 import CustomTextField from '@/@core/components/mui/TextField'
 import { useUserStore } from '@/stores'
 
-import UserWithdrawalTable from '@views/Client/Affiliate/UserWithdrawalTable'
+interface AffiliatePageProps {
+  dictionary: any
+}
 
-export default function AffiliatePage() {
+export default function AffiliatePage({ dictionary }: AffiliatePageProps) {
   const user = useUserStore((state) => state.user)
+  const t = dictionary.affiliatePage
 
   const [copied, setCopied] = useState(false)
 
@@ -25,60 +28,74 @@ export default function AffiliatePage() {
     navigator.clipboard.writeText(referralLink)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
-    toast.success('Copied!')
+    toast.success(t.referralLink.copied)
   }
 
   return (
-    <div className='flex flex-col gap-4'>
-      <BoxCustom
-        sx={{
-          height: 'auto !important'
-        }}
-      >
-        <h2 className='text-xl font-bold text-gray-900 mb-6 flex items-center'>
-          <Link className='w-5 h-5 mr-2 text-orange-500' />
-          Link Giới Thiệu
-        </h2>
+    <BoxCustom
+      sx={{
+        height: 'auto !important'
+      }}
+    >
+      <h2 className='text-xl font-bold text-gray-900 mb-6 flex items-center'>
+        <Link className='w-5 h-5 mr-2 text-orange-500' />
+        {t.referralLink.title}
+      </h2>
 
-        <div className='space-y-4'>
-          <div className='p-4 bg-gray-50 rounded-lg'>
-            <div>
-              <label className='block text-sm font-medium text-gray-700 mb-2'>Mã giới thiệu của bạn</label>
-              <div className='flex space-x-3'>
-                <CustomTextField
-                  value={`${process.env.NEXT_PUBLIC_APP_URL}?ref=${user?.id}`}
-                  fullWidth
-                  placeholder='Nhập mã giới thiệu'
-                />
+      <div className='space-y-4'>
+        <div className='p-4 bg-gray-50 rounded-lg'>
+          <div>
+            <label className='block text-sm font-medium text-gray-700 mb-2'>{t.referralLink.yourCode}</label>
+            <div className='flex space-x-3'>
+              <CustomTextField
+                value={`${process.env.NEXT_PUBLIC_APP_URL}?ref=${user?.id}`}
+                fullWidth
+                placeholder={t.referralLink.placeholder}
+              />
 
-                <CustomIconButton
-                  color='success'
-                  aria-label='capture screenshot'
-                  variant='contained'
-                  onClick={copyReferralLink}
-                >
-                  <Copy size={16} className='w-4 h-4' />
-                </CustomIconButton>
-              </div>
+              <CustomIconButton
+                color='success'
+                aria-label='capture screenshot'
+                variant='contained'
+                onClick={copyReferralLink}
+              >
+                <Copy size={16} className='w-4 h-4' />
+              </CustomIconButton>
             </div>
           </div>
         </div>
-      </BoxCustom>
 
-      <BoxCustom
-        sx={{
-          height: 'auto !important' // ✅ dùng !important nếu thật sự cần
-        }}
-      >
-        <h2 className='text-xl font-bold text-gray-900 mb-6 flex items-center'>
-          <Link className='w-5 h-5 mr-2 text-orange-500' />
-          Lịch sử hoa hồng
-        </h2>
-
-        <div className='space-y-4'>
-          <UserWithdrawalTable />
+        {/* Thông tin chính sách hoa hồng */}
+        <div className='p-4 bg-blue-50 border border-blue-200 rounded-lg'>
+          <h3 className='text-base font-semibold text-blue-900 mb-3'>📋 {t.policy.title}</h3>
+          <div className='space-y-2 text-sm text-gray-700'>
+            <div className='flex items-start'>
+              <span className='text-green-600 font-bold mr-2'>✓</span>
+              <p>
+                <span className='font-semibold'>{t.policy.rate}</span> {t.policy.rateDetail}
+              </p>
+            </div>
+            <div className='flex items-start'>
+              <span className='text-green-600 font-bold mr-2'>✓</span>
+              <p>
+                <span className='font-semibold'>{t.policy.condition}</span> {t.policy.conditionDetail}
+              </p>
+            </div>
+            <div className='flex items-start'>
+              <span className='text-green-600 font-bold mr-2'>✓</span>
+              <p>
+                <span className='font-semibold'>{t.policy.payment}</span> {t.policy.paymentDetail}
+              </p>
+            </div>
+            <div className='flex items-start'>
+              <span className='text-orange-600 font-bold mr-2'>⚠</span>
+              <p>
+                <span className='font-semibold'>{t.policy.withdrawal}</span> {t.policy.withdrawalDetail}
+              </p>
+            </div>
+          </div>
         </div>
-      </BoxCustom>
-    </div>
+      </div>
+    </BoxCustom>
   )
 }

@@ -1,9 +1,10 @@
+'use client'
+
 import { useMemo, useState } from 'react'
 
 import Image from 'next/image'
 
-import { Tooltip } from '@mui/material'
-import { BadgeCheck, BadgeMinus, CircleQuestionMark, Clock, Clock3, Copy, TriangleAlert, Eye, Wallet } from 'lucide-react'
+import { Clock3, Package } from 'lucide-react'
 
 import {
   flexRender,
@@ -17,22 +18,20 @@ import {
 } from '@tanstack/react-table'
 import Pagination from '@mui/material/Pagination'
 import { useQuery } from '@tanstack/react-query'
-
 import Chip from '@mui/material/Chip'
-import { useSession } from 'next-auth/react'
 
 import useAxiosAuth from '@/hooks/useAxiosAuth'
 import { formatDateTimeLocal } from '@/utils/formatDate'
 
-interface UserWithdrawalTableProps {
-  onViewDetails?: (email: string) => void
+interface OrderHistoryTableProps {
+  filterEmail?: string | null
   dictionary: any
 }
 
-export default function UserWithdrawalTable({ onViewDetails, dictionary }: UserWithdrawalTableProps) {
+export default function OrderHistoryTable({ filterEmail, dictionary }: OrderHistoryTableProps) {
   const t = dictionary.affiliatePage
   const [columnFilters, setColumnFilters] = useState([])
-  const [rowSelection, setRowSelection] = useState({}) // State để lưu các hàng được chọn
+  const [rowSelection, setRowSelection] = useState({})
   const [sorting, setSorting] = useState([])
 
   const [pagination, setPagination] = useState({
@@ -41,28 +40,43 @@ export default function UserWithdrawalTable({ onViewDetails, dictionary }: UserW
   })
 
   const axiosAuth = useAxiosAuth()
-  const { data: session, status } = useSession()
 
-  const { data: dataWithdrawal, isLoading } = useQuery({
-    queryKey: ['withdrawal-user'],
+  const { data: orderData, isLoading } = useQuery({
+    queryKey: ['order-history-affiliate', filterEmail],
     queryFn: async () => {
-      const response = await axiosAuth.get('/withdrawal-user')
+      // Backend uses user_id instead of email
+      const response = await axiosAuth.get('/order-history-affiliate')
 
       return response.data
     }
   })
 
-  console.log(dataWithdrawal);
+  // Filter data by email if filterEmail is provided
+  const filteredData = useMemo(() => {
+    if (!orderData) return []
+    if (!filterEmail) return orderData
 
+    return orderData.filter((order: any) => order.customer_email === filterEmail)
+  }, [orderData, filterEmail])
 
-  const getStatusBadge = (status: string) => {
+  const getStatusChip = (status: string) => {
     switch (status) {
-      case 1:
-        return <Chip label='Đã thanh toán' size='small' icon={<BadgeCheck />} color='success' />
-      case 0:
-        return <Chip label='Chưa thành toán' size='small' icon={<TriangleAlert />} color='error' />
+      case 'completed':
+        return <Chip label={t.orderHistory.status.completed} size='small' color='success' />
+      case 'partial_complete':
+        return <Chip label={t.orderHistory.status.partialComplete} size='small' color='success' variant='outlined' />
+      case 'full_complete':
+        return <Chip label={t.orderHistory.status.fullComplete} size='small' color='success' />
+      case 'in_use':
+        return <Chip label={t.orderHistory.status.inUse} size='small' color='info' />
+      case 'pending':
+        return <Chip label={t.orderHistory.status.pending} size='small' color='warning' />
+      case 'cancelled':
+        return <Chip label={t.orderHistory.status.cancelled} size='small' color='error' />
+      case 'expired':
+        return <Chip label={t.orderHistory.status.expired} size='small' color='default' />
       default:
-        return <Chip label='Không xác định' size='small' icon={<CircleQuestionMark />} color='secondary' />
+        return <Chip label={t.orderHistory.status.unknown} size='small' color='default' />
     }
   }
 
@@ -70,128 +84,77 @@ export default function UserWithdrawalTable({ onViewDetails, dictionary }: UserW
     () => [
       {
         accessorKey: 'created_at',
-        header: t.commissionHistory.columns.date,
+        header: t.orderHistory.columns.orderDate,
         cell: ({ row }) => {
           return (
-            <>
-              <div className='d-flex align-items-center  gap-1 '>
-                <Clock3 size={14} />
-                <div style={{ marginTop: '2px' }}>{formatDateTimeLocal(row.original?.created_at)}</div>
-              </div>
-            </>
+            <div className='d-flex align-items-center gap-1'>
+              <Clock3 size={14} />
+              <div style={{ marginTop: '2px' }}>{formatDateTimeLocal(row.original?.created_at)}</div>
+            </div>
           )
         },
         size: 180
       },
       {
-        accessorKey: 'email',
-        header: t.commissionHistory.columns.email,
+        accessorKey: 'order_id',
+        header: t.orderHistory.columns.orderId,
         cell: ({ row }) => {
-          return row.original.email
+          return <span className='font-mono text-sm'>#{row.original.order_id}</span>
         },
-        size: 250
+        size: 150
       },
       {
-        header: t.commissionHistory.columns.totalOrderValue,
+        header: t.orderHistory.columns.orderValue,
         cell: ({ row }) => {
           return (
-            <span className='text-red'>
-              {new Intl.NumberFormat('vi-VN').format(row.original.tong_don_hang) + ' đ' ?? 0}
+            <span className='text-blue-600 font-semibold'>
+              {new Intl.NumberFormat('vi-VN').format(row.original.order_value) + ' đ'}
             </span>
           )
         },
-        size: 180
+        size: 150
       },
       {
-        header: t.commissionHistory.columns.totalOrders,
+        header: t.orderHistory.columns.commission,
         cell: ({ row }) => {
-          return <span className='text-red'>{row.original.tong_don}</span>
-        },
-        size: 120
-      },
-      {
-        header: t.commissionHistory.columns.commissionReceived,
-        cell: ({ row }) => {
-          // Tính 10% của tổng giá trị đơn hàng
-          const commission = (row.original.tong_don_hang * 10) / 100
+          const commission = (row.original.order_value * 10) / 100
+
           return (
             <span className='text-green-600 font-semibold'>
               {new Intl.NumberFormat('vi-VN').format(commission) + ' đ'}
             </span>
           )
         },
-        size: 180
+        size: 150
       },
       {
-        header: t.commissionHistory.columns.actions,
+        header: t.orderHistory.columns.status,
         cell: ({ row }) => {
+          return getStatusChip(row.original?.status)
+        },
+        size: 150
+      },
+      {
+        header: t.orderHistory.columns.paymentStatus,
+        cell: ({ row }) => {
+          const isPaid = row.original?.is_payment_affiliate === 1
           return (
-            <div className='flex gap-2 items-center justify-center'>
-              <Tooltip
-                title={`${t.commissionHistory.actions.viewDetails} ${row.original.email}`}
-                arrow
-                placement='top'
-              >
-                <button
-                  className='p-2 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-md transition-all duration-200 hover:scale-110 active:scale-95'
-                  onClick={() => {
-                    if (onViewDetails) {
-                      onViewDetails(row.original.email)
-                    }
-                  }}
-                >
-                  <Eye size={16} />
-                </button>
-              </Tooltip>
-              <Tooltip
-                title={t.commissionHistory.actions.contactAdmin}
-                arrow
-                placement='top'
-              >
-                <button
-                  className='p-2 text-white bg-orange-500 hover:bg-orange-600 rounded-md transition-all duration-200 hover:scale-110 active:scale-95'
-                  onClick={() => {
-                    // TODO: Xử lý rút tiền
-                    console.log('Rút tiền:', row.original)
-                  }}
-                >
-                  <Wallet size={16} />
-                </button>
-              </Tooltip>
-            </div>
+            <Chip
+              label={isPaid ? t.orderHistory.paymentStatus.paid : t.orderHistory.paymentStatus.unpaid}
+              size='small'
+              color={isPaid ? 'success' : 'warning'}
+              variant={isPaid ? 'filled' : 'outlined'}
+            />
           )
         },
-        size: 120
+        size: 150
       }
-
-      // {
-      //   header: 'Thu nhập',
-      //   cell: ({ row }) => {
-      //     // 1. Tính toán giá trị cần hiển thị (phần trăm hoa hồng)
-      //     const incomeValue = (row.original?.sotienthaydoi * session.user.affiliate_percent) / 100
-
-      //     // 2. Định dạng số theo chuẩn Việt Nam (ví dụ: 100.000)
-      //     const formattedValue = new Intl.NumberFormat('vi-VN').format(incomeValue)
-
-      //     // 3. Hiển thị kết quả bằng cách nối chuỗi đơn vị tiền tệ
-      //     return <span className='text-red'>{formattedValue} đ</span>
-      //   },
-      //   size: 10
-      // },
-
-      // {
-      //   header: 'Trạng thái',
-      //   cell: ({ row }) => {
-      //     return getStatusBadge(row.original?.is_payment_affiliate)
-      //   },
-      //   size: 10
-      // }
     ],
-    [onViewDetails, t]
+    [t]
   )
 
   const table = useReactTable({
-    data: dataWithdrawal ?? [],
+    data: filteredData ?? [],
     columns,
     state: {
       rowSelection,
@@ -199,14 +162,14 @@ export default function UserWithdrawalTable({ onViewDetails, dictionary }: UserW
       columnFilters,
       sorting
     },
-    enableRowSelection: true, // Bật tính năng chọn hàng
-    onRowSelectionChange: setRowSelection, // Cập nhật state khi có thay đổi
+    enableRowSelection: true,
+    onRowSelectionChange: setRowSelection,
     onPaginationChange: setPagination,
     onColumnFiltersChange: setColumnFilters,
     onSortingChange: setSorting,
 
     getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(), // Tùy chọn: cần thiết nếu có bộ lọc
+    getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getFacetedRowModel: getFacetedRowModel(),
@@ -222,7 +185,7 @@ export default function UserWithdrawalTable({ onViewDetails, dictionary }: UserW
     <div className='table-container' style={{ boxShadow: 'none' }}>
       {/* Table */}
       <div className='table-wrapper'>
-        <table className='data-table' style={isLoading || dataWithdrawal.length === 0 ? { height: '100%' } : {}}>
+        <table className='data-table' style={isLoading || filteredData?.length === 0 ? { height: '100%' } : {}}>
           <thead className='table-header'>
             {table.getHeaderGroups().map(headerGroup => (
               <tr key={headerGroup.id}>

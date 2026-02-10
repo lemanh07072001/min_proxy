@@ -16,6 +16,7 @@ export type Permission =
   | 'admin.depositHistory'
   | 'admin.serviceType'
   | 'admin.proxies'
+  | 'admin.affiliate'
   | 'user.proxy'
   | 'user.orders'
   | 'user.profile'
@@ -32,7 +33,8 @@ const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     'admin.transactionHistory',
     'admin.depositHistory',
     'admin.serviceType',
-    'admin.proxies'
+    'admin.proxies',
+    'admin.affiliate'
   ],
   manager: [
     // Manager sẽ có quyền hạn chế hơn admin, chỉ có một số quyền cơ bản
