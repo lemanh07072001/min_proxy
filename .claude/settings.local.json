@@ -10,7 +10,8 @@
       "Bash(npm run lint:*)",
       "Bash(copy:*)",
       "Bash(xargs grep -l \"io\\\\|socket\")",
-      "Bash(find \"d:\\\\nextjs\\\\min_proxy\\\\src\\\\app\\\\[lang]\\\\\\(private\\)\\\\\\(client\\)\\\\components\\\\wallet\" -type f)"
+      "Bash(find \"d:\\\\nextjs\\\\min_proxy\\\\src\\\\app\\\\[lang]\\\\\\(private\\)\\\\\\(client\\)\\\\components\\\\wallet\" -type f)",
+      "Bash(find d:/nextjs/min_proxy/src/app/[lang]/\\\\\\(private\\\\\\)/\\\\\\(client\\\\\\)/history-order -type f)"
     ],
     "deny": [],
     "ask": []

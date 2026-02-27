@@ -9,8 +9,6 @@ import {
   User,
   Loader2,
   CircleX,
-  XCircle,
-  RotateCcw,
   CircleQuestionMark,
   BadgeCheck,
   Copy,
@@ -103,42 +101,28 @@ export default function OrderDetailModal({ isOpen, onClose, orderData, isLoading
 
     switch (status) {
       case ORDER_STATUS.PENDING:
-        // Đang chờ xử lý - icon loading xoay
-        icon = (
-          <Loader2
-            size={16}
-            style={{
-              animation: 'spin 1s linear infinite'
-            }}
-          />
-        )
+        icon = <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} />
         break
       case ORDER_STATUS.PROCESSING:
-        // Đang xử lý - icon loading xoay
-        icon = (
-          <Loader2
-            size={16}
-            style={{
-              animation: 'spin 1s linear infinite'
-            }}
-          />
-        )
+        icon = <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} />
+        break
+      case ORDER_STATUS.IN_USE:
+        icon = <BadgeCheck size={16} />
+        break
+      case ORDER_STATUS.PARTIAL_COMPLETED:
+        icon = <BadgeCheck size={16} />
         break
       case ORDER_STATUS.COMPLETED:
-        // Hoàn thành - icon check
         icon = <BadgeCheck size={16} />
         break
       case ORDER_STATUS.FAILED:
-        // Lỗi - icon X
         icon = <CircleX size={16} />
         break
-      case ORDER_STATUS.CANCEL:
-        // Đã hủy - icon XCircle
-        icon = <XCircle size={16} />
-        break
       case ORDER_STATUS.EXPIRED:
-        // Hoàn tiền - icon rotate
         icon = <Clock size={16} />
+        break
+      case ORDER_STATUS.FULL_COMPLETED:
+        icon = <BadgeCheck size={16} />
         break
       default:
         icon = <CircleQuestionMark size={16} />

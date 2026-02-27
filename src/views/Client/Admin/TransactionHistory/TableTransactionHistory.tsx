@@ -23,7 +23,6 @@ import {
   Loader2,
   Clock,
   CircleX,
-  RotateCcw,
   User
 } from 'lucide-react'
 
@@ -189,44 +188,29 @@ return toYmd(rowDate) === toYmd(date as Date)
 
     switch (status) {
       case ORDER_STATUS.PENDING:
-        // Đang chờ xử lý - icon clock
-        icon = (
-          <Loader2
-            size={16}
-            style={{
-              animation: 'spin 1s linear infinite'
-            }}
-          />
-        )
+        icon = <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} />
         break
       case ORDER_STATUS.PROCESSING:
-        // Đang xử lý - icon loading xoay
-        icon = (
-          <Loader2
-            size={16}
-            style={{
-              animation: 'spin 1s linear infinite'
-            }}
-          />
-        )
+        icon = <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} />
+        break
+      case ORDER_STATUS.IN_USE:
+        icon = <BadgeCheck size={16} />
+        break
+      case ORDER_STATUS.PARTIAL_COMPLETED:
+        icon = <BadgeCheck size={16} />
         break
       case ORDER_STATUS.COMPLETED:
-        // Hoàn thành - icon check
         icon = <BadgeCheck size={16} />
         break
       case ORDER_STATUS.FAILED:
-        // Lỗi - icon X
         icon = <CircleX size={16} />
         break
-      case ORDER_STATUS.CANCEL:
-        // Hoàn tiền - icon XCircle
-        icon = <XCircle size={16} />
-        break
       case ORDER_STATUS.EXPIRED:
-        // Hoàn tiền - icon rotate
         icon = <Clock size={16} />
         break
-
+      case ORDER_STATUS.FULL_COMPLETED:
+        icon = <BadgeCheck size={16} />
+        break
       default:
         icon = <CircleQuestionMark size={16} />
     }
@@ -337,7 +321,7 @@ return toYmd(rowDate) === toYmd(date as Date)
                 </Tooltip>
               </div>
             )
-          } else if (orderStatus === ORDER_STATUS.CANCEL || orderStatus === ORDER_STATUS.PENDING) {
+          } else if (orderStatus === ORDER_STATUS.PENDING) {
             return null
           } else {
             // Các status khác hiển thị button mặc định
@@ -547,12 +531,14 @@ return toYmd(rowDate) === toYmd(date as Date)
                   <MenuItem value=''>
                     <em>Chọn trạng thái</em>
                   </MenuItem>
-                  <MenuItem value={ORDER_STATUS.PENDING}>Đang chờ xử lý</MenuItem>
+                  <MenuItem value={ORDER_STATUS.PENDING}>Chờ xử lý</MenuItem>
                   <MenuItem value={ORDER_STATUS.PROCESSING}>Đang xử lý</MenuItem>
+                  <MenuItem value={ORDER_STATUS.IN_USE}>Đang sử dụng</MenuItem>
+                  <MenuItem value={ORDER_STATUS.PARTIAL_COMPLETED}>Hoàn 1 phần</MenuItem>
                   <MenuItem value={ORDER_STATUS.COMPLETED}>Hoàn thành</MenuItem>
                   <MenuItem value={ORDER_STATUS.FAILED}>Thất bại</MenuItem>
-                  <MenuItem value={ORDER_STATUS.CANCEL}>Hoàn tiền</MenuItem>
                   <MenuItem value={ORDER_STATUS.EXPIRED}>Hết hạn</MenuItem>
+                  <MenuItem value={ORDER_STATUS.FULL_COMPLETED}>Hoàn toàn bộ</MenuItem>
                 </CustomTextField>
 
                 <AppReactDatepicker

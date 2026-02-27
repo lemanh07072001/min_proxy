@@ -72,19 +72,19 @@ export default function AffiliateOrdersModal({
   const getStatusChip = (status: number) => {
     switch (Number(status)) {
       case 0:
-        return <Chip label={t.statusPending || 'Đang chờ'} size='small' color='warning' />
+        return <Chip label={t.statusPending || 'Chờ xử lý'} size='small' color='warning' />
       case 1:
         return <Chip label={t.statusProcessing || 'Đang xử lý'} size='small' color='info' />
       case 2:
-        return <Chip label={t.statusCompleted || 'Hoàn thành'} size='small' color='success' />
+        return <Chip label={t.statusInUse || 'Đang sử dụng'} size='small' color='info' variant='outlined' />
       case 3:
-        return <Chip label={t.statusPartialComplete || 'Hoàn thành 1 phần'} size='small' color='success' />
+        return <Chip label={t.statusPartialCompleted || 'Hoàn 1 phần'} size='small' color='success' variant='outlined' />
       case 4:
-        return <Chip label={t.statusFullComplete || 'Hoàn thành toàn bộ'} size='small' color='success' />
+        return <Chip label={t.statusCompleted || 'Hoàn tất'} size='small' color='success' />
       case 5:
-        return <Chip label={t.statusExpired || 'Hết hạn'} size='small' color='error' />
+        return <Chip label={t.statusFailed || 'Thất bại'} size='small' color='error' />
       case 6:
-        return <Chip label={t.statusCancelled || 'Đã hủy'} size='small' color='error' />
+        return <Chip label={t.statusExpired || 'Hết hạn'} size='small' color='default' />
       default:
         return <Chip label={`${t.statusUnknown || 'Không xác định'} (${status})`} size='small' color='default' />
     }

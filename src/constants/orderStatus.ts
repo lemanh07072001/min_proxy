@@ -4,12 +4,14 @@
  */
 
 export const ORDER_STATUS = {
-  PENDING: '0', // Đang chờ xử lý
-  PROCESSING: '1', // Đang xử lý
-  COMPLETED: '2', // Hoàn thành
-  FAILED: '3', // Lỗi
-  EXPIRED: '5', // Hết hạn expired
-  CANCEL: '4' // Hoàn tiền
+  PENDING: '0',           // Chờ xử lý
+  PROCESSING: '1',        // Đang xử lý
+  IN_USE: '2',            // Đang sử dụng
+  PARTIAL_COMPLETED: '3', // Hoàn 1 phần
+  COMPLETED: '4',         // Hoàn thành
+  FAILED: '5',            // Thất bại
+  EXPIRED: '6',           // Hết hạn
+  FULL_COMPLETED: '7'     // Hoàn toàn bộ
 } as const
 
 export type OrderStatusType = (typeof ORDER_STATUS)[keyof typeof ORDER_STATUS]
@@ -19,12 +21,14 @@ export type OrderStatusType = (typeof ORDER_STATUS)[keyof typeof ORDER_STATUS]
  * Nhãn hiển thị cho mỗi trạng thái
  */
 export const ORDER_STATUS_LABELS = {
-  [ORDER_STATUS.PENDING]: 'Đang chờ xử lý',
+  [ORDER_STATUS.PENDING]: 'Chờ xử lý',
   [ORDER_STATUS.PROCESSING]: 'Đang xử lý',
+  [ORDER_STATUS.IN_USE]: 'Đang sử dụng',
+  [ORDER_STATUS.PARTIAL_COMPLETED]: 'Hoàn 1 phần',
   [ORDER_STATUS.COMPLETED]: 'Hoàn thành',
-  [ORDER_STATUS.FAILED]: 'Lỗi đơn hàng',
-  [ORDER_STATUS.CANCEL]: 'Hoàn tiền',
-  [ORDER_STATUS.EXPIRED]: 'Hết hạn'
+  [ORDER_STATUS.FAILED]: 'Thất bại',
+  [ORDER_STATUS.EXPIRED]: 'Hết hạn',
+  [ORDER_STATUS.FULL_COMPLETED]: 'Hoàn toàn bộ'
 } as const
 
 /**
@@ -32,12 +36,14 @@ export const ORDER_STATUS_LABELS = {
  * Màu sắc tương ứng với mỗi trạng thái (dùng cho Chip MUI)
  */
 export const ORDER_STATUS_COLORS = {
-  [ORDER_STATUS.PENDING]: 'info', // Xanh dương
-  [ORDER_STATUS.PROCESSING]: 'warning', // Vàng cam
-  [ORDER_STATUS.COMPLETED]: 'success', // Xanh lá
-  [ORDER_STATUS.FAILED]: 'error', // Đỏ
-  [ORDER_STATUS.EXPIRED]: 'error', // Đỏ
-  [ORDER_STATUS.CANCEL]: 'warning' // Đỏ
+  [ORDER_STATUS.PENDING]: 'warning',
+  [ORDER_STATUS.PROCESSING]: 'info',
+  [ORDER_STATUS.IN_USE]: 'info',
+  [ORDER_STATUS.PARTIAL_COMPLETED]: 'success',
+  [ORDER_STATUS.COMPLETED]: 'success',
+  [ORDER_STATUS.FAILED]: 'error',
+  [ORDER_STATUS.EXPIRED]: 'error',
+  [ORDER_STATUS.FULL_COMPLETED]: 'error'
 } as const
 
 /**

@@ -7,8 +7,6 @@ import Image from 'next/image'
 import { Tooltip } from '@mui/material'
 import { Eye, Clock3, User, Mail, DollarSign, Users, ShoppingCart } from 'lucide-react'
 
-import AffiliateOrdersModal from './AffiliateOrdersModal'
-
 import {
   flexRender,
   getCoreRowModel,
@@ -27,15 +25,14 @@ import { formatDateTimeLocal } from '@/utils/formatDate'
 
 interface AffiliateUsersTableProps {
   dictionary: any
+  onViewDetails?: (id: number) => void
 }
 
-export default function AffiliateUsersTable({ dictionary }: AffiliateUsersTableProps) {
+export default function AffiliateUsersTable({ dictionary, onViewDetails }: AffiliateUsersTableProps) {
   const t = dictionary.adminAffiliatePage?.usersTable || {}
   const [columnFilters, setColumnFilters] = useState([])
   const [rowSelection, setRowSelection] = useState({})
   const [sorting, setSorting] = useState([])
-  const [selectedAffiliateId, setSelectedAffiliateId] = useState<number | null>(null)
-  const [modalOpen, setModalOpen] = useState(false)
 
   const [pagination, setPagination] = useState({
     pageIndex: 0,
@@ -43,16 +40,6 @@ export default function AffiliateUsersTable({ dictionary }: AffiliateUsersTableP
   })
 
   const axiosAuth = useAxiosAuth()
-
-  const handleViewDetails = (affiliateId: number) => {
-    setSelectedAffiliateId(affiliateId)
-    setModalOpen(true)
-  }
-
-  const handleCloseModal = () => {
-    setModalOpen(false)
-    setSelectedAffiliateId(null)
-  }
 
   const { data: affiliateResponse, isLoading } = useQuery({
     queryKey: ['admin-affiliate-users'],
@@ -164,7 +151,7 @@ export default function AffiliateUsersTable({ dictionary }: AffiliateUsersTableP
                   className='p-2 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-md transition-all duration-200 hover:scale-110 active:scale-95'
                   onClick={(e) => {
                     e.stopPropagation()
-                    handleViewDetails(row.original.id)
+                    onViewDetails?.(row.original.id)
                   }}
                 >
                   <Eye size={16} />
@@ -204,15 +191,6 @@ export default function AffiliateUsersTable({ dictionary }: AffiliateUsersTableP
 
   return (
     <>
-      {modalOpen && (
-        <AffiliateOrdersModal
-          open={modalOpen}
-          onClose={handleCloseModal}
-          affiliateId={selectedAffiliateId}
-          dictionary={dictionary}
-        />
-      )}
-
       <div className='table-container' style={{ boxShadow: 'none' }}>
         {/* Table */}
         <div className='table-wrapper'>

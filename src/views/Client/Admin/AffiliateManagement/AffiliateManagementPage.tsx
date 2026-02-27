@@ -2,12 +2,11 @@
 
 import { useState } from 'react'
 
-import { Users, DollarSign, TrendingUp, AlertCircle } from 'lucide-react'
-
 import BoxCustom from '@/components/UI/BoxCustom'
 import AffiliateStatsCards from './AffiliateStatsCards'
 import AffiliateWithdrawalTable from './AffiliateWithdrawalTable'
 import AffiliateUsersTable from './AffiliateUsersTable'
+import AffiliateOrdersModal from './AffiliateOrdersModal'
 
 interface AffiliateManagementPageProps {
   dictionary: any
@@ -15,9 +14,29 @@ interface AffiliateManagementPageProps {
 
 export default function AffiliateManagementPage({ dictionary }: AffiliateManagementPageProps) {
   const [activeTab, setActiveTab] = useState<'withdrawals' | 'users'>('withdrawals')
+  const [selectedAffiliateId, setSelectedAffiliateId] = useState<number | null>(null)
+  const [modalOpen, setModalOpen] = useState(false)
   const t = dictionary.adminAffiliatePage || {}
 
+  const handleViewDetails = (affiliateId: number) => {
+    setSelectedAffiliateId(affiliateId)
+    setModalOpen(true)
+  }
+
+  const handleCloseModal = () => {
+    setModalOpen(false)
+    setSelectedAffiliateId(null)
+  }
+
   return (
+    <>
+      <AffiliateOrdersModal
+        open={modalOpen}
+        onClose={handleCloseModal}
+        affiliateId={selectedAffiliateId}
+        dictionary={dictionary}
+      />
+
     <div className='flex flex-col gap-6'>
       {/* Page Title */}
       <div>
@@ -73,9 +92,10 @@ export default function AffiliateManagementPage({ dictionary }: AffiliateManagem
         {activeTab === 'withdrawals' ? (
           <AffiliateWithdrawalTable dictionary={dictionary} />
         ) : (
-          <AffiliateUsersTable dictionary={dictionary} />
+          <AffiliateUsersTable dictionary={dictionary} onViewDetails={handleViewDetails} />
         )}
       </BoxCustom>
     </div>
+    </>
   )
 }

@@ -67,17 +67,23 @@ export default function HistoryOrderPage() {
   } = useHistoryOrders()
 
   const getStatusBadge = (status: string) => {
-    switch (status) {
+    switch (String(status)) {
       case '0':
         return <Chip label='Chờ xử lý' size='small' icon={<BadgeAlert />} color='warning' />
+      case '1':
+        return <Chip label='Đang xử lý' size='small' icon={<BadgeAlert />} color='info' />
       case '2':
-        return <Chip label='Hoàn thành' size='small' icon={<BadgeCheck />} color='success' />
+        return <Chip label='Đang sử dụng' size='small' icon={<BadgeCheck />} color='info' variant='outlined' />
       case '3':
-        return <Chip label='Thất bại' size='small' icon={<BadgeMinus />} color='error' />
+        return <Chip label='Hoàn 1 phần' size='small' icon={<BadgeCheck />} color='success' variant='outlined' />
       case '4':
-        return <Chip label='Hoàn tền' size='small' icon={<BadgeMinus />} color='warning' />
+        return <Chip label='Hoàn thành' size='small' icon={<BadgeCheck />} color='success' />
       case '5':
-        return <Chip label='Hết hạn' size='small' icon={<BadgeMinus />} color='error' />
+        return <Chip label='Thất bại' size='small' icon={<BadgeMinus />} color='error' />
+      case '6':
+        return <Chip label='Hết hạn' size='small' icon={<BadgeMinus />} color='default' />
+      case '7':
+        return <Chip label='Hoàn toàn bộ' size='small' icon={<BadgeCheck />} color='success' />
       default:
         return <Chip label='Không xác định' size='small' icon={<CircleQuestionMark />} color='secondary' />
     }

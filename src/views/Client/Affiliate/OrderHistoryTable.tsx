@@ -59,21 +59,21 @@ export default function OrderHistoryTable({ filterEmail, dictionary }: OrderHist
     return orderData.filter((order: any) => order.customer_email === filterEmail)
   }, [orderData, filterEmail])
 
-  const getStatusChip = (status: string) => {
-    switch (status) {
-      case 'completed':
-        return <Chip label={t.orderHistory.status.completed} size='small' color='success' />
-      case 'partial_complete':
-        return <Chip label={t.orderHistory.status.partialComplete} size='small' color='success' variant='outlined' />
-      case 'full_complete':
-        return <Chip label={t.orderHistory.status.fullComplete} size='small' color='success' />
-      case 'in_use':
-        return <Chip label={t.orderHistory.status.inUse} size='small' color='info' />
-      case 'pending':
+  const getStatusChip = (status: number) => {
+    switch (Number(status)) {
+      case 0:
         return <Chip label={t.orderHistory.status.pending} size='small' color='warning' />
-      case 'cancelled':
-        return <Chip label={t.orderHistory.status.cancelled} size='small' color='error' />
-      case 'expired':
+      case 1:
+        return <Chip label={t.orderHistory.status.processing} size='small' color='info' />
+      case 2:
+        return <Chip label={t.orderHistory.status.inUse} size='small' color='info' variant='outlined' />
+      case 3:
+        return <Chip label={t.orderHistory.status.partialCompleted} size='small' color='success' variant='outlined' />
+      case 4:
+        return <Chip label={t.orderHistory.status.completed} size='small' color='success' />
+      case 5:
+        return <Chip label={t.orderHistory.status.failed} size='small' color='error' />
+      case 6:
         return <Chip label={t.orderHistory.status.expired} size='small' color='default' />
       default:
         return <Chip label={t.orderHistory.status.unknown} size='small' color='default' />
