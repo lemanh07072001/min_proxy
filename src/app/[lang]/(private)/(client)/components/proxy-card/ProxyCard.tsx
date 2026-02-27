@@ -98,11 +98,11 @@ const useBuyProxy = () => {
         subtractBalance(total)
         toast.success('Mua proxy thành công.')
 
-        router.push('/history-order')
-
-        // Làm tươi dữ liệu ở hậu cảnh, không chặn UI
+        // Làm tươi dữ liệu trước khi chuyển trang
+        queryClient.invalidateQueries({ queryKey: ['history-orders'] })
         queryClient.invalidateQueries({ queryKey: ['orderProxyStatic'] })
-        queryClient.refetchQueries({ queryKey: ['orderProxyStatic'] })
+
+        router.push('/history-order')
       }
     },
     onError: error => {

@@ -208,6 +208,7 @@ return getStatusBadge(row.original.status)
   // Socket: lắng nghe sự kiện để refetch bảng
   useEffect(() => {
     // Bảo đảm lần đầu vào trang sẽ làm tươi dữ liệu
+    queryClient.invalidateQueries({ queryKey: ['history-orders'] })
     queryClient.invalidateQueries({ queryKey: ['orderProxyStatic'] })
 
     const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || 'https://socket.mktproxy.com'
