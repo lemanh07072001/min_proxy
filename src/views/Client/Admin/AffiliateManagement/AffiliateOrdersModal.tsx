@@ -44,6 +44,7 @@ export default function AffiliateOrdersModal({
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [rowSelection, setRowSelection] = useState({})
   const [sorting, setSorting] = useState<SortingState>([])
+
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: 10
@@ -54,6 +55,7 @@ export default function AffiliateOrdersModal({
     queryFn: async () => {
       if (!affiliateId) return null
       const response = await axiosAuth.get(`/admin/affiliate-orders/${affiliateId}`)
+
       return response.data
     },
     enabled: !!affiliateId && open,
@@ -62,9 +64,6 @@ export default function AffiliateOrdersModal({
     retry: 1,
     gcTime: 0 // Don't cache the data after modal is closed
   })
-
-  // Don't render anything if modal is not open
-  if (!open) return null
 
   const orders = ordersResponse?.data?.orders || []
   const affiliateUser = ordersResponse?.data?.affiliate_user || null
@@ -144,6 +143,7 @@ export default function AffiliateOrdersModal({
         header: t.columnCommission || 'Hoa hồng',
         cell: ({ row }) => {
           const commission = (row.original.total_amount * affiliatePercent) / 100
+
           return (
             <span className='text-green-600 font-semibold flex items-center gap-1'>
               <DollarSign size={14} />
@@ -214,13 +214,9 @@ export default function AffiliateOrdersModal({
     return sum + ((Number(order.total_amount) || 0) * affiliatePercent) / 100
   }, 0)
 
-  console.log('Orders data:', {
-    ordersCount: orders.length,
-    totalRevenue,
-    totalCommission,
-    affiliatePercent,
-    sampleOrder: orders[0]
-  })
+  if (!open) {
+    return null
+  }
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth='xl' fullWidth>

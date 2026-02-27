@@ -58,6 +58,7 @@ export default function AffiliateUsersTable({ dictionary }: AffiliateUsersTableP
     queryKey: ['admin-affiliate-users'],
     queryFn: async () => {
       const response = await axiosAuth.get('/admin/affiliates')
+
       return response.data
     }
   })

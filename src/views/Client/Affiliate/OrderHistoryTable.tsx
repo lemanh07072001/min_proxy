@@ -138,6 +138,7 @@ export default function OrderHistoryTable({ filterEmail, dictionary }: OrderHist
         header: t.orderHistory.columns.paymentStatus,
         cell: ({ row }) => {
           const isPaid = row.original?.is_payment_affiliate === 1
+
           return (
             <Chip
               label={isPaid ? t.orderHistory.paymentStatus.paid : t.orderHistory.paymentStatus.unpaid}

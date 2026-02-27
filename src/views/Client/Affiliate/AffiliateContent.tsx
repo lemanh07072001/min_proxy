@@ -35,6 +35,7 @@ export default function AffiliateContent({ affiliateData, dictionary }: Affiliat
     setSelectedUserEmail(null)
     setShowOrderHistory(false)
   }
+
   const t = dictionary.affiliatePage
 
   return (

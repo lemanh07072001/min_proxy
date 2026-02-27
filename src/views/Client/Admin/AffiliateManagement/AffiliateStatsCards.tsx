@@ -18,6 +18,7 @@ export default function AffiliateStatsCards({ dictionary }: AffiliateStatsCardsP
     queryKey: ['admin-affiliate-stats'],
     queryFn: async () => {
       const response = await axiosAuth.get('/admin/get-affiliate')
+
       return response.data
     }
   })

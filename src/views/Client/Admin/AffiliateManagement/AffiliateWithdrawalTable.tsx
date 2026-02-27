@@ -47,6 +47,7 @@ export default function AffiliateWithdrawalTable({ dictionary }: AffiliateWithdr
     queryKey: ['admin-affiliate-withdrawals'],
     queryFn: async () => {
       const response = await axiosAuth.get('/admin/withdrawal-requests')
+
       return response.data
     }
   })
@@ -57,6 +58,7 @@ export default function AffiliateWithdrawalTable({ dictionary }: AffiliateWithdr
   const approveMutation = useMutation({
     mutationFn: async (withdrawalId: number) => {
       const response = await axiosAuth.post(`/admin/affiliate-withdrawals/${withdrawalId}/approve`)
+
       return response.data
     },
     onSuccess: () => {
@@ -73,6 +75,7 @@ export default function AffiliateWithdrawalTable({ dictionary }: AffiliateWithdr
   const rejectMutation = useMutation({
     mutationFn: async (withdrawalId: number) => {
       const response = await axiosAuth.post(`/admin/affiliate-withdrawals/${withdrawalId}/reject`)
+
       return response.data
     },
     onSuccess: () => {
@@ -187,6 +190,7 @@ export default function AffiliateWithdrawalTable({ dictionary }: AffiliateWithdr
         header: t.columnActions || 'Thao tác',
         cell: ({ row }) => {
           const isPending = row.original?.status === 'pending'
+
           return (
             <div className='flex gap-2 items-center justify-center'>
               {isPending && (

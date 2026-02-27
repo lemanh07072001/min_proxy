@@ -114,6 +114,7 @@ export default function UserWithdrawalTable({ onViewDetails, dictionary }: UserW
         cell: ({ row }) => {
           // Tính 10% của tổng giá trị đơn hàng
           const commission = (row.original.tong_don_hang * 10) / 100
+
           return (
             <span className='text-green-600 font-semibold'>
               {new Intl.NumberFormat('vi-VN').format(commission) + ' đ'}
