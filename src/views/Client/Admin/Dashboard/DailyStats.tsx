@@ -77,6 +77,7 @@ export default function DailyStats() {
               dateFormat='dd/MM/yyyy'
               onChange={(dates: [Date | null, Date | null]) => {
                 const [start, end] = dates
+
                 setStartDate(start)
                 setEndDate(end)
               }}

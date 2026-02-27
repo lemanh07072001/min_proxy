@@ -23,8 +23,7 @@ export const useLayout = () => {
     throw new Error('useLayout must be used within LayoutProvider')
   }
 
-  
-return context
+  return context
 }
 
 interface LayoutProviderProps {

@@ -27,6 +27,7 @@ export function useDepositSocket() {
     if (!session?.user?.id) return
 
     const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || 'https://socket.mktproxy.com'
+
     const socket = io(socketUrl, {
       transports: ['websocket'],
       secure: true

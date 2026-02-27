@@ -104,8 +104,7 @@ return `${day}-${month}-${year}`
 
       const data = await res.json()
 
-
-return data?.data ?? null
+      return data?.data ?? null
     },
     enabled: enabled && !!session?.access_token,
     refetchOnMount: false,
