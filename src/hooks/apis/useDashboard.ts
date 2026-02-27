@@ -89,8 +89,9 @@ return `${day}-${month}-${year}`
         url.searchParams.set('date', formattedDate)
       } else {
         // Fallback to single date API with today's date
-        url = new URL(`${baseUrl}/api/get-dashboard-by-date`)
         const today = formatDate(new Date())
+
+        url = new URL(`${baseUrl}/api/get-dashboard-by-date`)
         url.searchParams.set('date', today)
       }
 
