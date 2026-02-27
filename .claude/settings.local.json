@@ -8,7 +8,9 @@
       "Bash(xargs sed:*)",
       "Bash(pkill:*)",
       "Bash(npm run lint:*)",
-      "Bash(copy:*)"
+      "Bash(copy:*)",
+      "Bash(xargs grep -l \"io\\\\|socket\")",
+      "Bash(find \"d:\\\\nextjs\\\\min_proxy\\\\src\\\\app\\\\[lang]\\\\\\(private\\)\\\\\\(client\\)\\\\components\\\\wallet\" -type f)"
     ],
     "deny": [],
     "ask": []

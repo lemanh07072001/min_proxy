@@ -41,13 +41,15 @@ interface DailyData {
 }
 
 export default function DailyStats() {
-  const [date, setDate] = useState<Date | null | undefined>(new Date())
+  const [startDate, setStartDate] = useState<Date | null | undefined>(new Date())
+  const [endDate, setEndDate] = useState<Date | null | undefined>(new Date())
 
   const { data: dashboardData } = useDashboardMonthly(
     {
-      date: date || new Date() // Pass Date object, hook will format it
+      startDate: startDate || new Date(),
+      endDate: endDate || new Date()
     },
-    !!date
+    !!(startDate && endDate)
   )
 
 
@@ -56,28 +58,34 @@ export default function DailyStats() {
       <div className='bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl p-6 mb-6 shadow-xl'>
         <h2 id='daily-heading' className='text-2xl font-bold text-white flex items-center gap-2'>
           <BarChart3 size={24} />
-          Thống Kê Theo Ngày
+          Thống Kê Theo Khoảng Thời Gian
         </h2>
-        <p className='text-blue-100 text-sm mt-1'>Xem dữ liệu theo ngày</p>
+        <p className='text-blue-100 text-sm mt-1'>Xem dữ liệu theo khoảng thời gian</p>
       </div>
 
       <div className='space-y-6'>
-        {/* Date Picker */}
+        {/* Date Range Picker */}
         <div className='bg-white/80 backdrop-blur-sm rounded-xl shadow-lg p-4 border-t-4 border-[#f97316] relative z-[100]'>
-          <div className='flex items-center gap-2 mb-2'>
+          <div className='flex items-center gap-2 mb-3'>
             <Calendar size={20} className='text-[#f97316]' />
-            <h3 className='text-sm font-semibold text-gray-900 mb-0'>Chọn Ngày</h3>
+            <h3 className='text-sm font-semibold text-gray-900 mb-0'>Chọn Khoảng Thời Gian</h3>
           </div>
-          <div className='flex items-center gap-4'>
-            <div className='w-[200px]'>
-              <AppReactDatepicker
-                selected={date}
-                id='callback-open'
-                dateFormat='dd/MM/yyyy'
-                onChange={(date: Date | null) => setDate(date)}
-                customInput={<CustomTextField fullWidth />}
-              />
-            </div>
+          <div className='w-full sm:w-[300px]'>
+            <AppReactDatepicker
+              selected={startDate}
+              id='date-range-picker'
+              dateFormat='dd/MM/yyyy'
+              onChange={(dates: [Date | null, Date | null]) => {
+                const [start, end] = dates
+                setStartDate(start)
+                setEndDate(end)
+              }}
+              customInput={<CustomTextField fullWidth placeholder='Chọn ngày bắt đầu - ngày kết thúc' />}
+              selectsRange
+              startDate={startDate}
+              endDate={endDate}
+              maxDate={new Date()}
+            />
           </div>
         </div>
 

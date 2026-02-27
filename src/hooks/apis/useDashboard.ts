@@ -4,7 +4,9 @@ import { useSession } from 'next-auth/react'
 import useAxiosAuth from '@/hooks/useAxiosAuth'
 
 interface DashboardParams {
-  date?: string
+  date?: string | Date | null
+  startDate?: string | Date | null
+  endDate?: string | Date | null
 }
 
 export const useDashboard = () => {
@@ -44,7 +46,7 @@ export const useDashboardMonthly = (params?: DashboardParams, enabled: boolean =
       const month = String(today.getMonth() + 1).padStart(2, '0')
       const year = today.getFullYear()
 
-      
+
 return `${day}-${month}-${year}`
     }
 
@@ -53,7 +55,7 @@ return `${day}-${month}-${year}`
       const month = String(date.getMonth() + 1).padStart(2, '0')
       const year = date.getFullYear()
 
-      
+
 return `${day}-${month}-${year}`
     }
 
@@ -66,15 +68,30 @@ return `${day}-${month}-${year}`
   }
 
   const formattedDate = formatDate(params?.date)
+  const formattedStartDate = formatDate(params?.startDate)
+  const formattedEndDate = formatDate(params?.endDate)
 
   return useQuery({
-    queryKey: ['dashboardMonthly', formattedDate],
+    queryKey: ['dashboardMonthly', formattedDate, formattedStartDate, formattedEndDate],
     queryFn: async () => {
       const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
-      const url = new URL(`${baseUrl}/api/get-dashboard-by-date`)
+      let url: URL
 
-      if (formattedDate) {
+      // Use different endpoints based on whether it's a range or single date
+      if (formattedStartDate && formattedEndDate) {
+        // Use range API
+        url = new URL(`${baseUrl}/api/get-dashboard-by-range`)
+        url.searchParams.set('start', formattedStartDate)
+        url.searchParams.set('end', formattedEndDate)
+      } else if (formattedDate) {
+        // Use single date API
+        url = new URL(`${baseUrl}/api/get-dashboard-by-date`)
         url.searchParams.set('date', formattedDate)
+      } else {
+        // Fallback to single date API with today's date
+        url = new URL(`${baseUrl}/api/get-dashboard-by-date`)
+        const today = formatDate(new Date())
+        url.searchParams.set('date', today)
       }
 
       const res = await fetch(url.toString(), {
@@ -87,7 +104,7 @@ return `${day}-${month}-${year}`
 
       const data = await res.json()
 
-      
+
 return data?.data ?? null
     },
     enabled: enabled && !!session?.access_token,

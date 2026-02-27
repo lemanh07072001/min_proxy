@@ -7,6 +7,7 @@ import { ToastContainer } from 'react-toastify'
 import Button from '@mui/material/Button'
 
 import ScrollToTop from '@core/components/scroll-to-top'
+import { useDepositSocket } from '@/hooks/useDepositSocket'
 
 interface LayoutContextType {
 
@@ -30,9 +31,15 @@ interface LayoutProviderProps {
   children: ReactNode
 }
 
+function DepositSocketListener() {
+  useDepositSocket()
+  return null
+}
+
 export default function LayoutProvider({ children }: LayoutProviderProps) {
   return (
     <LayoutContext.Provider value={{}}>
+      <DepositSocketListener />
       {children}
       
       {/* ToastContainer được đặt ở đây để tránh re-render */}
