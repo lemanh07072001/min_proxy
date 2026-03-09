@@ -45,18 +45,11 @@ const menuItemStyles = (verticalNavOptions: VerticalNavState, theme: Theme): Men
               }
             }
           : {
-              color: 'var(--mui-palette-primary-contrastText)',
-              background:
-                theme.direction === 'ltr'
-                  ? `linear-gradient(270deg,
-                    rgb(var(--mui-palette-primary-mainChannel) / 0.7) 0%,
-                    var(--mui-palette-primary-main) 100%) !important`
-                  : `linear-gradient(270deg,
-                     var(--mui-palette-primary-main) 100%,
-                     rgb(var(--mui-palette-primary-mainChannel) / 0.7) 100%) !important`,
-              boxShadow: 'var(--mui-customShadows-primary-sm)',
+              color: '#fff !important',
+              background: 'var(--primary-gradient, linear-gradient(45deg, #FC4336, #F88A4B)) !important',
+              boxShadow: '0px 2px 6px rgba(252, 67, 54, 0.3)',
               [`& .${menuClasses.icon}`]: {
-                color: 'inherit'
+                color: '#fff !important'
               }
             })
       }

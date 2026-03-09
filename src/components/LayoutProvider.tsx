@@ -2,6 +2,7 @@
 
 import { createContext, useContext, ReactNode } from 'react'
 import { ToastContainer } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
 import ScrollToTop from '@core/components/scroll-to-top'
 import Button from '@mui/material/Button'
 
@@ -31,16 +32,16 @@ export default function LayoutProvider({ children }: LayoutProviderProps) {
       {/* ToastContainer được đặt ở đây để tránh re-render */}
       <ToastContainer
         position="top-center"
-        autoClose={2000}
-        hideProgressBar
-        newestOnTop={false}
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop
         closeOnClick
         rtl={false}
         pauseOnFocusLoss={false}
         draggable={false}
-        pauseOnHover={false}
+        pauseOnHover
         theme="light"
-
+        limit={3}
       />
 
       {/* ScrollToTop được đặt ở đây để tránh re-render */}

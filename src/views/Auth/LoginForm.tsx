@@ -67,7 +67,7 @@ export default function LoginForm() {
       email: data.email,
       password: data.password,
       redirect: false,
-      callbackUrl: `/${locale}/overview`,
+      callbackUrl: `/${locale}/home`,
       ref: referralCode ?? undefined
     })
 
@@ -102,9 +102,9 @@ export default function LoginForm() {
 
       // Chuyển hướng về overview và reload trang để cập nhật Redux store
       // Sử dụng window.location.href để force reload và sync session
-      // router.replace(`/${locale}/overview`)
+      // router.replace(`/${locale}/home`)
 
-      window.location.href = `/${locale}/overview`
+      window.location.href = `/${locale}/home`
     } else {
       setLoading(false)
       toast.error(t('auth.loginError'))

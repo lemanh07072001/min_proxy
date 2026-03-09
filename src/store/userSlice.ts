@@ -1,11 +1,20 @@
 import type { PayloadAction } from '@reduxjs/toolkit'
 import { createSlice } from '@reduxjs/toolkit'
 
+export interface TransferConfig {
+  id?: number
+  user_id?: number
+  name?: string
+  key?: string
+  transfer_content?: string
+}
+
 export interface User {
   id?: number
   name?: string
   email?: string
   sodu?: number
+  transfer_config?: TransferConfig | null
 }
 
 interface UserState {

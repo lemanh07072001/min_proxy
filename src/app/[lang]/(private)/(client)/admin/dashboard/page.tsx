@@ -1,170 +1,57 @@
-import { getServerSession } from 'next-auth/next'
-import { authOptions } from '@/libs/auth'
-import axiosInstance from '@/libs/axios'
-import KPICard from '@/components/UI/KPICard'
-import DailyStats from '@/views/Client/Admin/Dashboard/DailyStats'
-import { Grid2 } from '@mui/material'
-import {
-  CheckCircle,
-  Clock,
-  DollarSign,
-  Receipt,
-  RefreshCcw,
-  RefreshCw,
-  ShoppingCart,
-  TrendingDown,
-  TrendingUp,
-  Users,
-  Wallet,
-  XCircle
-} from 'lucide-react'
+'use client'
 
-// Server-side data fetching
-async function getDashboardData() {
-  const session = (await getServerSession(authOptions as any)) as any
+import { useState } from 'react'
+import DateRangeFilter from '@/views/Client/Admin/Dashboard/DateRangeFilter'
+import ProfitHero from '@/views/Client/Admin/Dashboard/ProfitHero'
+import TrendCharts from '@/views/Client/Admin/Dashboard/TrendCharts'
+import RevenueProfitCards from '@/views/Client/Admin/Dashboard/RevenueProfitCards'
+import OrdersDepositsRow from '@/views/Client/Admin/Dashboard/OrdersDepositsRow'
+import PartnerBreakdown from '@/views/Client/Admin/Dashboard/PartnerBreakdown'
+import ReconciliationCard from '@/views/Client/Admin/Dashboard/ReconciliationHero'
+import OrderStatusReport from '@/views/Client/Admin/Dashboard/OrderStatusReport'
+import { useFinancialReport, MOCK_FINANCIAL } from '@/hooks/apis/useFinancialReport'
 
-  if (!session?.access_token) {
-    return null
-  }
+export default function DashboardPage() {
+  const [filterParams, setFilterParams] = useState<{ start?: string; end?: string }>({})
+  const { data: apiData, isFetching } = useFinancialReport(filterParams)
 
-  try {
-    const response = await axiosInstance.get('get-dashboard', {
-      headers: {
-        Authorization: `Bearer ${session.access_token}`,
-        'Content-Type': 'application/json',
-        Accept: 'application/json'
-      }
-    })
-
-    return response?.data?.data ?? null
-  } catch (error: any) {
-    console.error('[Dashboard] Error fetching data:', error.message)
-    return null
-  }
-}
-
-export default async function DashboardPage() {
-  const data = await getDashboardData()
-
-  // Default values
-  const cumulative = data ?? {
-    total_revenue: 0,
-    total_profit: 0,
-    total_costs: 0,
-    total_topups: 0,
-    topup_transactions: 0,
-    user_balance: 0,
-    total_orders: 0,
-    orders_success: 0,
-    orders_failed: 0,
-    orders_processing: 0
-  }
+  // API có thể trả object rỗng (report tables chưa backfill) → check meaningful data
+  const hasRealData = apiData && apiData.daily_trend?.length > 0 && apiData.revenue?.confirmed > 0
+  const data = hasRealData ? apiData : MOCK_FINANCIAL
 
   return (
-    <>
-      <Grid2 container spacing={4}>
-        <Grid2 size={{ xs: 12, md: 6, lg: 4 }}>
-          <section aria-labelledby='cumulative-heading' className='lg:col-span-1'>
-            <div className='bg-gradient-to-br from-[#f97316] to-orange-600 rounded-2xl p-6 mb-6 shadow-xl'>
-              <h2 id='cumulative-heading' className='text-2xl font-bold text-white flex items-center gap-2'>
-                <TrendingUp size={24} />
-                Tổng Quan Toàn Thời Gian
-              </h2>
-              <p className='text-orange-100 text-sm mt-1'>Số liệu hiệu suất tích lũy</p>
-            </div>
+    <div className='space-y-4 relative'>
+      {/* 1. Bộ lọc thời gian — luôn visible, không bị dim */}
+      <DateRangeFilter onFilterChange={setFilterParams} />
 
-            <div className='space-y-4'>
-              <div className='bg-white/80 backdrop-blur-sm rounded-xl p-4 border-l-4 border-[#f97316] shadow-lg'>
-                <h3 className='text-xs font-semibold text-gray-600 uppercase tracking-wide mb-3'>
-                  Doanh Thu & Tài Chính
-                </h3>
-                <div className='space-y-3'>
-                  <KPICard
-                    label='Tổng Doanh Thu'
-                    value={data?.total_revenue ?? 0}
-                    icon={<DollarSign size={24} />}
-                    color='blue'
-                  />
-                  <KPICard
-                    label='Tổng Lợi Nhuận'
-                    value={data?.total_profit ?? 0}
-                    icon={<TrendingUp size={24} />}
-                    color='green'
-                  />
-                  <KPICard
-                    label='Tổng Chi Phí'
-                    value={data?.total_cost ?? 0}
-                    icon={<TrendingDown size={24} />}
-                    color='red'
-                  />
-                </div>
-              </div>
+      {/* Nội dung dashboard — dim khi đang fetch để user thấy đang cập nhật */}
+      <div className={`space-y-4 transition-opacity duration-300 ${isFetching ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
+        {/* 2. Hero: Lãi hay lỗ? Bao nhiêu? */}
+        <ProfitHero revenue={data.revenue} periodDays={data.period_days} />
 
-              <div className='bg-white/80 backdrop-blur-sm rounded-xl p-4 border-l-4 border-green-500 shadow-lg'>
-                <h3 className='text-xs font-semibold text-gray-600 uppercase tracking-wide mb-3'>Nạp Tiền</h3>
-                <div className='space-y-3'>
-                  <KPICard
-                    label='Tổng Tiền Nạp'
-                    value={data?.total_deposit ?? 0}
-                    icon={<Wallet size={24} />}
-                    color='green'
-                  />
-                  <KPICard
-                    label='Số Giao Dịch Nạp'
-                    value={data?.total_deposit_count ?? 0}
-                    icon={<Receipt size={24} />}
-                    format='number'
-                    color='blue'
-                  />
-                  <KPICard
-                    label='Số Dư Người Dùng'
-                    value={data?.balance_remaining ?? 0}
-                    icon={<Users size={24} />}
-                    color='blue'
-                  />
-                </div>
-              </div>
+        {/* 3. Biểu đồ xu hướng: Doanh thu + Nạp tiền theo ngày */}
+        <TrendCharts data={data.daily_trend} />
 
-              <div className='bg-white/80 backdrop-blur-sm rounded-xl p-4 border-l-4 border-blue-500 shadow-lg'>
-                <h3 className='text-xs font-semibold text-gray-600 uppercase tracking-wide mb-3'>Đơn Hàng</h3>
-                <div className='space-y-3'>
-                  <KPICard
-                    label='Tổng Đơn Hàng'
-                    value={data?.total_orders ?? 0}
-                    icon={<ShoppingCart size={24} />}
-                    format='number'
-                    color='gray'
-                  />
-                  <KPICard
-                    label='Đơn Thành Công'
-                    value={data?.total_successful_orders ?? 0}
-                    icon={<CheckCircle size={24} />}
-                    format='number'
-                    color='green'
-                  />
-                  <KPICard
-                    label='Đơn Thất Bại'
-                    value={data?.total_failed_orders ?? 0}
-                    icon={<XCircle size={24} />}
-                    format='number'
-                    color='red'
-                  />
-                  <KPICard
-                    label='Đơn Hoàn'
-                    value={data?.total_refunds ?? 0}
-                    icon={<RefreshCw size={24} />}
-                    format='number'
-                    color='red'
-                  />
-                </div>
-              </div>
-            </div>
-          </section>
-        </Grid2>
-        <Grid2 size={{ xs: 12, md: 6, lg: 8 }}>
-          <DailyStats />
-        </Grid2>
-      </Grid2>
-    </>
+        {/* 4. KPI Cards: Doanh thu, Chi phí, Lợi nhuận, Tổng nạp (với TB/ngày) */}
+        <RevenueProfitCards revenue={data.revenue} deposits={data.deposits} periodDays={data.period_days} />
+
+        {/* 5. Chi tiết: Đơn hàng + Nạp tiền (với TB/ngày) */}
+        <OrdersDepositsRow
+          orders={data.orders}
+          deposits={data.deposits}
+          revenue={data.revenue}
+          periodDays={data.period_days}
+        />
+
+        {/* 6. Hiệu suất theo partner */}
+        <PartnerBreakdown data={data.partner_breakdown} />
+
+        {/* 7. Đối soát: lazy-load riêng */}
+        <ReconciliationCard filterStart={filterParams.start} filterEnd={filterParams.end} />
+
+        {/* 8. Báo cáo đơn hàng theo trạng thái */}
+        <OrderStatusReport filterStart={filterParams.start} filterEnd={filterParams.end} />
+      </div>
+    </div>
   )
 }

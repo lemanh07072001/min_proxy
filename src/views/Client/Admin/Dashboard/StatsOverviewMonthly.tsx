@@ -121,7 +121,7 @@ export default function StatsOverviewMonthly() {
                   display: 'flex',
                   alignItems: 'center',
                   gap: '0.5rem',
-                  color: '#64748b',
+                  color: 'var(--mui-palette-text-secondary, #64748b)',
                   fontWeight: '600',
                   fontSize: '11px',
                   marginBottom: '8px'
@@ -149,11 +149,11 @@ export default function StatsOverviewMonthly() {
                       border:
                         selectedProtocol === protocol
                           ? '2px solid var(--mui-palette-primary-main)'
-                          : '1px solid #e5e7eb',
+                          : '1px solid var(--mui-palette-divider, #e5e7eb)',
                       borderRadius: '8px',
                       cursor: 'pointer',
                       backgroundColor:
-                        selectedProtocol === protocol ? 'var(--mui-palette-primary-lightOpacity)' : 'white',
+                        selectedProtocol === protocol ? 'var(--mui-palette-primary-lightOpacity)' : 'var(--mui-palette-background-paper, #fff)',
                       transition: 'all 0.2s ease'
                     }}
                   >

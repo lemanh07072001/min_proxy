@@ -92,6 +92,10 @@ const schema = yup.object({
   note: yup
     .string()
     .nullable()
+    .transform(value => (value ? value.trim() : value)),
+  tag: yup
+    .string()
+    .nullable()
     .transform(value => (value ? value.trim() : value))
 })
 
@@ -146,7 +150,8 @@ export default function EditServicePage({ serviceId }: EditServicePageProps) {
       body_api: '',
       proxy_type: '',
       country: '',
-      note: ''
+      note: '',
+      tag: ''
     }
   })
 
@@ -242,7 +247,8 @@ export default function EditServicePage({ serviceId }: EditServicePageProps) {
         body_api: bodyApiString,
         proxy_type: serviceData.proxy_type || '',
         country: serviceData.country || '',
-        note: serviceData.note || ''
+        note: serviceData.note || '',
+        tag: serviceData.tag || ''
       })
     }
   }, [serviceData, reset])
@@ -496,8 +502,11 @@ export default function EditServicePage({ serviceId }: EditServicePageProps) {
                         htmlInput: { 'aria-label': 'Without label' }
                       }}
                     >
-                      <MenuItem value='active'>ACTIVE</MenuItem>
-                      <MenuItem value='inactive'>INACTIVE</MenuItem>
+                      <MenuItem value='active'>ACTIVE — Hiển thị & Bán</MenuItem>
+                      <MenuItem value='maintenance'>MAINTENANCE — Hiển thị & Không bán</MenuItem>
+                      <MenuItem value='slow'>SLOW — Hiển thị & Không bán</MenuItem>
+                      <MenuItem value='hidden'>HIDDEN — Ẩn & Vẫn bán được</MenuItem>
+                      <MenuItem value='inactive'>INACTIVE — Ẩn & Không bán</MenuItem>
                     </CustomTextField>
                   )}
                 />
@@ -732,8 +741,26 @@ export default function EditServicePage({ serviceId }: EditServicePageProps) {
           </Box>
 
           <Box>
-            <h2 className='text-xl font-semibold text-slate-900 mb-4 mt-4'>Ghi chú</h2>
+            <h2 className='text-xl font-semibold text-slate-900 mb-4 mt-4'>Ghi chú & Tags</h2>
             <Grid2 container spacing={5} className='pb-6 border-b border-slate-200'>
+              <Grid2 size={{ xs: 12, sm: 6 }}>
+                <Controller
+                  name='tag'
+                  control={control}
+                  render={({ field }) => (
+                    <CustomTextField
+                      {...field}
+                      fullWidth
+                      label='Tags'
+                      placeholder='VD: nhanh, ổn định, hot (phân cách bằng dấu phẩy)'
+                      id='input-tag'
+                      error={!!errors.tag}
+                      helperText={errors.tag?.message || 'Các tag hiển thị trên thẻ sản phẩm'}
+                    />
+                  )}
+                />
+              </Grid2>
+              <Grid2 size={{ xs: 12, sm: 6 }}></Grid2>
               <Grid2 size={{ xs: 12, sm: 12 }}>
                 <Controller
                   name='note'
@@ -744,8 +771,8 @@ export default function EditServicePage({ serviceId }: EditServicePageProps) {
                       rows={4}
                       fullWidth
                       multiline
-                      label='Note'
-                      placeholder='Nhập ghi chú (tùy chọn)'
+                      label='Mô tả sản phẩm'
+                      placeholder='Nhập mô tả chi tiết sản phẩm (hiển thị trên thẻ sản phẩm)'
                       id='textarea-note'
                       error={!!errors.note}
                       helperText={errors.note?.message}

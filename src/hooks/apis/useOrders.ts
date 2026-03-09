@@ -11,9 +11,8 @@ export const useOrders = () => {
       const res = await axiosAuth.get('/transaction-history')
       return res?.data?.data ?? []
     },
-    refetchOnMount: 'always',
-    refetchOnWindowFocus: true,
-    staleTime: 0
+    staleTime: 30 * 1000,
+    refetchOnWindowFocus: false
   })
 }
 
@@ -43,8 +42,8 @@ export const useCancelOrder = () => {
       return res?.data
     },
     onSuccess: () => {
-      // Refresh lại danh sách orders sau khi hủy thành công
       queryClient.invalidateQueries({ queryKey: ['orderProxyStatic'] })
+      queryClient.invalidateQueries({ queryKey: ['userOrders'] })
     }
   })
 }
@@ -60,8 +59,8 @@ export const useResendOrder = () => {
       return res?.data
     },
     onSuccess: () => {
-      // Refresh lại danh sách orders sau khi gửi lại thành công
       queryClient.invalidateQueries({ queryKey: ['orderProxyStatic'] })
+      queryClient.invalidateQueries({ queryKey: ['userOrders'] })
     }
   })
 }
@@ -77,8 +76,8 @@ export const useDeleteOrder = () => {
       return res?.data
     },
     onSuccess: () => {
-      // Refresh lại danh sách orders sau khi xóa thành công
       queryClient.invalidateQueries({ queryKey: ['orderProxyStatic'] })
+      queryClient.invalidateQueries({ queryKey: ['userOrders'] })
     }
   })
 }

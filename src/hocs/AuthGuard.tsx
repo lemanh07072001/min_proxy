@@ -1,21 +1,37 @@
-// Type Imports
+'use client'
+
+import { usePathname } from 'next/navigation'
+import { useSession } from 'next-auth/react'
+
 import type { Locale } from '@/configs/configi18n'
 import type { ChildrenType } from '@core/types'
 
-// Component Imports
-import AuthRedirect from '@/components/AuthRedirect'
+import EmptyAuthPage from '@/components/EmptyAuthPage'
 
-// Utils
-import { validateServerSessionBasic } from '@/utils/serverSessionValidation'
+// Routes cho phép truy cập không cần đăng nhập
+const PUBLIC_ROUTES = ['/home', '/proxy-tinh', '/proxy-xoay', '/check-proxy', '/docs-api']
 
-export default async function AuthGuard({ children, locale }: ChildrenType & { locale: Locale }) {
-  // Validate session cơ bản (không gọi API) để test
-  const session = await validateServerSessionBasic()
+export default function AuthGuard({ children, locale }: ChildrenType & { locale: Locale }) {
+  const pathname = usePathname()
+  const { status } = useSession()
 
-  if (session) {
+  // Public routes: luôn render content, không cần auth
+  const isPublicRoute = PUBLIC_ROUTES.some(route => pathname.endsWith(route))
+
+  if (isPublicRoute) {
     return <>{children}</>
   }
 
-      // Nếu session không hợp lệ, hiển thị AuthRedirect
-      return <AuthRedirect lang={locale}>{null}</AuthRedirect>
+  // Đang loading session → không render gì (tránh flash)
+  if (status === 'loading') {
+    return null
+  }
+
+  // Đã đăng nhập → render content
+  if (status === 'authenticated') {
+    return <>{children}</>
+  }
+
+  // Chưa đăng nhập → hiện EmptyAuthPage (form login trong content area)
+  return <EmptyAuthPage lang={locale} />
 }

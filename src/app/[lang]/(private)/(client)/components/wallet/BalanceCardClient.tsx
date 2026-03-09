@@ -1,12 +1,11 @@
 'use client'
 
-import { useEffect } from 'react'
-
-import { useSelector, useDispatch } from 'react-redux'
+import { useSelector } from 'react-redux'
+import { useSession } from 'next-auth/react'
 import { Wallet } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
 
-import type { RootState, AppDispatch } from '@/store'
+import type { RootState } from '@/store'
 
 interface BalanceCardClientProps {
   isWalletVisible: boolean
@@ -15,7 +14,11 @@ interface BalanceCardClientProps {
 }
 
 export default function BalanceCardClient({ isWalletVisible, isInitialLoad }: BalanceCardClientProps) {
+  const { status } = useSession()
   const { sodu } = useSelector((state: RootState) => state.user)
+
+  // Ẩn balance card khi chưa đăng nhập
+  if (status !== 'authenticated') return null
 
   return (
     <>

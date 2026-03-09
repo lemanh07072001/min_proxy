@@ -2,7 +2,7 @@
 import { BarChart3, Clock, FileText, Globe, HelpCircle, History, ShoppingCart, User } from 'lucide-react'
 
 const MenuClientPage = [
-  { icon: BarChart3, label: 'Tổng quan', page: 'overview', count: null },
+  { icon: BarChart3, label: 'Tổng quan', page: 'home', count: null },
   {
     icon: Globe,
     label: 'Proxy Tĩnh',

@@ -2,53 +2,30 @@
 
 import React, { useState, useMemo } from 'react'
 
-import { useRouter } from 'next/navigation'
-
 import { useTranslation } from 'react-i18next'
 
 import { useForm, Controller, useWatch } from 'react-hook-form'
 import * as yup from 'yup'
 import { yupResolver } from '@hookform/resolvers/yup'
-import { CheckCircle, ShoppingCart, User, Loader, Search, Shield, Clock } from 'lucide-react'
+import { CheckCircle, ShoppingCart, User, Users, Shield, Clock, Filter, Globe, Wifi, X, SearchX, SlidersHorizontal, RefreshCw, Zap, MapPin } from 'lucide-react'
 import Switch from '@mui/material/Switch'
 import MenuItem from '@mui/material/MenuItem'
-import Radio from '@mui/material/Radio'
-import RadioGroup from '@mui/material/RadioGroup'
-import FormControlLabel from '@mui/material/FormControlLabel'
 import { useSession } from 'next-auth/react'
 
-import axios from 'axios'
-
-import { useMutation, useQueryClient } from '@tanstack/react-query'
-
-import { toast } from 'react-toastify'
-
-import { useDispatch, useSelector } from 'react-redux'
-
-import ConfirmDialog from '@components/confirm-modal/ConfirmDialog'
+import { getTagStyle, shouldHideByTag, getCountryName } from '@/configs/tagConfig'
 
 import { useModalContext } from '@/app/contexts/ModalContext'
 
-import { Box, Grid2, Typography, CircularProgress, TextField, InputAdornment } from '@mui/material'
+import { Box, Grid2, Typography } from '@mui/material'
+import Chip from '@mui/material/Chip'
 
 import CustomTextField from '@core/components/mui/TextField'
-import { subtractBalance } from '@/store/userSlice'
-import type { AppDispatch } from '@/store'
+import CheckoutModal from '@/components/checkout-modal/CheckoutModal'
 import { useCountries } from '@/hooks/apis/useCountries'
 import './styles.css'
 
-// Định nghĩa schema validation chung cho các gói proxy.
-const proxyPlanSchema = yup.object({
-  quantity: yup
-    .number()
-    .typeError('Vui lòng nhập số')
-    .required('Vui lòng nhập số lượng')
-    .integer('Số lượng phải là số nguyên')
-    .min(1, 'Tối thiểu là 1')
-    .max(100, 'Tối đa là 100'),
-  time: yup.string().required('Vui lòng chọn thời gian'),
-  protocol: yup.string().optional().oneOf(['http', 'socks5', undefined], 'Giao thức không hợp lệ')
-})
+// Schema cho các field động (input/checkbox/select) — time & protocol chuyển sang CheckoutModal
+const proxyPlanSchema = yup.object({})
 
 // Component này render một dòng feature có select (dropdown)
 const SelectFeatureRow = ({ feature, control, planId }) => (
@@ -59,11 +36,11 @@ const SelectFeatureRow = ({ feature, control, planId }) => (
       render={({ field }) => (
         <div className='feature-row'>
           <div className='feature-icons'>
-            <CheckCircle size={16} className='text-green-500' />
+            <CheckCircle size={16} color={feature.iconColor || '#22c55e'} />
           </div>
 
-          <div className='feature-content '>
-            <label className={`feature-label `} htmlFor={`${planId}-${feature.label}`}>
+          <div className='feature-content'>
+            <label className='feature-label' htmlFor={`${planId}-${feature.label}`}>
               {feature.label}:
             </label>
             <CustomTextField
@@ -88,8 +65,8 @@ const SelectFeatureRow = ({ feature, control, planId }) => (
 
 // Component này render một dòng feature tĩnh (chỉ hiển thị thông tin)
 const StaticFeatureRow = ({ feature }) => {
-  // Nếu có icon custom từ data thì dùng, không thì dùng CheckCircle mặc định
   const IconComponent = feature.icon || CheckCircle
+  const iconColor = feature.iconColor || '#22c55e'
 
   return (
     <div className='feature-row'>
@@ -97,7 +74,7 @@ const StaticFeatureRow = ({ feature }) => {
         {typeof IconComponent === 'string' ? (
           <span dangerouslySetInnerHTML={{ __html: IconComponent }} />
         ) : (
-          <IconComponent size={16} className='text-green-500' />
+          <IconComponent size={16} color={iconColor} />
         )}
       </div>
       <div className='feature-content'>
@@ -117,7 +94,7 @@ const InputFeatureRow = ({ feature, control, errors, planId, isDisabled = false,
       <div>
         <div className='feature-row'>
           <div className='feature-icons'>
-            <CheckCircle size={16} className={`text-green-500 ${errors[feature.field] ? 'text-red-500' : ''}`} />
+            <CheckCircle size={16} color={errors[feature.field] ? '#ef4444' : (feature.iconColor || '#22c55e')} />
           </div>
           <div className='feature-content'>
             <label
@@ -152,7 +129,7 @@ const SwitchFeatureRow = ({ feature, control, planId }) => (
     render={({ field }) => (
       <div className='feature-row'>
         <div className='feature-icons'>
-          <CheckCircle size={16} className='text-green-500' />
+          <CheckCircle size={16} color={feature.iconColor || '#22c55e'} />
         </div>
         <div className='feature-content'>
           <label className='feature-label' htmlFor={`${planId}-${field.name}`}>
@@ -248,16 +225,16 @@ const RadioFeatureRow = ({ feature, control, planId, plan }) => {
         <div>
           <div className='feature-row'>
             <div className='feature-content' style={{ display: 'block', width: '100%' }}>
-              <div className='flex align-start' style={{ alignItems: 'center', marginBottom: '8px', gap: '12px' }}>
+              <div className='flex align-start' style={{ alignItems: 'center', marginBottom: '6px', gap: '8px' }}>
                 <div className='feature-icons'>
-                  <CheckCircle size={16} className='text-green-500' />
+                  <CheckCircle size={14} className='text-green-500' />
                 </div>
                 <label className='feature-label'>{feature.label}:</label>
               </div>
               <div
                 style={{
                   display: 'flex',
-                  gap: '12px',
+                  gap: '8px',
                   flexWrap: 'wrap'
                 }}
               >
@@ -280,11 +257,11 @@ const RadioFeatureRow = ({ feature, control, planId, plan }) => {
                         position: 'relative',
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '8px',
-                        padding: '10px 16px',
+                        gap: '6px',
+                        padding: '6px 12px',
                         border:
                           field.value === item.key ? '2px solid var(--mui-palette-primary-main)' : '1px solid #e5e7eb',
-                        borderRadius: '8px',
+                        borderRadius: '6px',
                         cursor: 'pointer',
                         backgroundColor: field.value === item.key ? 'var(--mui-palette-primary-lightOpacity)' : 'white',
                         transition: 'all 0.2s ease'
@@ -298,7 +275,7 @@ const RadioFeatureRow = ({ feature, control, planId, plan }) => {
                         onChange={field.onChange}
                         style={{ cursor: 'pointer' }}
                       />
-                      <span style={{ fontSize: '14px', fontWeight: '500' }}>{displayLabel}</span>
+                      <span style={{ fontSize: '13px', fontWeight: '500' }}>{displayLabel}</span>
                       {discount > 0 && (
                         <span
                           style={{
@@ -329,162 +306,181 @@ const RadioFeatureRow = ({ feature, control, planId, plan }) => {
   )
 }
 
-// --- CUSTOM HOOK FOR API CALL ---
-const useBuyProxy = () => {
-  const queryClient = useQueryClient()
-  const session = useSession()
-  const dispatch = useDispatch<AppDispatch>()
-  const router = useRouter()
-
-  const mutation = useMutation({
-    mutationFn: orderData => {
-      const token = session.data.access_token
-
-      const api = axios.create({
-        baseURL: '/api',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      })
-
-      return api.post('/buy-proxy', orderData)
-    },
-    onSuccess: async (data, variables) => {
-      // Xử lý khi request thành công
-      if (data.data.success == false) {
-        toast.error('Lỗi hệ thông xin vui lòng liên hệ Admin.  ')
-      } else {
-        const total = variables.total
-
-        dispatch(subtractBalance(total))
-        toast.success(data.data.message)
-
-        router.push('/history-order')
-
-        // Invalidate và refetch query sau khi đã chuyển tab (không cần await)
-        queryClient.invalidateQueries({ queryKey: ['proxyData'] })
-        queryClient.refetchQueries({ queryKey: ['proxyData'] })
-      }
-    },
-    onError: error => {
-      toast.error(error.response?.data.message || 'Lỗi không xác định')
-
-      console.error('Lỗi khi mua proxy:', error.response?.data.messqge || error.message)
-    }
-  })
-
-  return mutation
-}
-
-// Component chính cho mỗi thẻ plan, giờ đây gọn gàng hơn.
+// Component chính cho mỗi thẻ plan
 const PlanCard = ({ plan }) => {
-  const { mutate, isPending, isError, isSuccess, error } = useBuyProxy()
-  const [openConfirm, setOpenConfirm] = useState(false)
-  const [formData, setFormData] = useState()
+  const [checkoutOpen, setCheckoutOpen] = useState(false)
+
   const { openAuthModal } = useModalContext()
   const session = useSession()
 
-  // Tìm feature time để lấy defaultValue
+  const isAvailable = plan?.is_purchasable !== false
+
+  // Protocols
+  const protocolList: string[] = plan.protocols && plan.protocols.length > 0
+    ? plan.protocols
+    : ['http']
+
+  // Build priceOptions từ time feature
   const timeFeature = plan.features.find((f: any) => f.field === 'time')
-  const defaultTime = timeFeature?.options?.length > 0 ? timeFeature.options[0].key : '1'
+  const priceOptions = useMemo(() => {
+    if (!timeFeature?.options?.length) {
+      return [{ key: '1', label: 'Ngày', price: plan.price || 0 }]
+    }
+    return timeFeature.options.map((opt: any) => ({
+      key: opt.key,
+      label: (() => {
+        const days = parseInt(opt.key)
+        if (days === 1) return 'Ngày'
+        if (days === 7) return 'Tuần'
+        if (days === 30) return 'Tháng'
+        if (days === 365) return 'Năm'
+        return `${opt.key} ngày`
+      })(),
+      price: parseInt(opt.value, 10) || 0
+    }))
+  }, [timeFeature, plan.price])
 
-  // Xử lý protocols từ mảng ['http', 'socks5'] sang options format
-  const hasProtocol = !!plan.protocols && plan.protocols.length > 0
-  const defaultProtocol = hasProtocol ? plan.protocols[0] : 'http'
+  // Giá hiển thị ở header (giá thấp nhất)
+  const headerPrice = priceOptions[0]?.price || plan.price || 0
 
-  // Tạo protocol options từ mảng protocols
-  const protocolOptions = hasProtocol
-    ? plan.protocols.map((protocol: string) => ({
-        key: protocol,
-        label: protocol.toUpperCase()
-      }))
-    : []
+  const visibleTags = useMemo(() => {
+    if (!plan?.tag) return []
+    return plan.tag.split(',').filter((t: string) => {
+      const tagDef = getTagStyle(t)
+      return !(tagDef && 'hidden' in tagDef && tagDef.hidden)
+    })
+  }, [plan?.tag])
 
+  // Note preview (strip HTML, truncate)
+  const notePreview = useMemo(() => {
+    if (!plan.note || plan.note === '<p></p>') return null
+    const text = plan.note.replace(/<[^>]+>/g, '').trim()
+    if (!text) return null
+    return text.length > 80 ? text.substring(0, 80) + '...' : text
+  }, [plan.note])
+
+  // Form chỉ còn cho dynamic fields (input/checkbox/select) — không cho time/protocol
   const {
     control,
     handleSubmit,
     formState: { errors }
   } = useForm({
-    defaultValues: {
-      quantity: 1,
-      time: defaultTime,
-      ...(hasProtocol && { protocol: defaultProtocol })
-    },
+    defaultValues: {},
     mode: 'onChange',
     resolver: yupResolver(proxyPlanSchema)
   })
 
   const watchedFields = useWatch({ control })
 
-  const calculateTotalFormat = () => {
-    const quantityValue = parseInt(watchedFields.quantity, 10) || 1
-    const selectedTime = watchedFields.time
-
-    if (quantityValue < 1) return 0
-
-    // Tìm giá từ price_by_duration dựa theo time được chọn
-    const timeFeature = plan.features.find((f: any) => f.field === 'time')
-    const selectedOption = timeFeature?.options?.find((opt: any) => opt.key === selectedTime)
-    const priceForTime = selectedOption?.value ? parseInt(selectedOption.value, 10) : 0
-
-    return (priceForTime * quantityValue).toLocaleString('vi-VN')
-  }
-
-  const calculateTotal = () => {
-    const quantityValue = parseInt(watchedFields.quantity, 10) || 1
-    const selectedTime = watchedFields.time
-
-    if (quantityValue < 1) return 0
-
-    // Tìm giá từ price_by_duration dựa theo time được chọn
-    const timeFeature = plan.features.find((f: any) => f.field === 'time')
-    const selectedOption = timeFeature?.options?.find((opt: any) => opt.key === selectedTime)
-    const priceForTime = selectedOption?.value ? parseInt(selectedOption.value, 10) : 0
-
-    return priceForTime * quantityValue
-  }
-
   const onSubmit = async (data: any) => {
-    const total = calculateTotal()
+    // Collect extra fields (autoRotate, rotationTime, etc.)
+    const extraPayload: Record<string, any> = {}
 
-    const orderData = {
-      serviceTypeId: plan.id,
-      ...data,
-      total
-    }
+    plan.features.forEach((f: any) => {
+      if (f.field && f.field !== 'time' && f.field !== 'protocol' && f.field !== 'quantity' && f.status !== 'success') {
+        if (data[f.field] !== undefined) {
+          extraPayload[f.field] = data[f.field]
+        }
+      }
+    })
 
-    setFormData(orderData)
-    setOpenConfirm(true)
+    setCheckoutOpen(true)
   }
 
-  const handleConfirmBuy = () => {
-    try {
-      if (formData) {
-        mutate(formData) // Gọi API với dữ liệu đã lưu
-        setOpenConfirm(false) // Đóng dialog
-        setFormData(null) // Xóa dữ liệu đã lưu
-      }
-    } catch (error) {
-      if (error.response) {
-        console.error('Lỗi từ server:', error.response.data)
-      } else {
-        console.error('Lỗi khác:', error.message)
-      }
+  const handleBuy = () => {
+    if (session.status !== 'authenticated') {
+      openAuthModal('login')
+      return
+    }
+    // Nếu có dynamic fields cần validate, dùng handleSubmit
+    const hasDynamicFields = plan.features.some((f: any) =>
+      f.field && f.field !== 'time' && f.field !== 'protocol' && f.field !== 'quantity' &&
+      ['input', 'checkbox', 'select'].includes(f.status)
+    )
+    if (hasDynamicFields) {
+      handleSubmit(onSubmit)()
+    } else {
+      setCheckoutOpen(true)
     }
   }
 
   return (
     <>
-      <form onSubmit={handleSubmit(onSubmit)} className={`proxy-plan-card ${plan.color}`}>
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className={`proxy-plan-card ${plan.color}${checkoutOpen ? ' active' : ''}`}
+        style={{
+          position: 'relative',
+          ...((!isAvailable) ? { opacity: 0.7 } : {})
+        }}
+      >
+        {/* Tag badge — trên viền card */}
+        {visibleTags.length > 0 && (
+          <div style={{ position: 'absolute', top: '-12px', right: '14px', zIndex: 2, display: 'flex', gap: '6px' }}>
+            {visibleTags.map((tag: string, i: number) => {
+              const tagDef = getTagStyle(tag)
+              return <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '5px 14px', fontSize: '11.5px', fontWeight: 700, borderRadius: '20px', background: `linear-gradient(180deg, rgba(255,255,255,0.2) 0%, transparent 50%), ${tagDef.gradient || tagDef.bgColor}`, color: tagDef.textColor, boxShadow: `0 2px 10px ${tagDef.borderColor}55, inset 0 1px 0 rgba(255,255,255,0.2)`, border: '1px solid rgba(255,255,255,0.25)', letterSpacing: '0.3px', lineHeight: 1.2 }}>{tagDef.icon && <span style={{ fontSize: '12px' }}>{tagDef.icon}</span>}{tag.trim()}</span>
+            })}
+          </div>
+        )}
+
+        {/* Header: title + price */}
         <div className='plan-header'>
-          <h3 className='plan-title'>{plan.title}</h3>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <h3 className='plan-title' style={{ textAlign: 'left', flex: 1 }}>{plan.title} <span style={{ fontSize: '11px', fontWeight: 500, color: '#94a3b8' }}>#{plan.id}</span></h3>
+            <div style={{ fontSize: '18px', fontWeight: 700, color: '#e53e3e', whiteSpace: 'nowrap' }}>
+              {priceOptions.length > 1 && <span style={{ fontSize: '12px', fontWeight: 500, color: '#94a3b8', marginRight: '2px' }}>từ</span>}{headerPrice.toLocaleString('vi-VN')}đ
+            </div>
+          </div>
         </div>
+
+        {/* Note preview */}
+        {notePreview && (
+          <p style={{ fontSize: '13px', color: '#64748b', margin: '0 0 8px', lineHeight: 1.4, padding: '0 16px' }}>
+            {notePreview}
+          </p>
+        )}
+
         <div className='plan-features'>
+          {/* IP type + country */}
+          {(plan?.ip_version || plan?.country || plan?.country_code) && (
+            <div className='feature-row' style={{ padding: '4px 0' }}>
+              <div className='feature-icons'><MapPin size={16} color='#6366f1' /></div>
+              <div className='feature-content'>
+                <span className='feature-label'>Loại IP:</span>
+                <span className='feature-value' style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>Rotating {plan.ip_version?.toUpperCase() === 'IPV4' ? 'V4' : plan.ip_version?.toUpperCase() === 'IPV6' ? 'V6' : plan.ip_version || ''} — {(plan?.country || plan?.country_code) && <img src={`https://flagcdn.com/w40/${(plan.country || plan.country_code).toLowerCase()}.png`} alt='' style={{ width: 18, height: 13, objectFit: 'cover', borderRadius: 2 }} />}{getCountryName(plan.country || plan.country_code || '')}</span>
+              </div>
+            </div>
+          )}
+          {/* Protocol as static feature row */}
+          <StaticFeatureRow feature={{ label: 'Hỗ trợ', value: protocolList.map((p: string) => p.toUpperCase()).join('/'), icon: Shield, iconColor: '#f97316' }} />
+
+          {/* Spec attributes as feature rows */}
+          {plan?.auth_type && (
+            <StaticFeatureRow feature={{ label: 'Xác thực', value: plan.auth_type === 'userpass' ? 'User:Pass' : plan.auth_type === 'ip_whitelist' ? 'IP Whitelist' : plan.auth_type === 'both' ? 'User:Pass + IP' : plan.auth_type, icon: Shield, iconColor: '#e67e22' }} />
+          )}
+          {plan?.bandwidth && (
+            <StaticFeatureRow feature={{ label: 'Băng thông', value: plan.bandwidth === 'unlimited' ? 'Không giới hạn' : plan.bandwidth, icon: Wifi, iconColor: '#3b82f6' }} />
+          )}
+          {plan?.rotation_type && (
+            <StaticFeatureRow feature={{ label: 'Kiểu xoay', value: plan.rotation_type === 'per_request' ? 'Per request' : plan.rotation_type === 'sticky' ? 'Sticky session' : plan.rotation_type === 'time_based' ? 'Time-based' : plan.rotation_type, icon: RefreshCw, iconColor: '#8b5cf6' }} />
+          )}
+          {plan?.rotation_interval && (
+            <StaticFeatureRow feature={{ label: 'Thời gian xoay IP', value: plan.rotation_interval, icon: Clock, iconColor: '#f59e0b' }} />
+          )}
+          {plan?.pool_size && (
+            <StaticFeatureRow feature={{ label: 'Pool size', value: plan.pool_size, icon: Globe, iconColor: '#06b6d4' }} />
+          )}
+          {plan?.request_limit && (
+            <StaticFeatureRow feature={{ label: 'Giới hạn request', value: plan.request_limit, icon: Zap, iconColor: '#22c55e' }} />
+          )}
+          {plan?.concurrent_connections && (
+            <StaticFeatureRow feature={{ label: 'Kết nối đồng thời', value: plan.concurrent_connections, icon: Users, iconColor: '#ef4444' }} />
+          )}
+          {/* Dynamic features: bỏ time + protocol, giữ success/input/checkbox/select */}
           {plan.features
-            .filter((feature: any) => feature.field !== 'protocol') // Loại bỏ protocol từ features để tránh trùng lặp
-            .map((feature, index) => {
-              // Dựa vào `feature.status` để render component con phù hợp
+            .filter((feature: any) => feature.field !== 'protocol' && feature.field !== 'quantity' && feature.field !== 'time')
+            .map((feature: any, index: number) => {
               switch (feature.status) {
                 case 'success':
                   return <StaticFeatureRow key={index} feature={feature} />
@@ -500,70 +496,61 @@ const PlanCard = ({ plan }) => {
                       planId={plan.id}
                       min={plan.min}
                       max={plan.max}
-                      isDisabled={isRotationTimeInput && !watchedFields.autoRotate}
+                      isDisabled={(isRotationTimeInput && !watchedFields.autoRotate) || !isAvailable}
                     />
                   )
                 case 'checkbox':
                   return <SwitchFeatureRow key={index} feature={feature} control={control} planId={plan.id} />
                 case 'select':
                   return <SelectFeatureRow key={index} feature={feature} control={control} planId={plan.id} />
-                case 'radio':
-                  return <RadioFeatureRow key={index} feature={feature} control={control} planId={plan.id} plan={plan} />
                 default:
                   return null
               }
             })}
-
-          {/* Render protocol options nếu có protocols từ server */}
-          {hasProtocol && protocolOptions.length > 0 && (
-            <RadioFeatureRow
-              feature={{
-                field: 'protocol',
-                label: 'Giao thức',
-                options: protocolOptions
-              }}
-              control={control}
-              planId={plan.id}
-              plan={plan}
-            />
-          )}
         </div>
 
+
         <div className='plan-footer'>
-          <div className='plan-price'>
-            <span className='price-label'>Thành tiền:</span>
-            <span className='price-amount'>{calculateTotalFormat()}đ</span>
-          </div>
-          {session.status === 'authenticated' ? (
-            <button type='submit' className='buy-button' disabled={isPending}>
-              {isPending ? (
-                <>
-                  <Loader size={18} className='mr-2 animate-pulse' /> Đang xử lý...
-                </>
-              ) : (
-                <>
-                  <ShoppingCart size={18} className='mr-2' /> Mua Proxy
-                </>
-              )}
+          {isAvailable ? (
+            <button type='button' className='buy-button' onClick={handleBuy}>
+              <ShoppingCart size={16} className='mr-2' />
+              Mua Proxy
             </button>
           ) : (
-            <button type='button' className='buy-button' onClick={() => openAuthModal('login')}>
-              <User size={18} className='mr-2' /> Đăng nhập
-            </button>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                padding: '12px',
+                borderRadius: '8px',
+                backgroundColor: '#f1f5f9',
+                border: '1px solid #e2e8f0',
+                color: '#64748b',
+                fontSize: '14px',
+                fontWeight: 600,
+                width: '100%'
+              }}
+            >
+              Tạm ngừng bán
+            </div>
           )}
         </div>
       </form>
 
-      <ConfirmDialog
-        open={openConfirm}
-        onClose={() => setOpenConfirm(false)}
-        onConfirm={handleConfirmBuy}
-        title='Xác nhận mua Proxy'
-        confirmText='Xác nhận'
-        cancelText='Hủy'
-      >
-        Bạn có chắc chắn muốn mua gói proxy này không?
-      </ConfirmDialog>
+      <CheckoutModal
+        open={checkoutOpen}
+        onClose={() => setCheckoutOpen(false)}
+        productName={plan.title}
+        productType='rotating'
+        serviceTypeId={plan.id}
+        priceOptions={priceOptions}
+        protocols={protocolList}
+        ipVersion={plan.ip_version}
+        proxyType={plan.proxy_type}
+        country={plan.country}
+      />
     </>
   )
 }
@@ -573,172 +560,265 @@ interface RotatingProxyPageProps {
 }
 
 export default function RotatingProxyPage({ data }: RotatingProxyPageProps) {
-  const [searchCountry, setSearchCountry] = useState('')
   const [selectedVersion, setSelectedVersion] = useState('')
   const [selectedProxyType, setSelectedProxyType] = useState('')
   const [selectedCountry, setSelectedCountry] = useState('')
 
-  const { data: countries, isLoading: isLoadingCountries } = useCountries()
+  const { data: countries } = useCountries()
 
-  // Lọc danh sách quốc gia theo search (tìm theo code - case sensitive)
-  const filteredCountries = useMemo(
-    () => countries?.filter((country: any) => (country.code || '').includes(searchCountry)),
-    [countries, searchCountry]
-  )
+  // Auto-extract unique filter values from actual data
+  const filterOptions = useMemo(() => {
+    if (!data?.length) return { versions: [], proxyTypes: [], countries: [] }
+
+    const versions = [...new Set(data.map((p: any) => p.ip_version?.toLowerCase()).filter(Boolean))]
+    const proxyTypes = [...new Set(data.map((p: any) => p.proxy_type?.toLowerCase()).filter(Boolean))]
+    const countrySet = [...new Set(data.map((p: any) => p.country || p.country_code).filter(Boolean))]
+
+    // Map country codes to names from countries API
+    const countryOptions = countrySet.map(code => {
+      const found = countries?.find((c: any) => c.code === code)
+
+      return { code, name: found?.name || getCountryName(code) }
+    })
+
+    return { versions, proxyTypes, countries: countryOptions }
+  }, [data, countries])
+
+  const hasActiveFilter = selectedVersion || selectedProxyType || selectedCountry
 
   // Lọc danh sách plan theo các filter
   const filteredProviders = useMemo(
     () =>
       data?.filter((plan: any) => {
-        // Filter theo version (case insensitive)
-        if (selectedVersion && plan.ip_version?.toLowerCase() !== selectedVersion.toLowerCase()) {
-          return false
-        }
-
-        // Filter theo proxy type (case sensitive)
-        if (selectedProxyType && plan.proxy_type !== selectedProxyType) {
-          return false
-        }
-
-        // Filter theo country (case sensitive)
-        if (selectedCountry && plan.country_code !== selectedCountry && plan.country !== selectedCountry) {
-          return false
-        }
+        if (shouldHideByTag(plan?.tag)) return false
+        if (selectedVersion && plan.ip_version?.toLowerCase() !== selectedVersion.toLowerCase()) return false
+        if (selectedProxyType && plan.proxy_type?.toLowerCase() !== selectedProxyType.toLowerCase()) return false
+        if (selectedCountry && plan.country !== selectedCountry && plan.country_code !== selectedCountry) return false
 
         return true
       }),
     [data, selectedVersion, selectedProxyType, selectedCountry]
   )
 
+  const clearAllFilters = () => {
+    setSelectedVersion('')
+    setSelectedProxyType('')
+    setSelectedCountry('')
+  }
+
+  const versionLabel = (v: string) => (v === 'ipv4' ? 'IPv4' : v === 'ipv6' ? 'IPv6' : v.toUpperCase())
+  const proxyTypeLabel = (t: string) => (t === 'residential' ? 'Dân cư' : t === 'datacenter' ? 'Datacenter' : t)
+
   return (
     <>
-      <Grid2 container spacing={2}>
-        <Grid2 size={{ xs: 12, md: 4, lg: 2 }}>
-          <div style={{ position: 'sticky', top: '80px' }} className='proxy-card-column '>
-            <Box className='flex gap-3 flex-col'>
-              <Box>
-                <Typography variant='subtitle1' fontWeight='medium' mb={1}>
-                  Version
-                </Typography>
-                <RadioGroup
-                  key='version-radio-group'
-                  aria-label='version'
-                  name='version'
-                  value={selectedVersion}
-                  onChange={e => setSelectedVersion(e.target.value)}
-                >
-                  <FormControlLabel value='' control={<Radio />} label='Tất cả' />
-                  <FormControlLabel value='ipv4' control={<Radio />} label='V4' />
-                  <FormControlLabel value='ipv6' control={<Radio />} label='V6' />
-                </RadioGroup>
-              </Box>
+      {/* Filter bar */}
+      <Box
+        sx={{
+          mb: 2.5,
+          borderRadius: '12px',
+          border: '1px solid #e2e8f0',
+          background: 'white',
+          overflow: 'hidden'
+        }}
+      >
+        {/* Header */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderBottom: '1px solid #f1f5f9', background: '#f8fafc' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <SlidersHorizontal size={16} color='#475569' />
+            <span style={{ fontSize: '14px', fontWeight: 700, color: '#1e293b' }}>Bộ lọc</span>
+            <span style={{ fontSize: '13px', color: '#94a3b8' }}>({filteredProviders?.length || 0}/{data?.length || 0} gói)</span>
+          </div>
+          {hasActiveFilter && (
+            <Chip
+              icon={<X size={14} />}
+              label='Xoá bộ lọc'
+              onClick={clearAllFilters}
+              size='small'
+              sx={{
+                fontWeight: 600,
+                fontSize: '12px',
+                height: '28px',
+                borderRadius: '6px',
+                bgcolor: '#fef2f2',
+                color: '#dc2626',
+                border: '1px solid #fecaca',
+                '&:hover': { bgcolor: '#fee2e2' },
+                '& .MuiChip-icon': { color: '#dc2626' }
+              }}
+            />
+          )}
+        </div>
 
-              <Box>
-                <Typography variant='subtitle1' fontWeight='medium' mb={1}>
-                  Loại proxy
-                </Typography>
-                <RadioGroup
-                  key='proxy-type-radio-group'
-                  aria-label='proxy-type'
-                  name='proxy-type'
-                  value={selectedProxyType}
-                  onChange={e => setSelectedProxyType(e.target.value)}
-                >
-                  <FormControlLabel value='' control={<Radio />} label='Tất cả' />
-                  <FormControlLabel value='datacenter' control={<Radio />} label='Datacenter' />
-                  <FormControlLabel value='residential' control={<Radio />} label='Dân cư' />
-                </RadioGroup>
-              </Box>
-
-              <Box>
-                <Typography variant='subtitle1' fontWeight='medium' mb={1}>
-                  Quốc gia
-                </Typography>
-
-                {/* Search input */}
-                <TextField
-                  fullWidth
-                  size='small'
-                  placeholder='Tìm kiếm quốc gia...'
-                  value={searchCountry}
-                  onChange={e => setSearchCountry(e.target.value)}
-                  sx={{ mb: 2 }}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position='start'>
-                        <Search size={18} />
-                      </InputAdornment>
-                    )
+        {/* Filter groups */}
+        <div style={{ padding: '14px 16px', display: 'flex', flexWrap: 'wrap', gap: '20px', alignItems: 'flex-start' }}>
+          {filterOptions.versions.length > 0 && (
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+                <Wifi size={14} color='#64748b' />
+                <span style={{ fontSize: '12px', fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  Phiên bản IP
+                </span>
+              </div>
+              <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                <Chip
+                  label='Tất cả'
+                  variant={!selectedVersion ? 'filled' : 'outlined'}
+                  onClick={() => setSelectedVersion('')}
+                  sx={{
+                    fontWeight: 600, fontSize: '13px', height: '34px', borderRadius: '8px',
+                    ...(!selectedVersion
+                      ? { bgcolor: '#1e293b', color: '#fff', '&:hover': { bgcolor: '#334155' } }
+                      : { borderColor: '#cbd5e1', color: '#334155', '&:hover': { bgcolor: '#f1f5f9', borderColor: '#94a3b8' } })
                   }}
                 />
+                {filterOptions.versions.map((v: string) => (
+                  <Chip
+                    key={v}
+                    label={versionLabel(v)}
+                    variant={selectedVersion === v ? 'filled' : 'outlined'}
+                    onClick={() => setSelectedVersion(selectedVersion === v ? '' : v)}
+                    sx={{
+                      fontWeight: 600, fontSize: '13px', height: '34px', borderRadius: '8px',
+                      ...(selectedVersion === v
+                        ? { bgcolor: '#1e293b', color: '#fff', '&:hover': { bgcolor: '#334155' } }
+                        : { borderColor: '#cbd5e1', color: '#334155', '&:hover': { bgcolor: '#f1f5f9', borderColor: '#94a3b8' } })
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
 
-                <Box sx={{ maxHeight: '300px', overflowY: 'auto', pr: 1 }}>
-                  {isLoadingCountries ? (
-                    <Box display='flex' justifyContent='center' p={2}>
-                      <CircularProgress size={24} />
-                    </Box>
-                  ) : (
-                    <RadioGroup
-                      key='countries-radio-group'
-                      aria-label='countries'
-                      name='countries'
-                      value={selectedCountry}
-                      onChange={e => setSelectedCountry(e.target.value)}
-                    >
-                      <FormControlLabel value='' control={<Radio />} label='Tất cả' />
-                      {filteredCountries?.length > 0 ? (
-                        filteredCountries.map((country: any) => (
-                          <FormControlLabel
-                            key={country.code || country.id}
-                            value={country.code || country.id}
-                            control={<Radio />}
-                            label={country.name || country.label}
-                          />
-                        ))
-                      ) : (
-                        <Typography variant='body2' color='text.secondary' sx={{ p: 2, textAlign: 'center' }}>
-                          Không tìm thấy quốc gia nào
-                        </Typography>
-                      )}
-                    </RadioGroup>
-                  )}
-                </Box>
-              </Box>
-            </Box>
-          </div>
-        </Grid2>
-
-        <Grid2 size={{ xs: 12, md: 8, lg: 10 }}>
-          <Grid2 container spacing={2}>
-            {filteredProviders?.length > 0 ? (
-              filteredProviders.map((plan: any, index: any) => (
-                <Grid2 key={plan.id || index} size={{ xs: 12, md: 12, lg: 4 }}>
-                  <PlanCard plan={plan} />
-                </Grid2>
-              ))
-            ) : (
-              <Grid2 size={{ xs: 12 }}>
-                <Box
+          {filterOptions.proxyTypes.length > 0 && (
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+                <Filter size={14} color='#64748b' />
+                <span style={{ fontSize: '12px', fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  Loại proxy
+                </span>
+              </div>
+              <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                <Chip
+                  label='Tất cả'
+                  variant={!selectedProxyType ? 'filled' : 'outlined'}
+                  onClick={() => setSelectedProxyType('')}
                   sx={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    minHeight: '300px',
-                    p: 4
+                    fontWeight: 600, fontSize: '13px', height: '34px', borderRadius: '8px',
+                    ...(!selectedProxyType
+                      ? { bgcolor: '#1e293b', color: '#fff', '&:hover': { bgcolor: '#334155' } }
+                      : { borderColor: '#cbd5e1', color: '#334155', '&:hover': { bgcolor: '#f1f5f9', borderColor: '#94a3b8' } })
                   }}
-                >
-                  <Typography variant='h6' color='text.secondary' gutterBottom>
-                    Không tìm thấy gói proxy phù hợp
-                  </Typography>
-                  <Typography variant='body2' color='text.secondary'>
-                    Vui lòng thử thay đổi bộ lọc để xem thêm các gói khác
-                  </Typography>
-                </Box>
-              </Grid2>
-            )}
+                />
+                {filterOptions.proxyTypes.map((t: string) => (
+                  <Chip
+                    key={t}
+                    label={proxyTypeLabel(t)}
+                    variant={selectedProxyType === t ? 'filled' : 'outlined'}
+                    onClick={() => setSelectedProxyType(selectedProxyType === t ? '' : t)}
+                    sx={{
+                      fontWeight: 600, fontSize: '13px', height: '34px', borderRadius: '8px',
+                      ...(selectedProxyType === t
+                        ? { bgcolor: '#1e293b', color: '#fff', '&:hover': { bgcolor: '#334155' } }
+                        : { borderColor: '#cbd5e1', color: '#334155', '&:hover': { bgcolor: '#f1f5f9', borderColor: '#94a3b8' } })
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {filterOptions.countries.length > 0 && (
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+                <Globe size={14} color='#64748b' />
+                <span style={{ fontSize: '12px', fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  Quốc gia
+                </span>
+              </div>
+              <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                <Chip
+                  label='Tất cả'
+                  variant={!selectedCountry ? 'filled' : 'outlined'}
+                  onClick={() => setSelectedCountry('')}
+                  sx={{
+                    fontWeight: 600, fontSize: '13px', height: '34px', borderRadius: '8px',
+                    ...(!selectedCountry
+                      ? { bgcolor: '#1e293b', color: '#fff', '&:hover': { bgcolor: '#334155' } }
+                      : { borderColor: '#cbd5e1', color: '#334155', '&:hover': { bgcolor: '#f1f5f9', borderColor: '#94a3b8' } })
+                  }}
+                />
+                {filterOptions.countries.map((c: any) => (
+                  <Chip
+                    key={c.code}
+                    icon={<img src={`https://flagcdn.com/w40/${c.code.toLowerCase()}.png`} alt={c.code} style={{ width: 20, height: 15, objectFit: 'cover', borderRadius: 2, marginLeft: 8 }} />}
+                    label={c.name}
+                    variant={selectedCountry === c.code ? 'filled' : 'outlined'}
+                    onClick={() => setSelectedCountry(selectedCountry === c.code ? '' : c.code)}
+                    sx={{
+                      fontWeight: 600, fontSize: '13px', height: '36px', borderRadius: '20px', pl: 0.5,
+                      ...(selectedCountry === c.code
+                        ? { bgcolor: '#1e293b', color: '#fff', '&:hover': { bgcolor: '#334155' } }
+                        : { borderColor: '#e2e8f0', color: '#334155', bgcolor: '#fff', '&:hover': { bgcolor: '#f8fafc', borderColor: '#94a3b8' } }),
+                      '& .MuiChip-icon': { mr: '-2px' }
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+      </Box>
+
+      <Grid2 container columnSpacing={2} rowSpacing={4} sx={{ mt: 1 }}>
+        {filteredProviders?.length > 0 ? (
+          filteredProviders.map((plan: any, index: any) => (
+            <Grid2 key={plan.id || index} size={{ xs: 12, md: 6, lg: 4 }}>
+              <PlanCard plan={plan} />
+            </Grid2>
+          ))
+        ) : (
+          <Grid2 size={{ xs: 12 }}>
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                minHeight: '280px',
+                p: 4,
+                borderRadius: '12px',
+                border: '1px dashed #cbd5e1',
+                background: '#f8fafc'
+              }}
+            >
+              <SearchX size={48} color='#94a3b8' strokeWidth={1.5} style={{ marginBottom: '16px' }} />
+              <Typography sx={{ fontSize: '16px', fontWeight: 600, color: '#475569', mb: 0.5 }}>
+                Không tìm thấy gói proxy phù hợp
+              </Typography>
+              <Typography sx={{ fontSize: '14px', color: '#94a3b8', mb: 2 }}>
+                Thử thay đổi bộ lọc hoặc xoá bộ lọc để xem tất cả
+              </Typography>
+              {hasActiveFilter && (
+                <Chip
+                  icon={<X size={14} />}
+                  label='Xoá tất cả bộ lọc'
+                  onClick={clearAllFilters}
+                  sx={{
+                    fontWeight: 600,
+                    fontSize: '13px',
+                    height: '36px',
+                    borderRadius: '8px',
+                    bgcolor: '#1e293b',
+                    color: '#fff',
+                    '&:hover': { bgcolor: '#334155' },
+                    '& .MuiChip-icon': { color: '#fff' }
+                  }}
+                />
+              )}
+            </Box>
           </Grid2>
-        </Grid2>
+        )}
       </Grid2>
     </>
   )

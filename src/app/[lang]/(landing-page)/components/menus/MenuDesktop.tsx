@@ -67,7 +67,7 @@ export default function MenuDesktop() {
           <Link
             className='btn btn-gradient-primary me-2'
             style={{ padding: '5px 20px' }}
-            href={`/${locale}/overview`}
+            href={`/${locale}/home`}
             target={`_blank`}
           >
             Đi đến Trang chủ

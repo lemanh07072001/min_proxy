@@ -2,6 +2,7 @@
 // MUI Imports
 import Button from '@mui/material/Button'
 import { ToastContainer } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
 
 // Style Imports
 import '@/app/globals.css'
@@ -48,16 +49,16 @@ const Layout = async (props: ChildrenType) => {
               {children}
               <ToastContainer
                 position="top-center"
-                autoClose={2000}
-                hideProgressBar
-                newestOnTop={false}
+                autoClose={3000}
+                hideProgressBar={false}
+                newestOnTop
                 closeOnClick
                 rtl={false}
                 pauseOnFocusLoss={false}
                 draggable={false}
-                pauseOnHover={false}
+                pauseOnHover
                 theme="light"
-
+                limit={3}
               />
             </VerticalLayout>
           }

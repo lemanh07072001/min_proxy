@@ -1,74 +1,12 @@
 'use client'
-import React, { useEffect, useState } from 'react'
-
-import { useParams, useRouter } from 'next/navigation'
-
-import { useSession } from 'next-auth/react'
-
-import { useQueryClient } from '@tanstack/react-query'
+import React from 'react'
 
 import RotatingProxyPage from '@views/Client/RotatingProxy/RotatingProxyPage'
-import OrderRotatingProxyPage from '@/views/Client/OrderRotatingProxy/OrderRotatingProxyPage'
-import ApiUsage from '@/views/Client/OrderRotatingProxy/ApiUsage'
 
 interface ProxyPlansClientProps {
   data: any[]
 }
 
 export default function ProxyPlansClient({ data }: ProxyPlansClientProps) {
-  const [currentView, setCurrentView] = useState<'form' | 'table' | 'api'>('form')
-  const { data: session, status } = useSession()
-  const queryClient = useQueryClient()
-
-  // Refetch data khi chuyển sang tab table để đảm bảo hiển thị đơn hàng mới nhất
-  useEffect(() => {
-    if (currentView === 'table' && status === 'authenticated') {
-      // Invalidate và refetch query để đảm bảo data mới nhất
-      queryClient.invalidateQueries({ queryKey: ['proxyData'] })
-    }
-  }, [currentView, status, queryClient])
-
-
-  return (
-    <>
-      <div className='mb-2'>
-        <div className='flex items-center justify-start'>
-          <div className='flex bg-gray-100 rounded-lg p-1'>
-            <button
-              onClick={() => setCurrentView('form')}
-              className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-                currentView === 'form' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              Tạo Order
-            </button>
-            <button
-              disabled={status === 'unauthenticated'}
-              onClick={() => setCurrentView('table')}
-              className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${status === 'unauthenticated' ? 'cursor-not-allowed' : ''} ${
-                currentView === 'table' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              Danh sách
-            </button>
-            <button
-              disabled={status === 'unauthenticated'}
-              onClick={() => setCurrentView('api')}
-              className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${status === 'unauthenticated' ? 'cursor-not-allowed' : ''} ${
-                currentView === 'api' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              API
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {currentView === 'form' && <RotatingProxyPage data={data} />}
-
-      {currentView === 'table' && <OrderRotatingProxyPage />}
-
-      {currentView === 'api' && <ApiUsage />}
-    </>
-  )
+  return <RotatingProxyPage data={data} />
 }

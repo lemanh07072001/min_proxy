@@ -281,7 +281,7 @@ export default function CheckProxyForm({ onItemListChange, onCheckedProxy }: Che
                   sx={{
                     // Nhắm đến thẻ label của component này
                     '& .MuiInputLabel-root': {
-                      color: '#4a5568', // Đổi màu label thành màu cam
+                      color: 'var(--mui-palette-text-secondary, #4a5568)', // Đổi màu label thành màu cam
                       fontWeight: '600', // In đậm chữ
                       fontSize: '13px', // Thay đổi kích thước font
                       paddingBottom: '5px'
@@ -322,7 +322,7 @@ export default function CheckProxyForm({ onItemListChange, onCheckedProxy }: Che
                   }
                   sx={{
                     '& .MuiInputLabel-root': {
-                      color: '#4a5568',
+                      color: 'var(--mui-palette-text-secondary, #4a5568)',
                       fontWeight: '600',
                       fontSize: '13px',
                       paddingBottom: '5px'
@@ -365,7 +365,7 @@ export default function CheckProxyForm({ onItemListChange, onCheckedProxy }: Che
                   sx={{
                     // Nhắm đến thẻ label của component này
                     '& .MuiInputLabel-root': {
-                      color: '#4a5568', // Đổi màu label thành màu cam
+                      color: 'var(--mui-palette-text-secondary, #4a5568)', // Đổi màu label thành màu cam
                       fontWeight: '600', // In đậm chữ
                       fontSize: '13px', // Thay đổi kích thước font
                       paddingBottom: '5px'
@@ -401,7 +401,7 @@ export default function CheckProxyForm({ onItemListChange, onCheckedProxy }: Che
           {/* Progress Bar */}
           {isProcessing && currentProgress.total > 0 && (
             <div className='form-group-check'>
-              <div style={{ marginBottom: '8px', fontSize: '14px', color: '#4a5568' }}>
+              <div style={{ marginBottom: '8px', fontSize: '14px', color: 'var(--mui-palette-text-secondary, #4a5568)' }}>
                 Tiến trình: {currentProgress.current}/{currentProgress.total}
                 {/*(Giới hạn: {maxConcurrentChecks} luồng cùng lúc)*/}
               </div>
@@ -444,7 +444,7 @@ export default function CheckProxyForm({ onItemListChange, onCheckedProxy }: Che
               sx={{
                 // Nhắm đến thẻ label của component này
                 '& .MuiInputLabel-root': {
-                  color: '#4a5568', // Đổi màu label thành màu cam
+                  color: 'var(--mui-palette-text-secondary, #4a5568)', // Đổi màu label thành màu cam
                   fontWeight: '600', // In đậm chữ
                   fontSize: '13px', // Thay đổi kích thước font
                   paddingBottom: '5px'
@@ -478,7 +478,7 @@ export default function CheckProxyForm({ onItemListChange, onCheckedProxy }: Che
               sx={{
                 // Nhắm đến thẻ label của component này
                 '& .MuiInputLabel-root': {
-                  color: '#4a5568', // Đổi màu label thành màu cam
+                  color: 'var(--mui-palette-text-secondary, #4a5568)', // Đổi màu label thành màu cam
                   fontWeight: '600', // In đậm chữ
                   fontSize: '13px', // Thay đổi kích thước font
                   paddingBottom: '5px'

@@ -1,51 +1,49 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 
 import { useSession, signOut } from 'next-auth/react'
 
-import axiosInstance from '@/libs/axios' // Import instance axios singleton
+import axiosInstance, { setAccessToken, setOnAuthError, setOnRefresh } from '@/libs/axios'
+
+// Flag đảm bảo auth error handler chỉ được set 1 lần
+let _authErrorSetup = false
 
 const useAxiosAuth = () => {
-  const { data: session } = useSession()
+  const { data: session, update } = useSession()
+  const tokenRef = useRef<string | null>(null)
 
+  // Sync token khi session thay đổi - chỉ update reference, không add/remove interceptor
   useEffect(() => {
-    const requestInterceptor = axiosInstance.interceptors.request.use(
-      config => {
-        if ((session as any)?.access_token && !config.headers.Authorization) {
-          config.headers.Authorization = `Bearer ${(session as any).access_token}`
-        }
+    const newToken = (session as any)?.access_token || null
 
-        return config
-      },
-      error => Promise.reject(error)
-    )
-
-    const responseInterceptor = axiosInstance.interceptors.response.use(
-      response => response,
-      async error => {
-        const errMsg = error?.response?.data?.error || error?.message
-
-        // 🟥 Nếu backend báo JWT lỗi, tự logout
-        if (
-          error.response?.status === 401 ||
-          errMsg?.includes('JWT') ||
-          errMsg?.includes('JWE') ||
-          errMsg?.includes('decryption')
-        ) {
-          console.warn('🔴 Token lỗi hoặc session hỏng → logout...')
-          const currentPath = window.location.pathname
-          const callbackUrl = currentPath.includes('/login') ? '/' : currentPath
-          await signOut({ callbackUrl })
-        }
-
-        return Promise.reject(error)
-      }
-    )
-
-    return () => {
-      axiosInstance.interceptors.request.eject(requestInterceptor)
-      axiosInstance.interceptors.response.eject(responseInterceptor)
+    if (newToken !== tokenRef.current) {
+      tokenRef.current = newToken
+      setAccessToken(newToken)
     }
   }, [session])
+
+  // Setup auth error handler + refresh handler 1 lần duy nhất
+  useEffect(() => {
+    if (_authErrorSetup) return
+    _authErrorSetup = true
+
+    setOnAuthError(async () => {
+      const currentPath = window.location.pathname
+      const callbackUrl = currentPath.includes('/login') ? '/' : currentPath
+      await signOut({ callbackUrl })
+    })
+
+    setOnRefresh(async () => {
+      // Gọi NextAuth update() → trigger JWT callback → tự refresh token
+      const newSession = await update()
+
+      if ((newSession as any)?.error || !(newSession as any)?.access_token) {
+        throw new Error('Session refresh failed')
+      }
+
+      // Sync token mới vào axios
+      setAccessToken((newSession as any)?.access_token || null)
+    })
+  }, [])
 
   return axiosInstance
 }

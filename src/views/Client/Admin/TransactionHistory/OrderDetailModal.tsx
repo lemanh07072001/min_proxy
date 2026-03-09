@@ -11,6 +11,7 @@ import {
   RotateCcw,
   CircleQuestionMark,
   BadgeCheck,
+  AlertCircle,
   Copy,
   Globe,
   Clock3,
@@ -21,7 +22,7 @@ import { useReactTable, getCoreRowModel, flexRender, getPaginationRowModel } fro
 import { useMemo, useState, useEffect } from 'react'
 import Dialog from '@mui/material/Dialog'
 import { formatDateTimeLocal } from '@/utils/formatDate'
-import { ORDER_STATUS_LABELS, ORDER_STATUS, ORDER_STATUS_COLORS } from '@/constants'
+import { ORDER_STATUS_LABELS_ADMIN, ORDER_STATUS, ORDER_STATUS_COLORS } from '@/constants'
 import { Chip, Checkbox } from '@mui/material'
 import { useApiKeys } from '@/hooks/apis/useOrders'
 
@@ -73,7 +74,7 @@ export default function OrderDetailModal({ isOpen, onClose, orderData, isLoading
   }
 
   const getStatusBadge = (status: string) => {
-    const label = ORDER_STATUS_LABELS[status as keyof typeof ORDER_STATUS_LABELS]
+    const label = ORDER_STATUS_LABELS_ADMIN[status]
     const color = ORDER_STATUS_COLORS[status as keyof typeof ORDER_STATUS_COLORS]
 
     if (!label) {
@@ -106,21 +107,25 @@ export default function OrderDetailModal({ isOpen, onClose, orderData, isLoading
           />
         )
         break
-      case ORDER_STATUS.COMPLETED:
-        // Hoàn thành - icon check
+      case ORDER_STATUS.IN_USE:
         icon = <BadgeCheck size={16} />
         break
-      case ORDER_STATUS.FAILED:
-        // Lỗi - icon X
-        icon = <CircleX size={16} />
-        break
-      case ORDER_STATUS.CANCEL:
-        // Đã hủy - icon XCircle
-        icon = <XCircle size={16} />
+      case ORDER_STATUS.IN_USE_PARTIAL:
+        icon = <AlertCircle size={16} />
         break
       case ORDER_STATUS.EXPIRED:
-        // Hoàn tiền - icon rotate
         icon = <Clock size={16} />
+        break
+      case ORDER_STATUS.FAILED:
+        icon = <CircleX size={16} />
+        break
+      case ORDER_STATUS.PARTIAL_REFUNDED:
+      case ORDER_STATUS.WAITING_REFUND:
+      case ORDER_STATUS.REFUNDED_ALL:
+        icon = <RotateCcw size={16} />
+        break
+      case ORDER_STATUS.RETRY_PROCESSING_PARTIAL:
+        icon = <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} />
         break
       default:
         icon = <CircleQuestionMark size={16} />
@@ -180,10 +185,10 @@ export default function OrderDetailModal({ isOpen, onClose, orderData, isLoading
         header: 'Trạng thái',
         size: 150,
         cell: ({ row }: { row: any }) => {
-          if (row.original?.status === 'ACTIVE' || row.original?.status === 1) {
+          if (row.original?.status === 'ACTIVE') {
             return <Chip label='Hoạt động' size='small' icon={<BadgeCheck />} color='success' />
-          } else if (row.original?.status === 5 || row.original?.status === 'EXPIRED') {
-            return <Chip label='Hết hạn' size='small' icon={<CircleX />} color='error' />
+          } else if (row.original?.status === 'INACTIVE') {
+            return <Chip label='Đã tắt' size='small' icon={<BadgeMinus />} color='warning' />
           } else {
             return <Chip label='Hết hạn' size='small' icon={<CircleX />} color='error' />
           }

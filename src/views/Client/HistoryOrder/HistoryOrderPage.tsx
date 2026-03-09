@@ -202,7 +202,7 @@ export default function HistoryOrderPage() {
   // Socket: lắng nghe sự kiện để refetch bảng
   useEffect(() => {
     // Bảo đảm lần đầu vào trang sẽ làm tươi dữ liệu
-    queryClient.invalidateQueries({ queryKey: ['orderProxyStatic'] })
+    queryClient.invalidateQueries({ queryKey: ['userOrders'] })
 
     const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || 'https://socket.mktproxy.com'
 
@@ -213,7 +213,7 @@ export default function HistoryOrderPage() {
 
     socket.on('connect', () => console.log('✅ Connected to socket:', socket.id))
     socket.on('order_completed', data => {
-      queryClient.invalidateQueries({ queryKey: ['orderProxyStatic'] })
+      queryClient.invalidateQueries({ queryKey: ['userOrders'] })
       setTimeout(() => {
         void refetch()
       }, 600)

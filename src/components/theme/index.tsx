@@ -66,7 +66,8 @@ const CustomThemeProvider = (props: Props) => {
             primary: {
               main: settings.primaryColor,
               light: lighten(settings.primaryColor as string, 0.2),
-              dark: darken(settings.primaryColor as string, 0.1)
+              dark: darken(settings.primaryColor as string, 0.1),
+              contrastText: '#FFF'
             }
           }
         },
@@ -75,7 +76,8 @@ const CustomThemeProvider = (props: Props) => {
             primary: {
               main: settings.primaryColor,
               light: lighten(settings.primaryColor as string, 0.2),
-              dark: darken(settings.primaryColor as string, 0.1)
+              dark: darken(settings.primaryColor as string, 0.1),
+              contrastText: '#FFF'
             }
           }
         }

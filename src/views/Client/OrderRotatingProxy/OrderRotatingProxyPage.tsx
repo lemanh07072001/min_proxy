@@ -99,7 +99,7 @@ export default function OrderRotatingProxyPage() {
     switch (status) {
       case 'ACTIVE':
         return <Chip label='Đang hoạt động' size='small' icon={<BadgeCheck />} color='success' />
-      case 'EXPRIRED':
+      case 'EXPIRED':
         return <Chip label='Hết hạn' size='small' icon={<BadgeMinus />} color='error' />
       default:
         return <Chip label='Không xác định' size='small' icon={<CircleQuestionMark />} color='secondary' />
@@ -535,7 +535,7 @@ export default function OrderRotatingProxyPage() {
                 >
                   <MenuItem value={'all'}>Tất cả trạng thái</MenuItem>
                   <MenuItem value={'ACTIVE'}>Đang hoạt động</MenuItem>
-                  <MenuItem value={'EXPRIRED'}>Hết hạn</MenuItem>
+                  <MenuItem value={'EXPIRED'}>Hết hạn</MenuItem>
                 </CustomTextField>
               </div>
 

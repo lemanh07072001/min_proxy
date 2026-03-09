@@ -34,7 +34,7 @@ async function refreshToken(token: JWT): Promise<JWT> {
 
     return {
       ...token,
-      error: 'RefreshAccessTokenError'
+      error: 'TokenExpiredError'
     }
   }
 }
@@ -136,7 +136,10 @@ export const authOptions = {
         }
       }
 
-      if (token.accessTokenExpires && Date.now() < token.accessTokenExpires) {
+      // Buffer 60s - refresh sớm để tránh token hết hạn giữa chừng
+      const BUFFER_MS = 60 * 1000
+
+      if (token.accessTokenExpires && Date.now() < token.accessTokenExpires - BUFFER_MS) {
         return token
       }
 

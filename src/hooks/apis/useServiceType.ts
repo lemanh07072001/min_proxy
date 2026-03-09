@@ -13,9 +13,8 @@ export const useServiceTypes = () => {
 
       return res?.data?.data ?? []
     },
-    refetchOnMount: 'always',
-    refetchOnWindowFocus: true,
-    staleTime: 0
+    staleTime: 60 * 1000,
+    refetchOnWindowFocus: false
   })
 }
 
@@ -31,9 +30,9 @@ export const useServiceType = (serviceId?: string | number, enabled: boolean = t
       return res?.data?.data
     },
     enabled: !!serviceId && enabled,
-    refetchOnMount: false,
+    refetchOnMount: 'always',
     refetchOnWindowFocus: false,
-    staleTime: 5 * 60 * 1000 // Cache 5 phút
+    staleTime: 0
   })
 }
 
@@ -52,6 +51,8 @@ export const useCreateServiceType = () => {
       // Refresh lại danh sách service types sau khi tạo thành công
       queryClient.invalidateQueries({ queryKey: ['service-types'] })
       queryClient.invalidateQueries({ queryKey: ['orderProxyStatic'] })
+      queryClient.invalidateQueries({ queryKey: ['proxyStaticPlans'] })
+      queryClient.invalidateQueries({ queryKey: ['proxyRotatingPlans'] })
     }
   })
 }
@@ -72,6 +73,8 @@ export const useUpdateServiceType = (serviceId?: string | number) => {
       queryClient.invalidateQueries({ queryKey: ['service-types'] })
       queryClient.invalidateQueries({ queryKey: ['service-type', serviceId] })
       queryClient.invalidateQueries({ queryKey: ['orderProxyStatic'] })
+      queryClient.invalidateQueries({ queryKey: ['proxyStaticPlans'] })
+      queryClient.invalidateQueries({ queryKey: ['proxyRotatingPlans'] })
     }
   })
 }
@@ -91,6 +94,8 @@ export const useDeleteServiceType = () => {
       // Refresh lại danh sách service types sau khi xóa
       queryClient.invalidateQueries({ queryKey: ['service-types'] })
       queryClient.invalidateQueries({ queryKey: ['orderProxyStatic'] })
+      queryClient.invalidateQueries({ queryKey: ['proxyStaticPlans'] })
+      queryClient.invalidateQueries({ queryKey: ['proxyRotatingPlans'] })
     }
   })
 }

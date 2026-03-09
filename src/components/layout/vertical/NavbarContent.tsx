@@ -1,9 +1,11 @@
 'use client'
 
 // React Imports
-import { useContext, useState } from 'react'
+import { useContext } from 'react'
 
 import { createPortal } from 'react-dom'
+
+import { useParams, useRouter } from 'next/navigation'
 
 // Third-party Imports
 import classnames from 'classnames'
@@ -13,9 +15,7 @@ import { SessionContext, useSession } from 'next-auth/react'
 
 import Button from '@mui/material/Button'
 
-import { useQuery } from '@tanstack/react-query'
-
-import { Plus, Wallet } from 'lucide-react'
+import { Clock, Wallet } from 'lucide-react'
 
 import NavToggle from './NavToggle'
 import ModeDropdown from '@components/layout/shared/ModeDropdown'
@@ -26,41 +26,31 @@ import { useModalContext } from '@/app/contexts/ModalContext'
 // Util Imports
 import { verticalLayoutClasses } from '@layouts/utils/layoutClasses'
 
-import LanguageDropdown from '@components/layout/shared/LanguageDropdown'
-import RechargeInputDialog from '@/app/[lang]/(private)/(client)/components/wallet/RechargeInputDialog'
-import QrCodeDisplayDialog from '@/app/[lang]/(private)/(client)/components/wallet/QrCodeDisplayDialog'
+import Box from '@mui/material/Box'
+import Typography from '@mui/material/Typography'
 
-// Interface để định nghĩa cấu trúc dữ liệu giao dịch
-interface TransactionData {
-  qrUrl: string | null
-  amount: string
-  rechargeAmount: string
-  transactionCode?: string
-}
+import LanguageDropdown from '@components/layout/shared/LanguageDropdown'
+import { usePendingBankQr } from '@/hooks/apis/useBankQr'
 
 const NavbarContent = () => {
   const data = null
   const session = useSession()
+  const router = useRouter()
+  const params = useParams()
+  const locale = params.lang || 'vi'
 
   const { openAuthModal } = useModalContext()
-  const [isInputOpen, setIsInputOpen] = useState(false)
-  const [isQrOpen, setIsQrOpen] = useState(false)
 
-  const [transactionData, setTransactionData] = useState<TransactionData>({
-    qrUrl: null,
-    amount: '',
-    rechargeAmount: '',
-    transactionCode: ''
-  })
-
-  const handleGenerateQr = (data: { qrUrl: string; amount: string; rechargeAmount: string; transactionCode: string }) => {
-    setTransactionData(data)
-    setIsInputOpen(false)
-    setIsQrOpen(true)
-  }
+  const isAuthenticated = session.status === 'authenticated'
+  const { data: pendingData } = usePendingBankQr(isAuthenticated)
+  const pendingRecord = pendingData?.data ?? null
 
   const handleOpenLoginModal = () => {
     openAuthModal('login')
+  }
+
+  const handleNavigateRecharge = () => {
+    router.push(`/${locale}/recharge`)
   }
 
   return (
@@ -69,7 +59,7 @@ const NavbarContent = () => {
         <NavToggle />
         <ModeDropdown />
 
-        {/* Hiển thị thông tin user khi đã đăng nhập - KHÔNG flicker */}
+        {/* Hiển thị thông tin user khi đã đăng nhập */}
 
         {session.status === 'authenticated' && (
           <div className='hidden md:flex items-center gap-2 px-3 py-1 bg-gray-100 rounded-lg text-sm'>
@@ -79,10 +69,46 @@ const NavbarContent = () => {
         )}
       </div>
       <div className='flex items-center gap-2'>
-        {session.status === 'authenticated' ? (
+        {isAuthenticated && pendingRecord && (
+          <Box
+            onClick={handleNavigateRecharge}
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+              background: '#fffbeb',
+              border: '1px solid #f59e0b',
+              borderRadius: '10px',
+              padding: '6px 14px',
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+              animation: 'pulse-border 2s infinite',
+              '@keyframes pulse-border': {
+                '0%, 100%': { borderColor: '#f59e0b' },
+                '50%': { borderColor: '#fbbf24' }
+              },
+              '&:hover': {
+                background: '#fef3c7',
+                borderColor: '#d97706'
+              }
+            }}
+          >
+            <Clock size={18} color='#d97706' />
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: '1px', lineHeight: 1.3 }}>
+              <Typography sx={{ fontWeight: 700, fontSize: '0.8rem', color: '#92400e' }}>
+                Chờ thanh toán: {Number(pendingRecord.amount).toLocaleString('vi-VN')}đ
+              </Typography>
+              <Typography sx={{ fontSize: '0.7rem', color: '#b45309' }}>
+                {pendingRecord.transaction_code} • {new Date(pendingRecord.created_at).toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+              </Typography>
+            </Box>
+          </Box>
+        )}
+
+        {isAuthenticated ? (
           <Button
             variant='outlined'
-            onClick={() => setIsInputOpen(true)}
+            onClick={handleNavigateRecharge}
             sx={{
               padding: '7px 10px',
               fontSize: '0.875rem',
@@ -118,21 +144,6 @@ const NavbarContent = () => {
 
       {/* AuthModal - Render trong Portal để tránh constraints */}
       {typeof window !== 'undefined' && createPortal(<AuthModal />, document.body)}
-
-      <RechargeInputDialog
-        isOpen={isInputOpen}
-        handleClose={() => setIsInputOpen(false)}
-        onGenerateQr={handleGenerateQr}
-      />
-
-      <QrCodeDisplayDialog
-        isOpen={isQrOpen}
-        handleClose={() => setIsQrOpen(false)}
-        qrDataUrl={transactionData.qrUrl}
-        amount={transactionData.amount}
-        rechargeAmount={transactionData.rechargeAmount}
-        transactionCode={transactionData.transactionCode}
-      />
     </div>
   )
 }

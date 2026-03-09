@@ -4,3 +4,4 @@
  */
 
 export * from './orderStatus'
+export * from './ticketStatus'

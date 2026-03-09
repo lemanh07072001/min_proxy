@@ -3,35 +3,28 @@ import { useSession } from 'next-auth/react'
 import useAxiosAuth from '@/hocs/useAxiosAuth'
 
 interface DashboardParams {
-  date?: string
+  date?: string | Date | null
 }
 
 export const useDashboard = () => {
   const { data: session } = useSession() as any
+  const axiosAuth = useAxiosAuth()
 
   return useQuery({
     queryKey: ['dashboard'],
     queryFn: async () => {
-      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
-      const res = await fetch(`${baseUrl}/api/admin/dashboard`, {
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${session?.access_token}`,
-          'Content-Type': 'application/json'
-        }
-      })
-      const data = await res.json()
-      return data?.data ?? null
+      const res = await axiosAuth.get('/get-dashboard')
+      return res.data?.data ?? null
     },
     enabled: !!session?.access_token,
-    refetchOnMount: 'always',
-    refetchOnWindowFocus: true,
-    staleTime: 0
+    staleTime: 60 * 1000,
+    refetchOnWindowFocus: false
   })
 }
 
 export const useDashboardMonthly = (params?: DashboardParams, enabled: boolean = true) => {
   const { data: session } = useSession() as any
+  const axiosAuth = useAxiosAuth()
 
   // Format date to DD-MM-YYYY if provided, otherwise use current date
   const formatDate = (date?: string | Date | null): string => {
@@ -63,21 +56,10 @@ export const useDashboardMonthly = (params?: DashboardParams, enabled: boolean =
   return useQuery({
     queryKey: ['dashboardMonthly', formattedDate],
     queryFn: async () => {
-      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
-      const url = new URL(`${baseUrl}/api/get-dashboard-by-date`)
-      if (formattedDate) {
-        url.searchParams.set('date', formattedDate)
-      }
-
-      const res = await fetch(url.toString(), {
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${session?.access_token}`,
-          'Content-Type': 'application/json'
-        }
+      const res = await axiosAuth.get('/get-dashboard-by-date', {
+        params: { date: formattedDate }
       })
-      const data = await res.json()
-      return data?.data ?? null
+      return res.data?.data ?? null
     },
     enabled: enabled && !!session?.access_token,
     refetchOnMount: false,

@@ -5,7 +5,7 @@ import { useMemo, useState, useCallback } from 'react'
 import Image from 'next/image'
 import { useParams, useRouter } from 'next/navigation'
 
-import { CircleQuestionMark, BadgeCheck, BadgeMinus, List, Copy, SquarePen, Trash2, SquarePlus } from 'lucide-react'
+import { CircleQuestionMark, BadgeCheck, BadgeMinus, ShoppingCart, ShoppingCartIcon, List, Copy, SquarePen, Trash2, SquarePlus, Search } from 'lucide-react'
 
 import {
   useReactTable,
@@ -38,11 +38,16 @@ import {
 import useAxiosAuth from '@/hocs/useAxiosAuth'
 import { useCopyServiceType, useDeleteServiceType } from '@/hooks/apis/useServiceType'
 import { toast } from 'react-toastify'
+import ServiceFormModal from '@/views/Client/Admin/ServiceType/ServiceFormModal'
+import { getTagStyle } from '@/configs/tagConfig'
 
 export default function TableServiceType() {
   const [columnFilters, setColumnFilters] = useState<any[]>([])
   const [rowSelection, setRowSelection] = useState({}) // State để lưu các hàng được chọn
   const [sorting, setSorting] = useState<any[]>([])
+  const [searchText, setSearchText] = useState('')
+  const [filterType, setFilterType] = useState<'' | 'static' | 'rotating'>('')
+  const [filterStatus, setFilterStatus] = useState<'' | 'active' | 'inactive'>('')
 
   const [pagination, setPagination] = useState({
     pageIndex: 0,
@@ -51,6 +56,9 @@ export default function TableServiceType() {
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [serviceToDelete, setServiceToDelete] = useState<number | null>(null)
+  const [modalOpen, setModalOpen] = useState(false)
+  const [editingId, setEditingId] = useState<number | null>(null)
+  const [editingData, setEditingData] = useState<any>(null)
 
   const router = useRouter()
   const params = useParams()
@@ -61,14 +69,18 @@ export default function TableServiceType() {
   const deleteMutation = useDeleteServiceType()
 
   const handleOpenCreate = useCallback(() => {
-    router.push(`/${locale}/admin/service-type/create`)
-  }, [router, locale])
+    setEditingId(null)
+    setEditingData(null)
+    setModalOpen(true)
+  }, [])
 
   const handleOpenEdit = useCallback(
-    (serviceId: number) => {
-      router.push(`/${locale}/admin/service-type/edit/${serviceId}`)
+    (row: any) => {
+      setEditingId(row.id)
+      setEditingData(row)
+      setModalOpen(true)
     },
-    [router, locale]
+    []
   )
 
   const handleCopyService = useCallback(
@@ -134,110 +146,22 @@ export default function TableServiceType() {
     }
   }
 
-  const getRowTooltipContent = (rowData: any) => {
-    if (!rowData?.price_by_duration) {
-      return (
-        <div style={{ padding: '4px 0', color: '#999' }}>Chưa có thông tin giá</div>
-      )
+  const filteredData = useMemo(() => {
+    let result = dataServices
+    if (searchText) {
+      const lower = searchText.toLowerCase()
+      result = result.filter((item: any) => item.name?.toLowerCase().includes(lower))
     }
-
-    // Parse price_by_duration nếu là string JSON
-    let priceDurations: any[] = []
-    try {
-      priceDurations =
-        typeof rowData.price_by_duration === 'string'
-          ? JSON.parse(rowData.price_by_duration)
-          : rowData.price_by_duration
-    } catch (error) {
-      return <div style={{ padding: '4px 0', color: '#f44336' }}>Lỗi định dạng dữ liệu giá</div>
+    if (filterType === 'static') {
+      result = result.filter((item: any) => item.type === 0 || item.type === '0')
+    } else if (filterType === 'rotating') {
+      result = result.filter((item: any) => item.type === 1 || item.type === '1')
     }
-
-    if (!Array.isArray(priceDurations) || priceDurations.length === 0) {
-      return (
-        <div style={{ padding: '4px 0', color: '#999' }}>Chưa có thông tin giá</div>
-      )
+    if (filterStatus) {
+      result = result.filter((item: any) => item.status === filterStatus)
     }
-
-    // Định nghĩa các khoảng thời gian cần hiển thị
-    const durationMap: { [key: string]: { label: string; icon: string } } = {
-      '1': { label: '1 ngày', icon: '📅' },
-      '7': { label: '1 tuần', icon: '📆' },
-      '30': { label: '1 tháng', icon: '🗓️' }
-    }
-
-    const tooltipItems: JSX.Element[] = []
-
-    // Tìm và hiển thị giá cho từng khoảng thời gian
-    ;['1', '7', '30'].forEach((duration, index) => {
-      const priceItem = priceDurations.find(
-        (item: any) => item.key === duration || item.duration === duration
-      )
-
-      if (priceItem) {
-        const price = priceItem.value || priceItem.price || '0'
-        const cost = priceItem.cost || '0'
-        const priceFormatted = new Intl.NumberFormat('vi-VN').format(parseInt(price) || 0)
-        const costFormatted = new Intl.NumberFormat('vi-VN').format(parseInt(cost) || 0)
-        const durationInfo = durationMap[duration]
-
-        tooltipItems.push(
-          <div
-            key={duration}
-            style={{
-              padding: '8px 0',
-              borderBottom: index < 2 ? '1px solid rgba(255, 255, 255, 0.1)' : 'none'
-            }}
-          >
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                marginBottom: '6px',
-                fontSize: '13px',
-                fontWeight: 600,
-                color: '#fff'
-              }}
-            >
-              <span style={{ marginRight: '6px', fontSize: '14px' }}>{durationInfo.icon}</span>
-              <span>{durationInfo.label}</span>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '12px' }}>
-              <div style={{ display: 'flex', alignItems: 'center' }}>
-                <span style={{ color: '#90caf9', marginRight: '8px', minWidth: '70px' }}>
-                  Giá bán:
-                </span>
-                <span style={{ color: '#4caf50', fontWeight: 600 }}>
-                  {priceFormatted} đ
-                </span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center' }}>
-                <span style={{ color: '#90caf9', marginRight: '8px', minWidth: '70px' }}>
-                  Giá cost:
-                </span>
-                <span style={{ color: '#ff9800', fontWeight: 600 }}>
-                  {costFormatted} đ
-                </span>
-              </div>
-            </div>
-          </div>
-        )
-      }
-    })
-
-    return tooltipItems.length > 0 ? (
-      <div
-        style={{
-          padding: '8px 4px',
-          minWidth: '200px',
-          maxWidth: '280px'
-        }}
-      >
-        {tooltipItems}
-      </div>
-    ) : (
-      <div style={{ padding: '4px 0', color: '#999' }}>Chưa có thông tin giá</div>
-    )
-  }
+    return result
+  }, [dataServices, searchText, filterType, filterStatus])
 
   const columns = useMemo(
     () => [
@@ -258,9 +182,16 @@ export default function TableServiceType() {
       {
         header: 'Trạng thái',
         cell: ({ row }: { row: any }) => {
-          return getStatusBadge(row.original.status)
+          return (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              {getStatusBadge(row.original.status)}
+              {row.original.is_purchasable === false && (
+                <Chip label='Ngừng bán' size='small' icon={<ShoppingCartIcon size={12} />} color='warning' variant='outlined' />
+              )}
+            </div>
+          )
         },
-        size: 100
+        size: 120
       },
       {
         header: 'Đối tác',
@@ -337,12 +268,63 @@ export default function TableServiceType() {
         size: 150
       },
       {
+        header: 'Giá bán',
+        cell: ({ row }: { row: any }) => {
+          const priceData = row.original?.price_by_duration
+          if (!priceData) return <div style={{ color: '#94a3b8' }}>-</div>
+          let prices: any[] = []
+          try {
+            prices = typeof priceData === 'string' ? JSON.parse(priceData) : priceData
+          } catch { return <div style={{ color: '#94a3b8' }}>-</div> }
+          if (!Array.isArray(prices) || prices.length === 0) return <div style={{ color: '#94a3b8' }}>-</div>
+          const durationLabels: Record<string, string> = { '1': 'Ngày', '7': 'Tuần', '30': 'Tháng' }
+          return (
+            <div style={{ fontSize: '12px', lineHeight: '1.6' }}>
+              {['1', '7', '30'].map(d => {
+                const item = prices.find((p: any) => p.key === d || p.duration === d)
+                if (!item) return null
+                const price = new Intl.NumberFormat('vi-VN').format(parseInt(item.value || item.price || '0') || 0)
+                return (
+                  <div key={d}>
+                    <span style={{ color: '#64748b' }}>{durationLabels[d]}: </span>
+                    <span style={{ fontWeight: 600, color: '#334155' }}>{price}đ</span>
+                  </div>
+                )
+              })}
+            </div>
+          )
+        },
+        size: 150
+      },
+      {
+        header: 'Tag',
+        cell: ({ row }: { row: any }) => {
+          const tagStr = row.original?.tag
+          if (!tagStr) return <div style={{ color: '#94a3b8' }}>-</div>
+          const tags = tagStr.split(',').map((t: string) => t.trim()).filter(Boolean)
+          if (tags.length === 0) return <div style={{ color: '#94a3b8' }}>-</div>
+          return (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+              {tags.map((tag: string, i: number) => {
+                const style = getTagStyle(tag)
+                return (
+                  <span key={i} style={{ padding: '2px 8px', fontSize: '11px', fontWeight: 600, borderRadius: '4px', backgroundColor: style.bgColor, color: style.textColor, border: `1px solid ${style.borderColor}`, whiteSpace: 'nowrap' }}>
+                    {tag}
+                  </span>
+                )
+              })}
+            </div>
+          )
+        },
+        size: 120
+      },
+      {
         header: 'Action',
         cell: ({ row }: { row: any }) => {
           return (
             <div className='flex gap-2'>
               <Tooltip title='Chỉnh sửa dịch vụ'>
-                <IconButton size='small' color='info' onClick={() => handleOpenEdit(row.original.id)}>
+                <IconButton size='small' color='info' onClick={() => handleOpenEdit(row.original)}>
                   <SquarePen size={18} />
                 </IconButton>
               </Tooltip>
@@ -382,7 +364,7 @@ export default function TableServiceType() {
   )
 
   const table = useReactTable({
-    data: dataServices,
+    data: filteredData,
     columns,
     state: {
       rowSelection,
@@ -439,6 +421,69 @@ export default function TableServiceType() {
               </Button>
             </div>
           </div>
+
+          {/* Search & Filter bar */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', borderBottom: '1px solid #e2e8f0', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: '1', minWidth: '200px', maxWidth: '300px', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '0 12px', background: '#f8fafc' }}>
+              <Search size={16} style={{ color: '#94a3b8', flexShrink: 0 }} />
+              <input
+                type='text'
+                placeholder='Tìm theo tên...'
+                value={searchText}
+                onChange={e => { setSearchText(e.target.value); setPagination(p => ({ ...p, pageIndex: 0 })) }}
+                style={{ border: 'none', outline: 'none', fontSize: '13px', padding: '8px 0', width: '100%', background: 'transparent' }}
+              />
+            </div>
+            <div style={{ display: 'flex', gap: '6px' }}>
+              {([
+                { label: 'Tất cả', value: '' },
+                { label: 'Tĩnh', value: 'static' },
+                { label: 'Xoay', value: 'rotating' }
+              ] as const).map(opt => (
+                <button
+                  key={opt.value}
+                  onClick={() => { setFilterType(opt.value as any); setPagination(p => ({ ...p, pageIndex: 0 })) }}
+                  style={{
+                    padding: '6px 14px', fontSize: '13px', fontWeight: filterType === opt.value ? 600 : 500,
+                    borderRadius: '6px',
+                    border: `1px solid ${filterType === opt.value ? 'var(--mui-palette-primary-main, #7c3aed)' : '#e2e8f0'}`,
+                    background: filterType === opt.value ? 'var(--mui-palette-primary-lightOpacity, rgba(124, 58, 237, 0.08))' : 'white',
+                    color: filterType === opt.value ? 'var(--mui-palette-primary-main, #7c3aed)' : '#64748b',
+                    cursor: 'pointer', transition: 'all 0.2s'
+                  }}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+            <div style={{ display: 'flex', gap: '6px' }}>
+              {([
+                { label: 'Active', value: 'active', activeColor: '#22c55e', activeBg: '#f0fdf4', activeText: '#16a34a' },
+                { label: 'Inactive', value: 'inactive', activeColor: '#ef4444', activeBg: '#fef2f2', activeText: '#dc2626' }
+              ] as const).map(opt => (
+                <button
+                  key={opt.value}
+                  onClick={() => { setFilterStatus(prev => prev === opt.value ? '' : opt.value as any); setPagination(p => ({ ...p, pageIndex: 0 })) }}
+                  style={{
+                    padding: '6px 14px', fontSize: '13px', fontWeight: filterStatus === opt.value ? 600 : 500,
+                    borderRadius: '6px',
+                    border: `1px solid ${filterStatus === opt.value ? opt.activeColor : '#e2e8f0'}`,
+                    background: filterStatus === opt.value ? opt.activeBg : 'white',
+                    color: filterStatus === opt.value ? opt.activeText : '#64748b',
+                    cursor: 'pointer', transition: 'all 0.2s'
+                  }}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+            {(searchText || filterType || filterStatus) && (
+              <span style={{ fontSize: '12px', color: '#94a3b8' }}>
+                {filteredData.length} / {dataServices.length} dịch vụ
+              </span>
+            )}
+          </div>
+
           {/* Table */}
           <div className='table-wrapper'>
             <table className='data-table' style={isLoading || dataServices.length === 0 ? { height: '100%' } : {}}>
@@ -478,41 +523,13 @@ export default function TableServiceType() {
                   </tr>
                 ) : (
                   table.getRowModel().rows.map(row => (
-                    <Tooltip
-                      key={row.id}
-                      title={getRowTooltipContent(row.original)}
-                      arrow
-                      placement='top'
-                      componentsProps={{
-                        tooltip: {
-                          sx: {
-                            bgcolor: 'rgba(30, 30, 30, 0.95)',
-                            backdropFilter: 'blur(10px)',
-                            border: '1px solid rgba(255, 255, 255, 0.1)',
-                            borderRadius: '8px',
-                            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
-                            maxWidth: 'none',
-                            fontSize: '12px'
-                          }
-                        },
-                        arrow: {
-                          sx: {
-                            color: 'rgba(30, 30, 30, 0.95)',
-                            '&::before': {
-                              border: '1px solid rgba(255, 255, 255, 0.1)'
-                            }
-                          }
-                        }
-                      }}
-                    >
-                      <tr className='table-row'>
-                        {row.getVisibleCells().map(cell => (
-                          <td className='table-cell' key={cell.id}>
-                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                          </td>
-                        ))}
-                      </tr>
-                    </Tooltip>
+                    <tr key={row.id} className='table-row'>
+                      {row.getVisibleCells().map(cell => (
+                        <td className='table-cell' key={cell.id}>
+                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        </td>
+                      ))}
+                    </tr>
                   ))
                 )}
               </tbody>
@@ -601,6 +618,14 @@ export default function TableServiceType() {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Service Form Modal (Create / Edit) */}
+      <ServiceFormModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        serviceId={editingId}
+        initialData={editingData}
+      />
     </>
   )
 }

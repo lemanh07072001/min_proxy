@@ -116,7 +116,7 @@ export default function DailyStats() {
             />
             <KPICard
               label='Số Tiền Hoàn'
-              value={dashboardData?.total_refunts ?? 0}
+              value={dashboardData?.total_refunds ?? 0}
               icon={<Users size={24} />}
               color='blue'
             />

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 
 import Image from 'next/image'
 
@@ -11,348 +11,460 @@ import {
   List,
   Clock3,
   Search,
-  Calendar,
-  Filter,
   X,
-  Loader
+  Loader,
+  Loader2,
+  Trash2,
+  ArrowDownWideNarrow,
+  ArrowUpNarrowWide
 } from 'lucide-react'
 
 import {
   useReactTable,
   getCoreRowModel,
-  flexRender,
-  getFilteredRowModel,
-  getSortedRowModel,
   getPaginationRowModel,
-  getFacetedRowModel,
-  getFacetedUniqueValues // Thêm để lọc hàng đã chọn
+  flexRender,
+  type ColumnDef
 } from '@tanstack/react-table'
 
 import Chip from '@mui/material/Chip'
 import Tooltip from '@mui/material/Tooltip'
-
-import Pagination from '@mui/material/Pagination'
 import MenuItem from '@mui/material/MenuItem'
 import InputAdornment from '@mui/material/InputAdornment'
 import IconButton from '@mui/material/IconButton'
+import Dialog from '@mui/material/Dialog'
+import DialogActions from '@mui/material/DialogActions'
+import DialogContent from '@mui/material/DialogContent'
+import DialogTitle from '@mui/material/DialogTitle'
+import Button from '@mui/material/Button'
+import Pagination from '@mui/material/Pagination'
+import Checkbox from '@mui/material/Checkbox'
 
-import AppReactDatepicker from '@/components/AppReactDatepicker'
-
-import { formatDateTimeLocal } from '@/utils/formatDate'
-import DetailUserModal from '@/views/Client/Admin/TransactionHistory/DetailUserModal'
-import { useUserOrders } from '@/hooks/apis/useUserOrders'
-import { useOrders } from '@/hooks/apis/useOrders'
 import CustomTextField from '@/@core/components/mui/TextField'
 import useMediaQuery from '@/@menu/hooks/useMediaQuery'
-import { useDepositHistory } from '@/hooks/apis/useDeponsitHistory'
+import { formatDateTimeLocal } from '@/utils/formatDate'
+import { useDepositHistory, useDeleteDeposit } from '@/hooks/apis/useDeponsitHistory'
+import { TRANSACTION_TYPE_LABELS } from '@/constants'
+
+// Shared select style
+const selectSx = {
+  minWidth: '140px',
+  '& .MuiOutlinedInput-root': { fontSize: '13px', borderRadius: '8px', minHeight: '38px' },
+  '& .MuiSelect-select': { paddingBlock: '8.5px' }
+}
 
 export default function TableDepositHistory() {
   const isMobile = useMediaQuery('768px')
 
-  const [columnFilters, setColumnFilters] = useState<any[]>([])
-  const [rowSelection, setRowSelection] = useState({})
-  const [sorting, setSorting] = useState<any[]>([])
-  const [isModalDetailUserOpen, setIsModalDetailUserOpen] = useState(false)
-  const [selectedUserId, setSelectedUserId] = useState<number | undefined>()
-  const [date, setDate] = useState<Date | null | undefined>(new Date())
-  const [searchUser, setSearchUser] = useState<string>('')
+  // Staged filter values
+  const [statusInput, setStatusInput] = useState<string>('')
+  const [limitInput, setLimitInput] = useState<string>('100')
+  const [sortInput, setSortInput] = useState<'desc' | 'asc'>('desc')
+
+  // Applied filter values
   const [statusFilter, setStatusFilter] = useState<string>('')
+  const [limit, setLimit] = useState<number>(100)
+  const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc')
 
-  const [pagination, setPagination] = useState({
-    pageIndex: 0,
-    pageSize: 13
-  }) // State để lưu các hàng được chọn
+  // Selection
+  const [rowSelection, setRowSelection] = useState<Record<string, boolean>>({})
 
-  const { data: dataDeposit = [], isLoading: loadingModal, refetch } = useDepositHistory()
+  // Delete
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [deleteIds, setDeleteIds] = useState<number[]>([])
 
-  const getTypeBadge = (status: string) => {
-    switch (status) {
-      // case '':
-      //   return <Chip label='Chờ xử lý' size='small' icon={<BadgeAlert />} color='warning' />
+  // Apply filters
+  const handleApplyFilters = useCallback(() => {
+    const parsedLimit = Math.min(Math.max(parseInt(limitInput) || 100, 100), 10000)
+
+    setStatusFilter(statusInput)
+    setLimit(parsedLimit)
+    setSortOrder(sortInput)
+    setLimitInput(String(parsedLimit))
+  }, [statusInput, limitInput, sortInput])
+
+  const handleClearAll = useCallback(() => {
+    setStatusInput('')
+    setLimitInput('100')
+    setSortInput('desc')
+    setStatusFilter('')
+    setLimit(100)
+    setSortOrder('desc')
+  }, [])
+
+  // Data
+  const { data: apiResponse, isLoading, isFetching } = useDepositHistory({
+    ...(statusFilter ? { status: statusFilter } : {}),
+    limit,
+    order: sortOrder
+  })
+
+  const deleteMutation = useDeleteDeposit()
+
+  const dataList = useMemo(() => apiResponse?.data ?? [], [apiResponse])
+
+  // Badge helpers — contrast-safe, label đủ rõ ràng, không bị cắt
+  const chipSx = { '& .MuiChip-label': { whiteSpace: 'nowrap' as const } }
+  const chipWarning = { '& .MuiChip-label': { color: '#fff', whiteSpace: 'nowrap' as const }, '& .MuiChip-icon': { color: '#fff' } }
+
+  const getTypeBadge = (type: string) => {
+    const label = TRANSACTION_TYPE_LABELS[type] || 'Không xác định'
+
+    switch (type) {
       case 'PLUS':
-        return <Chip label='Nạp tiền' size='small' icon={<BadgeCheck />} color='success' />
+        return <Chip label={label} size='small' icon={<BadgeCheck />} color='success' sx={chipSx} />
       case 'MINUS':
-        return <Chip label='Hoàn' size='small' icon={<BadgeMinus />} color='error' />
+        return <Chip label={label} size='small' icon={<BadgeMinus />} color='error' sx={chipSx} />
       default:
-        return <Chip label='Không xác định' size='small' icon={<CircleQuestionMark />} color='secondary' />
+        return <Chip label={label} size='small' icon={<CircleQuestionMark />} color='default' sx={chipSx} />
     }
   }
 
   const getStatusBadge = (status: string, note?: string) => {
     switch (status) {
-      // case '':
-      //   return <Chip label='Chờ xử lý' size='small' icon={<BadgeAlert />} color='warning' />
-      case 'pending': {
-        const label = 'Chờ xử lý'
-        return <Chip label={label} size='small' icon={<Loader className='animate-spin' />} color='warning' />
-      }
-      case 'success': {
-        const label = 'Thành công'
-        return <Chip label={label} size='small' icon={<BadgeCheck />} color='success' />
-      }
-      case 'failed': {
-        const label = 'Thất bại'
+      case 'pending':
+        return (
+          <Chip
+            label='Chờ xử lý'
+            size='small'
+            icon={<Loader style={{ animation: 'spin 1s linear infinite' }} />}
+            color='warning'
+            sx={chipWarning}
+          />
+        )
+      case 'success':
+        return <Chip label='Thành công' size='small' icon={<BadgeCheck />} color='success' sx={chipSx} />
+      case 'failed':
         return (
           <Tooltip title={note} placement='top'>
-            <Chip label={label} size='small' icon={<BadgeMinus />} color='error' />
+            <Chip label='Thất bại' size='small' icon={<BadgeMinus />} color='error' sx={chipSx} />
           </Tooltip>
         )
-      }
-      default: {
-        const label = 'Thành công'
-        return <Chip label={label} size='small' icon={<BadgeCheck />} color='success' />
-      }
+      case 'cancelled':
+        return <Chip label='Đã hủy' size='small' icon={<X />} color='default' sx={chipSx} />
+      case 'expired':
+        return <Chip label='Hết hạn' size='small' icon={<Clock3 />} color='default' sx={chipSx} />
+      default:
+        return <Chip label='Thành công' size='small' icon={<BadgeCheck />} color='success' sx={chipSx} />
     }
   }
 
-  const columns = useMemo(
+  // Columns
+  const columns: ColumnDef<any, any>[] = useMemo(
     () => [
+      {
+        id: 'select',
+        header: ({ table }: { table: any }) => (
+          <Checkbox
+            size='small'
+            checked={table.getIsAllPageRowsSelected()}
+            indeterminate={table.getIsSomePageRowsSelected()}
+            onChange={table.getToggleAllPageRowsSelectedHandler()}
+          />
+        ),
+        cell: ({ row }: { row: any }) => (
+          <Checkbox
+            size='small'
+            checked={row.getIsSelected()}
+            onChange={row.getToggleSelectedHandler()}
+          />
+        ),
+        size: 40
+      },
       {
         accessorKey: 'id',
         header: 'ID',
-        size: isMobile ? 60 : 20
+        size: isMobile ? 60 : 50
       },
-
+      {
+        id: 'actions',
+        header: 'Thao tác',
+        size: 50,
+        cell: ({ row }: { row: any }) => (
+          <Tooltip title='Xóa' placement='top'>
+            <IconButton
+              size='small'
+              color='error'
+              onClick={() => {
+                setDeleteIds([row.original.id])
+                setDeleteDialogOpen(true)
+              }}
+            >
+              <Trash2 size={16} />
+            </IconButton>
+          </Tooltip>
+        )
+      },
+      {
+        header: 'User',
+        size: isMobile ? 200 : 150,
+        cell: ({ row }: { row: any }) => {
+          const user = row.original?.user
+          return user ? (
+            <div className='d-flex flex-col gap-0.5'>
+              <span className='font-medium'>{user.name}</span>
+              <span className='text-xs' style={{ color: 'var(--mui-palette-text-secondary, #64748b)' }}>
+                {user.email}
+              </span>
+            </div>
+          ) : (
+            <span style={{ color: 'var(--mui-palette-text-disabled, #94a3b8)' }}>—</span>
+          )
+        }
+      },
       {
         accessorKey: 'transaction_type',
         header: 'Loại',
-        cell: ({ row }: { row: any }) => {
-          return getTypeBadge(row.original.transaction_type)
-        },
-        size: isMobile ? 150 : 100
+        cell: ({ row }: { row: any }) => getTypeBadge(row.original.transaction_type),
+        size: 130
       },
       {
         header: 'Số tiền',
         cell: ({ row }: { row: any }) => (
-          <div>
-            <span className='font-sm'>
-              Số tiền: {new Intl.NumberFormat('vi-VN').format(row.original.amount) + ' đ'}
-            </span>
-          </div>
+          <span style={{ fontWeight: 600, color: 'var(--mui-palette-text-primary, #1e293b)' }}>
+            {new Intl.NumberFormat('vi-VN').format(row.original.amount)} đ
+          </span>
         ),
         size: 120
       },
       {
         header: 'Nội dung',
-        size: isMobile ? 650 : 550,
-        cell: ({ row }: { row: any }) => {
-          return (
-            <>
-              <div className='d-flex flex-col  gap-1 '>
-                <div>Mã giao dịch: {row.original.tid}</div>
-                <div>Nội dung: {row.original.description}</div>
-              </div>
-            </>
-          )
-        }
+        size: isMobile ? 400 : 300,
+        cell: ({ row }: { row: any }) => (
+          <div className='d-flex flex-col gap-0.5' style={{ fontSize: '13px' }}>
+            {row.original.tid && (
+              <div style={{ color: 'var(--mui-palette-text-primary, #334155)' }}>Mã GD: {row.original.tid}</div>
+            )}
+            {row.original.description && (
+              <div style={{ color: 'var(--mui-palette-text-primary, #334155)' }}>Nội dung: {row.original.description}</div>
+            )}
+            {row.original.deposit_type && (
+              <div style={{ color: 'var(--mui-palette-text-disabled, #94a3b8)' }}>Nguồn: {row.original.deposit_type}</div>
+            )}
+          </div>
+        )
       },
       {
         header: 'Trạng thái',
-        size: isMobile ? 150 : 150,
-        cell: ({ row }: { row: any }) => {
-          return getStatusBadge(row.original.status, row.original.note)
-        }
+        size: 150,
+        cell: ({ row }: { row: any }) => getStatusBadge(row.original.status, row.original.note)
       },
       {
         accessorKey: 'created_at',
         header: 'Thời gian',
-        size: isMobile ? 220 : 150,
-        cell: ({ row }: { row: any }) => {
-          return (
-            <>
-              <div className='d-flex align-items-center  gap-1 '>
-                <Clock3 size={14} />
-                <div style={{ marginTop: '2px' }}>{formatDateTimeLocal(row.original.created_at)}</div>
-              </div>
-            </>
-          )
-        }
+        size: isMobile ? 200 : 150,
+        cell: ({ row }: { row: any }) => (
+          <div className='d-flex align-items-center gap-1' style={{ color: 'var(--mui-palette-text-secondary, #64748b)' }}>
+            <Clock3 size={14} />
+            <span style={{ fontSize: '13px' }}>{formatDateTimeLocal(row.original.created_at)}</span>
+          </div>
+        )
       }
     ],
-    []
+    [isMobile]
   )
 
-  // Lọc dữ liệu: tìm kiếm theo id, amount, description; lọc status; so sánh theo ngày created_at
-  const filteredDeposit = useMemo(() => {
-    const normalize = (v: any) => (v ?? '').toString().toLowerCase()
-
-    return (dataDeposit ?? []).filter((item: any) => {
-      // Search text
-      const q = normalize(searchUser).trim()
-      const idStr = normalize(item?.id)
-      const amountStr = normalize(item?.amount)
-      const descriptionStr = normalize(item?.description)
-      const matchesSearch = !q || idStr.includes(q) || amountStr.includes(q) || descriptionStr.includes(q)
-
-      // Status filter (treat null/undefined as 'success')
-      const effectiveStatus = (item?.status ?? 'success').toString()
-      const matchesStatus = !statusFilter || effectiveStatus === statusFilter
-
-      // Date filter (date-only)
-      const matchesDate = (() => {
-        if (!date) return true
-        try {
-          const rowDate = new Date(item?.created_at)
-          if (isNaN(rowDate.getTime())) return false
-          const toYmd = (d: Date) =>
-            `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d
-              .getDate()
-              .toString()
-              .padStart(2, '0')}`
-          return toYmd(rowDate) === toYmd(date as Date)
-        } catch {
-          return false
-        }
-      })()
-
-      return matchesSearch && matchesStatus && matchesDate
-    })
-  }, [dataDeposit, searchUser, statusFilter, date])
-
   const table = useReactTable({
-    data: filteredDeposit,
+    data: dataList,
     columns,
     state: {
-      rowSelection,
-      pagination,
-      columnFilters,
-      sorting
+      rowSelection
     },
-    enableRowSelection: true, // Bật tính năng chọn hàng
-    onRowSelectionChange: setRowSelection, // Cập nhật state khi có thay đổi
-    onPaginationChange: setPagination,
-    onColumnFiltersChange: setColumnFilters,
-    onSortingChange: setSorting,
-
+    enableRowSelection: true,
+    onRowSelectionChange: setRowSelection,
     getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(), // Tùy chọn: cần thiết nếu có bộ lọc
-    getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
-    getFacetedRowModel: getFacetedRowModel(),
-    getFacetedUniqueValues: getFacetedUniqueValues()
+    initialState: {
+      pagination: { pageSize: 20 }
+    },
+    getRowId: (row: any) => String(row.id)
   })
 
-  const { pageIndex, pageSize } = table.getState().pagination
-  const totalRows = table.getFilteredRowModel().rows.length
-  const startRow = pageIndex * pageSize + 1
-  const endRow = Math.min(startRow + pageSize - 1, totalRows)
+  // Selected IDs
+  const selectedIds = useMemo(() => {
+    return Object.keys(rowSelection)
+      .filter(key => rowSelection[key])
+      .map(key => {
+        const row = dataList.find((item: any) => String(item.id) === key)
+        return row?.id
+      })
+      .filter(Boolean) as number[]
+  }, [rowSelection, dataList])
 
-  // Detail User Modal
+  // Delete handlers
+  const handleDeleteSelected = () => {
+    if (selectedIds.length === 0) return
+    setDeleteIds(selectedIds)
+    setDeleteDialogOpen(true)
+  }
+
+  const confirmDelete = () => {
+    deleteMutation.mutate(deleteIds, {
+      onSuccess: () => {
+        setDeleteDialogOpen(false)
+        setDeleteIds([])
+        setRowSelection({})
+      }
+    })
+  }
 
   return (
     <>
       <div className='orders-content'>
-        {/* Toolbar */}
-
-        {/* Proxy Table */}
         <div className='table-container'>
+          {/* Header */}
           <div className='table-toolbar w-full'>
             <div className='header-left'>
               <div className='page-icon'>
                 <List size={17} />
               </div>
-              <div className='flex justify-between align-middle'>
-                <h5 className='mb-0 font-semibold'>Lịch sử giao dịch</h5>
-              </div>
+              <h5 className='mb-0 font-semibold'>Lịch sử nạp tiền</h5>
             </div>
-
             <div className='header-right'>
               <div className='flex align-middle gap-2'>
-                <CustomTextField
-                  fullWidth
-                  className='lg:w-[320px]'
-                  size='small'
-                  placeholder='Nhập từ khóa...'
-                  value={searchUser}
-                  onChange={e => setSearchUser(e.target.value)}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position='start'>
-                        <Search size={16} />
-                      </InputAdornment>
-                    ),
-                    endAdornment: (
-                      <InputAdornment position='end'>
-                        {searchUser ? (
-                          <IconButton aria-label='clear' size='small' onClick={() => setSearchUser('')}>
-                            <X size={16} />
-                          </IconButton>
-                        ) : null}
-                      </InputAdornment>
-                    )
-                  }}
-                />
-
-                <CustomTextField
-                  fullWidth
-                  select
-                  value={statusFilter}
-                  className='lg:w-[220px]'
-                  id='select-without-label'
-                  slotProps={{
-                    select: { displayEmpty: true },
-                    htmlInput: { 'aria-label': 'Without label' }
-                  }}
-                  onChange={e => setStatusFilter(e.target.value)}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position='start'>
-                        <Filter size={16} />
-                      </InputAdornment>
-                    ),
-                    endAdornment: (
-                      <InputAdornment position='end'>
-                        {statusFilter ? (
-                          <IconButton aria-label='clear' size='small' onClick={() => setStatusFilter('')}>
-                            <X size={16} />
-                          </IconButton>
-                        ) : null}
-                      </InputAdornment>
-                    )
-                  }}
-                >
-                  <MenuItem value=''>
-                    <em>Chọn trạng thái</em>
-                  </MenuItem>
-                  <MenuItem value={'pending'}>Chờ xử lý</MenuItem>
-                  <MenuItem value={'success'}>Thành công</MenuItem>
-                  <MenuItem value={'failed'}>Thất bại</MenuItem>
-                </CustomTextField>
-
-                <AppReactDatepicker
-                  className='lg:w-[180px]'
-                  selected={date}
-                  id='basic-input'
-                  onChange={(date: Date | null) => setDate(date)}
-                  placeholderText='Chọn ngày'
-                  customInput={
-                    <CustomTextField
-                      fullWidth
-                      InputProps={{
-                        startAdornment: (
-                          <InputAdornment position='start'>
-                            <Calendar size={16} />
-                          </InputAdornment>
-                        ),
-                        endAdornment: (
-                          <InputAdornment position='end'>
-                            {date ? (
-                              <IconButton aria-label='clear' size='small' onClick={() => setDate(null)}>
-                                <X size={16} />
-                              </IconButton>
-                            ) : null}
-                          </InputAdornment>
-                        )
-                      }}
-                    />
-                  }
-                />
+                {/* Bulk delete button */}
+                {selectedIds.length > 0 && (
+                  <Button
+                    variant='contained'
+                    color='error'
+                    size='small'
+                    startIcon={<Trash2 size={16} />}
+                    onClick={handleDeleteSelected}
+                    sx={{ color: '#fff' }}
+                  >
+                    Xóa ({selectedIds.length})
+                  </Button>
+                )}
               </div>
             </div>
           </div>
+
+          {/* Filter bar — click "Tìm kiếm" mới apply */}
+          <div
+            style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '12px 16px',
+              borderBottom: '1px solid var(--border-color, #e2e8f0)',
+              background: 'var(--mui-palette-background-default, #f8fafc)'
+            }}
+          >
+            {/* Status filter */}
+            <CustomTextField
+              select
+              size='small'
+              value={statusInput}
+              onChange={e => setStatusInput(e.target.value)}
+              sx={selectSx}
+              slotProps={{ select: { displayEmpty: true } }}
+            >
+              <MenuItem value=''>
+                <em>Tất cả trạng thái</em>
+              </MenuItem>
+              <MenuItem value='pending'>Chờ xử lý</MenuItem>
+              <MenuItem value='success'>Thành công</MenuItem>
+              <MenuItem value='failed'>Thất bại</MenuItem>
+              <MenuItem value='cancelled'>Đã hủy</MenuItem>
+              <MenuItem value='expired'>Hết hạn</MenuItem>
+            </CustomTextField>
+
+            {/* Sort order */}
+            <CustomTextField
+              select
+              size='small'
+              value={sortInput}
+              onChange={e => setSortInput(e.target.value as 'desc' | 'asc')}
+              sx={{ ...selectSx, minWidth: '120px' }}
+              slotProps={{ select: { displayEmpty: true } }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position='start'>
+                    {sortInput === 'desc' ? (
+                      <ArrowDownWideNarrow size={15} style={{ color: 'var(--mui-palette-text-disabled, #94a3b8)' }} />
+                    ) : (
+                      <ArrowUpNarrowWide size={15} style={{ color: 'var(--mui-palette-text-disabled, #94a3b8)' }} />
+                    )}
+                  </InputAdornment>
+                )
+              }}
+            >
+              <MenuItem value='desc'>Mới nhất</MenuItem>
+              <MenuItem value='asc'>Cũ nhất</MenuItem>
+            </CustomTextField>
+
+            {/* Limit bản ghi — label cố định + giá trị */}
+            <CustomTextField
+              size='small'
+              type='number'
+              value={limitInput}
+              onChange={e => setLimitInput(e.target.value)}
+              onKeyDown={(e: React.KeyboardEvent) => { if (e.key === 'Enter') handleApplyFilters() }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position='start'>
+                    <span style={{ fontSize: '12px', color: 'var(--mui-palette-text-secondary, #64748b)', whiteSpace: 'nowrap' }}>Số bản ghi</span>
+                  </InputAdornment>
+                )
+              }}
+              slotProps={{ htmlInput: { min: 100, max: 10000 } }}
+              sx={{
+                width: '180px',
+                '& .MuiOutlinedInput-root': { fontSize: '13px', borderRadius: '8px', minHeight: '38px' },
+                '& input': { MozAppearance: 'textfield' },
+                '& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button': { WebkitAppearance: 'none' }
+              }}
+            />
+
+            {/* Nút tìm kiếm — ở cuối, loading + disable khi đang fetch */}
+            <Button
+              variant='contained'
+              size='small'
+              onClick={handleApplyFilters}
+              disabled={isFetching}
+              sx={{
+                height: '38px',
+                fontSize: '13px',
+                fontWeight: 600,
+                textTransform: 'none',
+                borderRadius: '8px',
+                boxShadow: 'none',
+                gap: '4px',
+                color: '#fff',
+                px: 2,
+                minWidth: '110px',
+                '&.Mui-disabled': {
+                  backgroundColor: 'var(--mui-palette-primary-main)',
+                  opacity: 0.65,
+                  color: '#fff'
+                }
+              }}
+            >
+              {isFetching ? <Loader2 size={15} style={{ animation: 'spin 1s linear infinite' }} /> : <Search size={15} />}
+              {isFetching ? 'Đang tìm...' : 'Tìm kiếm'}
+            </Button>
+
+            {/* Clear all */}
+            {!!(statusFilter || limit !== 100 || sortOrder !== 'desc') && (
+              <Tooltip title='Đặt lại tất cả'>
+                <IconButton
+                  size='small'
+                  onClick={handleClearAll}
+                  sx={{
+                    color: 'var(--mui-palette-text-disabled, #94a3b8)',
+                    '&:hover': { color: '#ef4444', backgroundColor: 'rgba(239,68,68,0.08)' }
+                  }}
+                >
+                  <X size={16} />
+                </IconButton>
+              </Tooltip>
+            )}
+          </div>
+
           {/* Table */}
-          <div className='table-wrapper'>
-            <table className='data-table' style={loadingModal || dataDeposit.length === 0 ? { height: '100%' } : {}}>
+          <div className='table-wrapper' style={{ overflowX: 'auto' }}>
+            <table className='data-table' style={{ minWidth: '1000px', ...(isLoading || dataList.length === 0 ? { height: '100%' } : {}) }}>
               <thead className='table-header'>
                 {table.getHeaderGroups().map(headerGroup => (
                   <tr key={headerGroup.id}>
@@ -365,7 +477,7 @@ export default function TableDepositHistory() {
                 ))}
               </thead>
               <tbody>
-                {loadingModal ? (
+                {isLoading ? (
                   <tr>
                     <td colSpan={columns.length} className='py-10 text-center'>
                       <div className='loader-wrapper'>
@@ -383,27 +495,17 @@ export default function TableDepositHistory() {
                     <td colSpan={columns.length} className='py-10 text-center'>
                       <div className='flex flex-col items-center justify-center'>
                         <Image src='/images/no-data.png' alt='No data' width={160} height={160} />
-                        <p className='mt-4 text-gray-500'>Không có dữ liệu</p>
+                        <p className='mt-4' style={{ color: 'var(--mui-palette-text-disabled, #94a3b8)' }}>
+                          Không có dữ liệu
+                        </p>
                       </div>
                     </td>
                   </tr>
                 ) : (
                   table.getRowModel().rows.map(row => (
-                    <tr
-                      className={`table-row ${
-                        row.original?.type === 'gem1' || row.original?.transaction_type === 'gem1' ? 'text-red-500' : ''
-                      }`}
-                      key={row.id}
-                    >
+                    <tr className='table-row' key={row.id}>
                       {row.getVisibleCells().map(cell => (
-                        <td
-                          className={`table-cell ${
-                            row.original?.type === 'gem1' || row.original?.transaction_type === 'gem1'
-                              ? 'text-red-500'
-                              : ''
-                          }`}
-                          key={cell.id}
-                        >
+                        <td className='table-cell' key={cell.id}>
                           {flexRender(cell.column.columnDef.cell, cell.getContext())}
                         </td>
                       ))}
@@ -414,66 +516,73 @@ export default function TableDepositHistory() {
             </table>
           </div>
 
-          {/* Pagination */}
-          <div className='pagination-container'>
-            <div className='pagination-wrapper'>
-              <div className='pagination-info'>
-                <div className='page-size-select'>
-                  <span className='text-sm text-gray'>Kích cỡ trang linh</span>
-                  <div className='page-size-select-wrapper'>
-                    <select
-                      value={table.getState().pagination.pageSize}
-                      onChange={e => {
-                        table.setPageSize(Number(e.target.value))
-                      }}
-                      className='page-size-select'
-                    >
-                      <option value='10'>10</option>
-                      <option value='50'>50</option>
-                      <option value='100'>100</option>
-                    </select>
-                    <div className='select-arrow'>
-                      <svg className='h-4 w-4' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'>
-                        <path d='M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z' />
-                      </svg>
-                    </div>
-                  </div>
-                </div>
-                {/* --- Hiển thị số hàng trên trang hiện tại --- */}
-                <div>
-                  {totalRows > 0 ? (
-                    <span>
-                      {startRow} - {endRow} của {totalRows} hàng
-                    </span>
-                  ) : (
-                    <span>Không có dữ liệu</span>
-                  )}
-                </div>
+          {/* Footer — phân trang client */}
+          {!isLoading && dataList.length > 0 && (
+            <div
+              style={{
+                padding: '10px 16px',
+                borderTop: '1px solid var(--border-color, #e2e8f0)',
+                display: 'flex',
+                flexWrap: 'wrap',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                gap: '8px'
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: 'var(--mui-palette-text-secondary, #64748b)' }}>
+                <span>Hiển thị</span>
+                <CustomTextField
+                  select
+                  size='small'
+                  value={table.getState().pagination.pageSize}
+                  onChange={e => table.setPageSize(Number(e.target.value))}
+                  sx={{ width: '70px', '& .MuiOutlinedInput-root': { fontSize: '13px' }, '& .MuiSelect-select': { py: '4px' } }}
+                >
+                  {[20, 50, 100].map(size => (
+                    <MenuItem key={size} value={size}>{size}</MenuItem>
+                  ))}
+                </CustomTextField>
+                <span>/ {new Intl.NumberFormat('vi-VN').format(dataList.length)} bản ghi {sortOrder === 'desc' ? 'mới nhất' : 'cũ nhất'}</span>
               </div>
-
-              <div className='pagination-buttons'>
+              {table.getPageCount() > 1 && (
                 <Pagination
                   count={table.getPageCount()}
-                  shape='rounded'
-                  variant='outlined'
-                  color='primary'
                   page={table.getState().pagination.pageIndex + 1}
-                  onChange={(event, page) => {
-                    table.setPageIndex(page - 1)
-                  }}
+                  onChange={(_, page) => table.setPageIndex(page - 1)}
+                  size='small'
+                  color='primary'
                 />
-              </div>
+              )}
             </div>
-          </div>
+          )}
         </div>
       </div>
 
-      {/* <DetailUserModal
-        isOpen={isModalDetailUserOpen}
-        onClose={() => setIsModalDetailUserOpen(false)}
-        // data={dataDeposit}
-        isLoading={loadingModal}
-      /> */}
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)} maxWidth='xs' fullWidth>
+        <DialogTitle sx={{ color: '#d32f2f' }}>Xác nhận xóa vĩnh viễn</DialogTitle>
+        <DialogContent>
+          Bạn có chắc muốn xóa <strong>{deleteIds.length}</strong> bản ghi nạp tiền?
+          <br />
+          <span style={{ fontSize: '13px', color: '#d32f2f', fontWeight: 500 }}>
+            Hành động này sẽ xóa vĩnh viễn và không thể hoàn tác.
+          </span>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteDialogOpen(false)} disabled={deleteMutation.isPending}>
+            Hủy
+          </Button>
+          <Button
+            variant='contained'
+            color='error'
+            onClick={confirmDelete}
+            disabled={deleteMutation.isPending}
+            sx={{ color: '#fff' }}
+          >
+            {deleteMutation.isPending ? 'Đang xóa...' : 'Xóa'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   )
 }

@@ -2,13 +2,17 @@
 
 import type { CSSProperties } from 'react'
 
+import { useBranding } from '@/app/contexts/BrandingContext'
+
 const Logo = ({ color }: { color?: CSSProperties['color'] }) => {
+  const { logo, name } = useBranding()
+
   return (
     <div className='flex items-center'>
-      <img 
-        src='/images/logo/Logo_MKT_Proxy.png' 
-        alt='Logo_MKT_Proxy' 
-        width={180} 
+      <img
+        src={logo}
+        alt={name}
+        width={180}
         height={50}
         style={{ maxWidth: '100%', height: 'auto' }}
         onError={(e) => {

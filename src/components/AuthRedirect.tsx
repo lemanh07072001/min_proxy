@@ -16,7 +16,7 @@ const AuthRedirect = ({ lang, children }: { lang: Locale; children: React.ReactN
   useEffect(() => {
     // Nếu đã có session thì chuyển hướng về overview
     if (status === 'authenticated') {
-      router.push(`/${lang}/overview`)
+      router.push(`/${lang}/home`)
     }
   }, [status, router, lang])
 

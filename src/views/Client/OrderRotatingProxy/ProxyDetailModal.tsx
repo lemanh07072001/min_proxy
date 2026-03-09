@@ -31,7 +31,7 @@ const ProxyDetailModal: React.FC<ProxyDetailModalProps> = ({ open, onClose, prox
     switch (status) {
       case 'ACTIVE':
         return <Chip label='Đang hoạt động' size='small' color='success' />
-      case 'EXPRIRED':
+      case 'EXPIRED':
         return <Chip label='Tạm dừng' size='small' color='error' />
       default:
         return <Chip label='Không xác định' size='small' color='secondary' />

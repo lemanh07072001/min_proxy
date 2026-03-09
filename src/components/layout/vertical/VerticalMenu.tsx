@@ -1,7 +1,6 @@
-// THÊM MỚI: Import useState và useEffect từ React
-import { useState, useEffect, type MouseEvent } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 
-import { useParams, usePathname } from 'next/navigation'
+import { useParams, usePathname, useRouter } from 'next/navigation'
 
 import {
   ChartColumn,
@@ -15,10 +14,16 @@ import {
   MessageCircleQuestionMark,
   Handshake,
   Link,
+  Wallet,
+  EthernetPort,
 
   // Admin icons
   Users,
-  BarChart3
+  BarChart3,
+  Megaphone,
+  Settings,
+  LifeBuoy,
+  AlertTriangle
 } from 'lucide-react'
 
 // MUI Imports
@@ -36,6 +41,7 @@ import { Menu, MenuItem, MenuSection, SubMenu } from '@menu/vertical-menu'
 // Hook Imports
 import useVerticalNav from '@menu/hooks/useVerticalNav'
 import { useRole } from '@/hooks/useRole'
+import { setNavigationPending } from '@/lib/navigationState'
 
 // Styled Component Imports
 import StyledVerticalNavExpandIcon from '@menu/styles/vertical/StyledVerticalNavExpandIcon'
@@ -64,13 +70,13 @@ const RenderExpandIcon = ({ open, transitionDuration }: RenderExpandIconProps) =
 )
 
 // =================================================================
-// Các hằng số và styles của bạn (giữ nguyên)
+// Các hằng số và styles
 // =================================================================
 const colors = {
-  textDefault: '#4a5568',
-  textHover: '#2d3748',
+  textDefault: 'var(--mui-palette-text-primary, #2d3748)',
+  textHover: 'var(--mui-palette-primary-main, #FC4336)',
   textMuted: '#a0aec0',
-  bgHover: '#f7fafc',
+  bgHover: 'var(--mui-palette-action-hover, rgba(0,0,0,0.04))',
   iconHoverSpecial: '#FC4336',
   textActive: '#ffffff',
   bgActive: 'var(--primary-gradient)'
@@ -93,12 +99,26 @@ const activeMenuItemStyles = {
   ['.' + menuClasses.button]: {
     background: `${colors.bgActive} !important`,
     color: `${colors.textActive} !important`,
+
+    [`&.${menuClasses.active}`]: {
+      background: `${colors.bgActive} !important`,
+      color: `${colors.textActive} !important`
+    },
     '&:hover': {
-      background: `${colors.bgHover} !important`,
+      background: `${colors.bgActive} !important`,
+      opacity: 0.9,
       color: `${colors.textActive} !important`
     }
   },
   ['.' + menuClasses.icon]: {
+    color: `${colors.textActive} !important`
+  },
+
+  [`&:not(.${menuClasses.subMenuRoot}) > .${menuClasses.button}.${menuClasses.active}`]: {
+    background: `${colors.bgActive} !important`,
+    color: `${colors.textActive} !important`
+  },
+  [`&:not(.${menuClasses.subMenuRoot}) > .${menuClasses.button}.${menuClasses.active} .${menuClasses.icon}`]: {
     color: `${colors.textActive} !important`
   }
 }
@@ -111,11 +131,26 @@ const baseMenuItemStyles = {
     '&:hover': {
       background: `${colors.bgHover} !important`,
       color: `${colors.textHover} !important`
+    },
+
+    [`&.${menuClasses.active}`]: {
+      background: 'transparent !important',
+      color: `${colors.textDefault} !important`,
+      boxShadow: 'none !important'
     }
   },
   ['.' + menuClasses.label]: {
     marginTop: '2px',
     display: 'inline'
+  },
+
+  [`&:not(.${menuClasses.subMenuRoot}) > .${menuClasses.button}.${menuClasses.active}`]: {
+    background: 'transparent !important',
+    color: `${colors.textDefault} !important`,
+    boxShadow: 'none !important'
+  },
+  [`&:not(.${menuClasses.subMenuRoot}) > .${menuClasses.button}.${menuClasses.active} .${menuClasses.icon}`]: {
+    color: `${colors.textDefault} !important`
   }
 }
 
@@ -126,14 +161,17 @@ const activeSubMenuStyles = {
   }
 }
 
-const getSubMenuStyles = () => ({
+// Pre-compute merged styles (constant, no need to recalculate per render)
+const mergedActiveStyles = { ...baseMenuItemStyles, ...activeMenuItemStyles }
+
+const subMenuStyles = {
   ...baseMenuItemStyles,
   ...activeSubMenuStyles,
   ['.' + menuClasses.label]: {
     ...baseMenuItemStyles['.' + menuClasses.label],
     fontSize: fontSizes.label
   }
-})
+}
 
 // =================================================================
 // Bắt đầu Component
@@ -143,31 +181,87 @@ const VerticalMenu = ({ scrollMenu, dictionary }: Props) => {
   const theme = useTheme()
   const verticalNavOptions = useVerticalNav()
   const pathname = usePathname()
+  const router = useRouter()
   const params = useParams()
   const { lang: locale } = params
   const { isAdmin, isLoading: isAdminLoading, hasPermission } = useRole()
 
-  // THÊM MỚI: State và Effect để kiểm soát hiệu ứng lần đầu
   const [isInitialLoad, setIsInitialLoad] = useState(true)
 
   useEffect(() => {
-    // Sau khi component mount xong, đặt lại cờ để các animation sau này hoạt động
     setIsInitialLoad(false)
-  }, []) // Mảng rỗng đảm bảo effect chỉ chạy một lần
+  }, [])
+
+  // Prefetch sidebar pages khi mount → compile sẵn, click là instant
+  // Stagger: mỗi route cách nhau 200ms để không block main thread
+  useEffect(() => {
+    const routes = [
+      'home', 'recharge', 'proxy-tinh', 'proxy-xoay', 'check-proxy', 'history-order', 'affiliate',
+      'transaction-history', 'contact', 'profile', 'history-login',
+      'admin/dashboard', 'admin/transaction-history', 'admin/deposit-history',
+      'admin/users', 'admin/service-type', 'admin/partner', 'admin/announcements', 'admin/site-settings'
+    ]
+
+    const timers: ReturnType<typeof setTimeout>[] = []
+
+    routes.forEach((route, i) => {
+      timers.push(
+        setTimeout(() => {
+          router.prefetch(`/${locale}/${route}`)
+        }, 3000 + i * 200)
+      )
+    })
+
+    return () => timers.forEach(t => clearTimeout(t))
+  }, [locale, router])
+
+  // --- Optimistic active state ---
+  const [pendingPath, setPendingPath] = useState<string | null>(null)
+
+  // Khi pathname thực sự thay đổi → xóa pending
+  useEffect(() => {
+    setPendingPath(null)
+  }, [pathname])
+
+  // Dùng pendingPath (optimistic) nếu có, nếu không dùng pathname thực
+  const activePath = pendingPath || pathname
 
   // Vars
   const { isBreakpointReached, transitionDuration, isCollapsed, isHovered } = verticalNavOptions
   const ScrollWrapper = isBreakpointReached ? 'div' : PerfectScrollbar
   const isWalletVisible = !isCollapsed || (isHovered ?? false)
 
-  // Styles functions (giữ nguyên)
-  const subMenuStyles = getSubMenuStyles()
+  // Memoize theme styles — avoids recalculation when unrelated state changes
+  const themeMenuItemStyles = useMemo(() => menuItemStyles(verticalNavOptions, theme), [verticalNavOptions, theme])
+  const themeMenuSectionStyles = useMemo(() => menuSectionStyles(verticalNavOptions, theme), [verticalNavOptions, theme])
 
-  const getMenuItemStyles = (path: string) => {
+  const getMenuItemStyles = useCallback((path: string) => {
     const fullPath = `/${locale}/${path}`
 
-    return pathname === fullPath ? { ...baseMenuItemStyles, ...activeMenuItemStyles } : baseMenuItemStyles
-  }
+    return activePath === fullPath ? mergedActiveStyles : baseMenuItemStyles
+  }, [locale, activePath])
+
+  // Navigation handler — React 18 batches setState automatically, no flushSync needed
+  const handleMenuNav = useCallback((path: string) => {
+    const fullPath = `/${locale}/${path}`
+
+    if (fullPath === pathname) return
+
+    // React 18 batches these → single render → DOM commit before browser paint
+    // router.push is async (fetches RSC) → visual update appears before navigation
+    setPendingPath(fullPath)
+    setNavigationPending(true)
+    router.push(fullPath)
+  }, [locale, pathname, router])
+
+  // Helper: tạo props cho MenuItem
+  const nav = useCallback((path: string) => ({
+    rootStyles: getMenuItemStyles(path),
+    onClick: (e: any) => {
+      e.preventDefault()
+      handleMenuNav(path)
+    }
+  }), [getMenuItemStyles, handleMenuNav])
 
   return (
     <ScrollWrapper
@@ -184,28 +278,28 @@ const VerticalMenu = ({ scrollMenu, dictionary }: Props) => {
       {/* Wallet Section */}
       <BalanceCard isInitialLoad={isInitialLoad} isWalletVisible={isWalletVisible} />
 
-      {/* Vertical Menu (giữ nguyên) */}
+      {/* Vertical Menu */}
       <Menu
         popoutMenuOffset={{ mainAxis: 23 }}
-        menuItemStyles={menuItemStyles(verticalNavOptions, theme)}
+        menuItemStyles={themeMenuItemStyles}
         renderExpandIcon={({ open }) => <RenderExpandIcon open={open} transitionDuration={transitionDuration} />}
         renderExpandedMenuItemIcon={{ icon: <CircleSmall size={10} /> }}
-        menuSectionStyles={menuSectionStyles(verticalNavOptions, theme)}
+        menuSectionStyles={themeMenuSectionStyles}
       >
         <MenuSection label='Trang chủ' rootStyles={menuSectionHeaderStyles}>
           <MenuItem
-            icon={<ChartColumn size={20} strokeWidth={1.5} />}
-            rootStyles={getMenuItemStyles('overview')}
-            href={`/${locale}/overview`}
+            icon={<House size={20} strokeWidth={1.5} />}
+            {...nav('home')}
+            href={`/${locale}/home`}
           >
-            {dictionary['navigation'].overview}
+            Home
           </MenuItem>
         </MenuSection>
 
         <MenuSection label='Proxy' rootStyles={menuSectionHeaderStyles}>
           <MenuItem
-            icon={<House size={20} strokeWidth={1.5} />}
-            rootStyles={getMenuItemStyles('proxy-tinh')}
+            icon={<EthernetPort size={20} strokeWidth={1.5} />}
+            {...nav('proxy-tinh')}
             href={`/${locale}/proxy-tinh`}
           >
             {dictionary['navigation'].staticProxy}
@@ -213,7 +307,7 @@ const VerticalMenu = ({ scrollMenu, dictionary }: Props) => {
 
           <MenuItem
             icon={<RotateCw size={20} strokeWidth={1.5} />}
-            rootStyles={getMenuItemStyles('proxy-xoay')}
+            {...nav('proxy-xoay')}
             href={`/${locale}/proxy-xoay`}
           >
             {dictionary['navigation'].rotatingProxy}
@@ -221,36 +315,24 @@ const VerticalMenu = ({ scrollMenu, dictionary }: Props) => {
         </MenuSection>
 
         <MenuSection label='Dịch vụ' rootStyles={menuSectionHeaderStyles}>
-          {/* <SubMenu
-            label={dictionary['navigation'].proxy}
-            icon={<Globe size={20} strokeWidth={1.5} />}
-            rootStyles={subMenuStyles}
-            defaultOpen={isProxySubMenuActive}
-            onClick={(e: MouseEvent<HTMLAnchorElement>) => {
-              // Ngăn chặn việc đóng submenu khi click
-              e.preventDefault()
-              e.stopPropagation()
-            }}
+          <MenuItem
+            icon={<Wallet size={20} strokeWidth={1.5} />}
+            {...nav('recharge')}
+            href={`/${locale}/recharge`}
           >
-            <MenuItem rootStyles={getMenuItemStyles('proxy-tinh')} href={`/${locale}/proxy-tinh`}>
-              {dictionary['navigation'].staticProxy}
-            </MenuItem>
-            <MenuItem rootStyles={getMenuItemStyles('proxy-xoay')} href={`/${locale}/proxy-xoay`}>
-              {dictionary['navigation'].rotatingProxy}
-            </MenuItem>
-          </SubMenu> */}
+            Nạp tiền
+          </MenuItem>
 
-          {/* Các MenuItem khác giữ nguyên */}
           <MenuItem
             icon={<ShoppingBag size={20} strokeWidth={1.5} />}
-            rootStyles={getMenuItemStyles('check-proxy')}
+            {...nav('check-proxy')}
             href={`/${locale}/check-proxy`}
           >
             {dictionary['navigation'].checkProxy}
           </MenuItem>
           <MenuItem
             icon={<History size={20} strokeWidth={1.5} />}
-            rootStyles={getMenuItemStyles('history-order')}
+            {...nav('history-order')}
             href={`/${locale}/history-order`}
           >
             {dictionary['navigation'].purchaseHistory}
@@ -258,7 +340,7 @@ const VerticalMenu = ({ scrollMenu, dictionary }: Props) => {
 
           <MenuItem
             icon={<Link size={20} strokeWidth={1.5} />}
-            rootStyles={getMenuItemStyles('affiliate')}
+            {...nav('affiliate')}
             href={`/${locale}/affiliate`}
           >
             {(dictionary['navigation'] as any).affiliate || 'Affiliate'}
@@ -266,7 +348,7 @@ const VerticalMenu = ({ scrollMenu, dictionary }: Props) => {
 
           <MenuItem
             icon={<Handshake size={20} strokeWidth={1.5} />}
-            rootStyles={getMenuItemStyles('partner')}
+            {...nav('partner')}
             href={`/${locale}/partner`}
           >
             {(dictionary['navigation'] as any).partner || 'Partner'}
@@ -274,7 +356,7 @@ const VerticalMenu = ({ scrollMenu, dictionary }: Props) => {
 
           <MenuItem
             icon={<FileText size={20} strokeWidth={1.5} />}
-            rootStyles={getMenuItemStyles('transaction-history')}
+            {...nav('transaction-history')}
             href={`/${locale}/transaction-history`}
           >
             {dictionary['navigation'].transactionHistory}
@@ -282,11 +364,17 @@ const VerticalMenu = ({ scrollMenu, dictionary }: Props) => {
 
           <MenuItem
             icon={<FileText size={20} strokeWidth={1.5} />}
-            rootStyles={getMenuItemStyles('docs')}
-            href={`/${locale}/docs`}
-            target='_blank'
+            rootStyles={getMenuItemStyles('docs-api')}
+            href={`/${locale}/docs-api`}
           >
             {(dictionary['navigation'] as any).docsApi || 'API Docs'}
+          </MenuItem>
+          <MenuItem
+            icon={<LifeBuoy size={20} strokeWidth={1.5} />}
+            {...nav('support-tickets')}
+            href={`/${locale}/support-tickets`}
+          >
+            Hỗ trợ
           </MenuItem>
         </MenuSection>
 
@@ -296,20 +384,20 @@ const VerticalMenu = ({ scrollMenu, dictionary }: Props) => {
           </MenuItem>
           <MenuItem
             icon={<MessageCircleQuestionMark size={20} strokeWidth={1.5} />}
-            rootStyles={getMenuItemStyles('contact')}
+            {...nav('contact')}
             href={`/${locale}/contact`}
           >
             {dictionary['navigation'].support}
           </MenuItem>
         </MenuSection>
 
-        {/* Admin Menu Section - Chỉ hiển thị khi user có quyền admin */}
+        {/* Admin Menu Section */}
         {!isAdminLoading && isAdmin && (
           <MenuSection label='Quản trị' rootStyles={menuSectionHeaderStyles}>
             {hasPermission('admin.dashboard') && (
               <MenuItem
                 icon={<BarChart3 size={20} strokeWidth={1.5} />}
-                rootStyles={getMenuItemStyles('admin/dashboard')}
+                {...nav('admin/dashboard')}
                 href={`/${locale}/admin/dashboard`}
               >
                 Dashboard Admin
@@ -319,7 +407,7 @@ const VerticalMenu = ({ scrollMenu, dictionary }: Props) => {
             {hasPermission('admin.partner') && (
               <MenuItem
                 icon={<BarChart3 size={20} strokeWidth={1.5} />}
-                rootStyles={getMenuItemStyles('admin/partner')}
+                {...nav('admin/partner')}
                 href={`/${locale}/admin/partner`}
               >
                 Đối tác
@@ -329,7 +417,7 @@ const VerticalMenu = ({ scrollMenu, dictionary }: Props) => {
             {hasPermission('admin.users') && (
               <MenuItem
                 icon={<User size={20} strokeWidth={1.5} />}
-                rootStyles={getMenuItemStyles('admin/users')}
+                {...nav('admin/users')}
                 href={`/${locale}/admin/users`}
               >
                 Quản lý tài khoản
@@ -339,7 +427,7 @@ const VerticalMenu = ({ scrollMenu, dictionary }: Props) => {
             {hasPermission('admin.transactionHistory') && (
               <MenuItem
                 icon={<TransactionHistory />}
-                rootStyles={getMenuItemStyles('admin/transaction-history')}
+                {...nav('admin/transaction-history')}
                 href={`/${locale}/admin/transaction-history`}
               >
                 Lịch sử giao dịch
@@ -349,7 +437,7 @@ const VerticalMenu = ({ scrollMenu, dictionary }: Props) => {
             {hasPermission('admin.depositHistory') && (
               <MenuItem
                 icon={<TransactionHistory />}
-                rootStyles={getMenuItemStyles('admin/deposit-history')}
+                {...nav('admin/deposit-history')}
                 href={`/${locale}/admin/deposit-history`}
               >
                 Lịch sử chuyển tiền
@@ -359,32 +447,49 @@ const VerticalMenu = ({ scrollMenu, dictionary }: Props) => {
             {hasPermission('admin.serviceType') && (
               <MenuItem
                 icon={<TransactionHistory />}
-                rootStyles={getMenuItemStyles('admin/service-type')}
+                {...nav('admin/service-type')}
                 href={`/${locale}/admin/service-type`}
               >
                 Dịch vụ
               </MenuItem>
             )}
 
-            {/* <SubMenu
-              label='Quản lý User'
-              icon={<Users size={20} strokeWidth={1.5} />}
-              rootStyles={subMenuStyles}
-              defaultOpen={isAdminSubMenuActive && pathname.includes('/admin/users')}
-            >
-              <MenuItem rootStyles={getMenuItemStyles('admin/users/list')} href={`/${locale}/admin/users/list`}>
-                Danh sách User
-              </MenuItem>
-              <MenuItem rootStyles={getMenuItemStyles('admin/users/create')} href={`/${locale}/admin/users/create`}>
-                Thêm User mới
-              </MenuItem>
+            {hasPermission('admin.announcements') && (
               <MenuItem
-                rootStyles={getMenuItemStyles('admin/users/permissions')}
-                href={`/${locale}/admin/users/permissions`}
+                icon={<Megaphone size={20} strokeWidth={1.5} />}
+                {...nav('admin/announcements')}
+                href={`/${locale}/admin/announcements`}
               >
-                Phân quyền User
+                Thông báo
               </MenuItem>
-            </SubMenu> */}
+            )}
+            {hasPermission('admin.announcements') && (
+              <MenuItem
+                icon={<Settings size={20} strokeWidth={1.5} />}
+                {...nav('admin/site-settings')}
+                href={`/${locale}/admin/site-settings`}
+              >
+                Cấu hình trang chủ
+              </MenuItem>
+            )}
+            {hasPermission('admin.transactionHistory') && (
+              <MenuItem
+                icon={<LifeBuoy size={20} strokeWidth={1.5} />}
+                {...nav('admin/support-tickets')}
+                href={`/${locale}/admin/support-tickets`}
+              >
+                Tickets hỗ trợ
+              </MenuItem>
+            )}
+            {hasPermission('admin.transactionHistory') && (
+              <MenuItem
+                icon={<AlertTriangle size={20} strokeWidth={1.5} />}
+                {...nav('admin/partial-orders')}
+                href={`/${locale}/admin/partial-orders`}
+              >
+                Đơn thiếu proxy
+              </MenuItem>
+            )}
           </MenuSection>
         )}
       </Menu>

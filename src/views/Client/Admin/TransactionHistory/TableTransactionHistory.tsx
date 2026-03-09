@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useCallback } from 'react'
 
 import Image from 'next/image'
 
@@ -11,36 +11,29 @@ import {
   List,
   Clock3,
   Search,
-  Calendar,
-  Filter,
   X,
   Eye,
-  Edit,
-  Trash2,
   XCircle,
   FileText,
   RefreshCw,
   Loader2,
   Clock,
   CircleX,
+  AlertCircle,
   RotateCcw,
-  User
+  User,
+  ArrowDownWideNarrow,
+  ArrowUpNarrowWide
 } from 'lucide-react'
 
 import {
   useReactTable,
   getCoreRowModel,
-  flexRender,
-  getFilteredRowModel,
-  getSortedRowModel,
   getPaginationRowModel,
-  getFacetedRowModel,
-  getFacetedUniqueValues // Thêm để lọc hàng đã chọn
+  flexRender
 } from '@tanstack/react-table'
 
 import Chip from '@mui/material/Chip'
-
-import Pagination from '@mui/material/Pagination'
 import MenuItem from '@mui/material/MenuItem'
 import InputAdornment from '@mui/material/InputAdornment'
 import IconButton from '@mui/material/IconButton'
@@ -51,310 +44,317 @@ import DialogContent from '@mui/material/DialogContent'
 import DialogContentText from '@mui/material/DialogContentText'
 import DialogTitle from '@mui/material/DialogTitle'
 import Button from '@mui/material/Button'
+import Pagination from '@mui/material/Pagination'
 
 import { toast } from 'react-toastify'
-
-import AppReactDatepicker from '@/components/AppReactDatepicker'
 
 import { formatDateTimeLocal } from '@/utils/formatDate'
 import DetailUserModal from '@/views/Client/Admin/TransactionHistory/DetailUserModal'
 import LogModal from '@/views/Client/Admin/TransactionHistory/LogModal'
 import OrderDetailModal from '@/views/Client/Admin/TransactionHistory/OrderDetailModal'
 import { useUserOrders } from '@/hooks/apis/useUserOrders'
-import { useOrders, useCancelOrder, useResendOrder, useDeleteOrder, useApiKeys } from '@/hooks/apis/useOrders'
+import { useCancelOrder, useResendOrder } from '@/hooks/apis/useOrders'
+import { useAdminTransactionHistory } from '@/hooks/apis/useAdminTransactionHistory'
 import CustomTextField from '@/@core/components/mui/TextField'
 import useMediaQuery from '@/@menu/hooks/useMediaQuery'
 import {
   ORDER_STATUS,
-  ORDER_STATUS_LABELS,
+  ORDER_STATUS_LABELS_ADMIN,
   ORDER_STATUS_COLORS,
   TRANSACTION_TYPES,
   TRANSACTION_TYPE_LABELS
 } from '@/constants'
 
+// Shared select style — nhỏ gọn, bo tròn, font 13px
+const selectSx = {
+  minWidth: '140px',
+  '& .MuiOutlinedInput-root': { fontSize: '13px', borderRadius: '8px', minHeight: '38px' },
+  '& .MuiSelect-select': { paddingBlock: '8.5px' }
+}
+
 export default function TableDepositHistory() {
   const isMobile = useMediaQuery('768px')
 
-  const [columnFilters, setColumnFilters] = useState<any[]>([])
-  const [rowSelection, setRowSelection] = useState({})
-  const [sorting, setSorting] = useState<any[]>([])
+  // Staged filter values (chưa apply, chỉ apply khi click "Tìm")
+  const [searchInput, setSearchInput] = useState('')
+  const [statusInput, setStatusInput] = useState<string>('')
+  const [limitInput, setLimitInput] = useState<string>('100')
+  const [sortInput, setSortInput] = useState<'desc' | 'asc'>('desc')
+
+  // Applied filter values (gửi lên API)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [statusFilter, setStatusFilter] = useState<string>('')
+  const [limit, setLimit] = useState<number>(100)
+  const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc')
+
+  // Modals
   const [isModalDetailUserOpen, setIsModalDetailUserOpen] = useState(false)
   const [isLogModalOpen, setIsLogModalOpen] = useState(false)
   const [isOrderDetailModalOpen, setIsOrderDetailModalOpen] = useState(false)
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false)
   const [isResendDialogOpen, setIsResendDialogOpen] = useState(false)
   const [selectedUserId, setSelectedUserId] = useState<number | undefined>()
   const [selectedOrderData, setSelectedOrderData] = useState<any>(null)
   const [orderToCancel, setOrderToCancel] = useState<any>(null)
   const [orderToResend, setOrderToResend] = useState<any>(null)
-  const [date, setDate] = useState<Date | null | undefined>(new Date())
-  const [searchUser, setSearchUser] = useState<string>('')
-  const [statusFilter, setStatusFilter] = useState<string>('')
 
-  const [pagination, setPagination] = useState({
-    pageIndex: 0,
-    pageSize: 10
-  }) // State để lưu các hàng được chọn
+  // Apply tất cả filter cùng lúc khi click "Tìm kiếm"
+  const handleApplyFilters = useCallback(() => {
+    const parsedLimit = Math.min(Math.max(parseInt(limitInput) || 100, 100), 10000)
 
-  // TanStack Query mutations
-  const { data: dataOrders = [], isLoading } = useOrders()
+    setSearchQuery(searchInput.trim())
+    setStatusFilter(statusInput)
+    setLimit(parsedLimit)
+    setSortOrder(sortInput)
+    setLimitInput(String(parsedLimit))
+  }, [searchInput, statusInput, limitInput, sortInput])
+
+  const handleSearchKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'Enter') handleApplyFilters()
+    },
+    [handleApplyFilters]
+  )
+
+  const handleClearAll = useCallback(() => {
+    setSearchInput('')
+    setStatusInput('')
+    setLimitInput('100')
+    setSortInput('desc')
+    setSearchQuery('')
+    setStatusFilter('')
+    setLimit(100)
+    setSortOrder('desc')
+  }, [])
+
+  // Data
+  const { data: apiResponse, isLoading, isFetching } = useAdminTransactionHistory({
+    search: searchQuery || undefined,
+    status: statusFilter || undefined,
+    limit,
+    order: sortOrder
+  })
+
+  const dataOrders = useMemo(() => apiResponse?.data ?? [], [apiResponse])
+
   const cancelOrderMutation = useCancelOrder()
   const resendOrderMutation = useResendOrder()
 
-  const filteredOrders = useMemo(() => {
-    const normalize = (v: any) => (v ?? '').toString().toLowerCase()
-
-    return (dataOrders ?? []).filter((item: any) => {
-      // Filter by user name, email, amount (sotienthaydoi), and content (noidung)
-      const userName = normalize(item?.user?.name)
-      const userEmail = normalize(item?.user?.email)
-      const amount = normalize(item?.sotienthaydoi)
-      const content = normalize(item?.noidung)
-      const searchLower = searchUser.trim().toLowerCase()
-
-      const matchesSearch = !searchUser ||
-        userName.includes(searchLower) ||
-        userEmail.includes(searchLower) ||
-        amount.includes(searchLower) ||
-        content.includes(searchLower)
-
-      // Filter by order status (PENDING/PROCESSING/COMPLETED/FAILED/CANCEL/EXPIRED)
-      const orderStatus = (item?.order?.status ?? '').toString()
-      const matchesStatus = !statusFilter || orderStatus === statusFilter
-
-      // Filter by date (compare date part only)
-      const matchesDate = (() => {
-        if (!date) return true
-        try {
-          const rowDate = new Date(item?.created_at)
-          if (isNaN(rowDate.getTime())) return false
-          const toYmd = (d: Date) =>
-            `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d
-              .getDate()
-              .toString()
-              .padStart(2, '0')}`
-          return toYmd(rowDate) === toYmd(date as Date)
-        } catch {
-          return false
-        }
-      })()
-
-      return matchesSearch && matchesStatus && matchesDate
-    })
-  }, [dataOrders, searchUser, statusFilter, date])
-
   const { data: sampleUser = [], isLoading: loadingModal, refetch } = useUserOrders(selectedUserId)
 
+  // Badge helpers — đảm bảo contrast tốt, label đủ rõ ràng, không bị cắt
+  const chipSx = { '& .MuiChip-label': { whiteSpace: 'nowrap' as const } }
+  const chipWarning = { '& .MuiChip-label': { color: '#fff', whiteSpace: 'nowrap' as const }, '& .MuiChip-icon': { color: '#fff' } }
+
   const getTypeBadge = (type: string) => {
+    const label = TRANSACTION_TYPE_LABELS[type] || 'Không xác định'
+
     switch (type) {
       case TRANSACTION_TYPES.BUY:
-        return (
-          <Chip
-            label={TRANSACTION_TYPE_LABELS[TRANSACTION_TYPES.BUY]}
-            size='small'
-            icon={<BadgeCheck />}
-            color='success'
-          />
-        )
+      case TRANSACTION_TYPES.THANHTOAN:
+      case TRANSACTION_TYPES.THANHTOAN_V4:
+        return <Chip label={label} size='small' icon={<BadgeCheck />} color='success' sx={chipSx} />
       case TRANSACTION_TYPES.REFUND:
-        return (
-          <Chip
-            label={TRANSACTION_TYPE_LABELS[TRANSACTION_TYPES.REFUND]}
-            size='small'
-            icon={<BadgeMinus />}
-            color='warning'
-          />
-        )
+        return <Chip label={label} size='small' icon={<BadgeMinus />} color='warning' sx={chipWarning} />
+      case TRANSACTION_TYPES.FAILED:
+        return <Chip label={label} size='small' icon={<CircleX />} color='error' sx={chipSx} />
+      case TRANSACTION_TYPES.GIAHAN:
+      case TRANSACTION_TYPES.GIAHAN_V4:
+        return <Chip label={label} size='small' icon={<RefreshCw />} color='info' sx={chipSx} />
+      case TRANSACTION_TYPES.NAPTIEN:
+      case TRANSACTION_TYPES.NAPTIEN_PAY2S:
+      case TRANSACTION_TYPES.NAPTIEN_MANUAL:
+        return <Chip label={label} size='small' icon={<BadgeCheck />} color='primary' sx={chipSx} />
+      case TRANSACTION_TYPES.RUT_HOA_HONG_AFFILIATE:
+        return <Chip label={label} size='small' icon={<BadgeMinus />} color='secondary' sx={chipSx} />
       default:
-        return <Chip label='Không xác định' size='small' icon={<CircleQuestionMark />} color='secondary' />
+        return <Chip label={label} size='small' icon={<CircleQuestionMark />} color='default' sx={chipSx} />
     }
   }
 
   const getStatusBadge = (status: string) => {
-    const label = ORDER_STATUS_LABELS[status as keyof typeof ORDER_STATUS_LABELS]
+    const label = ORDER_STATUS_LABELS_ADMIN[status]
     const color = ORDER_STATUS_COLORS[status as keyof typeof ORDER_STATUS_COLORS]
 
     if (!label) {
-      return <Chip label='Không xác định' size='small' icon={<CircleQuestionMark />} color='secondary' />
+      return <Chip label='Không xác định' size='small' icon={<CircleQuestionMark />} color='default' />
     }
 
-    // Icon cho từng trạng thái
     let icon = <CircleQuestionMark size={16} />
 
     switch (status) {
       case ORDER_STATUS.PENDING:
-        // Đang chờ xử lý - icon clock
-        icon = (
-          <Loader2
-            size={16}
-            style={{
-              animation: 'spin 1s linear infinite'
-            }}
-          />
-        )
-        break
       case ORDER_STATUS.PROCESSING:
-        // Đang xử lý - icon loading xoay
-        icon = (
-          <Loader2
-            size={16}
-            style={{
-              animation: 'spin 1s linear infinite'
-            }}
-          />
-        )
+      case ORDER_STATUS.RETRY_PROCESSING_PARTIAL:
+        icon = <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} />
         break
-      case ORDER_STATUS.COMPLETED:
-        // Hoàn thành - icon check
+      case ORDER_STATUS.IN_USE:
         icon = <BadgeCheck size={16} />
         break
-      case ORDER_STATUS.FAILED:
-        // Lỗi - icon X
-        icon = <CircleX size={16} />
-        break
-      case ORDER_STATUS.CANCEL:
-        // Hoàn tiền - icon XCircle
-        icon = <XCircle size={16} />
+      case ORDER_STATUS.IN_USE_PARTIAL:
+        icon = <AlertCircle size={16} />
         break
       case ORDER_STATUS.EXPIRED:
-        // Hoàn tiền - icon rotate
         icon = <Clock size={16} />
         break
-
-      default:
-        icon = <CircleQuestionMark size={16} />
+      case ORDER_STATUS.FAILED:
+        icon = <CircleX size={16} />
+        break
+      case ORDER_STATUS.PARTIAL_REFUNDED:
+      case ORDER_STATUS.WAITING_REFUND:
+      case ORDER_STATUS.REFUNDED_ALL:
+        icon = <RotateCcw size={16} />
+        break
     }
 
-    return <Chip label={label} size='small' icon={icon} color={color as any} />
+    // Fix contrast: warning chips cần text trắng
+    const needsWhiteText = color === 'warning'
+
+    return (
+      <Chip
+        label={label}
+        size='small'
+        icon={icon}
+        color={color as any}
+        sx={needsWhiteText ? chipWarning : chipSx}
+      />
+    )
   }
 
+  // Columns
   const columns = useMemo(
     () => [
       {
         accessorKey: 'id',
         header: 'ID',
-        size: isMobile ? 60 : 20
+        size: isMobile ? 60 : 50
+      },
+      {
+        header: 'Thao tác',
+        id: 'actions',
+        size: 120,
+        cell: ({ row }: { row: any }) => {
+          const orderStatus = row.original?.order?.status
+
+          if (orderStatus === ORDER_STATUS.FAILED) {
+            return (
+              <div className='flex gap-1'>
+                <Tooltip title='Hủy đơn + hoàn tiền'>
+                  <IconButton size='small' color='error' onClick={() => handleOpenCancelDialog(row.original)}>
+                    <XCircle size={16} />
+                  </IconButton>
+                </Tooltip>
+                <Tooltip title='Xem log lỗi'>
+                  <IconButton size='small' color='info' onClick={() => handleOpenLogModal(row.original)}>
+                    <FileText size={16} />
+                  </IconButton>
+                </Tooltip>
+                <Tooltip title='Gửi lại đơn'>
+                  <IconButton size='small' color='success' onClick={() => handleOpenResendDialog(row.original)}>
+                    <RefreshCw size={16} />
+                  </IconButton>
+                </Tooltip>
+              </div>
+            )
+          }
+
+          if (orderStatus === ORDER_STATUS.EXPIRED || orderStatus === ORDER_STATUS.PENDING) {
+            return null
+          }
+
+          return (
+            <div className='flex gap-1'>
+              <Tooltip title='Chi tiết đơn hàng'>
+                <IconButton size='small' color='primary' onClick={() => handleOpenOrderDetailModal(row.original)}>
+                  <Eye size={16} />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title='Thông tin user'>
+                <IconButton size='small' color='info' onClick={() => handleOpenModalUserDetail(row.original?.user?.id)}>
+                  <User size={16} />
+                </IconButton>
+              </Tooltip>
+            </div>
+          )
+        }
       },
       {
         header: 'User',
         cell: ({ row }: { row: any }) => (
           <div onClick={() => handleOpenModalUserDetail(row.original?.user?.id)} className='cursor-pointer'>
-            <div className='font-bold '>{row.original?.user?.name}</div>
-            <div className='text-gray-500'>{row.original?.user?.email}</div>
+            <div className='font-bold'>{row.original?.user?.name}</div>
+            <div className='text-xs' style={{ color: 'var(--mui-palette-text-secondary, #64748b)' }}>
+              {row.original?.user?.email}
+            </div>
           </div>
         ),
-        size: isMobile ? 250 : 250
+        size: isMobile ? 220 : 200
       },
-
       {
         accessorKey: 'type',
         header: 'Loại',
-        cell: ({ row }: { row: any }) => {
-          return getTypeBadge(row.original.type)
-        },
-        ssize: isMobile ? 250 : 80
+        cell: ({ row }: { row: any }) => getTypeBadge(row.original.type),
+        size: 150
+      },
+      {
+        header: 'Số trước',
+        cell: ({ row }: { row: any }) => (
+          <span style={{ color: 'var(--mui-palette-text-secondary, #64748b)', fontSize: '13px' }}>
+            {new Intl.NumberFormat('vi-VN').format(row.original.sotientruoc ?? 0)} đ
+          </span>
+        ),
+        size: 110
       },
       {
         header: 'Số tiền',
         cell: ({ row }: { row: any }) => (
-          <div>
-            <span className='font-sm font-bold'>
-              Giá tiền: {new Intl.NumberFormat('vi-VN').format(row.original.sotienthaydoi) + ' đ'}
-            </span>
-          </div>
+          <span style={{ fontWeight: 700, fontSize: '13px', color: 'var(--mui-palette-text-primary, #1e293b)' }}>
+            {new Intl.NumberFormat('vi-VN').format(row.original.sotienthaydoi)} đ
+          </span>
         ),
-        size: 150
+        size: 110
+      },
+      {
+        header: 'Số sau',
+        cell: ({ row }: { row: any }) => (
+          <span style={{ color: 'var(--mui-palette-text-secondary, #64748b)', fontSize: '13px' }}>
+            {new Intl.NumberFormat('vi-VN').format(row.original.sotiensau ?? 0)} đ
+          </span>
+        ),
+        size: 110
       },
       {
         header: 'Nội dung',
-        size: 250,
-        cell: ({ row }: { row: any }) => {
-          return (
-            <>
-              <div className='d-flex align-items-center  gap-1 '>
-                <div>{row.original.noidung}</div>
-              </div>
-            </>
-          )
-        }
+        size: 280,
+        cell: ({ row }: { row: any }) => (
+          <div style={{ fontSize: '13px', color: 'var(--mui-palette-text-primary, #334155)' }}>
+            {row.original.noidung}
+          </div>
+        )
       },
       {
         accessorKey: 'created_at',
-        header: 'Ngày mua',
-        size: 200,
-        cell: ({ row }: { row: any }) => {
-          return (
-            <>
-              <div className='d-flex align-items-center  gap-1 '>
-                <Clock3 size={14} />
-                <div style={{ marginTop: '2px' }}>{formatDateTimeLocal(row.original.created_at)}</div>
-              </div>
-            </>
-          )
-        }
+        header: 'Thời gian',
+        size: 160,
+        cell: ({ row }: { row: any }) => (
+          <div className='d-flex align-items-center gap-1' style={{ color: 'var(--mui-palette-text-secondary, #64748b)' }}>
+            <Clock3 size={14} />
+            <span style={{ fontSize: '13px' }}>{formatDateTimeLocal(row.original.created_at)}</span>
+          </div>
+        )
       },
       {
         header: 'Trạng thái',
-        cell: ({ row }: { row: any }) => {
-          if (row.original?.type === 'REFUND') {
-            return getStatusBadge(row.original?.order?.status)
-          } else {
-            return getStatusBadge(row.original?.order?.status)
-          }
-        },
-        ssize: isMobile ? 250 : 100
-      },
-      {
-        header: 'Hành động',
-        size: 150,
+        size: 170,
         cell: ({ row }: { row: any }) => {
           const orderStatus = row.original?.order?.status
 
-          // Nếu status == FAILED, chỉ hiển thị 3 button: Hủy đơn hàng, Xem log, Gửi lại
-          if (orderStatus === ORDER_STATUS.FAILED) {
-            return (
-              <div className='flex gap-2'>
-                <Tooltip title='Hủy đơn hàng'>
-                  <IconButton size='small' color='error' onClick={() => handleOpenCancelDialog(row.original)}>
-                    <XCircle size={18} />
-                  </IconButton>
-                </Tooltip>
-                <Tooltip title='Xem log'>
-                  <IconButton size='small' color='info' onClick={() => handleOpenLogModal(row.original)}>
-                    <FileText size={18} />
-                  </IconButton>
-                </Tooltip>
-                <Tooltip title='Gửi lại'>
-                  <IconButton size='small' color='success' onClick={() => handleOpenResendDialog(row.original)}>
-                    <RefreshCw size={18} />
-                  </IconButton>
-                </Tooltip>
-              </div>
-            )
-          } else if (orderStatus === ORDER_STATUS.CANCEL || orderStatus === ORDER_STATUS.PENDING) {
-            return null
-          } else {
-            // Các status khác hiển thị button mặc định
-            return (
-              <div className='flex gap-2'>
-                <Tooltip title='Xem chi tiết đơn hàng'>
-                  <IconButton size='small' color='primary' onClick={() => handleOpenOrderDetailModal(row.original)}>
-                    <Eye size={18} />
-                  </IconButton>
-                </Tooltip>
-                <Tooltip title='Xem thông tin user'>
-                  <IconButton
-                    size='small'
-                    color='info'
-                    onClick={() => handleOpenModalUserDetail(row.original?.user?.id)}
-                  >
-                    <User size={18} />
-                  </IconButton>
-                </Tooltip>
-              </div>
-            )
+          // Giao dịch không có order (NAPTIEN, RUT_HOA_HONG_AFFILIATE, ...) → mặc định "Hoàn thành"
+          if (orderStatus === undefined || orderStatus === null) {
+            return <Chip label='Hoàn thành' size='small' icon={<BadgeCheck size={16} />} color='success' sx={chipSx} />
           }
+
+          return getStatusBadge(orderStatus)
         }
       }
     ],
@@ -362,42 +362,22 @@ export default function TableDepositHistory() {
   )
 
   const table = useReactTable({
-    data: filteredOrders,
+    data: dataOrders,
     columns,
-    state: {
-      rowSelection,
-      pagination,
-      columnFilters,
-      sorting
-    },
-    enableRowSelection: true, // Bật tính năng chọn hàng
-    onRowSelectionChange: setRowSelection, // Cập nhật state khi có thay đổi
-    onPaginationChange: setPagination,
-    onColumnFiltersChange: setColumnFilters,
-    onSortingChange: setSorting,
-
     getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(), // Tùy chọn: cần thiết nếu có bộ lọc
-    getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
-    getFacetedRowModel: getFacetedRowModel(),
-    getFacetedUniqueValues: getFacetedUniqueValues()
+    initialState: {
+      pagination: { pageSize: 20 }
+    },
+    getRowId: (row: any) => String(row.id)
   })
 
-  const { pageIndex, pageSize } = table.getState().pagination
-  const totalRows = table.getFilteredRowModel().rows.length
-  const startRow = pageIndex * pageSize + 1
-  const endRow = Math.min(startRow + pageSize - 1, totalRows)
-
-  // Detail User Modal
-
+  // Modal handlers
   useEffect(() => {
-    if (selectedUserId) {
-      refetch()
-    }
+    if (selectedUserId) refetch()
   }, [selectedUserId])
 
-  const handleOpenModalUserDetail = async (userId: number) => {
+  const handleOpenModalUserDetail = (userId: number) => {
     setSelectedUserId(userId)
     setIsModalDetailUserOpen(true)
   }
@@ -412,32 +392,21 @@ export default function TableDepositHistory() {
     setIsOrderDetailModalOpen(true)
   }
 
-  const handleCloseOrderDetailModal = () => {
-    setIsOrderDetailModalOpen(false)
-    setSelectedOrderData(null)
-  }
-
   const handleOpenCancelDialog = (orderData: any) => {
     setOrderToCancel(orderData)
     setIsCancelDialogOpen(true)
   }
 
-  const handleCloseCancelDialog = () => {
-    setIsCancelDialogOpen(false)
-    setOrderToCancel(null)
-  }
-
   const handleConfirmCancel = () => {
     if (!orderToCancel?.order?.id) return
-
-    cancelOrderMutation.mutate(orderToCancel?.order?.id, {
+    cancelOrderMutation.mutate(orderToCancel.order.id, {
       onSuccess: () => {
-        handleCloseCancelDialog()
+        setIsCancelDialogOpen(false)
+        setOrderToCancel(null)
         toast.success('Hủy đơn hàng thành công!')
       },
       onError: (error: any) => {
         toast.error(error?.response?.data?.message || 'Có lỗi xảy ra khi hủy đơn hàng')
-        console.error('Lỗi khi hủy đơn hàng:', error)
       }
     })
   }
@@ -447,143 +416,198 @@ export default function TableDepositHistory() {
     setIsResendDialogOpen(true)
   }
 
-  const handleCloseResendDialog = () => {
-    setIsResendDialogOpen(false)
-    setOrderToResend(null)
-  }
-
   const handleConfirmResend = () => {
     if (!orderToResend?.order?.id) return
-
-    resendOrderMutation.mutate(orderToResend?.order?.id, {
+    resendOrderMutation.mutate(orderToResend.order.id, {
       onSuccess: () => {
-        handleCloseResendDialog()
+        setIsResendDialogOpen(false)
+        setOrderToResend(null)
         toast.success('Gửi lại đơn hàng thành công!')
       },
       onError: (error: any) => {
         toast.error(error?.response?.data?.message || 'Có lỗi xảy ra khi gửi lại đơn hàng')
-        console.error('Lỗi khi gửi lại đơn hàng:', error)
       }
     })
   }
 
+  const hasActiveFilters = !!(searchQuery || statusFilter || limit !== 100 || sortOrder !== 'desc')
+
   return (
     <>
       <div className='orders-content'>
-        {/* Toolbar */}
-
-        {/* Proxy Table */}
         <div className='table-container'>
+          {/* Header */}
           <div className='table-toolbar w-full'>
             <div className='header-left'>
               <div className='page-icon'>
                 <List size={17} />
               </div>
-              <div className='flex justify-between align-middle'>
-                <h5 className='mb-0 font-semibold'>Lịch sử giao dịch</h5>
-              </div>
+              <h5 className='mb-0 font-semibold'>Lịch sử giao dịch</h5>
             </div>
-
             <div className='header-right'>
-              <div className='flex align-middle gap-2'>
-                <CustomTextField
-                  fullWidth
-                  className='lg:w-[320px]'
-                  size='small'
-                  placeholder='Nhập user...'
-                  value={searchUser}
-                  onChange={e => setSearchUser(e.target.value)}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position='start'>
-                        <Search size={16} />
-                      </InputAdornment>
-                    ),
-                    endAdornment: (
-                      <InputAdornment position='end'>
-                        {searchUser ? (
-                          <IconButton aria-label='clear' size='small' onClick={() => setSearchUser('')}>
-                            <X size={16} />
-                          </IconButton>
-                        ) : null}
-                      </InputAdornment>
-                    )
-                  }}
-                />
-
-                <CustomTextField
-                  fullWidth
-                  select
-                  value={statusFilter}
-                  className='lg:w-[220px]'
-                  id='select-without-label'
-                  slotProps={{
-                    select: { displayEmpty: true },
-                    htmlInput: { 'aria-label': 'Without label' }
-                  }}
-                  onChange={e => setStatusFilter(e.target.value)}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position='start'>
-                        <Filter size={16} />
-                      </InputAdornment>
-                    ),
-                    endAdornment: (
-                      <InputAdornment position='end'>
-                        {statusFilter ? (
-                          <IconButton aria-label='clear' size='small' onClick={() => setStatusFilter('')}>
-                            <X size={16} />
-                          </IconButton>
-                        ) : null}
-                      </InputAdornment>
-                    )
-                  }}
-                >
-                  <MenuItem value=''>
-                    <em>Chọn trạng thái</em>
-                  </MenuItem>
-                  <MenuItem value={ORDER_STATUS.PENDING}>Đang chờ xử lý</MenuItem>
-                  <MenuItem value={ORDER_STATUS.PROCESSING}>Đang xử lý</MenuItem>
-                  <MenuItem value={ORDER_STATUS.COMPLETED}>Hoàn thành</MenuItem>
-                  <MenuItem value={ORDER_STATUS.FAILED}>Thất bại</MenuItem>
-                  <MenuItem value={ORDER_STATUS.CANCEL}>Hoàn tiền</MenuItem>
-                  <MenuItem value={ORDER_STATUS.EXPIRED}>Hết hạn</MenuItem>
-                </CustomTextField>
-
-                <AppReactDatepicker
-                  className='lg:w-[180px]'
-                  selected={date}
-                  id='basic-input'
-                  onChange={(date: Date | null) => setDate(date)}
-                  placeholderText='Chọn ngày'
-                  customInput={
-                    <CustomTextField
-                      fullWidth
-                      InputProps={{
-                        startAdornment: (
-                          <InputAdornment position='start'>
-                            <Calendar size={16} />
-                          </InputAdornment>
-                        ),
-                        endAdornment: (
-                          <InputAdornment position='end'>
-                            {date ? (
-                              <IconButton aria-label='clear' size='small' onClick={() => setDate(null)}>
-                                <X size={16} />
-                              </IconButton>
-                            ) : null}
-                          </InputAdornment>
-                        )
-                      }}
-                    />
-                  }
-                />
-              </div>
+              <span style={{ fontSize: '13px', color: 'var(--mui-palette-text-disabled, #94a3b8)' }}>
+                {!isLoading && dataOrders.length > 0 && `${new Intl.NumberFormat('vi-VN').format(dataOrders.length)} giao dịch`}
+              </span>
             </div>
           </div>
+
+          {/* Filter bar — tất cả chỉ apply khi click "Tìm kiếm" */}
+          <div
+            style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '12px 16px',
+              borderBottom: '1px solid var(--border-color, #e2e8f0)',
+              background: 'var(--mui-palette-background-default, #f8fafc)'
+            }}
+          >
+            {/* Search input */}
+            <CustomTextField
+              size='small'
+              placeholder='Tên, email, nội dung...'
+              value={searchInput}
+              onChange={e => setSearchInput(e.target.value)}
+              onKeyDown={handleSearchKeyDown}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position='start'>
+                    <Search size={15} style={{ color: 'var(--mui-palette-text-disabled, #94a3b8)' }} />
+                  </InputAdornment>
+                ),
+                endAdornment: searchInput ? (
+                  <InputAdornment position='end'>
+                    <IconButton size='small' onClick={() => setSearchInput('')} sx={{ padding: '2px' }}>
+                      <X size={14} />
+                    </IconButton>
+                  </InputAdornment>
+                ) : null
+              }}
+              sx={{
+                width: '200px',
+                '& .MuiOutlinedInput-root': { fontSize: '13px', borderRadius: '8px', minHeight: '38px' }
+              }}
+            />
+
+            {/* Status filter */}
+            <CustomTextField
+              select
+              size='small'
+              value={statusInput}
+              onChange={e => setStatusInput(e.target.value)}
+              sx={selectSx}
+              slotProps={{ select: { displayEmpty: true } }}
+            >
+              <MenuItem value=''>
+                <em>Tất cả trạng thái</em>
+              </MenuItem>
+              <MenuItem value={ORDER_STATUS.PENDING}>Đang chờ</MenuItem>
+              <MenuItem value={ORDER_STATUS.PROCESSING}>Đang xử lý</MenuItem>
+              <MenuItem value={ORDER_STATUS.IN_USE}>Đang sử dụng</MenuItem>
+              <MenuItem value={ORDER_STATUS.IN_USE_PARTIAL}>Thiếu proxy</MenuItem>
+              <MenuItem value={ORDER_STATUS.EXPIRED}>Hết hạn</MenuItem>
+              <MenuItem value={ORDER_STATUS.FAILED}>Thất bại</MenuItem>
+              <MenuItem value={ORDER_STATUS.PARTIAL_REFUNDED}>Hoàn tiền 1 phần</MenuItem>
+              <MenuItem value={ORDER_STATUS.REFUNDED_ALL}>Đã hoàn tiền</MenuItem>
+              <MenuItem value={ORDER_STATUS.RETRY_PROCESSING_PARTIAL}>Đang mua bù</MenuItem>
+            </CustomTextField>
+
+            {/* Sort order */}
+            <CustomTextField
+              select
+              size='small'
+              value={sortInput}
+              onChange={e => setSortInput(e.target.value as 'desc' | 'asc')}
+              sx={{ ...selectSx, minWidth: '120px' }}
+              slotProps={{ select: { displayEmpty: true } }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position='start'>
+                    {sortInput === 'desc' ? (
+                      <ArrowDownWideNarrow size={15} style={{ color: 'var(--mui-palette-text-disabled, #94a3b8)' }} />
+                    ) : (
+                      <ArrowUpNarrowWide size={15} style={{ color: 'var(--mui-palette-text-disabled, #94a3b8)' }} />
+                    )}
+                  </InputAdornment>
+                )
+              }}
+            >
+              <MenuItem value='desc'>Mới nhất</MenuItem>
+              <MenuItem value='asc'>Cũ nhất</MenuItem>
+            </CustomTextField>
+
+            {/* Limit bản ghi — label cố định + giá trị */}
+            <CustomTextField
+              size='small'
+              type='number'
+              value={limitInput}
+              onChange={e => setLimitInput(e.target.value)}
+              onKeyDown={handleSearchKeyDown}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position='start'>
+                    <span style={{ fontSize: '12px', color: 'var(--mui-palette-text-secondary, #64748b)', whiteSpace: 'nowrap' }}>Số bản ghi</span>
+                  </InputAdornment>
+                )
+              }}
+              slotProps={{ htmlInput: { min: 100, max: 10000 } }}
+              sx={{
+                width: '180px',
+                '& .MuiOutlinedInput-root': { fontSize: '13px', borderRadius: '8px', minHeight: '38px' },
+                '& input': { MozAppearance: 'textfield' },
+                '& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button': { WebkitAppearance: 'none' }
+              }}
+            />
+
+            {/* Nút tìm kiếm — ở cuối, click mới gọi API */}
+            <Button
+              variant='contained'
+              size='small'
+              onClick={handleApplyFilters}
+              disabled={isFetching}
+              sx={{
+                height: '38px',
+                fontSize: '13px',
+                fontWeight: 600,
+                textTransform: 'none',
+                borderRadius: '8px',
+                boxShadow: 'none',
+                gap: '4px',
+                color: '#fff',
+                px: 2,
+                minWidth: '110px',
+                '&.Mui-disabled': {
+                  backgroundColor: 'var(--mui-palette-primary-main)',
+                  opacity: 0.65,
+                  color: '#fff'
+                }
+              }}
+            >
+              {isFetching ? <Loader2 size={15} style={{ animation: 'spin 1s linear infinite' }} /> : <Search size={15} />}
+              {isFetching ? 'Đang tìm...' : 'Tìm kiếm'}
+            </Button>
+
+            {/* Clear all */}
+            {hasActiveFilters && (
+              <Tooltip title='Đặt lại tất cả'>
+                <IconButton
+                  size='small'
+                  onClick={handleClearAll}
+                  sx={{
+                    color: 'var(--mui-palette-text-disabled, #94a3b8)',
+                    '&:hover': { color: '#ef4444', backgroundColor: 'rgba(239,68,68,0.08)' }
+                  }}
+                >
+                  <X size={16} />
+                </IconButton>
+              </Tooltip>
+            )}
+          </div>
+
           {/* Table */}
-          <div className='table-wrapper'>
-            <table className='data-table' style={isLoading || dataOrders.length === 0 ? { height: '100%' } : {}}>
+          <div className='table-wrapper' style={{ overflowX: 'auto' }}>
+            <table className='data-table' style={{ minWidth: '1400px', ...(isLoading || !dataOrders.length ? { height: '100%' } : {}) }}>
               <thead className='table-header'>
                 {table.getHeaderGroups().map(headerGroup => (
                   <tr key={headerGroup.id}>
@@ -614,7 +638,9 @@ export default function TableDepositHistory() {
                     <td colSpan={columns.length} className='py-10 text-center'>
                       <div className='flex flex-col items-center justify-center'>
                         <Image src='/images/no-data.png' alt='No data' width={160} height={160} />
-                        <p className='mt-4 text-gray-500'>Không có dữ liệu</p>
+                        <p className='mt-4' style={{ color: 'var(--mui-palette-text-disabled, #94a3b8)' }}>
+                          {hasActiveFilters ? 'Không tìm thấy giao dịch phù hợp' : 'Không có dữ liệu'}
+                        </p>
                       </div>
                     </td>
                   </tr>
@@ -633,57 +659,45 @@ export default function TableDepositHistory() {
             </table>
           </div>
 
-          {/* Pagination */}
-          <div className='pagination-container'>
-            <div className='pagination-wrapper'>
-              <div className='pagination-info'>
-                <div className='page-size-select'>
-                  <span className='text-sm text-gray'>Kích cỡ trang linh</span>
-                  <div className='page-size-select-wrapper'>
-                    <select
-                      value={table.getState().pagination.pageSize}
-                      onChange={e => {
-                        table.setPageSize(Number(e.target.value))
-                      }}
-                      className='page-size-select'
-                    >
-                      <option value='10'>10</option>
-                      <option value='50'>50</option>
-                      <option value='100'>100</option>
-                    </select>
-                    <div className='select-arrow'>
-                      <svg className='h-4 w-4' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'>
-                        <path d='M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z' />
-                      </svg>
-                    </div>
-                  </div>
-                </div>
-                {/* --- Hiển thị số hàng trên trang hiện tại --- */}
-                <div>
-                  {totalRows > 0 ? (
-                    <span>
-                      {startRow} - {endRow} của {totalRows} hàng
-                    </span>
-                  ) : (
-                    <span>Không có dữ liệu</span>
-                  )}
-                </div>
+          {/* Footer — phân trang client */}
+          {!isLoading && dataOrders.length > 0 && (
+            <div
+              style={{
+                padding: '10px 16px',
+                borderTop: '1px solid var(--border-color, #e2e8f0)',
+                display: 'flex',
+                flexWrap: 'wrap',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                gap: '8px'
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: 'var(--mui-palette-text-secondary, #64748b)' }}>
+                <span>Hiển thị</span>
+                <CustomTextField
+                  select
+                  size='small'
+                  value={table.getState().pagination.pageSize}
+                  onChange={e => table.setPageSize(Number(e.target.value))}
+                  sx={{ width: '70px', '& .MuiOutlinedInput-root': { fontSize: '13px' }, '& .MuiSelect-select': { py: '4px' } }}
+                >
+                  {[20, 50, 100].map(size => (
+                    <MenuItem key={size} value={size}>{size}</MenuItem>
+                  ))}
+                </CustomTextField>
+                <span>/ {new Intl.NumberFormat('vi-VN').format(dataOrders.length)} giao dịch {sortOrder === 'desc' ? 'mới nhất' : 'cũ nhất'}</span>
               </div>
-
-              <div className='pagination-buttons'>
+              {table.getPageCount() > 1 && (
                 <Pagination
                   count={table.getPageCount()}
-                  shape='rounded'
-                  variant='outlined'
-                  color='primary'
                   page={table.getState().pagination.pageIndex + 1}
-                  onChange={(event, page) => {
-                    table.setPageIndex(page - 1)
-                  }}
+                  onChange={(_, page) => table.setPageIndex(page - 1)}
+                  size='small'
+                  color='primary'
                 />
-              </div>
+              )}
             </div>
-          </div>
+          )}
         </div>
       </div>
 
@@ -694,65 +708,53 @@ export default function TableDepositHistory() {
         isLoading={loadingModal}
       />
 
-      <LogModal
-        isOpen={isLogModalOpen}
-        onClose={() => setIsLogModalOpen(false)}
-        data={selectedOrderData}
-        isLoading={false}
-      />
+      <LogModal isOpen={isLogModalOpen} onClose={() => setIsLogModalOpen(false)} orderId={selectedOrderData?.order?.id ?? null} />
 
       <OrderDetailModal
         isOpen={isOrderDetailModalOpen}
-        onClose={handleCloseOrderDetailModal}
+        onClose={() => {
+          setIsOrderDetailModalOpen(false)
+          setSelectedOrderData(null)
+        }}
         orderData={selectedOrderData}
         isLoading={false}
       />
 
-      {/* Cancel Order Confirmation Dialog */}
-      <Dialog
-        open={isCancelDialogOpen}
-        onClose={handleCloseCancelDialog}
-        aria-labelledby='cancel-dialog-title'
-        aria-describedby='cancel-dialog-description'
-      >
-        <DialogTitle id='cancel-dialog-title'>Xác nhận hủy đơn hàng</DialogTitle>
+      {/* Cancel Order Dialog */}
+      <Dialog open={isCancelDialogOpen} onClose={() => setIsCancelDialogOpen(false)}>
+        <DialogTitle>Xác nhận hủy đơn hàng</DialogTitle>
         <DialogContent>
-          <DialogContentText id='cancel-dialog-description'>
-            Bạn có chắc chắn muốn hủy đơn hàng <strong>#{orderToCancel?.order?.order_code}</strong> không?
+          <DialogContentText>
+            Bạn có chắc muốn hủy đơn <strong>#{orderToCancel?.order?.order_code}</strong>?
             <br />
-            Đơn hàng sẽ được chuyển sang trạng thái "Đã hủy" và tiền sẽ được hoàn lại.
+            Tiền sẽ được hoàn lại cho user.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseCancelDialog} color='inherit'>
+          <Button onClick={() => setIsCancelDialogOpen(false)} color='inherit'>
             Quay lại
           </Button>
-          <Button onClick={handleConfirmCancel} color='error' variant='contained' autoFocus>
+          <Button onClick={handleConfirmCancel} color='error' variant='contained' sx={{ color: '#fff' }}>
             Xác nhận hủy
           </Button>
         </DialogActions>
       </Dialog>
 
-      {/* Resend Order Confirmation Dialog */}
-      <Dialog
-        open={isResendDialogOpen}
-        onClose={handleCloseResendDialog}
-        aria-labelledby='resend-dialog-title'
-        aria-describedby='resend-dialog-description'
-      >
-        <DialogTitle id='resend-dialog-title'>Xác nhận gửi lại đơn hàng</DialogTitle>
+      {/* Resend Order Dialog */}
+      <Dialog open={isResendDialogOpen} onClose={() => setIsResendDialogOpen(false)}>
+        <DialogTitle>Xác nhận gửi lại đơn hàng</DialogTitle>
         <DialogContent>
-          <DialogContentText id='resend-dialog-description'>
-            Bạn có chắc chắn muốn gửi lại đơn hàng <strong>#{orderToResend?.order?.order_code}</strong> không?
+          <DialogContentText>
+            Gửi lại đơn <strong>#{orderToResend?.order?.order_code}</strong>?
             <br />
-            Hệ thống sẽ thực hiện lại quá trình xử lý đơn hàng này.
+            Hệ thống sẽ xử lý lại đơn hàng này.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseResendDialog} color='inherit'>
+          <Button onClick={() => setIsResendDialogOpen(false)} color='inherit'>
             Hủy
           </Button>
-          <Button onClick={handleConfirmResend} color='success' variant='contained' autoFocus>
+          <Button onClick={handleConfirmResend} color='success' variant='contained' sx={{ color: '#fff' }}>
             Xác nhận gửi lại
           </Button>
         </DialogActions>

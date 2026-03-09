@@ -1,16 +1,15 @@
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react'
 
-import { Copy, Check, ChevronDown, ChevronUp, Code, Settings, BookOpen, Globe, Key, Clock } from 'lucide-react'
+import { Copy, Check, ChevronDown, ChevronUp, Code, Settings, Key, Shield, Lock } from 'lucide-react'
 
-import { apiEndpoints, type ApiEndpoint } from '@/configs/apiDocsConfig'
+import { apiEndpoints, categoryLabels, authLabels, type ApiEndpoint } from '@/configs/apiDocsConfig'
 
 interface CodeBlockProps {
   code: string
-  language?: string
   title?: string
 }
 
-function CodeBlock({ code, language = 'json', title }: CodeBlockProps) {
+function CodeBlock({ code, title }: CodeBlockProps) {
   const [copied, setCopied] = useState(false)
 
   const copyToClipboard = () => {
@@ -81,25 +80,91 @@ function StatusButton({ status, isActive, onClick }: StatusButtonProps) {
   )
 }
 
-export default function ApiUsage() {
-  const [selectedApi, setSelectedApi] = useState('get-current-proxy')
+function AuthBadge({ auth }: { auth: string }) {
+  const info = authLabels[auth]
+
+  if (!info) return null
+
+  const isKey = auth === 'api_key'
+
+  return (
+    <div className='flex items-start gap-2 px-3 py-2.5 rounded-lg bg-amber-50 border border-amber-200'>
+      {isKey ? <Key size={14} className='text-amber-600 mt-0.5 flex-shrink-0' /> : <Lock size={14} className='text-amber-600 mt-0.5 flex-shrink-0' />}
+      <div>
+        <span className='text-sm font-semibold text-amber-800'>{info.label}</span>
+        <span className='text-xs text-amber-600 ml-1'>— {info.description}</span>
+      </div>
+    </div>
+  )
+}
+
+function ParamTable({ params }: { params: ApiEndpoint['parameters'] }) {
+  if (!params?.length) return null
+
+  return (
+    <div className='overflow-hidden rounded-lg border border-gray-200'>
+      <table className='w-full text-sm'>
+        <thead>
+          <tr className='bg-gray-50 border-b border-gray-200'>
+            <th className='text-left px-4 py-2.5 font-semibold text-gray-700'>Tham số</th>
+            <th className='text-left px-4 py-2.5 font-semibold text-gray-700'>Kiểu</th>
+            <th className='text-left px-4 py-2.5 font-semibold text-gray-700'>Bắt buộc</th>
+            <th className='text-left px-4 py-2.5 font-semibold text-gray-700'>Mô tả</th>
+          </tr>
+        </thead>
+        <tbody>
+          {params.map(p => (
+            <tr key={p.name} className='border-b border-gray-100 last:border-0'>
+              <td className='px-4 py-2.5'>
+                <code className='text-sm font-mono bg-gray-100 px-1.5 py-0.5 rounded text-rose-600'>{p.name}</code>
+              </td>
+              <td className='px-4 py-2.5 text-gray-600'>{p.type}</td>
+              <td className='px-4 py-2.5'>
+                {p.required ? (
+                  <span className='text-xs font-semibold text-red-600 bg-red-50 px-2 py-0.5 rounded'>Required</span>
+                ) : (
+                  <span className='text-xs font-semibold text-gray-400 bg-gray-50 px-2 py-0.5 rounded'>Optional</span>
+                )}
+              </td>
+              <td className='px-4 py-2.5 text-gray-600'>
+                {p.description}
+                {p.example && (
+                  <span className='ml-2 text-xs text-gray-400'>VD: <code className='bg-gray-100 px-1 rounded'>{p.example}</code></span>
+                )}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
+interface ApiUsageProps {
+  endpoints?: ApiEndpoint[]
+}
+
+export default function ApiUsage({ endpoints }: ApiUsageProps) {
+  const data = endpoints || apiEndpoints
+
+  const [selectedApi, setSelectedApi] = useState(data[0]?.id || '')
   const [selectedStatus, setSelectedStatus] = useState('200 OK')
   const [isBodyExpanded, setIsBodyExpanded] = useState(true)
   const [isResponseExpanded, setIsResponseExpanded] = useState(true)
-  const [searchTerm, setSearchTerm] = useState('')
-  const [selectedCategory, setSelectedCategory] = useState('all')
 
-  const filteredApis = apiEndpoints.filter(api => {
-    const matchesSearch =
-      api.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      api.description.toLowerCase().includes(searchTerm.toLowerCase())
+  const currentApi = data.find(api => api.id === selectedApi) || data[0]
 
-    const matchesCategory = selectedCategory === 'all' || api.category === selectedCategory
+  // Nhóm endpoints theo category
+  const groupedApis = useMemo(() => {
+    const groups: Record<string, ApiEndpoint[]> = {}
 
-    return matchesSearch && matchesCategory
-  })
+    data.forEach(api => {
+      if (!groups[api.category]) groups[api.category] = []
+      groups[api.category].push(api)
+    })
 
-  const currentApi = apiEndpoints.find(api => api.id === selectedApi) || apiEndpoints[0]
+    return groups
+  }, [data])
 
   const getMethodColor = (method: string) => {
     switch (method) {
@@ -116,56 +181,95 @@ export default function ApiUsage() {
     }
   }
 
+  const handleSelectApi = (id: string) => {
+    setSelectedApi(id)
+    setSelectedStatus('200 OK')
+    setIsBodyExpanded(true)
+    setIsResponseExpanded(true)
+  }
+
   return (
-    <div className='flex  bg-gray-50'>
-      {/* API Sidebar */}
-      <div className='w-80 bg-white border-r border-gray-200 flex flex-col'>
-        {/* API List */}
+    <div className='flex bg-gray-50 rounded-xl overflow-hidden border border-gray-200' style={{ minHeight: '600px' }}>
+      {/* Sidebar */}
+      <div className='w-72 bg-white border-r border-gray-200 flex flex-col flex-shrink-0'>
+        <div className='p-3 border-b border-gray-100 bg-gray-50'>
+          <span className='text-xs font-bold text-gray-500 uppercase tracking-wider'>Endpoints</span>
+        </div>
         <div className='flex-1 overflow-y-auto'>
-          {filteredApis.map(api => (
-            <div
-              key={api.id}
-              onClick={() => setSelectedApi(api.id)}
-              className={`p-4 border-b border-gray-100 cursor-pointer transition-colors ${
-                selectedApi === api.id ? 'bg-white-100 border-l-4 border-l-orange-500' : 'hover:bg-white-100'
-              }`}
-            >
-              <div className='flex items-center justify-between mb-2'>
-                <h3 className='font-medium m-0 text-gray-900 text-sm'>{api.title}</h3>
-                <span className={`px-2 py-1 rounded text-xs font-bold text-white ${getMethodColor(api.method)}`}>
-                  {api.method}
+          {Object.entries(groupedApis).map(([category, apis]) => (
+            <div key={category}>
+              <div className='px-4 pt-3 pb-1'>
+                <span className='text-xs font-bold text-gray-400 uppercase tracking-wider'>
+                  {categoryLabels[category] || category}
                 </span>
               </div>
+              {apis.map(api => (
+                <div
+                  key={api.id}
+                  onClick={() => handleSelectApi(api.id)}
+                  className={`px-4 py-3 cursor-pointer transition-colors ${
+                    selectedApi === api.id
+                      ? 'bg-orange-50 border-l-4 border-l-orange-500'
+                      : 'border-l-4 border-l-transparent hover:bg-gray-50'
+                  }`}
+                >
+                  <div className='flex items-center justify-between'>
+                    <h3 className='font-medium text-gray-900 text-sm m-0 leading-tight'>{api.title}</h3>
+                    <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold text-white ${getMethodColor(api.method)} flex-shrink-0 ml-2`}>
+                      {api.method}
+                    </span>
+                  </div>
+                </div>
+              ))}
             </div>
           ))}
         </div>
       </div>
 
       {/* Main Content */}
-      <div className='flex-1 flex flex-col'>
-        <div className='flex-1  p-6'>
-          <div className='max-w-4xl mx-auto space-y-6'>
-            {/* API Endpoint */}
-            <div className='bg-white rounded-xl shadow-sm border border-gray-200 p-6'>
-              <div className='space-y-4'>
-                <div>
-                  <label className='block text-sm font-medium text-gray-700 mb-2'>
-                    <Code size={16} className='inline mr-1' />
-                    URL Endpoint
-                  </label>
-                  <div className='flex items-center space-x-2'>
-                    <span
-                      className={`px-2 py-1 rounded text-xs font-bold text-white ${getMethodColor(currentApi.method)}`}
-                    >
-                      {currentApi.method}
-                    </span>
-                    <div className='flex-1 bg-gray-900 rounded-lg p-3'>
-                      <code className='text-blue-400 font-mono text-sm'>{currentApi.endpoint}</code>
-                    </div>
+      <div className='flex-1 flex flex-col overflow-y-auto'>
+        <div className='flex-1 p-6'>
+          <div className='max-w-4xl mx-auto space-y-5'>
+
+            {/* Endpoint URL + Description */}
+            <div className='bg-white rounded-xl shadow-sm border border-gray-200 p-5'>
+              <div className='mb-3'>
+                <h2 className='text-lg font-bold text-gray-900 m-0'>{currentApi.title}</h2>
+                <p className='text-sm text-gray-500 mt-1 mb-0'>{currentApi.description}</p>
+              </div>
+              <div>
+                <label className='block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2'>
+                  <Code size={12} className='inline mr-1' />
+                  Endpoint
+                </label>
+                <div className='flex items-center space-x-2'>
+                  <span className={`px-2 py-1 rounded text-xs font-bold text-white ${getMethodColor(currentApi.method)}`}>
+                    {currentApi.method}
+                  </span>
+                  <div className='flex-1 bg-gray-900 rounded-lg p-3'>
+                    <code className='text-blue-400 font-mono text-sm'>{currentApi.endpoint}</code>
                   </div>
                 </div>
               </div>
             </div>
+
+            {/* Authentication */}
+            <AuthBadge auth={currentApi.auth} />
+
+            {/* Parameters Table */}
+            {currentApi.parameters && currentApi.parameters.length > 0 && (
+              <div className='bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden'>
+                <div className='p-4 border-b border-gray-100'>
+                  <h3 className='text-base font-semibold text-gray-900 flex items-center m-0'>
+                    <Shield size={16} className='mr-2 text-gray-400' />
+                    Parameters
+                  </h3>
+                </div>
+                <div className='p-4'>
+                  <ParamTable params={currentApi.parameters} />
+                </div>
+              </div>
+            )}
 
             {/* Request Body */}
             {currentApi.requestBody && (
@@ -174,8 +278,8 @@ export default function ApiUsage() {
                   className='flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 transition-colors'
                   onClick={() => setIsBodyExpanded(!isBodyExpanded)}
                 >
-                  <h3 className='text-lg font-semibold text-gray-900 flex items-center'>
-                    <Settings size={20} className='mr-2' />
+                  <h3 className='text-base font-semibold text-gray-900 flex items-center m-0'>
+                    <Settings size={16} className='mr-2 text-gray-400' />
                     Request Body
                   </h3>
                   {isBodyExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
@@ -194,12 +298,11 @@ export default function ApiUsage() {
                 className='flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 transition-colors'
                 onClick={() => setIsResponseExpanded(!isResponseExpanded)}
               >
-                <h3 className='text-lg font-semibold text-gray-900'>Responses</h3>
+                <h3 className='text-base font-semibold text-gray-900 m-0'>Responses</h3>
                 {isResponseExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
               </div>
               {isResponseExpanded && (
                 <div className='px-4 pb-4 space-y-4'>
-                  {/* Status Code Buttons */}
                   <div className='flex flex-wrap gap-2'>
                     {currentApi.statusCodes.map(status => (
                       <StatusButton
@@ -210,12 +313,14 @@ export default function ApiUsage() {
                       />
                     ))}
                   </div>
-
-                   {/* Response Body */}
-                   <CodeBlock code={currentApi.responses[selectedStatus] || 'No response data'} title={`JSON Response (${selectedStatus})`} />
+                  <CodeBlock
+                    code={currentApi.responses[selectedStatus] || 'No response data'}
+                    title={`Response — ${selectedStatus}`}
+                  />
                 </div>
               )}
             </div>
+
           </div>
         </div>
       </div>

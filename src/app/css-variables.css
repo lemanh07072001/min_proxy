@@ -11,6 +11,9 @@ html:root {
   --primary-gradient-alt: linear-gradient(135deg, #fc4336 0%, #e63946 100%) !important;
   --width-sidebar: 300px !important;
   --fallback-primary-gradient: linear-gradient(135deg, #fc4336 0%, #e63946 100%) !important;
+
+  /* Force white text on primary-colored elements */
+  --mui-palette-primary-contrastText: #fff !important;
 }
 
 /* Dark mode variables */

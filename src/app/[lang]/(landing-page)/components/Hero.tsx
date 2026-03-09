@@ -97,7 +97,7 @@ const Hero = () => {
               {/* CTA Buttons */}
               <div className='hero-actions'>
                 <button className='btn-primary'>
-                  <Link target='_blank' href={`/${locale}/overview`}>
+                  <Link target='_blank' href={`/${locale}/home`}>
                     {t('landing.hero.actions.buyNow')}
                   </Link>
                   <ArrowRight size={20} />

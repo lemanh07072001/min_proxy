@@ -3,16 +3,9 @@ import type { NextRequest } from 'next/server'
 
 import { getToken } from 'next-auth/jwt'
 
-// Pre-compiled Sets cho lookup nhanh O(1)
-const privateRoutesSet = new Set([
-  'overview',
-  'order-proxy',
-  'history-order',
-  'affiliate',
-  'transaction-history',
-  'dashboard',
-  'admin'
-])
+// Chỉ giữ admin routes (cần role check ở middleware level)
+// Client routes khác do AuthGuard (client component) xử lý → hiện EmptyAuthPage thay vì redirect
+const privateRoutesSet = new Set(['dashboard', 'admin'])
 
 const adminRoutesSet = new Set(['admin'])
 const authRoutesSet = new Set(['login', 'register'])
@@ -35,7 +28,7 @@ export async function middleware(req: NextRequest) {
   const lang = validLangs.has(segments[0]) ? segments[0] : 'vi'
   const route = segments[1] || ''
 
-  // Skip nếu không phải route cần check
+  // Skip nếu không phải route cần check ở middleware level
   const isPrivateRoute = privateRoutesSet.has(route)
   const isAuthRoute = authRoutesSet.has(route)
 
@@ -78,7 +71,7 @@ export async function middleware(req: NextRequest) {
       const isAdmin = role === 0 || role === '0' || role === 'admin'
 
       if (!isAdmin) {
-        return NextResponse.redirect(new URL(`/${lang}/overview`, req.url))
+        return NextResponse.redirect(new URL(`/${lang}/home`, req.url))
       }
     }
   }

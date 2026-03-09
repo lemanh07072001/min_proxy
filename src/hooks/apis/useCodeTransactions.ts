@@ -44,9 +44,8 @@ export const useCodeTransactions = () => {
       const res = await axiosAuth.get('/code-transactions')
       return (res?.data?.data ?? res?.data ?? []) as CodeTransaction[]
     },
-    refetchOnMount: 'always',
-    refetchOnWindowFocus: true,
-    staleTime: 0
+    staleTime: 30 * 1000,
+    refetchOnWindowFocus: false
   })
 }
 

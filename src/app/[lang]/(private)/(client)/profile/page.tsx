@@ -1,43 +1,24 @@
-import { getServerSession } from 'next-auth/next'
+'use client'
 
-import type { Metadata } from 'next'
-
-import axiosInstance from '@/libs/axios'
 import ProfilePage from '@/views/Client/Profile/ProfilePage'
-import { authOptions } from '@/libs/auth'
+import { useProfile } from '@/hooks/apis/useProfile'
 
-export const metadata: Metadata = {
-  title: `${process.env.NEXT_PUBLIC_APP_NAME} | Thông tin tài khoản`
-}
+export default function Profile() {
+  const { data: dataUser, isLoading } = useProfile()
 
-const getProfile = async (id: number, token: string) => {
-  const response = await fetch(`${process.env.API_URL}/profile/${id}`, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`
-    }
-  })
-
-  if (!response.ok) {
-    throw new Error('Lỗi khi lấy dữ liệu!')
+  if (isLoading || !dataUser) {
+    return (
+      <div style={{ padding: '24px' }}>
+        <div style={{
+          height: '200px',
+          borderRadius: '12px',
+          background: 'var(--mui-palette-action-hover, #e2e8f0)',
+          animation: 'skeletonPulse 1.5s ease-in-out infinite'
+        }} />
+        <style>{`@keyframes skeletonPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }`}</style>
+      </div>
+    )
   }
 
-  const data = await response.json()
-
-  return data
-}
-
-export default async function Profile() {
-  const session = await getServerSession(authOptions)
-  const token = session.access_token
-  const id = session.user.id
-
-  const dataUser = await getProfile(id, token)
-
-  return (
-    <>
-      <ProfilePage dataProfile={dataUser} />
-    </>
-  )
+  return <ProfilePage dataProfile={dataUser} />
 }

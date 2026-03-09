@@ -1,62 +1,100 @@
 /**
  * Order Status Constants
- * Định nghĩa các trạng thái đơn hàng trong hệ thống
+ * Định nghĩa các trạng thái đơn hàng — đồng bộ với BE Order::STATUS_KEY
  */
 
 export const ORDER_STATUS = {
-  PENDING: '0', // Đang chờ xử lý
-  PROCESSING: '1', // Đang xử lý
-  COMPLETED: '2', // Hoàn thành
-  FAILED: '3', // Lỗi
-  EXPIRED: '5', // Hết hạn expired
-  CANCEL: '4' // Hoàn tiền
+  PENDING: '0',            // Chờ xử lý
+  PROCESSING: '1',         // Đang xử lý
+  IN_USE: '2',             // Đang sử dụng (đủ proxy)
+  IN_USE_PARTIAL: '3',     // Đang sử dụng (thiếu proxy)
+  EXPIRED: '4',            // Hết hạn
+  FAILED: '5',             // Thất bại
+  PARTIAL_REFUNDED: '6',   // Hoàn tiền 1 phần
+  WAITING_REFUND: '7',     // Chờ hoàn tiền
+  REFUNDED_ALL: '8',       // Hoàn tiền toàn bộ
+  RETRY_PROCESSING_PARTIAL: '9',   // Đang mua bù (retry partial)
 } as const
 
 export type OrderStatusType = (typeof ORDER_STATUS)[keyof typeof ORDER_STATUS]
 
 /**
- * Order Status Labels
- * Nhãn hiển thị cho mỗi trạng thái
+ * Order Status Labels — nhãn hiển thị cho user
  */
-export const ORDER_STATUS_LABELS = {
+export const ORDER_STATUS_LABELS: Record<string, string> = {
   [ORDER_STATUS.PENDING]: 'Đang chờ xử lý',
   [ORDER_STATUS.PROCESSING]: 'Đang xử lý',
-  [ORDER_STATUS.COMPLETED]: 'Hoàn thành',
+  [ORDER_STATUS.IN_USE]: 'Đang sử dụng',
+  [ORDER_STATUS.IN_USE_PARTIAL]: 'Thiếu proxy',
+  [ORDER_STATUS.EXPIRED]: 'Hết hạn',
   [ORDER_STATUS.FAILED]: 'Lỗi đơn hàng',
-  [ORDER_STATUS.CANCEL]: 'Hoàn tiền',
-  [ORDER_STATUS.EXPIRED]: 'Hết hạn'
-} as const
+  [ORDER_STATUS.PARTIAL_REFUNDED]: 'Đã hoàn tiền 1 phần',
+  [ORDER_STATUS.WAITING_REFUND]: 'Chờ hoàn tiền',
+  [ORDER_STATUS.REFUNDED_ALL]: 'Đã hoàn tiền',
+  [ORDER_STATUS.RETRY_PROCESSING_PARTIAL]: 'Đang xử lý',
+}
+
+/**
+ * Order Status Labels cho Admin — phân biệt retry vs processing
+ */
+export const ORDER_STATUS_LABELS_ADMIN: Record<string, string> = {
+  ...ORDER_STATUS_LABELS,
+  [ORDER_STATUS.RETRY_PROCESSING_PARTIAL]: 'Đang mua bù',
+}
 
 /**
  * Order Status Colors
  * Màu sắc tương ứng với mỗi trạng thái (dùng cho Chip MUI)
  */
-export const ORDER_STATUS_COLORS = {
-  [ORDER_STATUS.PENDING]: 'info', // Xanh dương
-  [ORDER_STATUS.PROCESSING]: 'warning', // Vàng cam
-  [ORDER_STATUS.COMPLETED]: 'success', // Xanh lá
-  [ORDER_STATUS.FAILED]: 'error', // Đỏ
-  [ORDER_STATUS.EXPIRED]: 'error', // Đỏ
-  [ORDER_STATUS.CANCEL]: 'warning' // Đỏ
-} as const
+export const ORDER_STATUS_COLORS: Record<string, string> = {
+  [ORDER_STATUS.PENDING]: 'info',
+  [ORDER_STATUS.PROCESSING]: 'warning',
+  [ORDER_STATUS.IN_USE]: 'success',
+  [ORDER_STATUS.IN_USE_PARTIAL]: 'error',
+  [ORDER_STATUS.EXPIRED]: 'default',
+  [ORDER_STATUS.FAILED]: 'error',
+  [ORDER_STATUS.PARTIAL_REFUNDED]: 'warning',
+  [ORDER_STATUS.WAITING_REFUND]: 'info',
+  [ORDER_STATUS.REFUNDED_ALL]: 'default',
+  [ORDER_STATUS.RETRY_PROCESSING_PARTIAL]: 'warning',
+}
 
 /**
  * Transaction Types
- * Loại giao dịch
+ * Loại giao dịch — đồng bộ với BE Dongtien model
  */
 export const TRANSACTION_TYPES = {
-  BUY: 'BUY', // Mua
-  REFUND: 'REFUND', // Hoàn tiền
-  FAILED: 'FAILED' // Thất bại
+  BUY: 'BUY',
+  REFUND: 'REFUND',
+  FAILED: 'FAILED',
+  NAPTIEN: 'NAPTIEN',
+  NAPTIEN_PAY2S: 'NAPTIEN_PAY2S',
+  NAPTIEN_MANUAL: 'NAPTIEN_MANUAL',
+  THANHTOAN: 'THANHTOAN',
+  GIAHAN: 'GIAHAN',
+  THANHTOAN_V4: 'THANHTOAN_V4',
+  GIAHAN_V4: 'GIAHAN_V4',
+  RUT_HOA_HONG_AFFILIATE: 'RUT_HOA_HONG_AFFILIATE'
 } as const
 
 export type TransactionType = (typeof TRANSACTION_TYPES)[keyof typeof TRANSACTION_TYPES]
 
 /**
- * Transaction Type Labels
+ * Transaction Type Labels — nhãn tiếng Việt cho mỗi loại giao dịch
  */
-export const TRANSACTION_TYPE_LABELS = {
-  [TRANSACTION_TYPES.BUY]: 'Mua',
-  [TRANSACTION_TYPES.REFUND]: 'Hoàn',
-  [TRANSACTION_TYPES.FAILED]: 'Thất bại'
-} as const
+export const TRANSACTION_TYPE_LABELS: Record<string, string> = {
+  [TRANSACTION_TYPES.BUY]: 'Mua proxy',
+  [TRANSACTION_TYPES.REFUND]: 'Hoàn tiền',
+  [TRANSACTION_TYPES.FAILED]: 'Thất bại',
+  [TRANSACTION_TYPES.NAPTIEN]: 'Nạp tiền',
+  [TRANSACTION_TYPES.NAPTIEN_PAY2S]: 'Nạp tiền tự động',
+  [TRANSACTION_TYPES.NAPTIEN_MANUAL]: 'Nạp tiền thủ công',
+  [TRANSACTION_TYPES.THANHTOAN]: 'Thanh toán',
+  [TRANSACTION_TYPES.GIAHAN]: 'Gia hạn',
+  [TRANSACTION_TYPES.THANHTOAN_V4]: 'Thanh toán',
+  [TRANSACTION_TYPES.GIAHAN_V4]: 'Gia hạn',
+  [TRANSACTION_TYPES.RUT_HOA_HONG_AFFILIATE]: 'Rút hoa hồng',
+  // Deposit types (BankAuto)
+  PLUS: 'Nạp tiền',
+  MINUS: 'Hoàn tiền'
+}

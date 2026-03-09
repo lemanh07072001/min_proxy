@@ -5,6 +5,12 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true
   },
+  experimental: {
+    staleTimes: {
+      dynamic: 30,
+      static: 180
+    }
+  },
   turbopack: {
     root: process.cwd()
   },

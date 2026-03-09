@@ -5,13 +5,12 @@ export const useHistoryOrders = () => {
   const axiosAuth = useAxiosAuth()
 
   return useQuery({
-    queryKey: ['orderProxyStatic'],
+    queryKey: ['userOrders'],
     queryFn: async () => {
       const res = await axiosAuth.get('/get-order')
       return res.data.data
     },
-    refetchOnMount: 'always',
-    refetchOnWindowFocus: true,
-    staleTime: 0
+    staleTime: 30 * 1000,
+    refetchOnWindowFocus: false
   })
 }

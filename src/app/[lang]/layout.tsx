@@ -39,6 +39,7 @@ import { getSystemMode } from '@core/utils/serverHelpers'
 import TranslationWrapper from '@/hocs/TranslationWrapper'
 
 import { ModalContextProvider } from '@/app/contexts/ModalContext'
+import { BrandingProvider } from '@/app/contexts/BrandingContext'
 
 import { authOptions } from '@/libs/auth'
 
@@ -47,8 +48,11 @@ import I18nextProvider from '@/app/i18n-provider'
 import StoreProvider from '@/components/StoreProvider'
 import ReferralHandler from '@/components/ReferralHandler'
 import { NextAuthProvider } from '@/app/contexts/nextAuthProvider'
+import NavigationProgress from '@/components/NavigationProgress'
 
 import { getServerSession } from 'next-auth/next'
+
+import { siteConfig } from '@/configs/siteConfig'
 
 const figtree = Figtree({
   subsets: ['latin'],
@@ -61,7 +65,7 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://mktproxy.com'
 
   return {
-    title: 'MKT Proxy - Dịch vụ Proxy Chất Lượng Cao',
+    title: `${siteConfig.name} - ${siteConfig.description}`,
     description:
       'Dịch vụ proxy bảo mật, tốc độ cao với hỗ trợ đa quốc gia. Giải pháp mạng riêng ảo tin cậy cho doanh nghiệp và cá nhân.',
     keywords: [
@@ -74,9 +78,9 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
       'mạng riêng ảo',
       'bảo mật internet'
     ],
-    authors: [{ name: 'MKT Proxy' }],
-    creator: 'MKT Proxy',
-    publisher: 'MKT Proxy',
+    authors: [{ name: siteConfig.name }],
+    creator: siteConfig.name,
+    publisher: siteConfig.name,
     formatDetection: {
       email: false,
       address: false,
@@ -97,22 +101,22 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
       type: 'website',
       locale: resolvedParams.lang === 'vi' ? 'vi_VN' : resolvedParams.lang === 'en' ? 'en_US' : 'vi_VN',
       url: `${baseUrl}/${resolvedParams.lang}`,
-      title: 'MKT Proxy - Dịch vụ Proxy Chất Lượng Cao',
+      title: `${siteConfig.name} - ${siteConfig.description}`,
       description:
         'Dịch vụ proxy bảo mật, tốc độ cao với hỗ trợ đa quốc gia. Giải pháp mạng riêng ảo tin cậy cho doanh nghiệp và cá nhân.',
-      siteName: 'MKT Proxy',
+      siteName: siteConfig.name,
       images: [
         {
           url: '/images/logo/image.png',
           width: 1200,
           height: 630,
-          alt: 'MKT Proxy Logo'
+          alt: `${siteConfig.name} Logo`
         }
       ]
     },
     twitter: {
       card: 'summary_large_image',
-      title: 'MKT Proxy - Dịch vụ Proxy Chất Lượng Cao',
+      title: `${siteConfig.name} - ${siteConfig.description}`,
       description: 'Dịch vụ proxy bảo mật, tốc độ cao với hỗ trợ đa quốc gia.',
       images: ['/images/logo/image.png']
     },
@@ -128,51 +132,61 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
       }
     },
     icons: {
-      icon: '/images/logo/MKT_PROXY_2.png',
-      shortcut: '/images/logo/MKT_PROXY_2.png',
-      apple: '/images/logo/MKT_PROXY_2.png'
+      icon: siteConfig.favicon,
+      shortcut: siteConfig.favicon,
+      apple: siteConfig.favicon
     },
     manifest: '/manifest.json'
   }
 }
-
-export const revalidate = 0 //
 
 const RootLayout = async (props: ChildrenType & { params: Promise<{ lang: string }> }) => {
   const { children } = props
 
   const params = await props.params
 
-  const headersList = await headers()
-  const systemMode = await getSystemMode()
-
   const direction = i18n.langDirection[params.lang as Locale]
 
-  // ✅ Sử dụng server-side utility để lấy user data
-  const user = await getServerUserData()
-
-  // ✅ Lấy session cho NextAuth
-  const session = (await getServerSession(authOptions as any)) as any
+  // Fetch TẤT CẢ song song — tránh waterfall tuần tự
+  const [headersList, systemMode, user, session] = await Promise.all([
+    headers(),
+    getSystemMode(),
+    getServerUserData(),
+    getServerSession(authOptions as any) as any
+  ])
 
   return (
     <TranslationWrapper headersList={headersList} lang={params.lang as Locale}>
       <html id='__next' lang={params.lang} dir={direction} className={figtree.variable} suppressHydrationWarning>
+        <head>
+          <style
+            dangerouslySetInnerHTML={{
+              __html: `html:root {
+  --primary-hover: ${siteConfig.primaryHover} !important;
+  --primary-gradient: ${siteConfig.primaryGradient} !important;
+}`
+            }}
+          />
+        </head>
         <body className='flex is-full min-bs-full flex-auto flex-col'>
+          <NavigationProgress />
           <I18nextProvider locale={params.lang as Locale}>
             <NextAuthProvider
-              refetchInterval={10}
-              refetchOnWindowFocus={true}
+              refetchInterval={4 * 60}
+              refetchOnWindowFocus={false}
               session={session as any}
               basePath={process.env.NEXTAUTH_BASEPATH}
             >
               <TanstackProvider>
                 <InitColorSchemeScript attribute='data' defaultMode={systemMode} />
-                <StoreProvider initialUser={user}>
-                  <ModalContextProvider>
-                    <ReferralHandler />
-                    <div className='relative z-10 main'>{children}</div>
-                  </ModalContextProvider>
-                </StoreProvider>
+                <BrandingProvider>
+                  <StoreProvider initialUser={user}>
+                    <ModalContextProvider>
+                      <ReferralHandler />
+                      <div className='relative z-10 main'>{children}</div>
+                    </ModalContextProvider>
+                  </StoreProvider>
+                </BrandingProvider>
               </TanstackProvider>
             </NextAuthProvider>
           </I18nextProvider>

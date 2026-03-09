@@ -1,6 +1,7 @@
 import { getServerSession } from 'next-auth/next'
 
 import { authOptions } from '@/libs/auth'
+import { SERVER_API_URL } from '@/config/api'
 
 /**
  * Server-side utility để validate session với API check
@@ -26,7 +27,7 @@ export async function validateServerSessionWithAPI() {
 
   // Kiểm tra token validity bằng cách gọi API
   try {
-    const response = await fetch(`${process.env.API_URL || 'https://api.minhan.online/api'}/me`, {
+    const response = await fetch(`${SERVER_API_URL}/me`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -89,7 +90,7 @@ export async function getServerUserData() {
   }
 
   try {
-    const response = await fetch(`${process.env.API_URL || 'https://api.minhan.online/api'}/me`, {
+    const response = await fetch(`${SERVER_API_URL}/me`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
