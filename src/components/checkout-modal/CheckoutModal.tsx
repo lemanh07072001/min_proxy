@@ -119,6 +119,11 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({
 
         queryClient.invalidateQueries({ queryKey: [queryKey] })
         queryClient.invalidateQueries({ queryKey: ['userOrders'] })
+
+        // Reset sau 2s để khách có thể mua tiếp
+        setTimeout(() => {
+          setPurchaseSuccess(false)
+        }, 2000)
       }
     },
     onError: (error: any) => {

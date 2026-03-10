@@ -1,20 +1,26 @@
 // FILE: components/RechargeInputDialog.tsx
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import { Dialog, DialogContent, DialogTitle, InputAdornment, Box, LinearProgress } from '@mui/material'
 import Typography from '@mui/material/Typography'
 import Button from '@mui/material/Button'
 import IconButton from '@mui/material/IconButton'
-import { Alert, AlertTitle } from '@mui/lab'
 
-import { Copy, Loader, QrCode, Clock, CircleAlert } from 'lucide-react'
+import { useDispatch } from 'react-redux'
+import { toast } from 'react-toastify'
+import { useQueryClient } from '@tanstack/react-query'
+
+import { Copy, Loader, QrCode, Clock, CircleAlert, CheckCircle2, Radio } from 'lucide-react'
 
 import CustomTextField from '@core/components/mui/TextField'
 import CustomIconButton from '@core/components/mui/IconButton'
 
 import { useCreateBankQr, usePendingBankQr, type PendingBankQr } from '@/hooks/apis/useBankQr'
 import { useCopy } from '@/app/hooks/useCopy'
+import useAxiosAuth from '@/hocs/useAxiosAuth'
+import { setUser } from '@/store/userSlice'
+import type { AppDispatch } from '@/store'
 
 const denominations = ['50000', '100000', '200000', '500000', '1000000']
 const EXPIRE_SECONDS = 600 // 10 phút
@@ -32,15 +38,22 @@ interface RechargeInputDialogProps {
 }
 
 export default function RechargeInputDialog({ isOpen, handleClose }: RechargeInputDialogProps) {
+  const dispatch = useDispatch<AppDispatch>()
+  const queryClient = useQueryClient()
   const [rechargeAmount, setRechargeAmount] = useState('50,000')
   const [amount, setAmount] = useState('50000')
   const [isGeneratingQR, setIsGeneratingQR] = useState(false)
   const [countdown, setCountdown] = useState(0)
   const [createdRecord, setCreatedRecord] = useState<PendingBankQr | null>(null)
+  const [paymentSuccess, setPaymentSuccess] = useState(false)
 
   const createBankQr = useCreateBankQr()
   const { data: pendingData, refetch: refetchPending } = usePendingBankQr(isOpen, true)
   const [, copy] = useCopy()
+  const axiosAuth = useAxiosAuth()
+
+  const prevPendingRef = useRef<PendingBankQr | null>(null)
+  const countdownRef = useRef(0)
 
   const pendingRecord = pendingData?.data ?? createdRecord
   const hasPending = !!pendingRecord
@@ -66,6 +79,7 @@ export default function RechargeInputDialog({ isOpen, handleClose }: RechargeInp
       const remaining = calcRemaining()
 
       setCountdown(remaining)
+      countdownRef.current = remaining
 
       if (remaining <= 0) {
         clearInterval(timer)
@@ -75,6 +89,26 @@ export default function RechargeInputDialog({ isOpen, handleClose }: RechargeInp
 
     return () => clearInterval(timer)
   }, [pendingRecord?.expires_at, refetchPending])
+
+  // Detect payment success (threshold 15s tránh false positive khi gần hết hạn)
+  useEffect(() => {
+    const prev = prevPendingRef.current
+    const current = pendingData?.data ?? null
+
+    if (prev && !current && countdownRef.current > 15) {
+      setPaymentSuccess(true)
+      toast.success(`Nạp ${prev.amount.toLocaleString('vi-VN')}đ thành công!`)
+      axiosAuth.post('/me').then(res => {
+        if (res?.data) dispatch(setUser(res.data))
+      }).catch(() => {})
+      queryClient.invalidateQueries({ queryKey: ['depositHistory'] })
+      queryClient.invalidateQueries({ queryKey: ['getTransactionHistory'] })
+      setTimeout(() => setPaymentSuccess(false), 5000)
+    }
+
+    prevPendingRef.current = current
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingData?.data])
 
   // Khi server đã xác nhận record (pendingData có data), không cần createdRecord nữa
   useEffect(() => {
@@ -89,6 +123,7 @@ export default function RechargeInputDialog({ isOpen, handleClose }: RechargeInp
       setAmount('50000')
       setIsGeneratingQR(false)
       setCreatedRecord(null)
+      setPaymentSuccess(false)
     }
   }, [isOpen])
 
@@ -386,9 +421,41 @@ export default function RechargeInputDialog({ isOpen, handleClose }: RechargeInp
           </>
         )}
 
+        {/* ===== BANNER THANH TOÁN THÀNH CÔNG ===== */}
+        {paymentSuccess && !hasPending && (
+          <Box
+            sx={{
+              background: 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)',
+              borderRadius: '12px',
+              border: '1px solid #86efac',
+              padding: '24px',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '8px'
+            }}
+          >
+            <CheckCircle2 size={40} color='#16a34a' />
+            <Typography sx={{ fontSize: '16px', fontWeight: 700, color: '#15803d' }}>
+              Nạp tiền thành công!
+            </Typography>
+            <Typography sx={{ fontSize: '13px', color: '#166534' }}>
+              Số dư đã được cập nhật.
+            </Typography>
+          </Box>
+        )}
+
         {/* ===== HIỂN THỊ QR + THÔNG TIN BANK ===== */}
         {hasPending && (
           <>
+            {/* Polling indicator */}
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+              <Radio size={10} color='#22c55e' className='animate-pulse' />
+              <Typography sx={{ fontSize: '11px', color: '#16a34a', fontWeight: 500 }}>
+                Tự động kiểm tra mỗi 5 giây
+              </Typography>
+            </Box>
+
             <Box component='section'>
               <div className='row'>
                 {/* Thông tin chuyển khoản - bên trái */}
@@ -435,19 +502,24 @@ export default function RechargeInputDialog({ isOpen, handleClose }: RechargeInp
             </Box>
 
             {/* Lưu ý */}
-            <Alert severity='error' icon={false} sx={{ background: '#fef2f2', border: '1px solid #fecaca' }}>
-              <AlertTitle sx={{ color: '#991b1b', fontWeight: '600' }}>Lưu ý quan trọng:</AlertTitle>
-              <ul className='text-red-600 text-sm ps-3 mb-0'>
-                <li>
-                  Chuyển đúng số tiền: <strong>{formatCurrency(String(pendingRecord.amount))} VNĐ</strong>
-                </li>
-                <li>
-                  Nhập đúng nội dung: <strong>{pendingRecord.transaction_code}</strong>
-                </li>
-                <li>Tiền sẽ được cộng vào tài khoản sau 1-5 phút</li>
-                <li>Liên hệ hỗ trợ nếu sau 10 phút chưa nhận được tiền</li>
-              </ul>
-            </Alert>
+            <Box
+              sx={{
+                background: '#fffbeb',
+                border: '1px solid #fde68a',
+                borderRadius: '8px',
+                padding: '12px 14px'
+              }}
+            >
+              <Typography sx={{ fontSize: '12px', fontWeight: 600, color: '#92400e', mb: 0.5 }}>
+                <CircleAlert size={13} style={{ verticalAlign: 'middle', marginRight: '4px' }} />
+                Lưu ý quan trọng:
+              </Typography>
+              <Typography sx={{ fontSize: '12px', color: '#92400e', lineHeight: 1.6 }}>
+                Chuyển <strong>đúng số tiền</strong> và <strong>đúng nội dung</strong> chuyển khoản.
+                Tiền sẽ tự động cộng sau <strong>1–5 phút</strong>.
+                Nếu đã chuyển khoản quá <strong>10 phút</strong> mà chưa nhận được, vui lòng liên hệ Admin để được hỗ trợ.
+              </Typography>
+            </Box>
 
             {/* Buttons */}
             <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: '10px' }}>

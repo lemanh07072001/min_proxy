@@ -1,10 +1,11 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 import Image from 'next/image'
 
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
+import { toast } from 'react-toastify'
 
 import {
   Wallet,
@@ -14,7 +15,9 @@ import {
   Loader,
   Clock3,
   CircleAlert,
-  Trash2
+  Trash2,
+  CheckCircle2,
+  Radio
 } from 'lucide-react'
 
 import Box from '@mui/material/Box'
@@ -30,7 +33,7 @@ import {
   getPaginationRowModel
 } from '@tanstack/react-table'
 
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 import CustomTextField from '@core/components/mui/TextField'
 
@@ -40,8 +43,9 @@ import { useDepositHistory } from '@/hooks/apis/useDeponsitHistory'
 import { useCopy } from '@/app/hooks/useCopy'
 import { formatDateTimeLocal } from '@/utils/formatDate'
 import useAxiosAuth from '@/hocs/useAxiosAuth'
+import { setUser } from '@/store/userSlice'
 
-import type { RootState } from '@/store'
+import type { AppDispatch, RootState } from '@/store'
 
 const denominations = ['50000', '100000', '200000', '500000', '1000000']
 const EXPIRE_SECONDS = 600
@@ -55,6 +59,8 @@ const BANK_INFO = {
 
 export default function RechargePage() {
   const { user } = useSelector((state: RootState) => state.user)
+  const dispatch = useDispatch<AppDispatch>()
+  const queryClient = useQueryClient()
   const [tabIndex, setTabIndex] = useState(0)
 
   // Transfer name (chỉ dùng khi chưa cấu hình)
@@ -68,11 +74,18 @@ export default function RechargePage() {
   const [isGeneratingQR, setIsGeneratingQR] = useState(false)
   const [countdown, setCountdown] = useState(0)
   const [createdRecord, setCreatedRecord] = useState<PendingBankQr | null>(null)
+  const [paymentSuccess, setPaymentSuccess] = useState(false)
 
   const createBankQr = useCreateBankQr()
   const cancelBankQr = useCancelBankQr()
   const { data: pendingData, refetch: refetchPending } = usePendingBankQr(true, true)
   const [, copy] = useCopy()
+  const axiosAuth = useAxiosAuth()
+
+  // Refs để detect payment success
+  const prevPendingRef = useRef<PendingBankQr | null>(null)
+  const wasCancelledRef = useRef(false)
+  const countdownRef = useRef(0)
 
   const pendingRecord = pendingData?.data ?? createdRecord
   const hasPending = !!pendingRecord
@@ -97,6 +110,7 @@ export default function RechargePage() {
     const timer = setInterval(() => {
       const remaining = calcRemaining()
       setCountdown(remaining)
+      countdownRef.current = remaining
       if (remaining <= 0) {
         clearInterval(timer)
         refetchPending()
@@ -105,6 +119,31 @@ export default function RechargePage() {
 
     return () => clearInterval(timer)
   }, [pendingRecord?.expires_at, refetchPending])
+
+  // Detect payment success: pending → null mà không phải do cancel
+  // Threshold 15s để tránh false positive khi server expire trước FE countdown
+  useEffect(() => {
+    const prev = prevPendingRef.current
+    const current = pendingData?.data ?? null
+
+    if (prev && !current && !wasCancelledRef.current && countdownRef.current > 15) {
+      setPaymentSuccess(true)
+      toast.success(`Nạp ${prev.amount.toLocaleString('vi-VN')}đ thành công! Số dư đã được cập nhật.`)
+
+      // Refresh balance + history (async, không block UI)
+      axiosAuth.post('/me').then(res => {
+        if (res?.data) dispatch(setUser(res.data))
+      }).catch(() => {})
+      queryClient.invalidateQueries({ queryKey: ['depositHistory'] })
+      queryClient.invalidateQueries({ queryKey: ['getTransactionHistory'] })
+
+      setTimeout(() => setPaymentSuccess(false), 5000)
+    }
+
+    prevPendingRef.current = current
+    wasCancelledRef.current = false
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingData?.data])
 
   // Khi server đã xác nhận record, không cần createdRecord nữa
   useEffect(() => {
@@ -182,11 +221,13 @@ export default function RechargePage() {
 
   const handleCancelPending = async () => {
     if (!pendingRecord) return
+    wasCancelledRef.current = true
     try {
       await cancelBankQr.mutateAsync(pendingRecord.id)
       setCreatedRecord(null)
       refetchPending()
     } catch (error) {
+      wasCancelledRef.current = false
       console.error('Lỗi khi hủy giao dịch:', error)
     }
   }
@@ -460,6 +501,32 @@ export default function RechargePage() {
               </Box>
             )}
 
+            {/* BANNER THANH TOÁN THÀNH CÔNG */}
+            {paymentSuccess && !hasPending && (
+              <Box
+                sx={{
+                  gridColumn: '1 / -1',
+                  background: 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)',
+                  borderRadius: '12px',
+                  border: '1px solid #86efac',
+                  padding: '24px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '8px',
+                  animation: 'fadeIn 0.3s ease'
+                }}
+              >
+                <CheckCircle2 size={40} color='#16a34a' />
+                <Typography sx={{ fontSize: '16px', fontWeight: 700, color: '#15803d' }}>
+                  Nạp tiền thành công!
+                </Typography>
+                <Typography sx={{ fontSize: '13px', color: '#166534' }}>
+                  Số dư của bạn đã được cập nhật. Bạn có thể tiếp tục mua proxy.
+                </Typography>
+              </Box>
+            )}
+
             {/* KHI CÓ PENDING: Cột trái = thông tin bank, Cột phải = QR */}
             {hasPending && pendingRecord && (
               <>
@@ -472,7 +539,7 @@ export default function RechargePage() {
                     overflow: 'hidden'
                   }}
                 >
-                  {/* Header countdown */}
+                  {/* Header countdown + polling indicator */}
                   <Box sx={{ background: 'var(--mui-palette-background-default, #f8fafc)', borderBottom: '1px solid var(--mui-palette-divider, #e2e8f0)', padding: '14px 16px', paddingBottom: '10px' }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
                       <Typography sx={{ color: 'var(--mui-palette-text-secondary, #64748b)', fontWeight: 600, fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -503,6 +570,13 @@ export default function RechargePage() {
                         }
                       }}
                     />
+                    {/* Polling indicator */}
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: '6px', mt: 1 }}>
+                      <Radio size={10} color='#22c55e' className='animate-pulse' />
+                      <Typography sx={{ fontSize: '11px', color: '#16a34a', fontWeight: 500 }}>
+                        Tự động kiểm tra mỗi 5 giây
+                      </Typography>
+                    </Box>
                   </Box>
 
                   {/* Bank info */}
@@ -520,9 +594,23 @@ export default function RechargePage() {
                       highlight
                     />
 
-                    <Typography sx={{ fontSize: '11px', color: '#dc2626', lineHeight: 1.5, mt: 0.5 }}>
-                      Chuyển đúng số tiền và nội dung. Tiền sẽ được cộng sau 1-5 phút. Liên hệ hỗ trợ nếu sau 10 phút chưa nhận được.
-                    </Typography>
+                    {/* Lưu ý quan trọng */}
+                    <Box
+                      sx={{
+                        background: '#fffbeb',
+                        border: '1px solid #fde68a',
+                        borderRadius: '8px',
+                        padding: '10px 12px',
+                        mt: 0.5
+                      }}
+                    >
+                      <Typography sx={{ fontSize: '12px', color: '#92400e', lineHeight: 1.6, fontWeight: 500 }}>
+                        Chuyển <strong>đúng số tiền</strong> và <strong>đúng nội dung</strong> chuyển khoản.
+                      </Typography>
+                      <Typography sx={{ fontSize: '12px', color: '#92400e', lineHeight: 1.6 }}>
+                        Tiền sẽ tự động cộng sau <strong>1–5 phút</strong>. Nếu đã chuyển khoản quá <strong>10 phút</strong> mà chưa nhận được, vui lòng liên hệ Admin để được hỗ trợ.
+                      </Typography>
+                    </Box>
 
                     <Box sx={{ display: 'flex', gap: '8px' }}>
                       <Button
@@ -968,7 +1056,7 @@ function DataTable({ table, columns, isLoading, data }: { table: any; columns: a
           <div className='pagination-wrapper'>
             <div className='pagination-info'>
               <div className='page-size-select'>
-                <span className='text-sm text-gray'>Kích cỡ trang</span>
+                <span className='text-sm text-gray'>Hiển thị mỗi trang</span>
                 <div className='page-size-select-wrapper'>
                   <select
                     value={table.getState().pagination.pageSize}

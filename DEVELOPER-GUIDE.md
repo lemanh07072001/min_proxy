@@ -2001,9 +2001,41 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
   - CheckoutModal: dùng `useAxiosAuth()` gọi trực tiếp đến Laravel API, thêm `useRef` guard chống double-click
   - Bỏ auto-close modal + auto-navigate sau mua thành công (giữ modal mở, khách tự đóng)
   - Chặn đóng modal (overlay/nút X) khi đang pending
-  - Thêm state `purchaseSuccess` → nút chuyển "Mua thành công" (xanh), chặn mua lại vô tình
+  - Thêm state `purchaseSuccess` → nút chuyển "Mua thành công" (xanh) 2 giây rồi tự reset để khách mua tiếp
   - Thêm invalidate `userOrders` query để trang lịch sử tự cập nhật
 - **Files**: `HomeProxyStaticPartner.php`, `ProxyVNStaticPartner.php`, `UpproxyStaticPartner.php`, `MktProxyPartner.php`, `ProxyVNPartner.php`, `ZingProxyPartner.php`, `UpproxyPartner.php`, `CheckoutModal.tsx`
+
+#### 12.72 Ẩn thông tin nhạy cảm API lịch sử mua hàng + fix bảo mật getKeyOrder
+
+- **Vấn đề**: API `/get-order` trả về toàn bộ model Order/ServiceType/ApiKey cho client, bao gồm giá vốn (`cost_price`, `total_cost`, `total_cost_final`), key đối tác (`api_key_partner`), hoa hồng (`affiliate_commission`), `partner_id`, `api_body`... Endpoint `getKeyOrder` không kiểm tra quyền sở hữu (user A xem được proxy của user B).
+- **Sửa**:
+  - `getOrder()`: bỏ eager load `User`, thêm `makeHidden()` cho Order (cost_price, total_cost, total_cost_final, affiliate_commission, api_key_partner, is_affiliate_paid, is_payment_affiliate, scan, retry, note), ServiceType (cost_price, partner_id, api_body, api_type), ApiKey (api_key_partner, price_cost)
+  - `getKeyOrder()`: thêm check `user_id` ownership trước khi trả data, thêm `makeHidden()` cho ApiKey
+- **Files**: `BE/app/Http/Controllers/Api/OrderController.php`
+
+#### 12.73 Nâng cấp UX trang nạp tiền — auto-detect thanh toán + ghi chú 10 phút
+
+- **Vấn đề**: Khi bill pending được thanh toán, UI chỉ mất phần QR mà không có thông báo thành công, số dư không tự cập nhật. Thiếu ghi chú rõ ràng cho khách về trường hợp chuyển khoản quá 10 phút.
+- **Sửa**:
+  - Detect payment success: khi `pendingData` chuyển từ có → null mà còn countdown > 0 và không phải cancel → toast thành công + banner xanh + tự refresh balance (gọi `/me`) + refresh lịch sử nạp/giao dịch
+  - Thêm indicator "Tự động kiểm tra mỗi 5 giây" (pulsing dot) khi đang có bill pending
+  - Cải thiện note: box vàng nổi bật, ghi rõ "Nếu đã chuyển khoản quá 10 phút mà chưa nhận được, vui lòng liên hệ Admin"
+  - Fix text "Kích cỡ trang" → "Hiển thị mỗi trang"
+  - Áp dụng cho cả RechargePage (trang chính) và RechargeInputDialog (dialog)
+- **Files**: `RechargePage.tsx`, `RechargeInputDialog.tsx`
+
+#### 12.74 Ẩn thông tin nhạy cảm API proxy storefront + fix error messages
+
+- **Vấn đề**: API `/get-proxy-static` và `/get-proxy-rotating` eager load `partner` relation → lộ **token_api** (API credential), `partner_code`, `cost_price`, `api_body`... Endpoint `getOrderProxyStatic` load relation `User` thừa. Error messages từ server buy proxy trả về tiếng Anh kỹ thuật. `price_by_duration` chứa trường `cost` (giá vốn).
+- **Sửa**:
+  - Bỏ `->with('partner')` trong `getProxyRotate()` và `getProxyStatic()` (FE không dùng)
+  - Thêm `makeHidden()` cho `cost_price`, `partner_id`, `api_body`, `api_type`, `discount_price`
+  - Strip `cost` khỏi `price_by_duration` entries
+  - `getOrderProxyStatic()`: bỏ load `User` thừa, ẩn `api_key_partner`, `price_cost` trên ApiKey
+  - Thêm `mapErrorMessage()` trong ProxyController: map lỗi nội bộ (English) → tiếng Việt cho khách
+  - Catch blocks trả `'Lỗi hệ thống, vui lòng thử lại sau hoặc liên hệ Admin.'` thay `'Internal Server Error'`
+  - Detect payment threshold 15s tránh false positive khi countdown gần hết
+- **Files**: `BE/app/Http/Controllers/Api/ProxyController.php`, `RechargePage.tsx`, `RechargeInputDialog.tsx`
 
 ---
 
