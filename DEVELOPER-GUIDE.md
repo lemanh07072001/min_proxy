@@ -2053,7 +2053,8 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
   - Order: ẩn thêm `metadata`, `transaction_id`
   - ServiceType (order history): ẩn `discount_price`, `code`, `order`, `note`, `allow_user`, `date_mapping`, `multi_inputs`
   - Fix `PlaceOrder` command: xóa relationship `api_key` không tồn tại, update `ModelMongo` namespace cho `mongodb/laravel-mongodb` v4+
-- **Files**: `BE/database/migrations/2026_03_10_000002_add_partner_price_to_api_keys.php`, `BE/app/Models/MySql/ApiKey.php`, `BE/app/Http/Controllers/Api/ProxyController.php`, `BE/app/Http/Controllers/Api/OrderController.php`, `BE/app/Console/Commands/PlaceOrder.php`, `BE/app/Models/Mongo/ModelMongo.php`, 8 Partner files
+  - `getOrder()` bỏ eager load `apiKeys` — FE `OrderDetail` giờ fetch on-demand qua `useApiKeys(order.id)` + loading state
+- **Files**: `BE/database/migrations/2026_03_10_000002_add_partner_price_to_api_keys.php`, `BE/app/Models/MySql/ApiKey.php`, `BE/app/Http/Controllers/Api/ProxyController.php`, `BE/app/Http/Controllers/Api/OrderController.php`, `BE/app/Console/Commands/PlaceOrder.php`, `BE/app/Models/Mongo/ModelMongo.php`, `FE/src/views/Client/HistoryOrder/OrderDetail.tsx`, 8 Partner files
 
 ---
 

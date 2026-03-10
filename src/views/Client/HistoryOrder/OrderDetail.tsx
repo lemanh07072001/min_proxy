@@ -11,7 +11,8 @@ import {
   Box,
   Chip,
   Pagination,
-  FormControlLabel
+  FormControlLabel,
+  CircularProgress
 } from '@mui/material'
 import {
   useReactTable,
@@ -34,6 +35,7 @@ import { useCopy } from '@/app/hooks/useCopy'
 import { ORDER_STATUS_LABELS, ORDER_STATUS_COLORS } from '@/constants/orderStatus'
 import CustomIconButton from '@core/components/mui/IconButton'
 import DetailProxy from './DetaiProxy'
+import { useApiKeys } from '@/hooks/apis/useOrders'
 
 const getStatusBadge = (status: string) => {
   const label = ORDER_STATUS_LABELS[status] || 'Không xác định'
@@ -57,6 +59,7 @@ interface OrderDetailProps {
   open: boolean
   onClose: () => void
   order: {
+    id: number
     order_code: string
     total_amount: number
     price_per_unit: number
@@ -66,8 +69,6 @@ interface OrderDetailProps {
     buy_at: string
     expired_at: string
     proxy_type?: string
-    proxys?: ProxyItem[]
-    api_keys?: any[]
     type_servi?: {
       type: string
       name: string
@@ -88,8 +89,9 @@ const OrderDetail: React.FC<OrderDetailProps> = ({ open, onClose, order }) => {
   const [, copy] = useCopy()
 
   // ----------------- Data -----------------
-  // Lấy danh sách proxy từ order, nếu không có thì tạo array rỗng
-  const dataOrder = order?.api_keys || []
+  // Fetch keys on demand khi modal mở
+  const { data: apiKeysData, isLoading: isLoadingKeys } = useApiKeys(order?.id, open)
+  const dataOrder = apiKeysData || []
 
   // ----------------- Columns -----------------
   const columns = useMemo(
@@ -493,7 +495,14 @@ const OrderDetail: React.FC<OrderDetailProps> = ({ open, onClose, order }) => {
                 )}
               </Box>
 
-              {dataOrder.length > 0 ? (
+              {isLoadingKeys ? (
+                <Box sx={{ textAlign: 'center', py: 4 }}>
+                  <CircularProgress size={32} />
+                  <Typography variant='body2' color='text.secondary' sx={{ mt: 1 }}>
+                    Đang tải danh sách proxy...
+                  </Typography>
+                </Box>
+              ) : dataOrder.length > 0 ? (
                 <>
                   <div className='table-wrapper' style={{ maxHeight: '400px', overflow: 'auto' }}>
                     <table className='table-auto w-full border-collapse border border-gray-200 text-sm'>

@@ -9,18 +9,18 @@ import { useTranslation } from 'react-i18next'
 import { useLanguageSync } from '@/hooks/useLanguageSync'
 
 const partners = [
-  { name: 'PC', display: 'PC', color: '#ef4444', bg: 'rgba(239,68,68,0.08)' },
-  { name: 'GemLogin', display: 'GEMLOGIN', color: '#3b82f6', bg: 'rgba(59,130,246,0.08)' },
-  { name: 'PionLogin', display: 'PionLogin', color: '#1f2937', bg: 'rgba(31,41,55,0.08)' },
-  { name: 'Viettel', display: 'viettel', color: '#ef4444', bg: 'rgba(239,68,68,0.08)' },
-  { name: 'FPT', display: 'FPT', color: '#f97316', bg: 'rgba(249,115,22,0.08)' },
-  { name: 'VNPT', display: 'VNPT', color: '#3b82f6', bg: 'rgba(59,130,246,0.08)' }
+  { name: 'PC', display: 'PC', color: '#ef4444' },
+  { name: 'GemLogin', display: 'GEMLOGIN', color: '#3b82f6' },
+  { name: 'PionLogin', display: 'PionLogin', color: '#1f2937' },
+  { name: 'Viettel', display: 'viettel', color: '#ef4444' },
+  { name: 'FPT', display: 'FPT', color: '#f97316' },
+  { name: 'VNPT', display: 'VNPT', color: '#3b82f6' }
 ]
 
 const trustItems = [
-  { icon: Star, number: '50+', key: 'partners' },
-  { icon: Shield, number: '99.9%', key: 'reliability' },
-  { icon: CheckCircle, number: '5+', key: 'experience' }
+  { icon: Star, number: '50+', labelKey: 'partners' },
+  { icon: Shield, number: '99.9%', labelKey: 'reliability' },
+  { icon: CheckCircle, number: '5+', labelKey: 'experience' }
 ]
 
 const PartnersSection = () => {
@@ -29,13 +29,8 @@ const PartnersSection = () => {
   useLanguageSync()
 
   return (
-    <section
-      style={{
-        padding: '60px 0',
-        background: '#f8fafc'
-      }}
-    >
-      <div className='container-lg'>
+    <section style={{ padding: '60px 24px', background: '#f8fafc' }}>
+      <div style={{ maxWidth: 1140, margin: '0 auto' }}>
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: 40 }}>
           <h2
@@ -43,10 +38,7 @@ const PartnersSection = () => {
               fontSize: '2.25rem',
               fontWeight: 800,
               marginBottom: 12,
-              background: 'linear-gradient(135deg, #ef4444, #f97316)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text'
+              color: '#ef4444'
             }}
           >
             {t('landing.partners.title')}
@@ -72,25 +64,16 @@ const PartnersSection = () => {
               style={{
                 width: 160,
                 height: 90,
-                background: 'white',
+                backgroundColor: '#ffffff',
                 borderRadius: 16,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-                border: '1px solid rgba(0,0,0,0.04)',
-                transition: 'transform 0.2s, box-shadow 0.2s',
-                cursor: 'default'
+                border: '1px solid #e2e8f0'
               }}
             >
-              <span
-                style={{
-                  fontSize: partner.name === 'PC' ? 24 : 18,
-                  fontWeight: 700,
-                  color: partner.color,
-                  letterSpacing: partner.name === 'Viettel' ? 1 : 0
-                }}
-              >
+              <span style={{ fontSize: 18, fontWeight: 700, color: partner.color }}>
                 {partner.display}
               </span>
             </div>
@@ -98,33 +81,26 @@ const PartnersSection = () => {
         </div>
 
         {/* Trust Indicators */}
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'center',
-            gap: 48,
-            flexWrap: 'wrap'
-          }}
-        >
+        <div style={{ display: 'flex', justifyContent: 'center', gap: 48, flexWrap: 'wrap' }}>
           {trustItems.map(item => (
-            <div key={item.key} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div key={item.labelKey} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <div
                 style={{
                   width: 40,
                   height: 40,
                   borderRadius: 12,
-                  background: 'rgba(239,68,68,0.08)',
+                  backgroundColor: 'rgba(239,68,68,0.08)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center'
                 }}
               >
-                <item.icon size={20} style={{ color: '#ef4444' }} />
+                <item.icon size={20} color='#ef4444' />
               </div>
               <div>
                 <div style={{ fontSize: 20, fontWeight: 700, color: '#1a202c' }}>{item.number}</div>
                 <div style={{ fontSize: 13, color: '#64748b' }}>
-                  {t(`landing.partners.trust.${item.key}`)}
+                  {t(`landing.partners.trust.${item.labelKey}`)}
                 </div>
               </div>
             </div>
