@@ -4,74 +4,65 @@ import { useEffect, useMemo, useState } from 'react'
 
 import Image from 'next/image'
 
-import { Button } from '@mui/material'
-
 import {
   List,
   Clock3,
   Clock,
   Eye,
   Search,
-  Filter
+  Loader2,
+  X
 } from 'lucide-react'
 
 import {
   useReactTable,
   getCoreRowModel,
   flexRender,
-  getFilteredRowModel,
-  getSortedRowModel,
-  getPaginationRowModel,
-  getFacetedRowModel,
-  getFacetedUniqueValues // Thêm để lọc hàng đã chọn
+  getPaginationRowModel
 } from '@tanstack/react-table'
 
 import Chip from '@mui/material/Chip'
 import MenuItem from '@mui/material/MenuItem'
-import Select from '@mui/material/Select'
 import TextField from '@mui/material/TextField'
 import InputAdornment from '@mui/material/InputAdornment'
-
+import IconButton from '@mui/material/IconButton'
+import LinearProgress from '@mui/material/LinearProgress'
 import Pagination from '@mui/material/Pagination'
 
 import { useQueryClient } from '@tanstack/react-query'
-
 import { io } from 'socket.io-client'
 
+import CustomTextField from '@core/components/mui/TextField'
 import CustomIconButton from '@core/components/mui/IconButton'
 
-import { useCopy } from '@/app/hooks/useCopy'
 import { formatDateTimeLocal } from '@/utils/formatDate'
-import { useHistoryOrders } from '@/hooks/apis/useHistoryOrders'
+import { useHistoryOrders, PENDING_STATUSES } from '@/hooks/apis/useHistoryOrders'
 import { ORDER_STATUS_LABELS, ORDER_STATUS_COLORS } from '@/constants/orderStatus'
 import OrderDetail from './OrderDetail'
 
-export default function HistoryOrderPage() {
-  const [columnFilters, setColumnFilters] = useState<any[]>([])
-  const [rowSelection, setRowSelection] = useState({}) // State để lưu các hàng được chọn
-  const [sorting, setSorting] = useState<any[]>([])
+const inputSx = {
+  '& .MuiOutlinedInput-root': { fontSize: '13px', borderRadius: '8px', minHeight: '36px' },
+  '& .MuiSelect-select': { paddingBlock: '7px' }
+}
 
+export default function HistoryOrderPage() {
   const [open, setOpen] = useState(false)
   const [selectedOrder, setSelectedOrder] = useState<any | null>(null)
-
-  const [pagination, setPagination] = useState({
-    pageIndex: 0,
-    pageSize: 10
-  }) // State để lưu các hàng được chọn
-
+  const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 })
   const [searchText, setSearchText] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
 
   const queryClient = useQueryClient()
-  const [, copy] = useCopy()
 
   const {
     data: dataOrders = [],
     isLoading,
-    refetch
+    isFetching,
+    refetch,
+    dataUpdatedAt
   } = useHistoryOrders()
 
-  // Filter data client-side
+  // Client-side filtering
   const filteredOrders = useMemo(() => {
     let result = dataOrders
 
@@ -91,14 +82,14 @@ export default function HistoryOrderPage() {
     return result
   }, [dataOrders, searchText, statusFilter])
 
-  const getStatusBadge = (status: string) => {
-    const label = ORDER_STATUS_LABELS[status] || 'Không xác định'
-    const color = (ORDER_STATUS_COLORS[status] || 'default') as any
+  // Đếm đơn đang chờ xử lý
+  const pendingOrders = useMemo(() => {
+    return dataOrders.filter((o: any) => PENDING_STATUSES.includes(Number(o.status)))
+  }, [dataOrders])
 
-    return <Chip label={label} size='small' color={color} />
-  }
+  const hasPendingOrders = pendingOrders.length > 0
 
-  // Tính thời gian còn lại (text tĩnh)
+  // Tính thời gian còn lại
   const getTimeRemaining = (expiredAt: string, status: string) => {
     if (String(status) !== '2' && String(status) !== '3') return null
 
@@ -116,84 +107,126 @@ export default function HistoryOrderPage() {
     return `còn ${hours}h`
   }
 
+  const getStatusBadge = (status: string) => {
+    const label = ORDER_STATUS_LABELS[status] || 'Không xác định'
+    const color = (ORDER_STATUS_COLORS[status] || 'default') as any
+
+    return <Chip label={label} size='small' color={color} />
+  }
+
   const columns = useMemo(
     () => [
       {
         accessorKey: 'order_code',
         header: 'Mã đơn',
-        size: 170
+        size: 170,
+        cell: ({ row }: { row: any }) => (
+          <span style={{ fontWeight: 600, fontSize: '13px' }}>{row.original.order_code}</span>
+        )
       },
       {
         header: 'Dịch vụ',
-        cell: ({ row }: { row: any }) => (
-          <div>
-            <div className='font-semibold text-sm'>{row.original.service_name || '-'}</div>
-            {row.original.proxy_type && (
-              <span className='text-xs text-gray-500'>{row.original.proxy_type}</span>
-            )}
-          </div>
-        ),
-        size: 180
-      },
-      {
-        header: 'Số tiền',
-        cell: ({ row }: { row: any }) => (
-          <div>
-            <div className='font-bold'>{new Intl.NumberFormat('vi-VN').format(row.original.total_amount) + ' đ'}</div>
-            <span className='text-xs text-gray-500'>
-              {new Intl.NumberFormat('vi-VN').format(row.original.price_per_unit) + ' đ/key'}
-            </span>
-          </div>
-        ),
-        size: 150
-      },
-      {
-        accessorKey: 'quantity',
-        header: 'Số lượng',
-        cell: ({ row }: { row: any }) => {
-          const qty = row.original.quantity
-          const delivered = row.original.delivered_quantity
-
-          if (delivered != null && delivered !== qty) {
-            return <span>{delivered}/{qty}</span>
-          }
-
-          return <span>{qty}</span>
-        },
-        size: 80
-      },
-      {
-        accessorKey: 'status',
-        header: 'Trạng thái',
-        cell: ({ row }: { row: any }) => getStatusBadge(String(row.original.status)),
-        size: 150
-      },
-      {
-        accessorKey: 'buy_at',
-        header: 'Ngày mua',
         size: 180,
         cell: ({ row }: { row: any }) => (
-          <div className='d-flex align-items-center gap-1'>
-            <Clock3 size={14} />
-            <div style={{ marginTop: '2px' }}>{formatDateTimeLocal(row.original.buy_at)}</div>
+          <div>
+            <div style={{ fontWeight: 600, fontSize: '13px' }}>{row.original.service_name || '-'}</div>
+            {row.original.proxy_type && (
+              <span style={{ fontSize: '12px', color: '#94a3b8' }}>{row.original.proxy_type}</span>
+            )}
           </div>
         )
       },
       {
-        accessorKey: 'expired_at',
+        header: 'Số tiền',
+        size: 140,
+        cell: ({ row }: { row: any }) => (
+          <div>
+            <div style={{ fontWeight: 700, fontSize: '13px' }}>
+              {new Intl.NumberFormat('vi-VN').format(row.original.total_amount)}đ
+            </div>
+            <span style={{ fontSize: '12px', color: '#94a3b8' }}>
+              {new Intl.NumberFormat('vi-VN').format(row.original.price_per_unit)}đ/key
+            </span>
+          </div>
+        )
+      },
+      {
+        header: 'SL',
+        size: 70,
+        cell: ({ row }: { row: any }) => {
+          const qty = row.original.quantity
+          const delivered = row.original.delivered_quantity
+          const isMissing = delivered != null && delivered !== qty
+
+          return (
+            <span style={{
+              fontSize: '13px',
+              color: isMissing ? '#EF4444' : undefined,
+              fontWeight: isMissing ? 600 : undefined
+            }}>
+              {isMissing ? `${delivered}/${qty}` : qty}
+            </span>
+          )
+        }
+      },
+      {
+        header: 'Loại',
+        size: 70,
+        cell: ({ row }: { row: any }) => (
+          <Chip
+            label={row.original.order_type === 1 ? 'Gia hạn' : 'Mua'}
+            size='small'
+            color={row.original.order_type === 1 ? 'info' : 'default'}
+            variant='outlined'
+            sx={{ fontSize: '11px' }}
+          />
+        )
+      },
+      {
+        header: 'Trạng thái',
+        size: 140,
+        cell: ({ row }: { row: any }) => {
+          const status = String(row.original.status)
+          const isPending = PENDING_STATUSES.includes(Number(status))
+
+          return (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              {getStatusBadge(status)}
+              {isPending && (
+                <Loader2
+                  size={14}
+                  color='#3B82F6'
+                  style={{ animation: 'spin 1s linear infinite' }}
+                />
+              )}
+            </div>
+          )
+        }
+      },
+      {
+        header: 'Ngày mua',
+        size: 160,
+        cell: ({ row }: { row: any }) => (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#64748b', fontSize: '13px' }}>
+            <Clock3 size={13} />
+            {formatDateTimeLocal(row.original.buy_at)}
+          </div>
+        )
+      },
+      {
         header: 'Hết hạn',
-        size: 200,
+        size: 170,
         cell: ({ row }: { row: any }) => {
           const remaining = getTimeRemaining(row.original.expired_at, row.original.status)
 
           return (
             <div>
-              <div className='d-flex align-items-center gap-1'>
-                <Clock size={14} />
-                <div style={{ marginTop: '2px' }}>{formatDateTimeLocal(row.original.expired_at)}</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#64748b', fontSize: '13px' }}>
+                <Clock size={13} />
+                {formatDateTimeLocal(row.original.expired_at)}
               </div>
               {remaining && (
-                <span className='text-xs text-green-600 font-medium'>{remaining}</span>
+                <span style={{ fontSize: '12px', color: '#16a34a', fontWeight: 500 }}>{remaining}</span>
               )}
             </div>
           )
@@ -202,11 +235,13 @@ export default function HistoryOrderPage() {
       {
         header: '',
         id: 'actions',
+        size: 50,
         cell: ({ row }: { row: any }) => (
           <CustomIconButton
             aria-label='Xem chi tiết'
             color='info'
             variant='tonal'
+            size='small'
             onClick={() => {
               setSelectedOrder(row.original)
               setOpen(true)
@@ -214,8 +249,7 @@ export default function HistoryOrderPage() {
           >
             <Eye size={16} />
           </CustomIconButton>
-        ),
-        size: 60
+        )
       }
     ],
     []
@@ -224,34 +258,19 @@ export default function HistoryOrderPage() {
   const table = useReactTable({
     data: filteredOrders,
     columns,
-    state: {
-      rowSelection,
-      pagination,
-      columnFilters,
-      sorting
-    },
-    enableRowSelection: true, // Bật tính năng chọn hàng
-    onRowSelectionChange: setRowSelection, // Cập nhật state khi có thay đổi
+    state: { pagination },
     onPaginationChange: setPagination,
-    onColumnFiltersChange: setColumnFilters,
-    onSortingChange: setSorting,
-
     getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(), // Tùy chọn: cần thiết nếu có bộ lọc
-    getSortedRowModel: getSortedRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    getFacetedRowModel: getFacetedRowModel(),
-    getFacetedUniqueValues: getFacetedUniqueValues()
+    getPaginationRowModel: getPaginationRowModel()
   })
 
   const { pageIndex, pageSize } = table.getState().pagination
-  const totalRows = table.getFilteredRowModel().rows.length
-  const startRow = pageIndex * pageSize + 1
+  const totalRows = filteredOrders.length
+  const startRow = totalRows ? pageIndex * pageSize + 1 : 0
   const endRow = Math.min(startRow + pageSize - 1, totalRows)
 
-  // Socket: lắng nghe sự kiện để refetch bảng
+  // Socket: lắng nghe sự kiện để refetch
   useEffect(() => {
-    // Bảo đảm lần đầu vào trang sẽ làm tươi dữ liệu
     queryClient.invalidateQueries({ queryKey: ['userOrders'] })
 
     const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || 'https://socket.mktproxy.com'
@@ -261,78 +280,118 @@ export default function HistoryOrderPage() {
       secure: true
     })
 
-    socket.on('connect', () => {})
-    socket.on('order_completed', data => {
+    socket.on('order_completed', () => {
       queryClient.invalidateQueries({ queryKey: ['userOrders'] })
-      setTimeout(() => {
-        void refetch()
-      }, 600)
+      setTimeout(() => { void refetch() }, 600)
     })
 
-    return () => {
-      socket.disconnect()
-    }
+    return () => { socket.disconnect() }
   }, [refetch, queryClient])
 
   return (
     <>
       <div className='orders-content'>
-        {/* Toolbar */}
-
-        {/* Proxy Table */}
         <div className='table-container'>
-          <div className='table-toolbar'>
-            <div className='header-left'>
-              <div className='page-icon'>
-                <List size={17} />
-              </div>
-              <div>
+          {/* Toolbar */}
+          <div className='table-toolbar' style={{ flexDirection: 'column', alignItems: 'stretch', gap: 0, padding: 0 }}>
+            {/* Row 1: Title + Search */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', borderBottom: '1px solid #f1f5f9' }}>
+              <div className='header-left'>
+                <div className='page-icon'>
+                  <List size={17} />
+                </div>
                 <h5 className='mb-0 font-semibold'>Lịch sử mua hàng</h5>
               </div>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <TextField
+                  size='small'
+                  placeholder='Tìm mã đơn, dịch vụ...'
+                  value={searchText}
+                  onChange={e => {
+                    setSearchText(e.target.value)
+                    setPagination(prev => ({ ...prev, pageIndex: 0 }))
+                  }}
+                  sx={{ width: 220, '& .MuiOutlinedInput-root': { fontSize: '13px', borderRadius: '8px' } }}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position='start'>
+                        <Search size={15} color='#94a3b8' />
+                      </InputAdornment>
+                    ),
+                    endAdornment: searchText ? (
+                      <InputAdornment position='end'>
+                        <IconButton size='small' onClick={() => setSearchText('')} sx={{ p: '2px' }}>
+                          <X size={14} />
+                        </IconButton>
+                      </InputAdornment>
+                    ) : null
+                  }}
+                />
+                <CustomTextField
+                  select
+                  size='small'
+                  value={statusFilter}
+                  onChange={(e: any) => {
+                    setStatusFilter(e.target.value)
+                    setPagination(prev => ({ ...prev, pageIndex: 0 }))
+                  }}
+                  sx={{ minWidth: 155, ...inputSx }}
+                  slotProps={{ select: { displayEmpty: true } }}
+                >
+                  <MenuItem value='all'>Tất cả trạng thái</MenuItem>
+                  {Object.entries(ORDER_STATUS_LABELS).map(([value, label]) => (
+                    <MenuItem key={value} value={value}>{label}</MenuItem>
+                  ))}
+                </CustomTextField>
+              </div>
             </div>
-            <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-              <TextField
-                size='small'
-                placeholder='Tìm mã đơn, dịch vụ...'
-                value={searchText}
-                onChange={e => {
-                  setSearchText(e.target.value)
-                  setPagination(prev => ({ ...prev, pageIndex: 0 }))
-                }}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position='start'>
-                      <Search size={16} />
-                    </InputAdornment>
-                  )
-                }}
-                sx={{ minWidth: 200 }}
-              />
-              <Select
-                size='small'
-                value={statusFilter}
-                onChange={e => {
-                  setStatusFilter(e.target.value)
-                  setPagination(prev => ({ ...prev, pageIndex: 0 }))
-                }}
-                sx={{ minWidth: 160 }}
-                displayEmpty
-              >
-                <MenuItem value='all'>Tất cả trạng thái</MenuItem>
-                {Object.entries(ORDER_STATUS_LABELS).map(([value, label]) => (
-                  <MenuItem key={value} value={value}>{label}</MenuItem>
-                ))}
-              </Select>
-            </div>
+
+            {/* Pending orders banner */}
+            {hasPendingOrders && (
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 10,
+                padding: '10px 16px',
+                background: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)',
+                borderBottom: '1px solid #bfdbfe'
+              }}>
+                <div style={{
+                  width: 32, height: 32, borderRadius: '50%',
+                  background: '#3B82F6',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  flexShrink: 0
+                }}>
+                  <Loader2 size={16} color='#fff' style={{ animation: 'spin 1s linear infinite' }} />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: '13px', fontWeight: 600, color: '#1e40af' }}>
+                    {pendingOrders.length} đơn hàng đang chờ xử lý
+                  </div>
+                </div>
+                {isFetching && (
+                  <div style={{ width: '100%', maxWidth: 120 }}>
+                    <LinearProgress
+                      sx={{
+                        height: 3, borderRadius: 2,
+                        backgroundColor: '#bfdbfe',
+                        '& .MuiLinearProgress-bar': { backgroundColor: '#3B82F6' }
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
+            )}
           </div>
+
           {/* Table */}
-          <div className='table-wrapper'>
-            <table className='data-table' style={isLoading || dataOrders.length === 0 ? { height: '100%' } : {}}>
+          <div className='table-wrapper' style={{ overflowX: 'auto' }}>
+            <table className='data-table' style={{ minWidth: '1200px', ...(isLoading || filteredOrders.length === 0 ? { height: '100%' } : {}) }}>
               <thead className='table-header'>
                 {table.getHeaderGroups().map(headerGroup => (
                   <tr key={headerGroup.id}>
                     {headerGroup.headers.map(header => (
-                      <th style={{ width: header.getSize() }} className='table-header th' key={header.id}>
+                      <th style={{ minWidth: header.getSize(), width: header.getSize() }} className='table-header th' key={header.id}>
                         {flexRender(header.column.columnDef.header, header.getContext())}
                       </th>
                     ))}
@@ -345,33 +404,42 @@ export default function HistoryOrderPage() {
                     <td colSpan={columns.length} className='py-10 text-center'>
                       <div className='loader-wrapper'>
                         <div className='loader'>
-                          <span></span>
-                          <span></span>
-                          <span></span>
+                          <span></span><span></span><span></span>
                         </div>
                         <p className='loading-text'>Đang tải dữ liệu...</p>
                       </div>
                     </td>
                   </tr>
-                ) : table.getRowModel().rows.length === 0 ? (
+                ) : filteredOrders.length === 0 ? (
                   <tr>
                     <td colSpan={columns.length} className='py-10 text-center'>
                       <div className='flex flex-col items-center justify-center'>
                         <Image src='/images/no-data.png' alt='No data' width={160} height={160} />
-                        <p className='mt-4 text-gray-500'>Không có dữ liệu</p>
+                        <p className='mt-4' style={{ color: '#94a3b8' }}>Không có đơn hàng</p>
                       </div>
                     </td>
                   </tr>
                 ) : (
-                  table.getRowModel().rows.map(row => (
-                    <tr className='table-row' key={row.id}>
-                      {row.getVisibleCells().map(cell => (
-                        <td className='table-cell' key={cell.id}>
-                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                        </td>
-                      ))}
-                    </tr>
-                  ))
+                  table.getRowModel().rows.map(row => {
+                    const isPending = PENDING_STATUSES.includes(Number(row.original.status))
+
+                    return (
+                      <tr
+                        className='table-row'
+                        key={row.id}
+                        style={isPending ? {
+                          background: 'linear-gradient(135deg, #fefce8 0%, #fef9c3 100%)',
+                          borderLeft: '3px solid #f59e0b'
+                        } : undefined}
+                      >
+                        {row.getVisibleCells().map(cell => (
+                          <td className='table-cell' key={cell.id}>
+                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                          </td>
+                        ))}
+                      </tr>
+                    )
+                  })
                 )}
               </tbody>
             </table>
@@ -382,13 +450,11 @@ export default function HistoryOrderPage() {
             <div className='pagination-wrapper'>
               <div className='pagination-info'>
                 <div className='page-size-select'>
-                  <span className='text-sm text-gray'>Hiển thị mỗi trang</span>
+                  <span className='text-sm text-gray'>Hiển thị</span>
                   <div className='page-size-select-wrapper'>
                     <select
                       value={table.getState().pagination.pageSize}
-                      onChange={e => {
-                        table.setPageSize(Number(e.target.value))
-                      }}
+                      onChange={e => table.setPageSize(Number(e.target.value))}
                       className='page-size-select'
                     >
                       <option value='10'>10</option>
@@ -402,18 +468,14 @@ export default function HistoryOrderPage() {
                     </div>
                   </div>
                 </div>
-                {/* --- Hiển thị số hàng trên trang hiện tại --- */}
                 <div>
                   {totalRows > 0 ? (
-                    <span>
-                      {startRow} - {endRow} của {totalRows} hàng
-                    </span>
+                    <span>{startRow} - {endRow} của {totalRows} đơn</span>
                   ) : (
                     <span>Không có dữ liệu</span>
                   )}
                 </div>
               </div>
-
               <div className='pagination-buttons'>
                 <Pagination
                   count={table.getPageCount()}
@@ -421,9 +483,7 @@ export default function HistoryOrderPage() {
                   variant='outlined'
                   color='primary'
                   page={table.getState().pagination.pageIndex + 1}
-                  onChange={(event, page) => {
-                    table.setPageIndex(page - 1)
-                  }}
+                  onChange={(_, page) => table.setPageIndex(page - 1)}
                 />
               </div>
             </div>

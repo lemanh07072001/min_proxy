@@ -22,6 +22,7 @@ import {
 import {
   useReactTable,
   getCoreRowModel,
+  getPaginationRowModel,
   flexRender
 } from '@tanstack/react-table'
 
@@ -141,8 +142,11 @@ export default function AdminOrdersPage() {
   const [statusFilter, setStatusFilter] = useState<number | null>(null)
   const [partnerFilter, setPartnerFilter] = useState<number | null>(null)
   const [orderTypeFilter, setOrderTypeFilter] = useState<number | null>(null)
-  const [page, setPage] = useState(1)
-  const [perPage, setPerPage] = useState(20)
+  const [displayPerPage, setDisplayPerPage] = useState(20)
+  const [apiLimit, setApiLimit] = useState(100)
+  const [apiLimitInput, setApiLimitInput] = useState('100')
+  const [sortBy, setSortBy] = useState<string>('created_at')
+  const [sortOrder, setSortOrder] = useState<string>('desc')
 
   // Modals
   const [orderDetailOpen, setOrderDetailOpen] = useState(false)
@@ -157,11 +161,13 @@ export default function AdminOrdersPage() {
     {
       start: startDate,
       end: endDate,
-      page,
-      per_page: perPage,
+      page: 1,
+      per_page: apiLimit,
       status: statusFilter,
       partner_id: partnerFilter,
-      order_type: orderTypeFilter
+      order_type: orderTypeFilter,
+      sort_by: sortBy,
+      sort_order: sortOrder
     },
     true
   )
@@ -190,7 +196,7 @@ return allOrders.filter(
     )
   }, [allOrders, searchQuery])
 
-  const pagination = ordersData?.pagination ?? { current_page: 1, total: 0, per_page: 20, last_page: 1 }
+  const serverPagination = ordersData?.pagination ?? { current_page: 1, total: 0, per_page: 100, last_page: 1 }
   const summary = summaryData ?? { total_orders: 0, total_amount: 0, total_cost: 0, profit: 0 }
 
   // Handlers
@@ -201,7 +207,6 @@ return allOrders.filter(
     setPartnerFilter(partnerInput !== '' ? Number(partnerInput) : null)
     setOrderTypeFilter(orderTypeInput !== '' ? Number(orderTypeInput) : null)
     setSearchQuery(searchInput.trim())
-    setPage(1)
   }, [startInput, endInput, statusInput, partnerInput, orderTypeInput, searchInput])
 
   const handleKeyDown = useCallback(
@@ -248,8 +253,35 @@ return allOrders.filter(
     })
   }, [orderToResend, resendMutation])
 
+  const handleToggleSort = useCallback((column: string) => {
+    if (sortBy === column) {
+      setSortOrder(prev => (prev === 'desc' ? 'asc' : 'desc'))
+    } else {
+      setSortBy(column)
+      setSortOrder('desc')
+    }
+  }, [sortBy])
+
   const columns = useMemo(
     () => [
+      {
+        accessorKey: 'id',
+        header: () => (
+          <span
+            onClick={() => handleToggleSort('id')}
+            style={{ cursor: 'pointer', userSelect: 'none', display: 'inline-flex', alignItems: 'center', gap: 4 }}
+          >
+            ID
+            {sortBy === 'id' && (
+              <span style={{ fontSize: '11px' }}>{sortOrder === 'desc' ? '▼' : '▲'}</span>
+            )}
+          </span>
+        ),
+        size: 80,
+        cell: ({ row }: { row: any }) => (
+          <span style={{ fontWeight: 600, fontSize: '13px', color: '#64748b' }}>#{row.original.id}</span>
+        )
+      },
       {
         accessorKey: 'order_code',
         header: 'Mã đơn',
@@ -340,8 +372,19 @@ return (
         )
       },
       {
-        header: 'Ngày tạo',
-        size: 140,
+        id: 'created_at',
+        header: () => (
+          <span
+            onClick={() => handleToggleSort('created_at')}
+            style={{ cursor: 'pointer', userSelect: 'none', display: 'inline-flex', alignItems: 'center', gap: 4 }}
+          >
+            Ngày tạo
+            {sortBy === 'created_at' && (
+              <span style={{ fontSize: '11px' }}>{sortOrder === 'desc' ? '▼' : '▲'}</span>
+            )}
+          </span>
+        ),
+        size: 150,
         cell: ({ row }: { row: any }) => (
           <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#64748b', fontSize: '13px' }}>
             <Clock3 size={13} />
@@ -384,16 +427,15 @@ return (
         }
       }
     ],
-    [handleOpenDetail, handleOpenCancel, handleOpenResend]
+    [handleOpenDetail, handleOpenCancel, handleOpenResend, handleToggleSort, sortBy, sortOrder]
   )
 
   const table = useReactTable({
     data: orders,
     columns,
     getCoreRowModel: getCoreRowModel(),
-    manualPagination: true,
-    pageCount: pagination.last_page,
-    state: { pagination: { pageIndex: page - 1, pageSize: perPage } }
+    getPaginationRowModel: getPaginationRowModel(),
+    initialState: { pagination: { pageIndex: 0, pageSize: displayPerPage } }
   })
 
   return (
@@ -523,6 +565,37 @@ return (
                 <MenuItem value='1'>Gia hạn</MenuItem>
               </CustomTextField>
 
+              <div style={{ width: 1, height: 24, backgroundColor: '#e2e8f0', margin: '0 4px' }} />
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '13px', color: '#64748b' }}>
+                <span>Lấy</span>
+                <input
+                  type='number'
+                  min={20}
+                  max={10000}
+                  value={apiLimitInput}
+                  onChange={e => setApiLimitInput(e.target.value)}
+                  onBlur={() => {
+                    const val = Math.max(20, Math.min(10000, Number(apiLimitInput) || 100))
+                    setApiLimitInput(String(val))
+                    setApiLimit(val)
+                  }}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') {
+                      const val = Math.max(20, Math.min(10000, Number(apiLimitInput) || 100))
+                      setApiLimitInput(String(val))
+                      setApiLimit(val)
+                    }
+                  }}
+                  style={{
+                    width: 80, padding: '5px 6px', fontSize: '13px',
+                    border: '1px solid #e2e8f0', borderRadius: 6,
+                    textAlign: 'center', outline: 'none'
+                  }}
+                />
+                <span>đơn</span>
+              </div>
+
               <Button
                 variant='contained'
                 size='small'
@@ -544,7 +617,7 @@ return (
           <div className='table-wrapper' style={{ overflowX: 'auto' }}>
             <table
               className='data-table'
-              style={{ minWidth: '1200px', ...(isLoading || orders.length === 0 ? { height: '100%' } : {}) }}
+              style={{ minWidth: '1350px', ...(isLoading || orders.length === 0 ? { height: '100%' } : {}) }}
             >
               <thead className='table-header'>
                 {table.getHeaderGroups().map(headerGroup => (
@@ -595,17 +668,23 @@ return (
           <div className='pagination-container'>
             <div className='pagination-wrapper'>
               <div className='pagination-info'>
+                {/* Per page display */}
                 <div className='page-size-select'>
                   <span className='text-sm text-gray'>Hiển thị</span>
                   <div className='page-size-select-wrapper'>
                     <select
-                      value={perPage}
-                      onChange={e => { setPerPage(Number(e.target.value)); setPage(1) }}
+                      value={displayPerPage}
+                      onChange={e => {
+                        const val = Number(e.target.value)
+                        setDisplayPerPage(val)
+                        table.setPageSize(val)
+                      }}
                       className='page-size-select'
                     >
                       <option value='20'>20</option>
                       <option value='50'>50</option>
                       <option value='100'>100</option>
+                      <option value='200'>200</option>
                     </select>
                     <div className='select-arrow'>
                       <svg className='h-4 w-4' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'>
@@ -614,10 +693,11 @@ return (
                     </div>
                   </div>
                 </div>
+
                 <div>
-                  {pagination.total > 0 ? (
+                  {orders.length > 0 ? (
                     <span>
-                      Trang {pagination.current_page} / {pagination.last_page} ({pagination.total} đơn)
+                      Trang {table.getState().pagination.pageIndex + 1} / {table.getPageCount()} ({orders.length}{serverPagination.total > orders.length ? ` / ${serverPagination.total}` : ''} đơn)
                     </span>
                   ) : (
                     <span>Không có dữ liệu</span>
@@ -626,12 +706,12 @@ return (
               </div>
               <div className='pagination-buttons'>
                 <Pagination
-                  count={pagination.last_page}
+                  count={table.getPageCount()}
                   shape='rounded'
                   variant='outlined'
                   color='primary'
-                  page={page}
-                  onChange={(_, newPage) => setPage(newPage)}
+                  page={table.getState().pagination.pageIndex + 1}
+                  onChange={(_, newPage) => table.setPageIndex(newPage - 1)}
                 />
               </div>
             </div>

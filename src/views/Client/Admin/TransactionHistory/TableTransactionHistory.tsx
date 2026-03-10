@@ -236,32 +236,6 @@ export default function TableDepositHistory() {
         cell: ({ row }: { row: any }) => {
           const orderStatus = row.original?.order?.status
 
-          if (orderStatus === ORDER_STATUS.FAILED) {
-            return (
-              <div className='flex gap-1'>
-                <Tooltip title='Hủy đơn + hoàn tiền'>
-                  <IconButton size='small' color='error' onClick={() => handleOpenCancelDialog(row.original)}>
-                    <XCircle size={16} />
-                  </IconButton>
-                </Tooltip>
-                <Tooltip title='Xem log lỗi'>
-                  <IconButton size='small' color='info' onClick={() => handleOpenLogModal(row.original)}>
-                    <FileText size={16} />
-                  </IconButton>
-                </Tooltip>
-                <Tooltip title='Gửi lại đơn'>
-                  <IconButton size='small' color='success' onClick={() => handleOpenResendDialog(row.original)}>
-                    <RefreshCw size={16} />
-                  </IconButton>
-                </Tooltip>
-              </div>
-            )
-          }
-
-          if (orderStatus === ORDER_STATUS.EXPIRED || orderStatus === ORDER_STATUS.PENDING) {
-            return null
-          }
-
           return (
             <div className='flex gap-1'>
               <Tooltip title='Chi tiết đơn hàng'>
@@ -269,11 +243,30 @@ export default function TableDepositHistory() {
                   <Eye size={16} />
                 </IconButton>
               </Tooltip>
+              <Tooltip title='Xem log đơn hàng'>
+                <IconButton size='small' color='info' onClick={() => handleOpenLogModal(row.original)}>
+                  <FileText size={16} />
+                </IconButton>
+              </Tooltip>
               <Tooltip title='Thông tin user'>
                 <IconButton size='small' color='info' onClick={() => handleOpenModalUserDetail(row.original?.user?.id)}>
                   <User size={16} />
                 </IconButton>
               </Tooltip>
+              {orderStatus === ORDER_STATUS.FAILED && (
+                <>
+                  <Tooltip title='Hủy đơn + hoàn tiền'>
+                    <IconButton size='small' color='error' onClick={() => handleOpenCancelDialog(row.original)}>
+                      <XCircle size={16} />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title='Gửi lại đơn'>
+                    <IconButton size='small' color='success' onClick={() => handleOpenResendDialog(row.original)}>
+                      <RefreshCw size={16} />
+                    </IconButton>
+                  </Tooltip>
+                </>
+              )}
             </div>
           )
         }

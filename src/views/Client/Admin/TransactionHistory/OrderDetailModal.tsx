@@ -4,31 +4,35 @@ import {
   X,
   CheckCircle,
   Clock,
-  Calendar,
   DollarSign,
   User,
   Loader2,
   CircleX,
-  XCircle,
   RotateCcw,
-  CircleQuestionMark,
   BadgeCheck,
   BadgeMinus,
   AlertCircle,
   Copy,
-  Globe,
   Clock3,
-  Download
+  Download,
+  FileText,
+  ArrowRight,
+  Zap,
+  Globe,
+  AlertTriangle,
+  RefreshCw
 } from 'lucide-react'
 
 import { useReactTable, getCoreRowModel, flexRender, getPaginationRowModel } from '@tanstack/react-table'
 import Dialog from '@mui/material/Dialog'
-
-import { Chip, Checkbox } from '@mui/material'
+import Tabs from '@mui/material/Tabs'
+import Tab from '@mui/material/Tab'
+import { Chip, Checkbox, CircularProgress } from '@mui/material'
 
 import { formatDateTimeLocal } from '@/utils/formatDate'
 import { ORDER_STATUS_LABELS_ADMIN, ORDER_STATUS, ORDER_STATUS_COLORS } from '@/constants'
 import { useApiKeys } from '@/hooks/apis/useOrders'
+import { useOrderLogs, type OrderLog } from '@/hooks/apis/useOrderLogs'
 
 interface OrderDetailModalProps {
   isOpen: boolean
@@ -37,14 +41,35 @@ interface OrderDetailModalProps {
   isLoading?: boolean
 }
 
+const formatVND = (v: number) => new Intl.NumberFormat('vi-VN').format(v) + 'đ'
+
+// Log action → icon + color + label
+const LOG_ACTION_CONFIG: Record<string, { icon: any; color: string; label: string }> = {
+  created: { icon: Zap, color: '#3b82f6', label: 'Tạo đơn' },
+  processing: { icon: Loader2, color: '#f59e0b', label: 'Bắt đầu xử lý' },
+  in_use: { icon: BadgeCheck, color: '#22c55e', label: 'Hoàn thành' },
+  completed: { icon: BadgeCheck, color: '#22c55e', label: 'Hoàn thành' },
+  in_use_partial: { icon: AlertCircle, color: '#f97316', label: 'Thiếu proxy' },
+  failed: { icon: CircleX, color: '#ef4444', label: 'Thất bại' },
+  expired: { icon: Clock, color: '#94a3b8', label: 'Hết hạn' },
+  retry: { icon: RefreshCw, color: '#a855f7', label: 'Retry' },
+  api_call_start: { icon: Globe, color: '#6366f1', label: 'Gọi API đối tác' },
+  api_call_success: { icon: CheckCircle, color: '#22c55e', label: 'API thành công' },
+  api_call_error: { icon: AlertTriangle, color: '#ef4444', label: 'API lỗi' },
+  admin_retry_partial: { icon: RefreshCw, color: '#a855f7', label: 'Admin mua bù' },
+  admin_refund_partial: { icon: RotateCcw, color: '#ec4899', label: 'Admin hoàn tiền' },
+  auto_recovered: { icon: Zap, color: '#14b8a6', label: 'Tự động phục hồi' }
+}
+
 export default function OrderDetailModal({ isOpen, onClose, orderData, isLoading = false }: OrderDetailModalProps) {
   const [copiedField, setCopiedField] = useState<string | null>(null)
   const [rowSelection, setRowSelection] = useState({})
+  const [tabIndex, setTabIndex] = useState(0)
 
-  // API call - MUST be called FIRST before any other hooks
-  const { data: dataApiKeys, isLoading: loadingApiKeys } = useApiKeys(orderData?.order?.id, isOpen)
+  const orderId = orderData?.order?.id
+  const { data: dataApiKeys, isLoading: loadingApiKeys } = useApiKeys(orderId, isOpen)
+  const { data: orderLogs = [], isLoading: loadingLogs } = useOrderLogs(orderId, isOpen)
 
-  // Helper functions
   const copyToClipboard = (text: string, field: string) => {
     navigator.clipboard.writeText(text)
     setCopiedField(field)
@@ -53,94 +78,44 @@ export default function OrderDetailModal({ isOpen, onClose, orderData, isLoading
 
   const downloadApiKeys = () => {
     const selectedRows = table.getFilteredSelectedRowModel().rows
+    const keys = selectedRows.length > 0
+      ? selectedRows.map((r: any) => r.original.api_key || getProxyText(r.original)).join('\n')
+      : (dataApiKeys || []).map((item: any) => item.api_key || getProxyText(item)).join('\n')
 
-    const apiKeysToDownload =
-      selectedRows.length > 0
-        ? selectedRows.map((row: any) => row.original.api_key).join('\n')
-        : dataApiKeys.map((item: any) => item.api_key).join('\n')
-
-    const blob = new Blob([apiKeysToDownload], { type: 'text/plain' })
+    const blob = new Blob([keys], { type: 'text/plain' })
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
-
     link.href = url
-    link.download = `api-keys-${orderData?.order?.order_code || 'export'}.txt`
+    link.download = `keys-${orderData?.order?.order_code || 'export'}.txt`
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
     URL.revokeObjectURL(url)
   }
 
-  const getTypeColor = (type: string) => {
-    return type === 'BUY' ? 'bg-emerald-100 text-emerald-700' : 'bg-orange-100 text-orange-700'
-  }
-
-  const getTypeLabel = (type: string) => {
-    return type === 'BUY' ? 'Mua' : type === 'REFUND' ? 'Hoàn tiền' : 'Không xác định'
+  const getProxyText = (item: any) => {
+    const p = item.proxys
+    if (p && typeof p === 'object') return p.HTTP || p.SOCK5 || '-'
+    return p || '-'
   }
 
   const getStatusBadge = (status: string) => {
     const label = ORDER_STATUS_LABELS_ADMIN[status]
     const color = ORDER_STATUS_COLORS[status as keyof typeof ORDER_STATUS_COLORS]
+    if (!label) return <Chip label='?' size='small' color='default' />
 
-    if (!label) {
-      return <Chip label='Không xác định' size='small' icon={<CircleQuestionMark />} color='secondary' />
-    }
+    const isPending = [ORDER_STATUS.PENDING, ORDER_STATUS.PROCESSING, ORDER_STATUS.RETRY_PROCESSING_PARTIAL].includes(status as any)
 
-    // Icon cho từng trạng thái
-    let icon = <CircleQuestionMark size={16} />
-
-    switch (status) {
-      case ORDER_STATUS.PENDING:
-        // Đang chờ xử lý - icon loading xoay
-        icon = (
-          <Loader2
-            size={16}
-            style={{
-              animation: 'spin 1s linear infinite'
-            }}
-          />
-        )
-        break
-      case ORDER_STATUS.PROCESSING:
-        // Đang xử lý - icon loading xoay
-        icon = (
-          <Loader2
-            size={16}
-            style={{
-              animation: 'spin 1s linear infinite'
-            }}
-          />
-        )
-        break
-      case ORDER_STATUS.IN_USE:
-        icon = <BadgeCheck size={16} />
-        break
-      case ORDER_STATUS.IN_USE_PARTIAL:
-        icon = <AlertCircle size={16} />
-        break
-      case ORDER_STATUS.EXPIRED:
-        icon = <Clock size={16} />
-        break
-      case ORDER_STATUS.FAILED:
-        icon = <CircleX size={16} />
-        break
-      case ORDER_STATUS.PARTIAL_REFUNDED:
-      case ORDER_STATUS.WAITING_REFUND:
-      case ORDER_STATUS.REFUNDED_ALL:
-        icon = <RotateCcw size={16} />
-        break
-      case ORDER_STATUS.RETRY_PROCESSING_PARTIAL:
-        icon = <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} />
-        break
-      default:
-        icon = <CircleQuestionMark size={16} />
-    }
-
-    return <Chip label={label} size='small' icon={icon} color={color as any} />
+    return (
+      <Chip
+        label={label}
+        size='small'
+        color={color as any}
+        icon={isPending ? <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> : undefined}
+      />
+    )
   }
 
-  // Columns configuration for proxy table
   const columns = useMemo(
     () => [
       {
@@ -156,349 +131,382 @@ export default function OrderDetailModal({ isOpen, onClose, orderData, isLoading
         cell: ({ row }: { row: any }) => (
           <Checkbox
             checked={row.getIsSelected()}
-            disabled={!row.getCanSelect()}
             onChange={row.getToggleSelectedHandler()}
             size='small'
           />
         ),
-        size: 50
+        size: 40
       },
       {
         header: 'ApiKey / Proxy',
-        size: 200,
+        size: 220,
         cell: ({ row }: { row: any }) => {
-          // Nếu api_key rỗng hoặc null → hiển thị Proxy
-          if (!row.original.api_key) {
-            // Kiểm tra nếu proxys là object thì lấy http hoặc socks5
-            const proxys = row.original.proxys
-
-            if (proxys && typeof proxys === 'object') {
-              return proxys.HTTP || proxys.SOCK5 || '-'
-            }
-
-            
-return proxys || '-'
-          }
-
-          // Nếu có api_key → hiển thị api_key
-          return row.original.api_key
-        }
-      },
-      {
-        header: 'Loại',
-        size: 150,
-        cell: ({ row }: { row: any }) => row.original.plan_type ?? '-'
-      },
-      {
-        header: 'Trạng thái',
-        size: 150,
-        cell: ({ row }: { row: any }) => {
-          if (row.original?.status === 'ACTIVE') {
-            return <Chip label='Hoạt động' size='small' icon={<BadgeCheck />} color='success' />
-          } else if (row.original?.status === 'INACTIVE') {
-            return <Chip label='Đã tắt' size='small' icon={<BadgeMinus />} color='warning' />
-          } else {
-            return <Chip label='Hết hạn' size='small' icon={<CircleX />} color='error' />
-          }
-        }
-      },
-      {
-        header: 'Ngày mua',
-        size: 200,
-        cell: ({ row }: { row: any }) => {
+          const text = row.original.api_key || getProxyText(row.original)
           return (
-            <>
-              <div className='d-flex align-items-center  gap-1 '>
-                <Clock3 size={14} />
-                <div style={{ marginTop: '2px' }}>{formatDateTimeLocal(row.original.buy_at)}</div>
-              </div>
-            </>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontFamily: 'monospace', fontSize: '12px' }}>
+              <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{text}</span>
+              {text !== '-' && (
+                <button
+                  onClick={() => copyToClipboard(text, `key-${row.id}`)}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, color: copiedField === `key-${row.id}` ? '#16a34a' : '#94a3b8' }}
+                >
+                  {copiedField === `key-${row.id}` ? <CheckCircle size={13} /> : <Copy size={13} />}
+                </button>
+              )}
+            </div>
           )
         }
       },
       {
-        header: 'Ngày hết hạn',
-        size: 200,
+        header: 'Loại', size: 80,
+        cell: ({ row }: { row: any }) => <span style={{ fontSize: '12px' }}>{row.original.plan_type ?? '-'}</span>
+      },
+      {
+        header: 'Trạng thái', size: 100,
+        cell: ({ row }: { row: any }) => {
+          const s = row.original?.status
+          if (s === 'ACTIVE') return <Chip label='Hoạt động' size='small' icon={<BadgeCheck size={14} />} color='success' />
+          if (s === 'INACTIVE') return <Chip label='Đã tắt' size='small' icon={<BadgeMinus size={14} />} color='warning' />
+          return <Chip label='Hết hạn' size='small' icon={<CircleX size={14} />} color='error' />
+        }
+      },
+      {
+        header: 'Hết hạn', size: 150,
         cell: ({ row }: { row: any }) => (
-          <>
-            <div className='d-flex align-items-center  gap-1 '>
-              <Clock3 size={14} />
-              <div style={{ marginTop: '2px' }}>{formatDateTimeLocal(row.original.expired_at)}</div>
-            </div>
-          </>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#64748b', fontSize: '12px' }}>
+            <Clock3 size={12} />
+            {formatDateTimeLocal(row.original.expired_at)}
+          </div>
         )
       }
     ],
-    []
+    [copiedField]
   )
 
-  // Table instance
   const table = useReactTable({
     data: dataApiKeys || [],
     columns,
-    state: {
-      rowSelection
-    },
+    state: { rowSelection },
     enableRowSelection: true,
     onRowSelectionChange: setRowSelection,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
-    initialState: {
-      pagination: {
-        pageSize: 5
-      }
-    }
+    initialState: { pagination: { pageSize: 5 } }
   })
 
-  // Reset checkbox selection khi đóng modal
   useEffect(() => {
-    if (!isOpen) {
-      setRowSelection({})
-    }
+    if (!isOpen) { setRowSelection({}); setTabIndex(0) }
   }, [isOpen])
 
-  // Early return AFTER all hooks
   if (!isOpen) return null
-  
-return (
+
+  const order = orderData?.order
+  const selectedCount = Object.keys(rowSelection).length
+
+  return (
     <Dialog
       onClose={onClose}
-      aria-labelledby='order-detail-dialog'
       open={isOpen}
       closeAfterTransition={false}
-      maxWidth='lg'
-      fullWidth={true}
-      PaperProps={{ sx: { overflow: 'visible', maxHeight: '90vh' } }}
+      maxWidth='md'
+      fullWidth
+      PaperProps={{ sx: { borderRadius: '12px', maxHeight: '85vh', mt: '5vh', mb: 'auto' } }}
     >
-      <div className='bg-white rounded-2xl shadow-2xl w-full max-h-[90vh] overflow-hidden'>
-        {/* Header */}
-        <div className='bg-gradient-to-r from-orange-500 to-orange-600 px-3 py-3 flex items-center justify-between'>
-          <div>
-            <h2 className='text-2xl font-bold text-white'>Chi tiết giao dịch</h2>
-            <p className='text-orange-100 text-sm mt-1'>Mã giao dịch: #{orderData?.order?.order_code || '—'}</p>
-          </div>
-          <button
-            onClick={onClose}
-            className='text-white/80 hover:text-white bg-white/10 hover:bg-white/10 rounded-lg p-2 transition-all'
-          >
-            <X size={24} />
-          </button>
+      {/* Header */}
+      <div style={{
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+        padding: '14px 20px', borderBottom: '1px solid #f1f5f9'
+      }}>
+        <div>
+          <div style={{ fontSize: '16px', fontWeight: 700, color: '#1e293b' }}>Chi tiết đơn hàng</div>
+          <div style={{ fontSize: '13px', color: '#64748b', marginTop: 2 }}>#{order?.order_code || '—'}</div>
         </div>
+        <button
+          onClick={onClose}
+          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 6, color: '#94a3b8' }}
+        >
+          <X size={20} />
+        </button>
+      </div>
 
-        {/* Body */}
-        {isLoading ? (
-          <div className='p-6 flex flex-col items-center justify-center min-h-[400px]'>
-            <Loader2 className='w-12 h-12 text-slate-600 animate-spin mb-4' />
-            <p className='text-gray-600 font-medium'>Đang tải thông tin...</p>
+      {isLoading ? (
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 300 }}>
+          <Loader2 size={32} style={{ animation: 'spin 1s linear infinite', color: '#64748b' }} />
+          <p style={{ color: '#64748b', marginTop: 12 }}>Đang tải...</p>
+        </div>
+      ) : (
+        <div style={{ overflowY: 'auto', maxHeight: 'calc(85vh - 65px)' }}>
+          {/* Order info grid */}
+          <div style={{
+            display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
+            gap: 10, padding: '16px 20px'
+          }}>
+            <InfoCell label='Khách hàng' value={orderData?.order?.user_name || orderData?.user?.name || '—'} icon={<User size={14} />} />
+            <InfoCell label='Dịch vụ' value={order?.service_name || '—'} icon={<Globe size={14} />} />
+            <InfoCell label='Số lượng' value={
+              order?.delivered_quantity != null && order?.delivered_quantity !== order?.quantity
+                ? `${order.delivered_quantity}/${order.quantity}`
+                : String(order?.quantity || 0)
+            } icon={<FileText size={14} />} />
+            <InfoCell label='Doanh thu' value={formatVND(order?.total_amount || 0)} highlight icon={<DollarSign size={14} />} />
+            <InfoCell label='Vốn' value={formatVND(order?.total_cost || 0)} icon={<DollarSign size={14} />} />
+            <div style={{ padding: '8px 10px', borderRadius: 8, background: '#f8fafc', border: '1px solid #f1f5f9' }}>
+              <div style={{ fontSize: '11px', color: '#94a3b8', marginBottom: 4 }}>Trạng thái</div>
+              {getStatusBadge(String(order?.status))}
+            </div>
           </div>
-        ) : (
-          <div className='overflow-y-auto max-h-[calc(90vh-160px)]'>
-            <div className='p-6 space-y-6'>
-              {/* Transaction Info */}
-              <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-                <div className='bg-slate-50 rounded-xl p-4 border border-slate-200'>
-                  <div className='flex items-center align-middle gap-2 mb-3'>
-                    <User className='text-slate-600' size={20} />
-                    <h3 className='font-semibold text-slate-800 text-xl mb-0'>Thông tin khách hàng</h3>
-                  </div>
-                  <div className='space-y-3'>
-                    <div>
-                      <p className='text-xs text-slate-500 mb-1'>Người dùng</p>
-                      <p className='font-semibold text-slate-800 mb-2'>{orderData?.user?.name || '—'}</p>
-                      <p className='text-sm text-slate-600'>{orderData?.user?.email || '—'}</p>
-                    </div>
-                    <div>
-                      <p className='text-xs text-slate-500 mb-1'>Loại giao dịch</p>
-                      {orderData?.type === 'BUY' ? (
-                        <Chip
-                          label={getTypeLabel(orderData?.type)}
-                          icon={<CheckCircle size={14} />}
-                          color='success'
-                          size='small'
-                        />
-                      ) : (
-                        <Chip
-                          label={getTypeLabel(orderData?.type)}
-                          icon={<Clock size={14} />}
-                          color='warning'
-                          size='small'
-                        />
-                      )}
-                    </div>
-                    <div>
-                      <p className='text-xs text-slate-500 mb-1'>Ngày tạo</p>
-                      <p className='font-medium text-slate-800'>
-                        {orderData?.created_at ? formatDateTimeLocal(orderData.created_at) : '—'}
-                      </p>
-                    </div>
-                  </div>
-                </div>
 
-                <div className='bg-slate-50 rounded-xl p-4 border border-slate-200'>
-                  <div className='flex items-center align-middle gap-2 mb-3'>
-                    <DollarSign className='text-slate-600' size={20} />
-                    <h3 className='font-semibold text-slate-800 text-xl mb-0'>Thông tin đơn hàng</h3>
+          {/* Tabs */}
+          <Tabs
+            value={tabIndex}
+            onChange={(_, v) => setTabIndex(v)}
+            sx={{
+              borderBottom: '1px solid #f1f5f9', px: '20px',
+              '& .MuiTab-root': { textTransform: 'none', fontWeight: 600, fontSize: '13px', minHeight: 42 }
+            }}
+          >
+            <Tab label={`Proxy (${dataApiKeys?.length || 0})`} />
+            <Tab label={`Logs (${orderLogs.length})`} />
+          </Tabs>
+
+          {/* Tab content */}
+          <div style={{ padding: '16px 20px' }}>
+            {tabIndex === 0 && (
+              <>
+                {/* Copy/Download buttons */}
+                {selectedCount > 0 && (
+                  <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 10 }}>
+                    <span style={{ fontSize: '12px', color: '#64748b' }}>Đã chọn: {selectedCount}</span>
+                    <button
+                      onClick={() => {
+                        const rows = table.getFilteredSelectedRowModel().rows
+                        const keys = rows.map((r: any) => r.original.api_key || getProxyText(r.original)).join('\n')
+                        copyToClipboard(keys, 'bulk')
+                      }}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: 4,
+                        padding: '4px 10px', fontSize: '12px', fontWeight: 500,
+                        background: '#f0fdf4', color: '#16a34a', border: '1px solid #bbf7d0',
+                        borderRadius: 6, cursor: 'pointer'
+                      }}
+                    >
+                      <Copy size={13} /> {copiedField === 'bulk' ? 'Đã copy!' : 'Copy'}
+                    </button>
+                    <button
+                      onClick={downloadApiKeys}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: 4,
+                        padding: '4px 10px', fontSize: '12px', fontWeight: 500,
+                        background: '#eff6ff', color: '#2563eb', border: '1px solid #bfdbfe',
+                        borderRadius: 6, cursor: 'pointer'
+                      }}
+                    >
+                      <Download size={13} /> Tải
+                    </button>
                   </div>
-                  <div className='space-y-3'>
-                    <div className='flex justify-between'>
-                      <div>
-                        <p className='text-xs text-slate-500 mb-1'>Số tiền</p>
-                        <p className='text-2xl font-bold text-slate-800'>
-                          {new Intl.NumberFormat('vi-VN').format(orderData?.order?.price_per_unit || 0)} đ
-                        </p>
-                      </div>
-                      <div>
-                        <p className='text-xs text-slate-500 mb-1'>Số lượng</p>
-                        <p className='text-2xl font-bold text-slate-800'>{orderData?.order?.quantity}</p>
-                      </div>
-                      <div>
-                        <p className='text-xs text-slate-500 mb-1'>Thời gian</p>
-                        <p className='text-2xl font-bold text-slate-800'>{orderData?.order?.time}</p>
-                      </div>
-                      <div>
-                        <p className='text-xs text-slate-500 mb-1'>Tổng tiền</p>
-                        <p className='text-2xl font-bold text-slate-800'>
-                          {new Intl.NumberFormat('vi-VN').format(orderData?.order?.total_amount || 0)} đ
-                        </p>
-                      </div>
-                    </div>
-                    <div>
-                      <p className='text-xs text-slate-500 mb-1'>Trạng thái</p>
-                      {getStatusBadge(orderData?.order?.status)}{' '}
-                    </div>
-                    <div>
-                      <p className='text-xs text-slate-500 mb-1'>Nội dung</p>
-                      <p className='text-sm text-slate-600 leading-relaxed'>{orderData?.noidung || '—'}</p>
-                    </div>
+                )}
+
+                {loadingApiKeys ? (
+                  <div style={{ textAlign: 'center', padding: '30px 0' }}>
+                    <CircularProgress size={24} />
+                    <p style={{ color: '#64748b', fontSize: '13px', marginTop: 8 }}>Đang tải proxy...</p>
                   </div>
-                </div>
-              </div>
-
-              {/* Proxy List Table */}
-              {dataApiKeys && dataApiKeys.length > 0 && (
-                <div className='bg-slate-50 rounded-xl  border border-slate-200 overflow-hidden'>
-                  {/* Header with Copy and Download Buttons */}
-                  <div className='flex items-center justify-between px-4 py-3 bg-slate-100 border-b border-slate-200'>
-                    <div className='flex items-center gap-3'></div>
-                    <div className='flex items-center gap-2'>
-                      <button
-                        onClick={() => {
-                          const selectedRows = table.getFilteredSelectedRowModel().rows
-
-                          const apiKeysToCopy =
-                            selectedRows.length > 0
-                              ? selectedRows.map((row: any) => row.original.api_key).join('\n')
-                              : dataApiKeys.map((item: any) => item.api_key).join('\n')
-
-                          copyToClipboard(apiKeysToCopy, 'header')
-                        }}
-                        disabled={Object.keys(rowSelection).length === 0}
-                        className='px-3 py-1.5 text-sm rounded-lg font-medium text-white bg-orange-500 hover:bg-orange-600 transition-colors flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-orange-500'
-                      >
-                        {copiedField === 'header' ? (
-                          <>
-                            <CheckCircle size={14} />
-                            Đã copy
-                          </>
-                        ) : (
-                          <>
-                            <Copy size={14} />
-                            {Object.keys(rowSelection).length > 0
-                              ? `Copy ${Object.keys(rowSelection).length} keys`
-                              : 'Copy keys'}
-                          </>
-                        )}
-                      </button>
-                      <button
-                        onClick={downloadApiKeys}
-                        disabled={Object.keys(rowSelection).length === 0}
-                        className='px-3 py-1.5 text-sm rounded-lg font-medium text-white bg-blue-500 hover:bg-blue-600 transition-colors flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-blue-500'
-                      >
-                        <Download size={14} />
-                        {Object.keys(rowSelection).length > 0
-                          ? `Tải ${Object.keys(rowSelection).length} keys`
-                          : 'Tải keys'}
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className='overflow-x-auto'>
-                    <table className='min-w-full divide-y divide-slate-200'>
-                      <thead className='bg-slate-100'>
-                        {table.getHeaderGroups().map(headerGroup => (
-                          <tr key={headerGroup.id}>
-                            {headerGroup.headers.map(header => (
-                              <th
-                                key={header.id}
-                                style={{ width: header.getSize() }}
-                                className='px-4 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider'
-                              >
-                                {flexRender(header.column.columnDef.header, header.getContext())}
-                              </th>
-                            ))}
-                          </tr>
-                        ))}
-                      </thead>
-                      <tbody className='bg-white divide-y divide-slate-200'>
-                        {loadingApiKeys ? (
-                          <tr>
-                            <td colSpan={columns.length} className='py-10 text-center'>
-                              <div className='flex flex-col items-center justify-center'>
-                                <Loader2 className='w-8 h-8 text-slate-600 animate-spin mb-2' />
-                                <p className='text-slate-600'>Đang tải danh sách proxy...</p>
-                              </div>
-                            </td>
-                          </tr>
-                        ) : table.getRowModel().rows.length === 0 ? (
-                          <tr>
-                            <td colSpan={columns.length} className='py-10 text-center'>
-                              <p className='text-slate-500'>Không có proxy nào</p>
-                            </td>
-                          </tr>
-                        ) : (
-                          table.getRowModel().rows.map(row => (
-                            <tr key={row.id} className='hover:bg-slate-50 transition-colors'>
+                ) : dataApiKeys && dataApiKeys.length > 0 ? (
+                  <>
+                    <div style={{ overflowX: 'auto', borderRadius: 8, border: '1px solid #e2e8f0' }}>
+                      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+                        <thead>
+                          {table.getHeaderGroups().map(hg => (
+                            <tr key={hg.id}>
+                              {hg.headers.map(h => (
+                                <th key={h.id} style={{
+                                  width: h.getSize(), padding: '8px 10px', textAlign: 'left',
+                                  background: '#f8fafc', borderBottom: '1px solid #e2e8f0',
+                                  fontSize: '12px', fontWeight: 600, color: '#64748b'
+                                }}>
+                                  {flexRender(h.column.columnDef.header, h.getContext())}
+                                </th>
+                              ))}
+                            </tr>
+                          ))}
+                        </thead>
+                        <tbody>
+                          {table.getRowModel().rows.map(row => (
+                            <tr key={row.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
                               {row.getVisibleCells().map(cell => (
-                                <td key={cell.id} className='px-4 py-3 text-sm text-slate-700'>
+                                <td key={cell.id} style={{ padding: '8px 10px' }}>
                                   {flexRender(cell.column.columnDef.cell, cell.getContext())}
                                 </td>
                               ))}
                             </tr>
-                          ))
-                        )}
-                      </tbody>
-                    </table>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 8 }}>
+                      <span style={{ fontSize: '12px', color: '#94a3b8' }}>
+                        Trang {table.getState().pagination.pageIndex + 1} / {table.getPageCount()} ({dataApiKeys.length} keys)
+                      </span>
+                      <div style={{ display: 'flex', gap: 6 }}>
+                        <button
+                          onClick={() => table.previousPage()}
+                          disabled={!table.getCanPreviousPage()}
+                          style={navBtnStyle(!table.getCanPreviousPage())}
+                        >
+                          Trước
+                        </button>
+                        <button
+                          onClick={() => table.nextPage()}
+                          disabled={!table.getCanNextPage()}
+                          style={navBtnStyle(!table.getCanNextPage())}
+                        >
+                          Sau
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div style={{ textAlign: 'center', padding: '30px 0', background: '#f8fafc', borderRadius: 8, border: '1px solid #f1f5f9' }}>
+                    <p style={{ color: '#94a3b8', fontSize: '13px' }}>Chưa có proxy</p>
                   </div>
+                )}
+              </>
+            )}
 
-                  {/* Pagination */}
-                  <div className='flex items-center justify-between px-4 py-3 border-t border-slate-200 bg-slate-50'>
-                    <div className='text-sm text-slate-600'>
-                      Hiển thị {table.getRowModel().rows.length} / {dataApiKeys?.length || 0} api keys • Trang{' '}
-                      {table.getState().pagination.pageIndex + 1} / {table.getPageCount()}
-                    </div>
-                    <div className='flex gap-2'>
-                      <button
-                        onClick={() => table.previousPage()}
-                        disabled={!table.getCanPreviousPage()}
-                        className='px-3 py-1.5 text-sm bg-white border border-slate-300 rounded-lg hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors'
-                      >
-                        Trước
-                      </button>
-                      <button
-                        onClick={() => table.nextPage()}
-                        disabled={!table.getCanNextPage()}
-                        className='px-3 py-1.5 text-sm bg-white border border-slate-300 rounded-lg hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors'
-                      >
-                        Sau
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
+            {tabIndex === 1 && (
+              <OrderLogsTimeline logs={orderLogs} isLoading={loadingLogs} />
+            )}
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </Dialog>
   )
 }
+
+// ====== Sub-components ======
+
+function InfoCell({ label, value, icon, highlight }: { label: string; value: string; icon?: React.ReactNode; highlight?: boolean }) {
+  return (
+    <div style={{ padding: '8px 10px', borderRadius: 8, background: '#f8fafc', border: '1px solid #f1f5f9' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 3 }}>
+        <span style={{ color: '#94a3b8' }}>{icon}</span>
+        <span style={{ fontSize: '11px', color: '#94a3b8' }}>{label}</span>
+      </div>
+      <div style={{ fontSize: '13px', fontWeight: highlight ? 700 : 600, color: highlight ? 'var(--primary-color)' : '#1e293b' }}>
+        {value}
+      </div>
+    </div>
+  )
+}
+
+function OrderLogsTimeline({ logs, isLoading }: { logs: OrderLog[]; isLoading: boolean }) {
+  if (isLoading) {
+    return (
+      <div style={{ textAlign: 'center', padding: '30px 0' }}>
+        <CircularProgress size={24} />
+        <p style={{ color: '#64748b', fontSize: '13px', marginTop: 8 }}>Đang tải logs...</p>
+      </div>
+    )
+  }
+
+  if (logs.length === 0) {
+    return (
+      <div style={{ textAlign: 'center', padding: '30px 0', background: '#f8fafc', borderRadius: 8, border: '1px solid #f1f5f9' }}>
+        <FileText size={20} color='#94a3b8' />
+        <p style={{ color: '#94a3b8', fontSize: '13px', marginTop: 8 }}>Chưa có log nào</p>
+      </div>
+    )
+  }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+      {logs.map((log, i) => {
+        const config = LOG_ACTION_CONFIG[log.action] || { icon: FileText, color: '#94a3b8', label: log.action }
+        const Icon = config.icon
+        const isLast = i === logs.length - 1
+        const isError = log.action.includes('error') || log.action === 'failed'
+        const isSuccess = log.action.includes('success') || log.action === 'in_use' || log.action === 'completed'
+
+        return (
+          <div key={log._id || i} style={{ display: 'flex', gap: 12, minHeight: 50 }}>
+            {/* Timeline line + dot */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: 28, flexShrink: 0 }}>
+              <div style={{
+                width: 28, height: 28, borderRadius: '50%',
+                background: config.color + '18', border: `2px solid ${config.color}`,
+                display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
+              }}>
+                <Icon size={13} color={config.color} style={log.action.includes('processing') || log.action === 'retry' ? { animation: 'spin 1s linear infinite' } : undefined} />
+              </div>
+              {!isLast && (
+                <div style={{ width: 2, flex: 1, background: '#e2e8f0', margin: '4px 0' }} />
+              )}
+            </div>
+
+            {/* Content */}
+            <div style={{ flex: 1, paddingBottom: isLast ? 0 : 12 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span style={{ fontSize: '13px', fontWeight: 600, color: config.color }}>
+                    {config.label}
+                  </span>
+                  {log.from_status !== null && log.to_status !== null && (
+                    <span style={{ fontSize: '11px', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: 3 }}>
+                      {log.from_status} <ArrowRight size={10} /> {log.to_status}
+                    </span>
+                  )}
+                  {log.duration_ms != null && (
+                    <span style={{ fontSize: '11px', color: '#94a3b8' }}>
+                      {log.duration_ms}ms
+                    </span>
+                  )}
+                </div>
+                <span style={{ fontSize: '11px', color: '#94a3b8', flexShrink: 0 }}>
+                  {log.created_at ? formatDateTimeLocal(log.created_at) : '-'}
+                </span>
+              </div>
+
+              {log.message && (
+                <div style={{
+                  fontSize: '12px', color: isError ? '#dc2626' : '#64748b',
+                  marginTop: 3, lineHeight: 1.4,
+                  ...(isError ? { background: '#fef2f2', padding: '4px 8px', borderRadius: 4, border: '1px solid #fecaca' } : {})
+                }}>
+                  {log.message}
+                </div>
+              )}
+
+              {log.partner_code && (
+                <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: 2 }}>
+                  Đối tác: <span style={{ fontWeight: 500, color: '#64748b' }}>{log.partner_code}</span>
+                  {log.http_status && ` • HTTP ${log.http_status}`}
+                  {log.retry_count != null && log.retry_count > 0 && ` • Retry #${log.retry_count}`}
+                </div>
+              )}
+
+              {log.response_body && isError && (
+                <details style={{ marginTop: 4 }}>
+                  <summary style={{ fontSize: '11px', color: '#94a3b8', cursor: 'pointer' }}>Response body</summary>
+                  <pre style={{
+                    fontSize: '11px', color: '#64748b', background: '#f8fafc',
+                    padding: '6px 8px', borderRadius: 4, marginTop: 4,
+                    overflow: 'auto', maxHeight: 120, whiteSpace: 'pre-wrap', wordBreak: 'break-all'
+                  }}>
+                    {log.response_body}
+                  </pre>
+                </details>
+              )}
+            </div>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+const navBtnStyle = (disabled: boolean): React.CSSProperties => ({
+  padding: '4px 12px', fontSize: '12px',
+  background: '#fff', border: '1px solid #e2e8f0', borderRadius: 6,
+  cursor: disabled ? 'not-allowed' : 'pointer',
+  opacity: disabled ? 0.5 : 1, color: '#374151'
+})

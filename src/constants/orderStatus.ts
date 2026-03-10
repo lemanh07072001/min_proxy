@@ -14,6 +14,7 @@ export const ORDER_STATUS = {
   WAITING_REFUND: '7',     // Chờ hoàn tiền
   REFUNDED_ALL: '8',       // Hoàn tiền toàn bộ
   RETRY_PROCESSING_PARTIAL: '9',   // Đang mua bù (retry partial)
+  AWAITING_PARTNER: '10',          // Đã gọi partner, chờ partner trả proxy
 } as const
 
 export type OrderStatusType = (typeof ORDER_STATUS)[keyof typeof ORDER_STATUS]
@@ -22,8 +23,8 @@ export type OrderStatusType = (typeof ORDER_STATUS)[keyof typeof ORDER_STATUS]
  * Order Status Labels — nhãn hiển thị cho user
  */
 export const ORDER_STATUS_LABELS: Record<string, string> = {
-  [ORDER_STATUS.PENDING]: 'Đang chờ xử lý',
-  [ORDER_STATUS.PROCESSING]: 'Đang xử lý',
+  [ORDER_STATUS.PENDING]: 'Chờ xử lý',
+  [ORDER_STATUS.PROCESSING]: 'Đang tạo proxy',
   [ORDER_STATUS.IN_USE]: 'Đang sử dụng',
   [ORDER_STATUS.IN_USE_PARTIAL]: 'Thiếu proxy',
   [ORDER_STATUS.EXPIRED]: 'Hết hạn',
@@ -31,7 +32,8 @@ export const ORDER_STATUS_LABELS: Record<string, string> = {
   [ORDER_STATUS.PARTIAL_REFUNDED]: 'Đã hoàn tiền 1 phần',
   [ORDER_STATUS.WAITING_REFUND]: 'Chờ hoàn tiền',
   [ORDER_STATUS.REFUNDED_ALL]: 'Đã hoàn tiền',
-  [ORDER_STATUS.RETRY_PROCESSING_PARTIAL]: 'Đang xử lý',
+  [ORDER_STATUS.RETRY_PROCESSING_PARTIAL]: 'Đang tạo proxy',
+  [ORDER_STATUS.AWAITING_PARTNER]: 'Chờ tạo proxy',
 }
 
 /**
@@ -40,6 +42,7 @@ export const ORDER_STATUS_LABELS: Record<string, string> = {
 export const ORDER_STATUS_LABELS_ADMIN: Record<string, string> = {
   ...ORDER_STATUS_LABELS,
   [ORDER_STATUS.RETRY_PROCESSING_PARTIAL]: 'Đang mua bù',
+  [ORDER_STATUS.AWAITING_PARTNER]: 'Chờ đối tác',
 }
 
 /**
@@ -57,6 +60,7 @@ export const ORDER_STATUS_COLORS: Record<string, string> = {
   [ORDER_STATUS.WAITING_REFUND]: 'info',
   [ORDER_STATUS.REFUNDED_ALL]: 'default',
   [ORDER_STATUS.RETRY_PROCESSING_PARTIAL]: 'warning',
+  [ORDER_STATUS.AWAITING_PARTNER]: 'info',
 }
 
 /**

@@ -4,56 +4,46 @@ import React, { useMemo, useState } from 'react'
 
 import {
   Dialog,
-  DialogTitle,
   DialogContent,
-  Button,
   Typography,
   Box,
   Chip,
   Pagination,
-  FormControlLabel,
-  CircularProgress
+  CircularProgress,
+  Tabs,
+  Tab
 } from '@mui/material'
+
 import {
   useReactTable,
   getCoreRowModel,
   flexRender,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel
+  getPaginationRowModel
 } from '@tanstack/react-table'
+
 import Checkbox from '@mui/material/Checkbox'
+
 import {
   Copy,
   Clock,
   Eye,
-  FileDown
+  FileDown,
+  X,
+  ShoppingCart,
+  Package,
+  DollarSign,
+  Clock3,
+  Loader2,
+  CheckCircle
 } from 'lucide-react'
 
 import { formatDateTimeLocal } from '@/utils/formatDate'
 import { useCopy } from '@/app/hooks/useCopy'
 import { ORDER_STATUS_LABELS, ORDER_STATUS_COLORS } from '@/constants/orderStatus'
 import { useApiKeys } from '@/hooks/apis/useOrders'
-import CustomIconButton from '@core/components/mui/IconButton'
 import DetailProxy from './DetaiProxy'
 
-const getStatusBadge = (status: string) => {
-  const label = ORDER_STATUS_LABELS[status] || 'Không xác định'
-  const color = (ORDER_STATUS_COLORS[status] || 'default') as any
-
-  return <Chip label={label} size='small' color={color} />
-}
-
-interface ProxyItem {
-  id: string
-  proxys: {
-    loaiproxy?: string
-    [key: string]: any
-  }
-  buy_at: string
-  expired_at: string
-  status: string
-}
+const formatVND = (v: number) => new Intl.NumberFormat('vi-VN').format(v) + 'đ'
 
 interface OrderDetailProps {
   open: boolean
@@ -66,6 +56,7 @@ interface OrderDetailProps {
     quantity: number
     delivered_quantity?: number
     status: string
+    order_type?: number
     buy_at: string
     expired_at: string
     proxy_type?: string
@@ -77,504 +68,393 @@ interface OrderDetailProps {
 }
 
 const OrderDetail: React.FC<OrderDetailProps> = ({ open, onClose, order }) => {
-  // ----------------- Hooks -----------------
-  const [columnFilters, setColumnFilters] = useState<any[]>([])
   const [rowSelection, setRowSelection] = useState({})
-  const [sorting, setSorting] = useState<any[]>([])
   const [isOpen, setIsOpen] = useState(false)
-  const [dataApiKey, setDataApiKey] = useState()
+  const [dataApiKey, setDataApiKey] = useState<string>()
   const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 })
   const [, copy] = useCopy()
+  const [copiedField, setCopiedField] = useState<string | null>(null)
 
-  // ----------------- Data (fetch full ApiKey records) -----------------
   const { data: apiKeysData = [], isLoading: isLoadingKeys } = useApiKeys(order?.id, open)
-  const dataOrder = apiKeysData
 
-  // ----------------- Columns -----------------
+  const copyWithFeedback = (text: string, field: string, msg?: string) => {
+    copy(text, msg)
+    setCopiedField(field)
+    setTimeout(() => setCopiedField(null), 2000)
+  }
+
+  // Tính thời gian còn lại
+  const getTimeRemaining = () => {
+    if (!order?.expired_at) return null
+    const s = String(order.status)
+    if (s !== '2' && s !== '3') return null
+
+    const diff = new Date(order.expired_at).getTime() - Date.now()
+    if (diff <= 0) return null
+
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24))
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
+    return days > 0 ? `${days}d ${hours}h` : `${hours}h`
+  }
+
   const columns = useMemo(
     () => [
       {
         id: 'select',
         header: ({ table }: { table: any }) => (
-          <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-            <FormControlLabel
-              sx={{
-                '&.MuiFormControlLabel-root': {
-                  margin: 0
-                }
-              }}
-              control={
-                <Checkbox
-                  checked={table.getIsAllRowsSelected()}
-                  indeterminate={table.getIsSomeRowsSelected()}
-                  onChange={table.getToggleAllRowsSelectedHandler()}
-                />
-              }
-              label=''
-            />
-          </div>
+          <Checkbox
+            checked={table.getIsAllRowsSelected()}
+            indeterminate={table.getIsSomeRowsSelected()}
+            onChange={table.getToggleAllRowsSelectedHandler()}
+            size='small'
+          />
         ),
         cell: ({ row }: { row: any }) => (
-          <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-            <FormControlLabel
-              sx={{
-                '&.MuiFormControlLabel-root': {
-                  margin: 0
-                }
-              }}
-              control={
-                <Checkbox
-                  checked={row.getIsSelected()}
-                  disabled={!row.getCanSelect()}
-                  onChange={row.getToggleSelectedHandler()}
-                />
-              }
-              label=''
-            />
-          </div>
+          <Checkbox
+            checked={row.getIsSelected()}
+            onChange={row.getToggleSelectedHandler()}
+            size='small'
+          />
         ),
-        size: 60
+        size: 40
       },
-
       {
-        accessorKey: 'proxy',
-        header: order?.service_type === '0' ? 'Proxy' : 'Proxy API',
+        header: order?.service_type === '0' ? 'Proxy' : 'API Key',
         cell: ({ row }: { row: any }) => {
           if (order?.service_type === '0') {
-            // ----- Dữ liệu Proxy thông thường -----
             const proxys = row.original.proxys || {}
-
             const proxyValues = Object.entries(proxys)
               .filter(([key]) => key !== 'loaiproxy')
               .map(([_, value]) => value)
-
-            const firstProxy = proxyValues[0] || '-'
+            const firstProxy = String(proxyValues[0] || '-')
 
             return (
-              <div className='flex items-center gap-2'>
-                <span className='flex-1 truncate'>{String(firstProxy)}</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontFamily: 'monospace', fontSize: '12px' }}>
+                <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{firstProxy}</span>
                 {firstProxy !== '-' && (
                   <button
-                    className='flex items-center justify-center w-6 h-6 text-blue-500 hover:text-blue-700 hover:bg-blue-50 rounded transition-colors duration-200'
-                    onClick={() => copy(String(firstProxy), 'Đã copy proxy!')}
-                    title='Copy proxy'
+                    onClick={() => copyWithFeedback(firstProxy, `proxy-${row.id}`, 'Đã copy proxy!')}
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, color: copiedField === `proxy-${row.id}` ? '#16a34a' : '#94a3b8' }}
                   >
-                    <Copy size={14} />
-                  </button>
-                )}
-              </div>
-            )
-          } else {
-            const apiProxy = row.original?.api_key || '-'
-
-            return (
-              <div className='flex items-center gap-2'>
-                <span className='flex-1 truncate text-red-600'>{apiProxy}</span>
-                {apiProxy !== '-' && (
-                  <button
-                    className='flex items-center justify-center w-6 h-6 text-blue-500 hover:text-blue-700 hover:bg-blue-50 rounded transition-colors duration-200'
-                    onClick={() => copy(apiProxy, 'Đã copy API key!')}
-                    title='Copy API key'
-                  >
-                    <Copy size={14} />
+                    {copiedField === `proxy-${row.id}` ? <CheckCircle size={14} /> : <Copy size={14} />}
                   </button>
                 )}
               </div>
             )
           }
-        },
-        size: 350
-      },
-      {
-        header: 'Tên',
-        cell: ({ row }: { row: any }) => {
-          return <span className='text-red'>{order?.service_name}</span>
-        },
-        size: 150
-      },
-      {
-        accessorKey: 'protocol',
-        header: 'Protocol',
-        cell: ({ row }: { row: any }) => {
-          const protocol = row.original.protocol
 
-          return <span className='uppercase text-xs font-medium'>{protocol || '-'}</span>
+          const apiKey = row.original?.api_key || '-'
+
+          return (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontFamily: 'monospace', fontSize: '12px', color: '#dc2626' }}>
+              <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{apiKey}</span>
+              {apiKey !== '-' && (
+                <button
+                  onClick={() => copyWithFeedback(apiKey, `key-${row.id}`, 'Đã copy API key!')}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, color: copiedField === `key-${row.id}` ? '#16a34a' : '#94a3b8' }}
+                >
+                  {copiedField === `key-${row.id}` ? <CheckCircle size={14} /> : <Copy size={14} />}
+                </button>
+              )}
+            </div>
+          )
         },
+        size: 280
+      },
+      {
+        header: 'Protocol',
+        cell: ({ row }: { row: any }) => (
+          <span style={{ fontSize: '12px', textTransform: 'uppercase' as const, fontWeight: 500 }}>
+            {row.original.protocol || '-'}
+          </span>
+        ),
         size: 80
       },
       {
-        header: 'Giá tiền',
+        header: 'Hết hạn',
         cell: ({ row }: { row: any }) => (
-          <div>{new Intl.NumberFormat('vi-VN').format(order?.price_per_unit || 0) + ' đ'}</div>
-        ),
-        size: 200
-      },
-      {
-        header: 'Ip Version',
-        cell: ({ row }: { row: any }) => order?.ip_version,
-        size: 200
-      },
-      {
-        accessorKey: 'expired_at',
-        header: 'Ngày hết hạn',
-        cell: ({ row }: { row: any }) => (
-          <div className='flex items-center gap-1'>
-            <Clock size={14} />
-            <span>{formatDateTimeLocal(row.original.expired_at)}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#64748b', fontSize: '12px' }}>
+            <Clock size={12} />
+            {formatDateTimeLocal(row.original.expired_at)}
           </div>
         ),
-        size: 200
+        size: 160
       },
       {
-        header: 'Action',
-        cell: ({ row }: { row: any }) => {
-          return (
-            <>
-              <CustomIconButton
-                aria-label='capture screenshot'
-                color='info'
-                variant='tonal'
-                onClick={() => {
-                  setDataApiKey(row.original.api_key) // lưu dữ liệu dòng hiện tại
-                  setIsOpen(true) // mở modal
-                }}
-              >
-                <Eye size={16} />
-              </CustomIconButton>
-            </>
-          )
-        },
-        size: 100
+        header: '',
+        id: 'actions',
+        size: 40,
+        cell: ({ row }: { row: any }) => (
+          <button
+            onClick={() => { setDataApiKey(row.original.api_key); setIsOpen(true) }}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: '#3b82f6' }}
+            title='Xem chi tiết'
+          >
+            <Eye size={16} />
+          </button>
+        )
       }
     ],
-    [order, copy]
+    [order, copiedField, copy]
   )
 
-  // ----------------- Table -----------------
   const table = useReactTable({
-    data: dataOrder,
+    data: apiKeysData,
     columns,
-    state: { rowSelection, pagination, columnFilters, sorting },
+    state: { rowSelection, pagination },
     enableRowSelection: true,
     onRowSelectionChange: setRowSelection,
     onPaginationChange: setPagination,
-    onColumnFiltersChange: setColumnFilters,
-    onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel()
   })
 
-  const { pageIndex, pageSize } = table.getState().pagination
-  const totalRows = table.getFilteredRowModel().rows.length
-  const startRow = totalRows ? pageIndex * pageSize + 1 : 0
-  const endRow = Math.min(startRow + pageSize - 1, totalRows)
-
   const selectedCount = table.getFilteredSelectedRowModel().rows.length
+  const totalRows = apiKeysData.length
 
-  // Function to copy all selected API keys
   const handleCopySelected = () => {
     const selectedRows = table.getFilteredSelectedRowModel().rows
-
     if (selectedRows.length === 0) return
 
-    let textToCopy = ''
-
-    if (order?.service_type === '0') {
-      // For regular proxies
-      selectedRows.forEach((row, index) => {
+    const texts = selectedRows.map((row: any) => {
+      if (order?.service_type === '0') {
         const proxys = row.original.proxys || {}
+        const vals = Object.entries(proxys).filter(([k]) => k !== 'loaiproxy').map(([_, v]) => v)
+        return String(vals[0] || '')
+      }
+      return row.original?.api_key || ''
+    }).filter(Boolean)
 
-        const proxyValues = Object.entries(proxys)
-          .filter(([key]) => key !== 'loaiproxy')
-          .map(([_, value]) => value)
-
-        const firstProxy = proxyValues[0]
-
-        if (firstProxy && firstProxy !== '-') {
-          textToCopy += firstProxy
-          if (index < selectedRows.length - 1) textToCopy += '\n'
-        }
-      })
-    } else {
-      // For API keys
-      selectedRows.forEach((row, index) => {
-        const apiKey = row.original?.api_key
-
-        if (apiKey && apiKey !== '-') {
-          textToCopy += apiKey
-          if (index < selectedRows.length - 1) textToCopy += '\n'
-        }
-      })
-    }
-
-    if (textToCopy) {
-      copy(textToCopy, `Đã copy ${selectedCount} ${order?.service_type === '0' ? 'proxy' : 'API key'}!`)
-    }
+    copy(texts.join('\n'), `Đã copy ${texts.length} ${order?.service_type === '0' ? 'proxy' : 'API key'}!`)
   }
 
-  // Function to download selected API keys as .txt file
   const handleDownloadSelected = () => {
     const selectedRows = table.getFilteredSelectedRowModel().rows
-
     if (selectedRows.length === 0) return
 
-    let content = ''
-    const itemType = order?.service_type === '0' ? 'proxy' : 'api_key'
-
-    if (order?.service_type === '0') {
-      // For regular proxies
-      selectedRows.forEach((row, index) => {
+    const texts = selectedRows.map((row: any) => {
+      if (order?.service_type === '0') {
         const proxys = row.original.proxys || {}
+        const vals = Object.entries(proxys).filter(([k]) => k !== 'loaiproxy').map(([_, v]) => v)
+        return String(vals[0] || '')
+      }
+      return row.original?.api_key || ''
+    }).filter(Boolean)
 
-        const proxyValues = Object.entries(proxys)
-          .filter(([key]) => key !== 'loaiproxy')
-          .map(([_, value]) => value)
-
-        const firstProxy = proxyValues[0]
-
-        if (firstProxy && firstProxy !== '-') {
-          content += firstProxy
-          if (index < selectedRows.length - 1) content += '\n'
-        }
-      })
-    } else {
-      // For API keys
-      selectedRows.forEach((row, index) => {
-        const apiKey = row.original?.api_key
-
-        if (apiKey && apiKey !== '-') {
-          content += apiKey
-          if (index < selectedRows.length - 1) content += '\n'
-        }
-      })
-    }
-
-    if (content) {
-      // Create blob and download
-      const blob = new Blob([content], { type: 'text/plain;charset=utf-8' })
-      const url = window.URL.createObjectURL(blob)
-      const link = document.createElement('a')
-
-      link.href = url
-      link.download = `${order?.order_code || 'order'}_${itemType}s_${new Date().toISOString().split('T')[0]}.txt`
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-      window.URL.revokeObjectURL(url)
-
-      // Show success message
-      copy('', `Đã tải xuống ${selectedCount} key`)
-    }
+    const blob = new Blob([texts.join('\n')], { type: 'text/plain;charset=utf-8' })
+    const url = window.URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `${order?.order_code || 'order'}_proxies_${new Date().toISOString().split('T')[0]}.txt`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    window.URL.revokeObjectURL(url)
   }
+
+  const timeRemaining = getTimeRemaining()
+  const statusLabel = ORDER_STATUS_LABELS[String(order?.status)] || 'Không xác định'
+  const statusColor = (ORDER_STATUS_COLORS[String(order?.status)] || 'default') as any
+
+  if (!open) return null
 
   return (
     <>
-      <Dialog open={open} onClose={onClose} fullWidth maxWidth='xl' aria-labelledby='order-detail-dialog'>
-        <DialogTitle
-          id='customized-dialog-title'
-          sx={{
-            display: 'flex',
-            width: '100%',
-            justifyContent: 'space-between',
-            position: 'relative',
-            alignItems: 'center',
-            padding: '8px 16px'
-          }}
-        >
-          {order ? `Chi tiết đơn hàng #${order.order_code}` : 'Không có dữ liệu'}
-          <Button
+      <Dialog
+        open={open}
+        onClose={onClose}
+        fullWidth
+        maxWidth='md'
+        PaperProps={{
+          sx: {
+            borderRadius: '12px',
+            maxHeight: '85vh',
+            mt: '5vh',
+            mb: 'auto'
+          }
+        }}
+      >
+        {/* Header */}
+        <div style={{
+          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+          padding: '16px 20px', borderBottom: '1px solid #f1f5f9'
+        }}>
+          <div>
+            <Typography sx={{ fontSize: '16px', fontWeight: 700, color: '#1e293b' }}>
+              Chi tiết đơn hàng
+            </Typography>
+            <Typography sx={{ fontSize: '13px', color: '#64748b', mt: 0.3 }}>
+              #{order?.order_code}
+            </Typography>
+          </div>
+          <button
             onClick={onClose}
-            disableRipple
-            sx={{
-              fontSize: '20px'
-            }}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 6, color: '#94a3b8', borderRadius: 8 }}
           >
-            <i className='tabler-x' />
-          </Button>
-        </DialogTitle>
+            <X size={20} />
+          </button>
+        </div>
 
-        <DialogContent dividers>
+        <DialogContent sx={{ p: 0 }}>
           {order ? (
             <>
-              {/* Order Information */}
-              <Box sx={{ mb: 3, p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
-                <Typography variant='h6' sx={{ mb: 2 }}>
-                  Thông tin đơn hàng
-                </Typography>
-                <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 2 }}>
-                  <Box>
-                    <Typography variant='body2' color='text.secondary'>
-                      Mã đơn hàng:
+              {/* Order info cards */}
+              <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '12px', p: '16px 20px' }}>
+                <InfoCard icon={<ShoppingCart size={16} />} label='Dịch vụ' value={order.service_name || '-'} />
+                <InfoCard icon={<Package size={16} />} label='Số lượng' value={
+                  order.delivered_quantity != null && order.delivered_quantity !== order.quantity
+                    ? `${order.delivered_quantity}/${order.quantity}`
+                    : String(order.quantity)
+                } />
+                <InfoCard icon={<DollarSign size={16} />} label='Tổng tiền' value={formatVND(order.total_amount)} highlight />
+                <InfoCard icon={<Clock3 size={16} />} label='Ngày mua' value={formatDateTimeLocal(order.buy_at)} />
+                <Box sx={{
+                  p: '10px 12px', borderRadius: '10px',
+                  background: '#f8fafc', border: '1px solid #f1f5f9'
+                }}>
+                  <Typography sx={{ fontSize: '11px', color: '#94a3b8', mb: 0.5 }}>Trạng thái</Typography>
+                  <Chip label={statusLabel} size='small' color={statusColor} />
+                  {timeRemaining && (
+                    <Typography sx={{ fontSize: '11px', color: '#16a34a', fontWeight: 500, mt: 0.5 }}>
+                      Còn {timeRemaining}
                     </Typography>
-                    <Typography variant='body1' fontWeight='bold'>
-                      {order.order_code}
-                    </Typography>
-                  </Box>
-                  <Box sx={{ minWidth: '120px' }}>
-                    <Typography variant='body2' color='text.secondary'>
-                      Tổng tiền:
-                    </Typography>
-                    <Typography variant='body1' fontWeight='bold' color='primary'>
-                      {new Intl.NumberFormat('vi-VN').format(order.total_amount)} đ
-                    </Typography>
-                  </Box>
-                  <Box sx={{ minWidth: '80px' }}>
-                    <Typography variant='body2' color='text.secondary'>
-                      Số lượng:
-                    </Typography>
-                    <Typography variant='body1' fontWeight='bold'>
-                      {order.delivered_quantity != null && order.delivered_quantity !== order.quantity
-                        ? `${order.delivered_quantity}/${order.quantity}`
-                        : order.quantity}
-                    </Typography>
-                  </Box>
-                  <Box>
-                    <Typography variant='body2' color='text.secondary'>
-                      Trạng thái:
-                    </Typography>
-                    {getStatusBadge(String(order.status))}
-                  </Box>
-                  <Box>
-                    <Typography variant='body2' color='text.secondary'>
-                      Ngày mua:
-                    </Typography>
-                    <Typography variant='body1'>{formatDateTimeLocal(order.buy_at)}</Typography>
-                  </Box>
-                  <Box>
-                    <Typography variant='body2' color='text.secondary'>
-                      Ngày hết hạn:
-                    </Typography>
-                    <Typography variant='body1'>{formatDateTimeLocal(order.expired_at)}</Typography>
-                  </Box>
+                  )}
                 </Box>
+                <InfoCard icon={<Clock size={16} />} label='Loại' value={order.order_type === 1 ? 'Gia hạn' : 'Mua mới'} />
               </Box>
 
-              {/* Proxy List */}
-              <Box
-                sx={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  paddingY: '10px'
-                }}
-              >
-                <Typography variant='h6' sx={{ mb: 2 }}>
-                  Danh sách proxy ({totalRows} proxy)
-                </Typography>
-                {selectedCount > 0 && (
-                  <Box sx={{ display: 'flex', gap: '10px' }}>
-                    <Typography sx={{ fontSize: '12px', display: 'flex', alignItems: 'center' }}>
-                      Số lượng: {selectedCount}
+              {/* Divider */}
+              <Box sx={{ borderTop: '1px solid #f1f5f9' }} />
+
+              {/* Proxy list section */}
+              <Box sx={{ p: '16px 20px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                  <Typography sx={{ fontSize: '14px', fontWeight: 600, color: '#1e293b' }}>
+                    Danh sách proxy ({totalRows})
+                  </Typography>
+                  {selectedCount > 0 && (
+                    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                      <span style={{ fontSize: '12px', color: '#64748b' }}>Đã chọn: {selectedCount}</span>
+                      <button
+                        onClick={handleCopySelected}
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: 4,
+                          padding: '5px 10px', fontSize: '12px', fontWeight: 500,
+                          background: '#f0fdf4', color: '#16a34a', border: '1px solid #bbf7d0',
+                          borderRadius: 6, cursor: 'pointer'
+                        }}
+                      >
+                        <Copy size={13} /> Copy
+                      </button>
+                      <button
+                        onClick={handleDownloadSelected}
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: 4,
+                          padding: '5px 10px', fontSize: '12px', fontWeight: 500,
+                          background: '#eff6ff', color: '#2563eb', border: '1px solid #bfdbfe',
+                          borderRadius: 6, cursor: 'pointer'
+                        }}
+                      >
+                        <FileDown size={13} /> Tải
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {isLoadingKeys ? (
+                  <Box sx={{ textAlign: 'center', py: 4 }}>
+                    <CircularProgress size={28} />
+                    <Typography sx={{ fontSize: '13px', color: '#64748b', mt: 1 }}>Đang tải proxy...</Typography>
+                  </Box>
+                ) : totalRows > 0 ? (
+                  <>
+                    <div style={{ overflowX: 'auto', borderRadius: 8, border: '1px solid #e2e8f0' }}>
+                      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+                        <thead>
+                          {table.getHeaderGroups().map(hg => (
+                            <tr key={hg.id}>
+                              {hg.headers.map(h => (
+                                <th key={h.id} style={{
+                                  width: h.getSize(), padding: '8px 10px', textAlign: 'left',
+                                  background: '#f8fafc', borderBottom: '1px solid #e2e8f0',
+                                  fontSize: '12px', fontWeight: 600, color: '#64748b'
+                                }}>
+                                  {flexRender(h.column.columnDef.header, h.getContext())}
+                                </th>
+                              ))}
+                            </tr>
+                          ))}
+                        </thead>
+                        <tbody>
+                          {table.getRowModel().rows.map(row => (
+                            <tr key={row.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                              {row.getVisibleCells().map(cell => (
+                                <td key={cell.id} style={{ padding: '8px 10px' }}>
+                                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                </td>
+                              ))}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                    {table.getPageCount() > 1 && (
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 }}>
+                        <Typography sx={{ fontSize: '12px', color: '#94a3b8' }}>
+                          Trang {table.getState().pagination.pageIndex + 1} / {table.getPageCount()} ({totalRows} proxy)
+                        </Typography>
+                        <Pagination
+                          count={table.getPageCount()}
+                          page={table.getState().pagination.pageIndex + 1}
+                          onChange={(_, p) => table.setPageIndex(p - 1)}
+                          size='small'
+                          shape='rounded'
+                          variant='outlined'
+                          color='primary'
+                        />
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <Box sx={{
+                    textAlign: 'center', py: 4, background: '#f8fafc',
+                    borderRadius: '8px', border: '1px solid #f1f5f9'
+                  }}>
+                    <Loader2 size={20} color='#94a3b8' />
+                    <Typography sx={{ fontSize: '13px', color: '#94a3b8', mt: 1 }}>
+                      Chưa có proxy — đang chờ xử lý
                     </Typography>
-                    <CustomIconButton
-                      aria-label='copy selected'
-                      size='small'
-                      color='success'
-                      variant='outlined'
-                      sx={{ fontSize: '14px', gap: '5px' }}
-                      onClick={handleCopySelected}
-                    >
-                      <Copy size={16} /> Copy
-                    </CustomIconButton>
-                    <CustomIconButton
-                      aria-label='download selected'
-                      size='small'
-                      color='warning'
-                      variant='outlined'
-                      sx={{ fontSize: '14px', gap: '5px' }}
-                      onClick={handleDownloadSelected}
-                    >
-                      <FileDown size={16} /> Download
-                    </CustomIconButton>
                   </Box>
                 )}
               </Box>
-
-              {isLoadingKeys ? (
-                <Box sx={{ textAlign: 'center', py: 4 }}>
-                  <CircularProgress size={32} />
-                  <Typography variant='body2' color='text.secondary' sx={{ mt: 1 }}>
-                    Đang tải danh sách proxy...
-                  </Typography>
-                </Box>
-              ) : dataOrder.length > 0 ? (
-                <>
-                  <div className='table-wrapper' style={{ maxHeight: '400px', overflow: 'auto' }}>
-                    <table className='table-auto w-full border-collapse border border-gray-200 text-sm'>
-                      <thead className='sticky top-0 bg-white'>
-                        {table.getHeaderGroups().map(headerGroup => (
-                          <tr key={headerGroup.id}>
-                            {headerGroup.headers.map(header => (
-                              <th
-                                key={header.id}
-                                className='border border-gray-200 px-3 py-2 text-left bg-gray-50 font-semibold'
-                                style={{ width: header.column.columnDef.size }}
-                              >
-                                {flexRender(header.column.columnDef.header, header.getContext())}
-                              </th>
-                            ))}
-                          </tr>
-                        ))}
-                      </thead>
-                      <tbody>
-                        {table.getRowModel().rows.map(row => (
-                          <tr key={row.id} className='hover:bg-gray-50'>
-                            {row.getVisibleCells().map(cell => (
-                              <td key={cell.id} className='border border-gray-200 px-3 py-2'>
-                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                              </td>
-                            ))}
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-
-                  <Typography variant='caption' display='block' sx={{ mt: 1, textAlign: 'center' }}>
-                    Hiển thị {startRow}-{endRow} / {totalRows} proxy
-                  </Typography>
-                </>
-              ) : (
-                <Box sx={{ textAlign: 'center', py: 4 }}>
-                  <Typography variant='body1' color='text.secondary'>
-                    Đơn hàng này chưa có proxy nào
-                  </Typography>
-                </Box>
-              )}
             </>
           ) : (
             <Box sx={{ textAlign: 'center', py: 4 }}>
-              <Typography variant='body1' color='text.secondary'>
-                Không có dữ liệu đơn hàng
-              </Typography>
+              <Typography sx={{ color: '#94a3b8' }}>Không có dữ liệu đơn hàng</Typography>
             </Box>
           )}
-
-          <Box
-            sx={{
-              display: 'flex',
-              justifyContent: 'end'
-            }}
-          >
-            <Pagination
-              count={table.getPageCount()}
-              shape='rounded'
-              variant='outlined'
-              color='primary'
-              size={'small'}
-              page={table.getState().pagination.pageIndex + 1}
-              onChange={(event, page) => {
-                table.setPageIndex(page - 1)
-              }}
-            />
-          </Box>
         </DialogContent>
       </Dialog>
 
       <DetailProxy isOpen={isOpen} handleClose={() => setIsOpen(false)} apiKey={dataApiKey as any} />
     </>
+  )
+}
+
+function InfoCard({ icon, label, value, highlight }: { icon: React.ReactNode; label: string; value: string; highlight?: boolean }) {
+  return (
+    <Box sx={{
+      p: '10px 12px', borderRadius: '10px',
+      background: '#f8fafc', border: '1px solid #f1f5f9'
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 4 }}>
+        <span style={{ color: '#94a3b8' }}>{icon}</span>
+        <Typography sx={{ fontSize: '11px', color: '#94a3b8' }}>{label}</Typography>
+      </div>
+      <Typography sx={{ fontSize: '13px', fontWeight: highlight ? 700 : 600, color: highlight ? 'var(--primary-color)' : '#1e293b' }}>
+        {value}
+      </Typography>
+    </Box>
   )
 }
 

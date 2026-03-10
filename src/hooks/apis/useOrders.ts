@@ -30,9 +30,8 @@ export const useApiKeys = (order_id?: string | number, enabled: boolean = true) 
 return res?.data?.data ?? []
     },
     enabled: !!order_id && enabled,
-    refetchOnMount: false,
     refetchOnWindowFocus: false,
-    staleTime: 5 * 60 * 1000 // 5 minutes
+    staleTime: 30 * 1000
   })
 }
 

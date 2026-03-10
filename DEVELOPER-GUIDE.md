@@ -18,8 +18,9 @@
 9. [FE ↔ BE API Reference](#9-fe--be-api-reference)
 10. [Routing & Middleware](#10-routing--middleware)
 11. [Quy tắc khi phát triển](#11-quy-tắc-khi-phát-triển)
-12. [Changelog - Các vấn đề đã sửa](#12-changelog---các-vấn-đề-đã-sửa)
-13. [Known Issues — Danh sách vấn đề cần xử lý](#13-known-issues--danh-sách-vấn-đề-cần-xử-lý)
+12. [Partner Proxy Delivery — Quy trình lấy proxy từ đối tác](#12-partner-proxy-delivery--quy-trình-lấy-proxy-từ-đối-tác)
+13. [Changelog - Các vấn đề đã sửa](#13-changelog---các-vấn-đề-đã-sửa)
+14. [Known Issues — Danh sách vấn đề cần xử lý](#14-known-issues--danh-sách-vấn-đề-cần-xử-lý)
 
 ---
 
@@ -598,11 +599,76 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
 
 ---
 
-## 12. Changelog - Các vấn đề đã sửa
+## 12. Partner Proxy Delivery — Quy trình lấy proxy từ đối tác
+
+Hệ thống có 2 pattern lấy proxy từ đối tác, tùy thuộc vào cách partner trả dữ liệu:
+
+### Pattern 1: Instant (1 bước) — ProxyVn, UpProxy
+
+```
+PlaceOrder → processOrder() → Gọi API partner → Partner trả proxy ngay → Lưu DB → Finalize order
+```
+
+- Partner trả proxy **trong response** luôn, không cần chờ
+- `processOrder()` xử lý toàn bộ: gọi API → lưu proxy → finalize
+- Status flow: `PENDING → PROCESSING → IN_USE`
+
+**Files**: `ProxyVnRotatingProcessor.php`, `UpProxyStaticProcessor.php`
+
+| Partner | Loại | Giao thức |
+|---------|------|-----------|
+| proxy.vn | Rotating | GET, trả array proxy + status 100 |
+| upproxy.net | Static | POST JSON, trả `data.proxies[]` |
+
+### Pattern 2: Async (2 bước) — HomeProxy
+
+```
+Bước 1: PlaceOrder → processOrder() → Gọi API tạo order → Lưu id_order_partner → Set AWAITING_PARTNER
+Bước 2: fetch-partner-proxies (mỗi phút) → Scan AWAITING_PARTNER → Gọi API lấy proxy → Lưu DB → Finalize
+```
+
+- Partner **không trả proxy ngay** — phải đợi partner xử lý (vài giây đến vài phút)
+- `processOrder()` chỉ làm bước 1: tạo order + lưu `id_order_partner` + set status `awaiting_partner` (10)
+- Command `fetch-partner-proxies` chạy mỗi phút scan status 10, gọi API lấy proxy
+- Timeout 30 phút — quá hạn thì fail order
+- Status flow: `PENDING → PROCESSING → AWAITING_PARTNER → IN_USE`
+
+**Files**:
+- Bước 1: `HomeProxyRotatingProcessor.php`, `HomeProxyStaticProcessor.php`
+- Bước 2: `FetchPartnerProxies.php` (command)
+
+| Partner | Loại | Giao thức |
+|---------|------|-----------|
+| homeproxy.vn | Rotating | POST JSON tạo order → `getOrderByOrderId()` lấy proxy |
+| homeproxy.vn | Static | POST JSON tạo order → `getProxiesByOrderId()` lấy proxy |
+
+### Chống duplicate & Error handling (chung cho cả 2 pattern)
+
+| Cơ chế | Mô tả |
+|--------|-------|
+| **Idempotency (1-step)** | `markPartnerCalled()` / `wasPartnerCalled()` — nếu partner đã gọi mà DB lỗi → lock order, không gọi lại |
+| **Idempotency (2-step)** | `getExistingPartnerOrderId()` — nếu đã có `id_order_partner` → skip gọi API, set `awaiting_partner` luôn |
+| **DB retry + lock** | `saveProxiesToDb()` retry 1 lần nếu DB lỗi, vẫn lỗi → `lockOrder()` (partner đã trả proxy, cần admin check) |
+| **3-layer anti-dup** | Enqueue lock (Redis setNx) → Processing lock → Status check |
+
+### Partners không còn dùng
+
+| Partner | File | Lý do |
+|---------|------|-------|
+| mktproxy.com | `MktProxyRotatingProcessor.php` | Comment out trong PartnerFactory |
+| zingproxy.com | `ZingProxyRotatingProcessor.php` | Comment out trong PartnerFactory |
+
+### Quy trình thêm nhà cung cấp mới
+
+> Xem: **`BE/DEVELOPER-GUIDE.md`** → Section 5.4
+
+---
+
+## 13. Changelog - Các vấn đề đã sửa
 
 ### 28/02/2026
 
-#### 12.1 Fix CORS — Dashboard fetch sai URL
+#### 13.1 Fix CORS — Dashboard fetch sai URL
 
 **Vấn đề:** `useDashboard.ts` dùng `fetch()` với `NEXT_PUBLIC_APP_URL` (https://mktproxy.com) → CORS error vì gọi frontend URL thay vì API URL.
 
@@ -612,7 +678,7 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
 
 ---
 
-#### 12.2 Tập trung API URL config
+#### 13.2 Tập trung API URL config
 
 **Vấn đề:** Hardcoded fallback `https://api.minhan.online/api` rải rác nhiều file → production có thể dùng URL cũ sai.
 
@@ -622,7 +688,7 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
 
 ---
 
-#### 12.3 Admin Transaction History — Server-side pagination
+#### 13.3 Admin Transaction History — Server-side pagination
 
 **Vấn đề:** Trang admin dùng `useOrders()` không truyền params → không phân trang, không filter, thiếu cột thông tin.
 
@@ -639,7 +705,7 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
 
 ---
 
-#### 12.4 Fix page đơ cứng (freeze)
+#### 13.4 Fix page đơ cứng (freeze)
 
 **Vấn đề:** `NextAuthProvider refetchInterval={10}` (10 giây) → session refetch liên tục → re-render toàn app.
 
@@ -649,7 +715,7 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
 
 ---
 
-#### 12.5 Loại bỏ session check trùng lặp
+#### 13.5 Loại bỏ session check trùng lặp
 
 **Vấn đề:** 4 nơi cùng validate session (middleware, NextAuth refetch, GlobalSessionCleanup, useClientAuthGuard) → mỗi 10 giây bắn 2-3 request `/api/me` thừa.
 
@@ -665,7 +731,7 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
 
 ---
 
-#### 12.6 Deposit History — Gộp 1 API, phân quyền + xóa đơn/nhiều
+#### 13.6 Deposit History — Gộp 1 API, phân quyền + xóa đơn/nhiều
 
 **Vấn đề:** Trang deposit-history dùng API riêng cho admin và user, admin không có tính năng xóa.
 
@@ -685,7 +751,7 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
 
 ---
 
-#### 12.7 Fix Transaction History crash trình duyệt — BE pagination + FE tối ưu
+#### 13.7 Fix Transaction History crash trình duyệt — BE pagination + FE tối ưu
 
 **Vấn đề:** `GET /transaction-history` dùng `->get()` lấy **tất cả** records không phân trang → JSON response cực lớn → browser crash ("Ôi hỏng"). FE gửi params `page`, `per_page` nhưng BE bỏ qua hoàn toàn.
 
@@ -711,7 +777,7 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
 
 ### 08/03/2026
 
-#### 12.8 Tối ưu Admin — Table search/filter + Polish form modal
+#### 13.8 Tối ưu Admin — Table search/filter + Polish form modal
 
 **Vấn đề:**
 1. Table Service List: giá ẩn trong hover, không có tìm kiếm/lọc
@@ -742,7 +808,7 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
 - `src/app/[lang]/(private)/(client)/components/proxy-card/ProxyCard.tsx`
 - `src/views/Client/RotatingProxy/RotatingProxyPage.tsx`
 
-#### 12.8 Bỏ pagination, tối ưu query + polling + redesign search UI
+#### 13.8 Bỏ pagination, tối ưu query + polling + redesign search UI
 
 **Vấn đề 1:** BE dùng `->paginate()` chạy `COUNT(*)` toàn bộ bảng chỉ để phân trang. Với mặc định 100 records, không cần đếm tổng — chỉ lấy 100 giao dịch gần nhất là đủ.
 
@@ -779,7 +845,7 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
 
 ### 02/03/2026
 
-#### 12.9 Fix bảo mật & data integrity cho flow mua proxy
+#### 13.9 Fix bảo mật & data integrity cho flow mua proxy
 
 **Vấn đề:**
 1. Response 500 lộ stacktrace (file, line, trace) → lỗ hổng bảo mật
@@ -808,7 +874,7 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
 
 ### 02/03/2026
 
-#### 12.10 Chuyển Telegram notification sang queue (async)
+#### 13.10 Chuyển Telegram notification sang queue (async)
 
 **Vấn đề:**
 - Gọi Telegram API đồng bộ trong API mua proxy → chậm response, nếu Telegram timeout thì ảnh hưởng UX
@@ -840,7 +906,7 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
 - `BE/app/Services/Partners/OrderProcessors/ProxyVnRotatingProcessor.php`
 - `BE/app/Services/Partners/OrderProcessors/UpProxyStaticProcessor.php`
 
-#### 12.11 Fix bug logic hàm buy() partner + validation controller
+#### 13.11 Fix bug logic hàm buy() partner + validation controller
 
 **Vấn đề:**
 - `$pricePerUnit = null` khi không tìm thấy giá trong `price_by_duration` → `$total = 0` → đơn hàng miễn phí
@@ -867,7 +933,7 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
 - `BE/app/Services/Partners/Upproxy/UpproxyStaticPartner.php`
 - `BE/app/Services/Partners/Upproxy/UpproxyPartner.php`
 
-#### 12.12 Chuyển API response messages sang tiếng Anh
+#### 13.12 Chuyển API response messages sang tiếng Anh
 
 **Vấn đề:** Các message trả về cho user đang bằng tiếng Việt, không phù hợp với API public.
 
@@ -883,7 +949,7 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
 - `BE/app/Services/Partners/` (8 partner files)
 - `BE/app/Services/Partners/OrderProcessors/` (6 processor files)
 
-#### 12.13 Refactor Order Queue: Anti-duplicate + Retry + Multi-worker
+#### 13.13 Refactor Order Queue: Anti-duplicate + Retry + Multi-worker
 
 **Vấn đề:**
 - `OrderHelper::saveOrderToRedis` push full JSON → duplicate processing
@@ -911,7 +977,7 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
 - `BE/app/Services/Partners/OrderProcessors/` (6 processor files)
 - `BE/supervisors/orders-partner.conf`
 
-#### 12.14 Fix bugs tiềm ẩn trong order flow (review lần 2)
+#### 13.14 Fix bugs tiềm ẩn trong order flow (review lần 2)
 
 **Vấn đề:**
 1. **CRITICAL**: FetchPendingOrders race condition — ghi đè IN_USE thành PENDING khi recover
@@ -943,7 +1009,7 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
 - `BE/app/Services/Partners/OrderProcessors/UpProxyStaticProcessor.php`
 - `BE/app/Services/Partners/*/` (7 buy partner files)
 
-#### 12.15 Redesign Order Status System + delivered_quantity
+#### 13.15 Redesign Order Status System + delivered_quantity
 
 **Vấn đề:**
 - `partial_completed` (3) dùng sai nghĩa — thực chất là "mua thiếu" chứ không phải "hoàn 1 phần"
@@ -979,13 +1045,13 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
 - `BE/app/Services/StatisticsService.php`
 - `BE/resources/views/admin/order_v6/index.blade.php`
 
-#### 12.16 Tạo BE/DEVELOPER-GUIDE.md
+#### 13.16 Tạo BE/DEVELOPER-GUIDE.md
 
 **Mô tả:** Tạo developer guide riêng cho BE, ghi lại toàn bộ quy trình nghiệp vụ, domain knowledge (resell proxy vs sell proxy), order status system, partner system, payment flow, affiliate, thống kê. Liên kết với FE guide.
 
 **Files:** `BE/DEVELOPER-GUIDE.md`
 
-#### 12.17 Bug #9: Hệ thống ticket hỗ trợ + Xử lý đơn thiếu proxy
+#### 13.17 Bug #9: Hệ thống ticket hỗ trợ + Xử lý đơn thiếu proxy
 
 **Vấn đề:** Order `in_use_partial` có proxy thiếu nhưng không có cơ chế mua bù, báo admin, hoặc hoàn tiền phần thiếu.
 
@@ -1010,7 +1076,7 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
 
 ### 03/03/2026
 
-#### 12.18 Fix token refresh logic — tránh logout bất ngờ
+#### 13.18 Fix token refresh logic — tránh logout bất ngờ
 
 **Vấn đề:**
 - Axios gặp 401 → signOut ngay, không thử refresh trước → user bị logout bất ngờ
@@ -1036,7 +1102,7 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
 
 ### 04/03/2026
 
-#### 12.19 FE: Giao diện Ticket hỗ trợ + Quản lý đơn thiếu proxy
+#### 13.19 FE: Giao diện Ticket hỗ trợ + Quản lý đơn thiếu proxy
 
 **Mô tả:** Tạo giao diện FE cho hệ thống support ticket (user tạo ticket, xem trạng thái) và admin quản lý (resolve ticket, xem đơn thiếu proxy, retry/refund).
 
@@ -1063,7 +1129,7 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
 - `FE/src/constants/index.ts` (sửa — export ticketStatus)
 - `FE/src/components/layout/vertical/VerticalMenu.tsx` (sửa — thêm menu items)
 
-#### 12.20 Fix dropdown đơn hàng trong CreateTicketDialog
+#### 13.20 Fix dropdown đơn hàng trong CreateTicketDialog
 
 **Vấn đề:** Dropdown chọn đơn hàng khi tạo ticket hiển thị quá ít thông tin, value type mismatch (number vs string) khiến không chọn được.
 
@@ -1078,7 +1144,7 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
 - `FE/src/views/Client/SupportTickets/TicketDetailDialog.tsx`
 - `FE/src/views/Client/Admin/SupportTickets/ResolveTicketDialog.tsx`
 
-#### 12.21 Nâng cấp hệ thống Ticket — Phase 2 (Tracking + Telegram + Overdue)
+#### 13.21 Nâng cấp hệ thống Ticket — Phase 2 (Tracking + Telegram + Overdue)
 
 **Vấn đề:** Thiếu tracking ai xử lý/giao cho ai, admin detail view bị hỏng (`open={false}`), không có thông báo Telegram khi tạo/resolve ticket, không cảnh báo ticket quá hạn.
 
@@ -1104,7 +1170,7 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
 - `FE/src/views/Client/SupportTickets/TicketDetailDialog.tsx` (sửa)
 - `FE/src/views/Client/Admin/SupportTickets/ResolveTicketDialog.tsx` (sửa)
 
-#### 12.22 Auto-track "Đã xem bởi ai" cho Ticket
+#### 13.22 Auto-track "Đã xem bởi ai" cho Ticket
 
 **Vấn đề:** Cần tracking admin nào đã xem ticket, nhưng không thể bấm nút — phải tự động.
 
@@ -1121,7 +1187,7 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
 - `FE/src/hooks/apis/useTickets.ts` (sửa)
 - `FE/src/views/Client/Admin/SupportTickets/AdminTicketsPage.tsx` (sửa)
 
-#### 12.23 Fix toast không tự tắt
+#### 13.23 Fix toast không tự tắt
 
 **Vấn đề:** Toast notification hiển thị nhưng không tự đóng sau 3 giây — thiếu CSS của react-toastify.
 
@@ -1135,7 +1201,7 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
 
 ### 04/03/2026
 
-#### 12.24 Thêm trạng thái "Đang mua bù" (status 9) + Fix mapping order status
+#### 13.24 Thêm trạng thái "Đang mua bù" (status 9) + Fix mapping order status
 
 **Vấn đề:**
 - Admin bấm "Mua bù" → đơn chuyển status 1 (processing) giống đơn mới, không phân biệt được
@@ -1162,7 +1228,7 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
 - `FE/src/views/Client/Admin/TransactionHistory/LogModal.tsx` (sửa)
 - `FE/src/views/Client/Admin/SupportTickets/ResolveTicketDialog.tsx` (sửa)
 
-#### 12.25 Order Log — Hiển thị log xử lý thật từ MongoDB
+#### 13.25 Order Log — Hiển thị log xử lý thật từ MongoDB
 
 **Vấn đề:** LogModal admin hiện demo data giả. Không có API endpoint query OrderLog (MongoDB). `retryPartialOrder`, `refundPartialOrder`, `FetchPendingOrders` không ghi log vào OrderLog.
 
@@ -1183,7 +1249,7 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
 - `FE/src/views/Client/Admin/TransactionHistory/LogModal.tsx` (sửa)
 - `FE/src/views/Client/Admin/TransactionHistory/TableTransactionHistory.tsx` (sửa)
 
-#### 12.26 Đổi format order_code thêm timestamp + user_id
+#### 13.26 Đổi format order_code thêm timestamp + user_id
 
 **Vấn đề:** Format cũ `ORD-yymmdd-RANDOM6` thiếu thông tin thời gian chính xác và user.
 
@@ -1192,7 +1258,7 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
 **Files:**
 - `BE/app/Models/MySql/Order.php` (sửa)
 
-#### 12.27 Fix bugs: total_price, batch insert ApiKey, dual ApiKeys source
+#### 13.27 Fix bugs: total_price, batch insert ApiKey, dual ApiKeys source
 
 **#8 — Dual ApiKeys source (MktProxyRotatingProcessor):**
 - Bỏ `ApiKey::where()` query riêng, dùng duy nhất `$order->apiKeys` — tránh mismatch index giữa 2 nguồn data
@@ -1214,7 +1280,7 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
 - `BE/app/Services/Partners/Upproxy/UpproxyPartner.php` (sửa)
 - `BE/app/Services/Partners/Upproxy/UpproxyStaticPartner.php` (sửa)
 
-#### 12.28 Fix: enqueue lock TTL, ZingProxy transaction, delivered_quantity default
+#### 13.28 Fix: enqueue lock TTL, ZingProxy transaction, delivered_quantity default
 
 **#5 — Enqueue lock TTL 90s → 600s:**
 - Khớp với processing lock (600s), tránh FetchPendingOrders push trùng order đang xử lý
@@ -1234,7 +1300,7 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
 - `BE/app/Models/MySql/Order.php` (sửa)
 - `BE/database/migrations/2026_03_04_000001_set_delivered_quantity_default.php` (mới)
 
-#### 12.29 Document: proxys vs api_key convention + failOrderWithRefund vs handleProcessorFailure
+#### 13.29 Document: proxys vs api_key convention + failOrderWithRefund vs handleProcessorFailure
 
 **#11 — Ghi chú `proxys` vs `api_key`:**
 - Thêm comment vào 6 processors giải thích tại sao check `proxys` hoặc `api_key` khi retry partial
@@ -1252,7 +1318,7 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
 - `BE/app/Services/Partners/OrderProcessors/UpProxyStaticProcessor.php` (comment)
 - `FE/DEVELOPER-GUIDE.md` (thêm 2 sections trong phần 11)
 
-#### 12.30 Fix đối soát tài chính + Báo cáo đơn hàng theo trạng thái
+#### 13.30 Fix đối soát tài chính + Báo cáo đơn hàng theo trạng thái
 
 **Vấn đề:**
 - `testTotals()` chỉ query `NAPTIEN` + `BUY` → bỏ qua `NAPTIEN_PAY2S`, `NAPTIEN_MANUAL`, `RUT_HOA_HONG_AFFILIATE`, v3/v4 types
@@ -1291,7 +1357,7 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
 
 ### 05/03/2026
 
-#### 12.31 Gộp deposit types: NAPTIEN + NAPTIEN_PAY2S → NAPTIEN_AUTO
+#### 13.31 Gộp deposit types: NAPTIEN + NAPTIEN_PAY2S → NAPTIEN_AUTO
 
 **Vấn đề:**
 - 3 type nạp tiền riêng biệt (NAPTIEN, NAPTIEN_PAY2S, NAPTIEN_MANUAL) gây phức tạp khi query
@@ -1318,7 +1384,7 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
 - `BE/app/Console/Commands/OrderStatistics.php` (user deposit query)
 - `BE/database/migrations/2026_03_05_000001_migrate_deposit_types_to_naptien_auto.php` (mới)
 
-#### 12.32 Thêm order_type (BUY/RENEWAL) + Tạo Order cho gia hạn
+#### 13.32 Thêm order_type (BUY/RENEWAL) + Tạo Order cho gia hạn
 
 **Vấn đề:**
 - Gia hạn chỉ update `ApiKey.expired_at` + tạo Dongtien (order_id=NULL), không tạo Order
@@ -1344,7 +1410,7 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
 - `BE/app/Console/Commands/ReportOrderStatus.php` (order_type groupBy + delete+insert)
 - `BE/app/Http/Controllers/Api/OrderReportController.php` (filter order_type + detail output)
 
-#### 12.33 Fix scan logic báo cáo — terminal states + order snapshot
+#### 13.33 Fix scan logic báo cáo — terminal states + order snapshot
 
 **Vấn đề:**
 - Scan chỉ bắt `expired` (4) và `failed` (5), bỏ sót status 6 (partial_refunded), 8 (refunded_all)
@@ -1366,7 +1432,7 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
 
 ### 06/03/2026
 
-#### 12.34 Fix typo total_refunts → total_refunds + cleanup ReportOrder model
+#### 13.34 Fix typo total_refunts → total_refunds + cleanup ReportOrder model
 
 - **Vấn đề**: Column `total_refunts` trong bảng `report_transaction` là typo (đúng: `total_refunds`). ReportOrder model có `$casts` sai column (`date` thay vì `date_at`) và dead code scopes.
 - **Sửa**:
@@ -1383,7 +1449,7 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
   - `BE/app/Http/Controllers/Api/DashboardController.php`
   - `FE/src/views/Client/Admin/Dashboard/DailyStats.tsx`
 
-#### 12.35 Fix migration tương thích proxy_api + thêm refunded_amount
+#### 13.35 Fix migration tương thích proxy_api + thêm refunded_amount
 
 - **Vấn đề**: Migration `change_orders_status_to_tinyint` không xử lý `full_completed` (status=7 trên proxy_api). Khi chạy trên production, records status=7 sẽ bị hiểu nhầm thành `waiting_refund`. Order model thiếu `refunded_amount` (proxy_api có).
 - **Sửa**:
@@ -1399,7 +1465,7 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
   - `BE/database/migrations/2026_03_06_000004_add_final_amount_to_orders.php` (mới)
   - `BE/app/Models/MySql/Order.php` (refunded_amount, final_amount, auto-calculate, comments)
 
-#### 12.36 Redesign Admin Financial Dashboard
+#### 13.36 Redesign Admin Financial Dashboard
 
 - **Vấn đề**: Dashboard cũ query từ bảng aggregated (report_transaction, report_order) → số liệu không chính xác. Không có đối soát (testTotals có nhưng không hiện). Layout 2 cột khó đọc.
 - **Sửa**:
@@ -1419,7 +1485,7 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
   - `FE/src/views/Client/Admin/Dashboard/OrdersDepositsRow.tsx` (mới)
   - `FE/src/app/[lang]/(private)/(client)/admin/dashboard/page.tsx` (rewrite)
 
-#### 12.37 Dashboard v2: ProfitHero + Daily Trend Charts + TB/ngày
+#### 13.37 Dashboard v2: ProfitHero + Daily Trend Charts + TB/ngày
 
 - **Vấn đề**: Dashboard v1 (12.36) đặt Đối soát ở trên cùng (quá kỹ thuật), thiếu biểu đồ xu hướng, thiếu TB/ngày — finance manager không trả lời được "đang lãi hay lỗ?", "doanh thu đi lên hay xuống?", "mỗi ngày bao nhiêu bill nạp?".
 - **Sửa**:
@@ -1440,7 +1506,7 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
   - `FE/src/views/Client/Admin/Dashboard/OrdersDepositsRow.tsx` (thêm TB/ngày)
   - `FE/src/app/[lang]/(private)/(client)/admin/dashboard/page.tsx` (restructure layout)
 
-#### 12.38 Dashboard v3: Chỉ số chiến lược + OrderStatusReport fix
+#### 13.38 Dashboard v3: Chỉ số chiến lược + OrderStatusReport fix
 
 - **Vấn đề**: Thiếu chỉ số chiến lược (AOV, tỉ lệ gia hạn/thất bại/hoàn tiền). OrderStatusReport có filter ngày riêng không sync với dashboard, KPI row trùng lặp, legend tiếng Anh.
 - **Sửa**:
@@ -1454,7 +1520,7 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
 
 ### 07/03/2026
 
-#### 12.39 Fix Data Integrity — Refund + Cost + Affiliate Commission
+#### 13.39 Fix Data Integrity — Refund + Cost + Affiliate Commission
 
 - **Vấn đề**:
   - `order.refunded_amount` **không bao giờ được cập nhật** khi tạo Dongtien REFUND → `final_amount` luôn = `total_amount` (sai)
@@ -1498,7 +1564,7 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
 
 ---
 
-#### 12.40 Report Command — report:daily (đơn hàng + dòng tiền)
+#### 13.40 Report Command — report:daily (đơn hàng + dòng tiền)
 
 - **Vấn đề**: 2 command báo cáo riêng rẽ, thiếu data `total_cost_final`, `refunded_amount`, `affiliate_commission`. Dongtien không có cơ chế scan → không báo cáo được dòng tiền thanh toán.
 - **Sửa**:
@@ -1523,7 +1589,7 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
   - `BE/database/migrations/2026_03_07_000005_add_scan_to_dongtien_and_reset_reports.php` (mới)
   - `BE/app/Console/Kernel.php` (schedule update)
 
-#### 12.41 Phase 3 — Dashboard tài chính từ bảng report
+#### 13.41 Phase 3 — Dashboard tài chính từ bảng report
 
 - **Vấn đề**: `financialReport()` query trực tiếp 20+ queries từ `orders` + `dongtien`. Không phân biệt doanh thu xác nhận vs dự kiến, dùng chi phí dự kiến thay vì thực tế, thiếu hoa hồng affiliate.
 - **Sửa**:
@@ -1558,7 +1624,7 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
   - `FE/src/views/Client/Admin/Dashboard/PartnerBreakdown.tsx` (mới)
   - `FE/src/app/[lang]/(private)/(client)/admin/dashboard/page.tsx`
 
-#### 12.42 Dashboard instant render — placeholderData + mock data
+#### 13.42 Dashboard instant render — placeholderData + mock data
 
 - **Vấn đề**: Dashboard chờ API >5s rồi mới render. Nếu report tables trống → "Không có dữ liệu". UX tệ.
 - **Sửa**:
@@ -1573,7 +1639,7 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
   - `FE/src/app/[lang]/(private)/(client)/admin/dashboard/page.tsx` (bỏ skeleton, fallback mock)
   - `FE/src/views/Client/Admin/Dashboard/ReconciliationHero.tsx` (mock fallback)
 
-#### 12.43 Fix UX: date filter feedback + OrderStatusReport mock data
+#### 13.43 Fix UX: date filter feedback + OrderStatusReport mock data
 
 - **Vấn đề**:
   1. Chọn thời gian (1 ngày, 7 ngày...) không thấy phản hồi giao diện — mock data không thay đổi, loading bar quá nhỏ
@@ -1585,7 +1651,7 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
   - `FE/src/app/[lang]/(private)/(client)/admin/dashboard/page.tsx` (content dim khi fetching)
   - `FE/src/hooks/apis/useOrderReport.ts` (mock data + placeholderData)
 
-#### 12.44 Fix OrderStatusReport biến mất khi API trả rỗng
+#### 13.44 Fix OrderStatusReport biến mất khi API trả rỗng
 
 - **Vấn đề**: Section "Chi Tiết Đơn Hàng" hiện mock data rồi biến mất (mất luôn) — `placeholderData` bị thay thế khi API trả rỗng/null, điều kiện `summary ? <> : null` render nothing.
 - **Sửa**:
@@ -1597,7 +1663,7 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
   - `FE/src/hooks/apis/useOrderReport.ts` (export mock constants)
   - `FE/src/views/Client/Admin/Dashboard/OrderStatusReport.tsx` (fallback + bỏ loading skeleton)
 
-#### 12.45 Chuẩn hóa spacing + thêm expected profit & net cash flow
+#### 13.45 Chuẩn hóa spacing + thêm expected profit & net cash flow
 
 - **Vấn đề**: Spacing không đồng nhất (mỗi component tự quản `mb-4`). Thiếu lợi nhuận dự kiến từ pipeline và dòng tiền ròng cho quản lý tài chính.
 - **Sửa**:
@@ -1615,7 +1681,7 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
   - `FE/src/views/Client/Admin/Dashboard/ReconciliationHero.tsx` (bỏ mb-4)
   - `FE/src/views/Client/Admin/Dashboard/OrderStatusReport.tsx` (bỏ mt-6)
 
-#### 12.46 Fix migrations — safety checks + duplicate prevention
+#### 13.46 Fix migrations — safety checks + duplicate prevention
 
 - **Vấn đề**: `php artisan migrate` lỗi "Duplicate key name 'orders_order_code_unique'" và nhiều migration thiếu `Schema::hasColumn()` → fail nếu chạy lại.
 - **Sửa**:
@@ -1636,7 +1702,7 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
   - `2026_03_07_000001_add_cost_final_and_affiliate_to_orders.php` (hasColumn × 2)
   - `2026_03_07_000003_add_cost_columns_to_report_order_status.php` (hasColumn)
 
-#### 12.47 Fix TrendCharts biến mất + client-side pagination cho OrderStatusReport
+#### 13.47 Fix TrendCharts biến mất + client-side pagination cho OrderStatusReport
 
 - **Vấn đề**:
   1. TrendCharts (biểu đồ doanh thu/lợi nhuận) biến mất khi API trả object rỗng — `apiData ?? MOCK_FINANCIAL` không trigger vì apiData non-null
@@ -1653,7 +1719,7 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
 
 ### 07/03/2026
 
-#### 12.48 Bỏ tab "Mua hàng" / "Danh sách" ở trang proxy-tĩnh và proxy-xoay
+#### 13.48 Bỏ tab "Mua hàng" / "Danh sách" ở trang proxy-tĩnh và proxy-xoay
 
 - **Vấn đề**: Trang proxy-tĩnh và proxy-xoay có tab bar (Mua hàng / Danh sách) không cần thiết
 - **Sửa**: Bỏ tab bar, hiển thị nội dung trực tiếp (filter + cards). Bỏ phần Danh sách (OrderProxyPage, OrderRotatingProxyPage)
@@ -1661,7 +1727,7 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
   - `FE/src/views/Client/StaticProxy/StaticProxyPage.tsx`
   - `FE/src/components/ProxyPlansClient.tsx`
 
-#### 12.49 Bổ sung 7 thuộc tính sản phẩm proxy (auth, bandwidth, rotation...)
+#### 13.49 Bổ sung 7 thuộc tính sản phẩm proxy (auth, bandwidth, rotation...)
 
 - **Vấn đề**: Card sản phẩm chỉ hiển thị 3 thuộc tính cơ bản (IP version, proxy type, country). Khách thiếu thông tin quan trọng: xác thực kiểu gì, bandwidth bao nhiêu, xoay kiểu gì
 - **Sửa**:
@@ -1682,7 +1748,7 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
 
 ### 08/03/2026
 
-#### 12.50 Preview card + giữ modal mở + tối ưu hiệu suất
+#### 13.50 Preview card + giữ modal mở + tối ưu hiệu suất
 
 - **Vấn đề**: Modal đóng sau cập nhật, không có preview, click sửa phải chờ API load lại data dù list đã có sẵn
 - **Sửa**:
@@ -1695,7 +1761,7 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
   - Cải thiện layout form: dialog xl, section dividers, compact spacing (1.5), switches inline, preview 300px, section headers uppercase
 - **Files**: `ServiceFormModal.tsx`, `TableServiceType.tsx`
 
-#### 12.51 Checkout Modal — tách chọn số lượng ra khỏi card sản phẩm
+#### 13.51 Checkout Modal — tách chọn số lượng ra khỏi card sản phẩm
 
 - **Vấn đề**: Card sản phẩm (ProxyCard + PlanCard) quá nặng — vừa hiển thị, vừa chọn số lượng, vừa tính tổng. Footer card chiếm nhiều không gian.
 - **Sửa**:
@@ -1712,7 +1778,7 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
   - `FE/src/views/Client/Admin/ServiceType/ServiceFormModal.tsx` (sửa)
   - `FE/src/components/confirm-modal/ConfirmDialogOrder.tsx` (xóa)
 
-#### 12.52 Redesign card — feature rows với icon màu, bỏ spec chips
+#### 13.52 Redesign card — feature rows với icon màu, bỏ spec chips
 
 - **Vấn đề**: Card dùng MUI Chip nhỏ cho specs (auth, bandwidth...) + CheckCircle xanh đồng loạt cho feature rows. Thiếu sự phân biệt trực quan giữa các loại thông tin.
 - **Sửa**:
@@ -1730,7 +1796,7 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
   - `FE/src/app/[lang]/(private)/(client)/components/proxy-card/styles.css` (feature-row styles)
   - `FE/src/views/Client/Admin/ServiceType/ServiceFormModal.tsx` (preview)
 
-#### 12.53 Card 100% static + CheckoutModal chọn duration/protocol
+#### 13.53 Card 100% static + CheckoutModal chọn duration/protocol
 
 - **Vấn đề**: Card có quá nhiều interactive elements (radio duration, protocol selector), gây rối UX. Duration/protocol nên chọn khi mua, không phải trên card.
 - **Sửa**:
@@ -1746,7 +1812,7 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
   - `FE/src/views/Client/RotatingProxy/RotatingProxyPage.tsx` (PlanCard simplify)
   - `FE/src/views/Client/Admin/ServiceType/ServiceFormModal.tsx` (preview khớp)
 
-#### 12.54 Redesign nút mua — outlined button + interaction states
+#### 13.54 Redesign nút mua — outlined button + interaction states
 
 - **Vấn đề**: Nút mua filled gradient đỏ→cam quá nổi bật, 6 card = 6 khối màu lớn chiếm visual weight. Mắt user bị kéo xuống button thay vì đọc nội dung sản phẩm. Thiếu `:active` (click không feedback), thiếu `:focus-visible`. Shimmer thừa (mobile không thấy).
 - **Sửa**:
@@ -1769,7 +1835,7 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
   - **Card hover polish**: Shadow brand-tinted `rgba(252,67,54,0.08)`, border tint `rgba(248,138,75,0.25)`, lift `-4px`, transition `0.25s`. Shadow default layered hơn.
   - **Files thêm**: `FE/src/app/globals.css`, `FE/src/views/Client/RotatingProxy/styles.css`, `proxy-card/styles.css`
 
-#### 12.55 Mute brand colors + tags + card UX polish
+#### 13.55 Mute brand colors + tags + card UX polish
 
 - **Vấn đề**: Màu brand quá chói. Tag vị trí chưa tối ưu. Button mua chưa mềm mại.
 - **Sửa**:
@@ -1786,7 +1852,7 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
   - `ProxyCard.tsx`, `RotatingProxyPage.tsx` (border badge, refined rendering)
   - `ServiceFormModal.tsx` (preview tag khớp refined style)
 
-#### 12.56 Bỏ expandable note + RichTextEditor → textarea
+#### 13.56 Bỏ expandable note + RichTextEditor → textarea
 
 - **Vấn đề**: Expandable "Ghi chú sản phẩm" thừa, RichTextEditor quá nặng cho mô tả ngắn
 - **Sửa**:
@@ -1799,7 +1865,7 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
 
 ### 09/03/2026
 
-#### 12.57 FE Admin — Trang đối soát giao dịch ngân hàng + Webhook Logs
+#### 13.57 FE Admin — Trang đối soát giao dịch ngân hàng + Webhook Logs
 
 - **Vấn đề**: Admin không có giao diện xem/lọc giao dịch ngân hàng từ webhook pay2s, không đối soát được ai nạp, nạp bao nhiêu, có match hay không. Cũng không xem được lịch sử webhook raw data.
 - **Sửa**:
@@ -1815,7 +1881,7 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
   - `FE/src/app/[lang]/(private)/(client)/admin/webhook-logs/page.tsx` (mới)
   - `FE/src/components/layout/vertical/VerticalMenu.tsx` (sửa — thêm 2 menu items + prefetch)
 
-#### 12.58 Gộp trang đối soát nạp tiền — investigation + cộng tiền thủ công
+#### 13.58 Gộp trang đối soát nạp tiền — investigation + cộng tiền thủ công
 
 - **Vấn đề**: Admin non-tech không biết phải làm gì. 2 menu tách rời (GD ngân hàng + Webhook). Khi khách báo nạp không lên tiền, không có công cụ điều tra nguyên nhân và không thể cộng tay từ giao diện.
 - **Sửa**:
@@ -1837,7 +1903,7 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
   - `FE/src/views/Client/Admin/WebhookLogs/TableWebhookLogs.tsx` (rewrite — tiếng Việt)
   - `FE/src/components/layout/vertical/VerticalMenu.tsx` (gộp menu)
 
-#### 12.63 Quản lý nạp tiền — Evidence Chain 6 bước + Dismiss + Gộp 3 trang
+#### 13.63 Quản lý nạp tiền — Evidence Chain 6 bước + Dismiss + Gộp 3 trang
 
 - **Vấn đề**: 3 trang admin rời rạc (Lịch sử giao dịch, Lịch sử chuyển tiền, Đối soát nạp tiền) gây nhầm lẫn. Khi khách báo "nạp không lên", admin phải mở 3 trang tự đoán. Không có chuỗi bằng chứng liên kết, không bỏ qua được GD spam.
 - **Sửa**:
@@ -1859,7 +1925,7 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
   - `FE/src/views/Client/Admin/DepositHistory/TableDepositHistory.tsx` (xóa)
   - `FE/src/app/[lang]/(private)/(client)/admin/webhook-logs/page.tsx` (xóa)
 
-#### 12.57 Tag redesign — pill badge trong card, nền đậm + icon
+#### 13.57 Tag redesign — pill badge trong card, nền đậm + icon
 
 - **Vấn đề**: Tag corner ribbon 8px quá nhỏ, mờ, khó đọc. Preview không khớp client.
 - **Sửa**:
@@ -1867,7 +1933,7 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
   - **Client cards + preview**: Pill badge 12px bold, borderRadius 20px, colored shadow nhẹ. Nằm trong card (không absolute), là phần tử đầu tiên trước title. Không đè lên component ngoài.
 - **Files**: `tagConfig.ts`, `ProxyCard.tsx`, `RotatingProxyPage.tsx`, `ServiceFormModal.tsx`
 
-#### 12.58 Counter gói + tag on-border không overlap
+#### 13.58 Counter gói + tag on-border không overlap
 
 - **Vấn đề**: "6/6 gói" chiếm dòng riêng lãng phí. Tag trên viền card đè lên component phía trên.
 - **Sửa**:
@@ -1875,7 +1941,7 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
   - Tag giữ absolute `top: -12px` trên viền card. Card `overflow: visible`. Grid tăng `rowSpacing={4}` + `mt` để tag không đè lên filter box/card hàng trên.
 - **Files**: `RotatingProxyPage.tsx`, `StaticProxyPage.tsx`, `ProxyCard.tsx`, `ServiceFormModal.tsx`, `globals.css`, `proxy-card/styles.css`, `RotatingProxy/styles.css`
 
-#### 12.59 Tag điệu đà + Filter quốc gia có cờ
+#### 13.59 Tag điệu đà + Filter quốc gia có cờ
 
 - **Sửa**:
   - **Tag**: Glass effect (gradient overlay + inset shadow), border trắng mờ, chuyển sang phải (`right: 14px`)
@@ -1883,7 +1949,7 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
   - **tagConfig**: Thêm field `gradient`, helper `getCountryName()`, `COUNTRY_NAMES` mapping
 - **Files**: `tagConfig.ts`, `ProxyCard.tsx`, `RotatingProxyPage.tsx`, `StaticProxyPage.tsx`, `ServiceFormModal.tsx`
 
-#### 12.60 Cờ quốc gia trên product cards
+#### 13.60 Cờ quốc gia trên product cards
 
 - **Sửa**: Hiển thị flag image (flagcdn.com) cạnh tên quốc gia trong row "Loại IP" trên tất cả product cards
   - **ProxyCard**: Thêm `<img>` flag vào feature row "Loại IP"
@@ -1891,14 +1957,14 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
   - **Admin preview**: Thêm flag image vào cả 2 preview (rotating + static)
 - **Files**: `ProxyCard.tsx`, `RotatingProxyPage.tsx`, `ServiceFormModal.tsx`
 
-#### 12.61 Hiển thị ID sản phẩm + bỏ blur modal
+#### 13.61 Hiển thị ID sản phẩm + bỏ blur modal
 
 - **Sửa**:
   - Hiển thị `#id` nhỏ (11px, màu xám) cạnh tên sản phẩm trên ProxyCard, PlanCard và CheckoutModal
   - Bỏ `backdrop-filter: blur(4px)` trên checkout overlay, giảm opacity còn 0.35 (tối nhẹ, không mờ)
 - **Files**: `ProxyCard.tsx`, `RotatingProxyPage.tsx`, `CheckoutModal.tsx`, `checkout-modal/styles.css`
 
-#### 12.62 Admin User Management — trang quản lý Users đầy đủ
+#### 13.62 Admin User Management — trang quản lý Users đầy đủ
 
 - **Vấn đề**: Admin không có giao diện quản lý users trên hệ thống mới (trang cũ chỉ là stub). Cần xem danh sách, tìm kiếm, sửa thông tin, cộng/trừ tiền, ban/unban, reset password.
 - **Sửa**:
@@ -1917,7 +1983,7 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
   - `FE/src/views/Client/Admin/Users/ModalBalanceAdjust.tsx` (mới)
   - `FE/src/components/layout/vertical/VerticalMenu.tsx` (đổi label)
 
-#### 12.64 Redesign sidebar menu + BalanceCard
+#### 13.64 Redesign sidebar menu + BalanceCard
 
 - **Vấn đề**: Menu nhóm "Dịch vụ" chứa quá nhiều item không liên quan. BalanceCard gradient orange→red quá chói, UX kém. Admin menu lộn xộn.
 - **Sửa**:
@@ -1926,7 +1992,7 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
   - **BalanceCard**: Bỏ gradient chói → nền `slate-50` + border nhẹ, text tối dễ đọc.
 - **Files**: `VerticalMenu.tsx`, `BalanceCardClient.tsx`
 
-#### 12.65 Landing page — rewrite PartnersSection + audit toàn bộ
+#### 13.65 Landing page — rewrite PartnersSection + audit toàn bộ
 
 - **Vấn đề**: PartnersSection blank hoàn toàn (content không render) do CSS phức tạp: 820+ dòng duplicate, decorative background (z-index/mask/animation) che content. Padding sections thừa. Hero có `target='_blank'` trên link nội bộ. `<main>` có class `flex-auto` giãn ra fill viewport → khoảng trắng lớn dưới content.
 - **Sửa**:
@@ -1938,13 +2004,13 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
   - **Hero**: Bỏ button "Xem demo", đổi route "Mua Proxy Ngay" → `/proxy-xoay`, bỏ `target='_blank'` trên link nội bộ
 - **Files**: `PartnersSection.tsx`, `TestimonialsSection.tsx`, `VietnamCoverageSection.tsx`, `Hero.tsx`, `page.tsx`, `VerticalLayout.tsx`, `LayoutContent.tsx`, `main.css`, `mobile-responsive.css`
 
-#### 12.66 Admin Users — Lịch sử giao dịch user
+#### 13.66 Admin Users — Lịch sử giao dịch user
 
 - **Vấn đề**: Admin cộng/trừ tiền tay có ghi chú nhưng không có chỗ xem lại lịch sử giao dịch của user.
 - **Sửa**: Thêm modal xem lịch sử giao dịch (100 giao dịch gần nhất) với cột: thời gian, loại GD, số dư trước/thay đổi/sau, nội dung. Nút "Lịch sử" (icon History) trong cột Thao tác.
 - **Files**: `UserTransactionModal.tsx` (mới), `TableUsers.tsx`, `UsersPage.tsx`, `useAdminUsers.ts`, `AdminUserController.php`, `api.php`
 
-#### 12.66 Fix bộ lọc Lịch sử giao dịch + Trang Quản lý đơn hàng
+#### 13.66 Fix bộ lọc Lịch sử giao dịch + Trang Quản lý đơn hàng
 
 - **Vấn đề**: Bộ lọc "Lịch sử giao dịch" dùng trạng thái đơn hàng (ORDER_STATUS) thay vì loại giao dịch (TRANSACTION_TYPES). Thiếu trang quản lý đơn hàng riêng biệt cho admin.
 - **Sửa**:
@@ -1953,7 +2019,7 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
   - Thêm menu "Quản lý đơn hàng" (icon ShoppingCart) vào sidebar admin
 - **Files**: `TableTransactionHistory.tsx`, `AdminOrdersPage.tsx` (mới), `admin/orders/page.tsx` (mới), `useOrderReport.ts`, `VerticalMenu.tsx`
 
-#### 12.67 Redesign BalanceCard sidebar + Form nạp tiền
+#### 13.67 Redesign BalanceCard sidebar + Form nạp tiền
 
 - **Vấn đề**: Card "Số dư" sidebar quá plain. Form nạp tiền full-width trống trải, thiếu context (không hiện số dư, không có flow hint), warning đỏ hiện trước khi user làm gì.
 - **Sửa**:
@@ -1962,7 +2028,7 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
   - RechargeInputDialog: sync UI tương tự (flow hint, chips pill, bỏ warning)
 - **Files**: `BalanceCardClient.tsx`, `RechargePage.tsx`, `RechargeInputDialog.tsx`
 
-#### 12.68 Redesign Announcement Feed trang chủ
+#### 13.68 Redesign Announcement Feed trang chủ
 
 - **Vấn đề**: Mọi thông báo trông giống nhau (cùng avatar xanh "Admin"), không phân biệt loại khi lướt nhanh, action bar trống trải.
 - **Sửa**:
@@ -1976,13 +2042,13 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
 
 ### 10/03/2026
 
-#### 12.69 Fix lỗi insert `quantity` vào bảng `api_keys`
+#### 13.69 Fix lỗi insert `quantity` vào bảng `api_keys`
 
 - **Vấn đề**: `HomeProxyPartner::buy()` insert cột `quantity` vào bảng `api_keys`, nhưng bảng này không có cột đó → lỗi `Column not found: 1054 Unknown column 'quantity'`
 - **Sửa**: Xóa `'quantity' => 1` khỏi batch insert `api_keys` (quantity chỉ thuộc bảng `orders`)
 - **Files**: `BE/app/Services/Partners/HomeProxy/HomeProxyPartner.php`
 
-#### 12.70 Nâng cấp UX trang Lịch sử mua hàng (client)
+#### 13.70 Nâng cấp UX trang Lịch sử mua hàng (client)
 
 - **Vấn đề**: Status labels SAI (status 3 hiện "Thất bại" nhưng thực tế là "Thiếu proxy", status 4/5 cũng sai), thiếu tên dịch vụ, không có search/filter, giá trong modal dùng sai source
 - **Sửa**:
@@ -1996,7 +2062,7 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
   - Dọn console.log, fix text "Kích cỡ trang linh"
 - **Files**: `HistoryOrderPage.tsx`, `OrderDetail.tsx`, `DetaiProxy.tsx`
 
-#### 12.71 Fix lỗi `quantity` trong tất cả Partner files + double submit khi mua hàng
+#### 13.71 Fix lỗi `quantity` trong tất cả Partner files + double submit khi mua hàng
 
 - **Vấn đề 1**: Tất cả Partner files (HomeProxyStatic, ProxyVNStatic, UpproxyStatic, MktProxy, ProxyVN, ZingProxy, Upproxy rotating) insert cột `quantity` vào bảng `api_keys` nhưng bảng không có cột đó → lỗi SQL khi mua hàng
 - **Vấn đề 2**: CheckoutModal tạo axios instance mới mỗi lần mutate (không dùng `useAxiosAuth`), không có guard chống rapid-click → click mua 1 lần nhưng API có thể gọi nhiều lần
@@ -2009,7 +2075,7 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
   - Thêm invalidate `userOrders` query để trang lịch sử tự cập nhật
 - **Files**: `HomeProxyStaticPartner.php`, `ProxyVNStaticPartner.php`, `UpproxyStaticPartner.php`, `MktProxyPartner.php`, `ProxyVNPartner.php`, `ZingProxyPartner.php`, `UpproxyPartner.php`, `CheckoutModal.tsx`
 
-#### 12.72 Ẩn thông tin nhạy cảm API lịch sử mua hàng + fix bảo mật getKeyOrder
+#### 13.72 Ẩn thông tin nhạy cảm API lịch sử mua hàng + fix bảo mật getKeyOrder
 
 - **Vấn đề**: API `/get-order` trả về toàn bộ model Order/ServiceType/ApiKey cho client, bao gồm giá vốn (`cost_price`, `total_cost`, `total_cost_final`), key đối tác (`api_key_partner`), hoa hồng (`affiliate_commission`), `partner_id`, `api_body`... Endpoint `getKeyOrder` không kiểm tra quyền sở hữu (user A xem được proxy của user B).
 - **Sửa**:
@@ -2017,7 +2083,7 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
   - `getKeyOrder()`: thêm check `user_id` ownership trước khi trả data, thêm `makeHidden()` cho ApiKey
 - **Files**: `BE/app/Http/Controllers/Api/OrderController.php`
 
-#### 12.73 Nâng cấp UX trang nạp tiền — auto-detect thanh toán + ghi chú 10 phút
+#### 13.73 Nâng cấp UX trang nạp tiền — auto-detect thanh toán + ghi chú 10 phút
 
 - **Vấn đề**: Khi bill pending được thanh toán, UI chỉ mất phần QR mà không có thông báo thành công, số dư không tự cập nhật. Thiếu ghi chú rõ ràng cho khách về trường hợp chuyển khoản quá 10 phút.
 - **Sửa**:
@@ -2028,7 +2094,7 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
   - Áp dụng cho cả RechargePage (trang chính) và RechargeInputDialog (dialog)
 - **Files**: `RechargePage.tsx`, `RechargeInputDialog.tsx`
 
-#### 12.74 Ẩn thông tin nhạy cảm API proxy storefront + fix error messages
+#### 13.74 Ẩn thông tin nhạy cảm API proxy storefront + fix error messages
 
 - **Vấn đề**: API `/get-proxy-static` và `/get-proxy-rotating` eager load `partner` relation → lộ **token_api** (API credential), `partner_code`, `cost_price`, `api_body`... Endpoint `getOrderProxyStatic` load relation `User` thừa. Error messages từ server buy proxy trả về tiếng Anh kỹ thuật. `price_by_duration` chứa trường `cost` (giá vốn).
 - **Sửa**:
@@ -2041,7 +2107,7 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
   - Detect payment threshold 15s tránh false positive khi countdown gần hết
 - **Files**: `BE/app/Http/Controllers/Api/ProxyController.php`, `RechargePage.tsx`, `RechargeInputDialog.tsx`
 
-#### 12.75 Thêm cột partner_price + ẩn price_cost toàn bộ client API
+#### 13.75 Thêm cột partner_price + ẩn price_cost toàn bộ client API
 
 - **Vấn đề**: `price_cost` hiển thị trong lịch sử cho khách. Cần 2 loại giá cost: giá vốn bên mình (`price_cost`) và giá thực tế đối tác tính (`partner_price`) để đối chiếu.
 - **Sửa**:
@@ -2060,7 +2126,7 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
   - FE: cập nhật `HistoryOrderPage` + `OrderDetail` dùng flat fields thay `type_servi.*`
 - **Files**: `BE/database/migrations/2026_03_10_000002_add_partner_price_to_api_keys.php`, `BE/app/Models/MySql/ApiKey.php`, `BE/app/Http/Controllers/Api/ProxyController.php`, `BE/app/Http/Controllers/Api/OrderController.php`, `BE/app/Console/Commands/PlaceOrder.php`, `BE/app/Models/Mongo/ModelMongo.php`, `FE/src/views/Client/HistoryOrder/OrderDetail.tsx`, `FE/src/views/Client/HistoryOrder/HistoryOrderPage.tsx`, 8 Partner files
 
-#### 12.76 Fix toàn bộ landing page - sections không hiển thị
+#### 13.76 Fix toàn bộ landing page - sections không hiển thị
 
 - **Vấn đề**: Landing page bị trắng ở phần dưới (Footer invisible). Root cause: `html { block-size: 100% }` (globals.css) + `body { flex-auto }` giới hạn chiều cao = viewport → không scroll được. Footer dùng CSS classes + Bootstrap grid bị ảnh hưởng bởi global `* { margin:0; padding:0 }` reset. `:has()` selector không reliable.
 - **Sửa**:
@@ -2071,7 +2137,7 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
   - VietnamCoverageSection: bỏ `useTranslation`/`useLanguageSync` thừa, thêm `Link` cho nút đăng ký
 - **Files**: `Footer.tsx`, `layout.tsx` (landing-page), `main.css`, `TestimonialsSection.tsx`, `VietnamCoverageSection.tsx`
 
-#### 12.77 Redesign landing page header — UX mềm mại hơn
+#### 13.77 Redesign landing page header — UX mềm mại hơn
 
 - **Vấn đề**: Header trông "phèn" — mix Bootstrap navbar + MUI + custom CSS không đồng nhất. Active state (background đỏ + underline) quá aggressive. CTA button gradient đỏ-cam trông template-like. Background `#f9fafc` xám xỉn.
 - **Sửa**:
@@ -2080,7 +2146,7 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
   - Bỏ unused imports (`VuexyLogo`, `CustomAvatar`, `LanguageSelect`)
 - **Files**: `MainHeader.tsx`, `MenuDesktop.tsx`
 
-#### 12.78 Tối ưu performance landing page
+#### 13.78 Tối ưu performance landing page
 
 - **Vấn đề**: Landing page render chậm, UX kém. Root causes: (1) `useLanguageSync()` gọi trong mọi component gây re-render thừa (2) Duplicate CSS imports giữa root layout và landing layout (3) Tất cả sections load đồng thời dù nằm dưới fold (4) Framer Motion (~60KB) import chỉ cho scroll animation đơn giản
 - **Sửa**:
@@ -2091,7 +2157,7 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
   - Header.tsx: bỏ `'use client'`, `useState`, `useTranslation` thừa — chỉ render `<MainHeader />`
 - **Files**: `page.tsx`, `layout.tsx` (landing), `MainHeader.tsx`, `Header.tsx`, `Hero.tsx`, `ProductsSection.tsx`, `PartnersSection.tsx`
 
-#### 12.79 Fix navigation lag — bỏ provider nặng + cache API
+#### 13.79 Fix navigation lag — bỏ provider nặng + cache API
 
 - **Vấn đề**: Click navigate khựng lại vì: (1) `Providers.tsx` gọi `getServerSession()` lần thứ 3 (root layout đã gọi 2 lần) (2) `NextAuthProvider` + `ModalContextProvider` bị wrap 2 lần (root + Providers) (3) `VerticalNavProvider` load thừa (landing không có sidebar) (4) `getServerUserData()` gọi `POST /me` với `cache: 'no-store'` mỗi request
 - **Sửa**:
@@ -2099,7 +2165,7 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
   - **serverSessionValidation.ts**: đổi `cache: 'no-store'` → `next: { revalidate: 30 }` cho `POST /me` — giảm API calls
 - **Files**: `layout.tsx` (landing), `serverSessionValidation.ts`
 
-#### 12.80 Cải thiện navigation smoothness — loading state + lazy load
+#### 13.80 Cải thiện navigation smoothness — loading state + lazy load
 
 - **Vấn đề**: Navigation cảm giác "cứng" — không có visual feedback khi chuyển trang, AuthModal (framer-motion + 5 forms) load eager dù chưa cần, `ReferralHandler` dùng `useSearchParams()` block render, `ReactQueryDevtools` load cả production
 - **Sửa**:
@@ -2110,7 +2176,16 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
   - `TanstackProvider`: lazy load `ReactQueryDevtools` chỉ khi `NODE_ENV === 'development'`
 - **Files**: `loading.tsx` (landing, mới), `MainHeader.tsx`, `page.tsx` (landing), `layout.tsx` (root), `TanstackProvider.tsx`
 
-#### 12.81 Fix ESLint errors còn lại (batch 2)
+#### 13.81 Fix admin quản lý đơn hàng — thiếu đơn + sort + per_page + UX
+
+- **Vấn đề**: (1) Backend exclude `user_id` [1, 16011] → admin không thấy đơn của mình (2) `per_page` max=100, default=20 quá ít (3) Không có cột ID, không sort được (4) Chỉ chọn 20/50/100 cố định
+- **Sửa**:
+  - **BE**: Bỏ exclude user IDs, nâng `per_page` max→10000 default→100, thêm `sort_by` (id/created_at) + `sort_order` (asc/desc)
+  - **FE hook**: Thêm `sort_by`, `sort_order` params vào `useAdminOrders`
+  - **FE page**: Thêm cột ID + Ngày tạo có sort toggle (click header ▲▼), input giới hạn API (20-10000) ở toolbar filter, dropdown hiển thị/trang (20/50/100/200) ở pagination, client-side pagination với `getPaginationRowModel`, table minWidth 1350px
+- **Files**: `OrderReportController.php`, `useOrderReport.ts`, `AdminOrdersPage.tsx`
+
+#### 13.81 Fix ESLint errors còn lại (batch 2)
 
 - **Vấn đề**: Nhiều lỗi ESLint còn sót: `@typescript-eslint/no-unused-vars` rule not found, `<a>` thay vì `<Link>`, import order sai, import module không tồn tại, unescaped entities, JSX component undefined
 - **Sửa**:
@@ -2127,7 +2202,7 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
   - Di chuyển `getServerSession` import trước `getServerUserData` + xóa duplicate trong `layout.tsx`
 - **Files**: `useLayoutInit.ts`, `route.ts`, `GenerateMenu.tsx`, `FileUploaderSingle.tsx`, `history-order/page.tsx`, `layout.tsx`, `AuthModal.tsx`, `CheckProxyForm.tsx`, `DetaiProxy.tsx`, `OrderProxyPage.tsx`, `useAutoplay.tsx`, `AdminOrdersPage.tsx`, `InvestigationDrawer.tsx`, `CreateTicketDialog.tsx`, `OrderDetailModal.tsx`
 
-#### 12.82 Fix toàn bộ ESLint errors — build pass + thêm bundle analyzer
+#### 13.82 Fix toàn bộ ESLint errors — build pass + thêm bundle analyzer
 
 - **Vấn đề**: `npm run build` fail do ~45 ESLint errors (rules-of-hooks, import order, unescaped entities, undefined components, missing imports)
 - **Sửa**:
@@ -2138,9 +2213,92 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
 - **Kết quả**: Build pass trong ~48s, chỉ còn warnings (exhaustive-deps)
 - **Files**: `next.config.ts`, `TransactionModal.tsx`, `UserTransactionModal.tsx`, `ProxyCard.tsx`, `QrCodeDisplayDialog.tsx`, `MainHeader.tsx`, `layout.tsx`, `ServerSideSessionPattern.tsx`, `TablePartner.tsx` + nhiều file khác
 
+### 10/03/2026
+
+#### 13.83 Đồng bộ idempotency tất cả processors + Tách flow HomeProxy 2 phase
+
+- **Vấn đề 1**: Các processor (ProxyVn, UpProxy, MktProxy, ZingProxy) không có chống duplicate khi gọi partner → retry có thể mua trùng proxy
+- **Sửa 1**: Thêm `markPartnerCalled()` / `wasPartnerCalled()` vào BasePartner, áp dụng cho tất cả 1-step processors. Wrap `failOrderWithRefund()` trong try-catch
+- **Vấn đề 2**: HomeProxy processors block worker 15-60s (sleep + polling chờ partner trả proxy). Các đơn khác phải chờ
+- **Sửa 2**:
+  - Thêm status `awaiting_partner = 10` vào Order model
+  - Rewrite HomeProxy Rotating/Static processors: chỉ tạo order + lưu `id_order_partner` + set status `awaiting_partner` → return ngay (không sleep, không polling)
+  - Tạo command `fetch-partner-proxies` chạy mỗi phút: scan orders `awaiting_partner` → gọi HomeProxy API lấy proxy → lưu DB → finalize order. Timeout 30 phút
+  - Comment out MktProxy + ZingProxy trong PartnerFactory (không còn dùng)
+  - Thêm status 10 vào FE constants `orderStatus.ts`
+- **Files BE**: `Order.php`, `BasePartner.php`, `PartnerFactory.php`, `HomeProxyRotatingProcessor.php`, `HomeProxyStaticProcessor.php`, `MktProxyRotatingProcessor.php`, `ZingProxyRotatingProcessor.php`, `ProxyVnRotatingProcessor.php`, `UpProxyStaticProcessor.php`, `FetchPartnerProxies.php` (mới), `Kernel.php`
+- **Files FE**: `orderStatus.ts`
+
+#### 13.84 Fix bugs FetchPartnerProxies + Refactor bỏ log thừa
+
+- **Bug 1**: `$updated` khai báo trong closure nhưng dùng ngoài → undefined variable
+- **Bug 2**: `saveStaticProxies` ghi đè `parent_api_mapping` thay vì merge → mất data
+- **Sửa**: `&$updated` reference, `array_merge()` + `save()` cho static
+- **Refactor**: bỏ `Log::channel/info/warning` thừa (OrderLog + Telegram đã cover), xóa dead code `getProxiesByOrderIdWithRetry`
+- **Files**: `FetchPartnerProxies.php`, `BasePartner.php`, `ProxyVnRotatingProcessor.php`, `UpProxyStaticProcessor.php`, `HomeProxyService.php`
+
+#### 13.85 Redesign trang lịch sử đơn hàng (khách hàng)
+
+- **Vấn đề**: Trang lịch sử mua hàng UI cũ, không có auto-refresh khi đơn đang pending → user phải reload thủ công
+- **Sửa**:
+  - `useHistoryOrders`: thêm `refetchInterval` tự động 5s khi có đơn pending (status 0/1/9/10), tắt khi không có
+  - Redesign `HistoryOrderPage`: toolbar 2 dòng giống admin, banner thông báo đơn pending + indicator "Tự động kiểm tra mỗi 5 giây", row highlight vàng cho đơn pending, spinner icon bên cạnh status chip
+  - Bỏ tanstack features không cần (rowSelection, faceted, sorted) — chỉ giữ core + pagination
+  - Clean up page.tsx: xóa mock data cũ không dùng
+- **Files**: `useHistoryOrders.ts`, `HistoryOrderPage.tsx`, `history-order/page.tsx`
+
 ---
 
-## 13. Known Issues — Danh sách vấn đề cần xử lý
+#### 13.86 Thêm quy trình thêm partner mới vào BE dev guide
+
+- **Sửa**: Thêm Section 5.4 vào `BE/DEVELOPER-GUIDE.md` — hướng dẫn thêm partner mới: chọn pattern, các bước (DB → Service → Processor → Factory → FetchPartnerProxies), format dữ liệu, checklist
+- **Files**: `BE/DEVELOPER-GUIDE.md`, `FE/DEVELOPER-GUIDE.md`
+
+#### 13.87 Tối ưu UI/UX đơn hàng toàn diện + Order Logs + Test data
+
+- **Vấn đề 1**: Trang lịch sử user và admin thiếu cột loại đơn (Mua/Gia hạn)
+- **Vấn đề 2**: User không thấy proxy khi partner trả xong do `useApiKeys` cache 5 phút
+- **Vấn đề 3**: Modal chi tiết đơn hàng user quá to, nằm dưới màn hình
+- **Vấn đề 4**: Admin không có log xử lý đơn hàng
+- **Sửa**:
+  - Thêm cột "Loại" (Mua/Gia hạn) vào `HistoryOrderPage` user
+  - Fix `useApiKeys` staleTime 5min → 30s
+  - Redesign `OrderDetail.tsx` (user): maxWidth md, centered, gọn nhẹ, InfoCard grid
+  - Redesign `OrderDetailModal.tsx` (admin): maxWidth md, thêm Tabs (Proxy | Logs), timeline hiển thị từng bước xử lý
+  - Tạo hook `useOrderLogs` gọi `GET /admin/order-logs/{order_id}`
+  - Timeline log: icon/color theo action, hiển thị partner_code, duration_ms, http_status, response_body (expandable cho error)
+  - Tạo `TestOrderSeeder.php` — 9 đơn mẫu đủ status + API keys + OrderLogs cho admin@admin.com
+- **Files FE**: `useOrderLogs.ts` (mới), `useOrders.ts`, `HistoryOrderPage.tsx`, `OrderDetail.tsx`, `OrderDetailModal.tsx`
+- **Files BE**: `TestOrderSeeder.php` (mới)
+
+#### 13.88 Fix UX lịch sử đơn hàng user
+
+- **Vấn đề**: Banner lộ "Tự động kiểm tra mỗi 5 giây", trạng thái "Chờ đối tác" lộ nội bộ, modal thấp, cột bị nén
+- **Sửa**:
+  - Bỏ text "Tự động kiểm tra mỗi 5 giây" khỏi pending banner
+  - Đổi label user: "Đang chờ xử lý" → "Chờ xử lý", "Chờ đối tác" → "Chờ tạo proxy"
+  - Nâng modal lên đầu màn hình (`mt: '5vh'`, `mb: 'auto'`) — cả user và admin
+  - Table `minWidth: 1200px` + `minWidth` trên mỗi header để cột không bị nén
+  - Fix MongoDB local: bỏ username trong `.env` (local không cần auth)
+  - Insert 38 order logs mẫu vào MongoDB
+  - Admin: nút "Xem log" + "Chi tiết" + "User" hiện cho tất cả đơn (trước chỉ FAILED mới có log)
+- **Files**: `HistoryOrderPage.tsx`, `OrderDetail.tsx`, `OrderDetailModal.tsx`, `orderStatus.ts`, `TableTransactionHistory.tsx`, `.env`
+
+#### 13.89 Hoàn thiện OrderLog — lưu response success + log timeout
+
+- **Vấn đề**: MktProxy & ZingProxy không lưu response body khi success. UpProxy & ProxyVn catch block không gọi `logApiCall` → timeout không có log
+- **Sửa**:
+  - MktProxy: `logApiCall` success truyền `json_encode($result)` thay vì `null`
+  - ZingProxy: tương tự
+  - UpProxy: thêm `logApiCall(ACTION_API_CALL_ERROR)` trong catch (log duration + error message)
+  - ProxyVn: tương tự
+  - Đổi label user: PROCESSING → "Đang tạo proxy"
+- **Files BE**: `MktProxyRotatingProcessor.php`, `ZingProxyRotatingProcessor.php`, `UpProxyStaticProcessor.php`, `ProxyVnRotatingProcessor.php`
+- **Files FE**: `orderStatus.ts`
+
+---
+
+## 14. Known Issues — Danh sách vấn đề cần xử lý
 
 > Tổng hợp toàn bộ vấn đề đã phát hiện qua review. Đánh dấu ✅ khi đã fix.
 
@@ -2158,7 +2316,7 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
 | # | Mô tả | File | Ghi chú |
 |---|-------|------|---------|
 | H1 | HomeProxy retry reuse partner order ID → gán **proxy trùng** cho ApiKey mới | `HomeProxyRotating/StaticProcessor` | Cần filter proxies đã gán khi retry, hoặc lưu offset |
-| H2 | ProxyVn, ZingProxy, UpProxy **không có idempotency** khi retry → mua trùng proxy bên đối tác | 3 processor files | Thêm mechanism kiểu `getExistingPartnerOrderId()` hoặc lưu transaction ref |
+| ✅ H2 | ~~ProxyVn, ZingProxy, UpProxy **không có idempotency** khi retry → mua trùng proxy bên đối tác~~ | 3 processor files | Fixed 13.83: `markPartnerCalled()` / `wasPartnerCalled()` cho tất cả processors |
 | H3 | MktProxy: `formatResponseProxyV2($apiKeys[$index], ...)` pass **Model** thay vì string + Redis write trong DB::transaction | `MktProxyRotatingProcessor.php:84-85` | Đổi thành `$apiKeys[$index]->api_key`. Di chuyển Redis write ra ngoài transaction |
 | H4 | ZingProxy: query ApiKey **2 nguồn** (`ApiKey::where()` + `$order->apiKeys`) — chưa fix như MktProxy | `ZingProxyRotatingProcessor.php:22,42` | Bỏ `ApiKey::where()`, dùng `$order->apiKeys` duy nhất |
 | H5 | Config errors (Invalid template body, Missing ApiKey...) return false **không gọi** failOrderWithRefund → PlaceOrder safety net retry 3 lần vô ích | Tất cả processors | Dùng `failOrderWithoutRetry()` cho config errors |
