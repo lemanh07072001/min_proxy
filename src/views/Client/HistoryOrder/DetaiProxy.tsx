@@ -55,7 +55,6 @@ const DetailProxy = ({ isOpen, handleClose, apiKey }: DetailModalProps) => {
     }
   }
 
-  console.log(proxyData)
   useEffect(() => {
     if (!isOpen || !apiKey) return
     fetchProxyData()
@@ -250,7 +249,7 @@ const DetailProxy = ({ isOpen, handleClose, apiKey }: DetailModalProps) => {
               )}
 
 
-              {/*<TimeProxyDie expiresAt={proxyData[0]?.time_die ?? 0} />*/}
+              <TimeProxyDie expiresAt={proxyData[0]?.time_die ?? 0} />
 
             </Box>
           ) : (

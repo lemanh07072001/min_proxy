@@ -4,7 +4,7 @@ import React from 'react'
 
 import { useParams } from 'next/navigation'
 
-import { Shield, Zap, Globe, Users, ArrowRight, Play } from 'lucide-react'
+import { Shield, Zap, Globe, Users, ArrowRight } from 'lucide-react'
 
 import { useTranslation } from 'react-i18next'
 
@@ -97,14 +97,10 @@ const Hero = () => {
               {/* CTA Buttons */}
               <div className='hero-actions'>
                 <button className='btn-primary'>
-                  <Link target='_blank' href={`/${locale}/home`}>
+                  <Link target='_blank' href={`/${locale}/proxy-xoay`}>
                     {t('landing.hero.actions.buyNow')}
                   </Link>
                   <ArrowRight size={20} />
-                </button>
-                <button className='btn-secondary'>
-                  <Play size={18} />
-                  <span>{t('landing.hero.actions.watchDemo')}</span>
                 </button>
               </div>
 

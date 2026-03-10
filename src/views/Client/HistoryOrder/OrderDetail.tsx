@@ -25,32 +25,21 @@ import Checkbox from '@mui/material/Checkbox'
 import {
   Copy,
   Clock,
-  Clock3,
-  BadgeCheck,
-  BadgeAlert,
-  BadgeMinus,
-  CircleQuestionMark,
   Eye,
   FileDown
 } from 'lucide-react'
 
 import { formatDateTimeLocal } from '@/utils/formatDate'
 import { useCopy } from '@/app/hooks/useCopy'
+import { ORDER_STATUS_LABELS, ORDER_STATUS_COLORS } from '@/constants/orderStatus'
 import CustomIconButton from '@core/components/mui/IconButton'
 import DetailProxy from './DetaiProxy'
 
-// Badge trạng thái
 const getStatusBadge = (status: string) => {
-  switch (status) {
-    case '0':
-      return <Chip label='Chờ xử lý' size='small' icon={<BadgeAlert />} color='warning' />
-    case '2':
-      return <Chip label='Hoàn thành' size='small' icon={<BadgeCheck />} color='success' />
-    case '5':
-      return <Chip label='Hết hạn' size='small' icon={<BadgeMinus />} color='error' />
-    default:
-      return <Chip label='Không xác định' size='small' icon={<CircleQuestionMark />} color='secondary' />
-  }
+  const label = ORDER_STATUS_LABELS[status] || 'Không xác định'
+  const color = (ORDER_STATUS_COLORS[status] || 'default') as any
+
+  return <Chip label={label} size='small' color={color} />
 }
 
 interface ProxyItem {
@@ -70,10 +59,13 @@ interface OrderDetailProps {
   order: {
     order_code: string
     total_amount: number
+    price_per_unit: number
     quantity: number
+    delivered_quantity?: number
     status: string
     buy_at: string
     expired_at: string
+    proxy_type?: string
     proxys?: ProxyItem[]
     api_keys?: any[]
     type_servi?: {
@@ -203,20 +195,18 @@ const OrderDetail: React.FC<OrderDetailProps> = ({ open, onClose, order }) => {
       },
       {
         accessorKey: 'protocol',
-        header: 'Loại',
+        header: 'Protocol',
         cell: ({ row }: { row: any }) => {
-          // const proxys = row.original.proxys || {}
-          // const keys = Object.keys(proxys).filter(k => k !== 'loaiproxy')
+          const protocol = row.original.protocol
 
-          // return <b>{keys[0]?.toUpperCase() || '-'}</b>
-          return 'HTTP/SOCKS5'
+          return <span className='uppercase text-xs font-medium'>{protocol || '-'}</span>
         },
         size: 80
       },
       {
         header: 'Giá tiền',
         cell: ({ row }: { row: any }) => (
-          <div>{new Intl.NumberFormat('vi-VN').format(order?.type_servi?.price || 0) + ' đ'}</div>
+          <div>{new Intl.NumberFormat('vi-VN').format(order?.price_per_unit || 0) + ' đ'}</div>
         ),
         size: 200
       },
@@ -436,14 +426,16 @@ const OrderDetail: React.FC<OrderDetailProps> = ({ open, onClose, order }) => {
                       Số lượng:
                     </Typography>
                     <Typography variant='body1' fontWeight='bold'>
-                      {order.quantity}
+                      {order.delivered_quantity != null && order.delivered_quantity !== order.quantity
+                        ? `${order.delivered_quantity}/${order.quantity}`
+                        : order.quantity}
                     </Typography>
                   </Box>
                   <Box>
                     <Typography variant='body2' color='text.secondary'>
                       Trạng thái:
                     </Typography>
-                    {getStatusBadge(order.status)}
+                    {getStatusBadge(String(order.status))}
                   </Box>
                   <Box>
                     <Typography variant='body2' color='text.secondary'>

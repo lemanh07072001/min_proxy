@@ -1,14 +1,10 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useRef, useState, useEffect } from 'react'
 
-import { useRouter } from 'next/navigation'
-
-import { X, ShoppingCart, Loader, AlertTriangle, Tag, Clock } from 'lucide-react'
+import { X, ShoppingCart, Loader, AlertTriangle, Tag, Clock, CheckCircle } from 'lucide-react'
 
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { useSession } from 'next-auth/react'
-import axios from 'axios'
 import { toast } from 'react-toastify'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -16,6 +12,7 @@ import QuantityControl from '@components/form/input-quantity/QuantityControl'
 import ProtocolSelector from '@components/form/protocol-selector/ProtocolSelector'
 import { subtractBalance } from '@/store/userSlice'
 import type { AppDispatch, RootState } from '@/store'
+import useAxiosAuth from '@/hocs/useAxiosAuth'
 
 import './styles.css'
 
@@ -56,12 +53,13 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({
   const [selectedProtocol, setSelectedProtocol] = useState(protocols[0] || 'http')
   const [quantity, setQuantity] = useState(1)
   const [discountCode, setDiscountCode] = useState('')
+  const [purchaseSuccess, setPurchaseSuccess] = useState(false)
 
-  const session = useSession()
-  const router = useRouter()
   const dispatch = useDispatch<AppDispatch>()
   const queryClient = useQueryClient()
+  const axiosAuth = useAxiosAuth()
   const { sodu } = useSelector((state: RootState) => state.user)
+  const isSubmitting = useRef(false)
 
   // Reset state khi options thay đổi (product khác)
   useEffect(() => {
@@ -69,7 +67,17 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({
     setSelectedProtocol(protocols[0] || 'http')
     setQuantity(1)
     setDiscountCode('')
+    setPurchaseSuccess(false)
+    isSubmitting.current = false
   }, [priceOptions, protocols])
+
+  // Reset success state khi modal mở lại
+  useEffect(() => {
+    if (open) {
+      setPurchaseSuccess(false)
+      isSubmitting.current = false
+    }
+  }, [open])
 
   const selectedOption = priceOptions.find(p => p.key === selectedDuration) || priceOptions[0]
   const unitPrice = selectedOption?.price || 0
@@ -93,43 +101,35 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({
 
   const { mutate, isPending } = useMutation({
     mutationFn: (orderData: any) => {
-      const token = (session.data as any)?.access_token
+      const endpoint = productType === 'static' ? '/buy-proxy-static' : '/buy-proxy-rotating'
 
-      const api = axios.create({
-        baseURL: '/api',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      })
-
-      const endpoint = productType === 'static' ? '/proxy-static' : '/buy-proxy'
-
-      return api.post(endpoint, orderData)
+      return axiosAuth.post(endpoint, orderData)
     },
     onSuccess: (data) => {
+      isSubmitting.current = false
+
       if (data.data.success === false) {
         toast.error('Lỗi hệ thống, xin vui lòng liên hệ Admin.')
-        router.push('/order-proxy')
       } else {
+        setPurchaseSuccess(true)
         dispatch(subtractBalance(total))
         toast.success(data.data.message || 'Mua proxy thành công.')
-        onClose()
-        router.push('/history-order')
 
         const queryKey = productType === 'static' ? 'orderProxyStatic' : 'proxyData'
 
         queryClient.invalidateQueries({ queryKey: [queryKey] })
-        queryClient.refetchQueries({ queryKey: [queryKey] })
+        queryClient.invalidateQueries({ queryKey: ['userOrders'] })
       }
     },
     onError: (error: any) => {
+      isSubmitting.current = false
       toast.error(error.response?.data?.message || 'Lỗi không xác định')
     }
   })
 
   const handlePurchase = () => {
-    if (!isBalanceSufficient) return
+    if (!isBalanceSufficient || isSubmitting.current || isPending || purchaseSuccess) return
+    isSubmitting.current = true
 
     const orderData: any = {
       serviceTypeId,
@@ -160,7 +160,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({
   if (!open) return null
 
   return (
-    <div className='checkout-overlay' onClick={onClose}>
+    <div className='checkout-overlay' onClick={() => !isPending && onClose()}>
       <div className='checkout-modal' onClick={e => e.stopPropagation()}>
         {/* Header */}
         <div className='checkout-header'>
@@ -168,7 +168,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({
             <ShoppingCart size={20} />
             Thanh Toán
           </h2>
-          <button type='button' className='checkout-close' onClick={onClose}>
+          <button type='button' className='checkout-close' onClick={onClose} disabled={isPending}>
             <X size={20} />
           </button>
         </div>
@@ -307,12 +307,17 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({
           <button
             type='button'
             className='checkout-pay-btn'
-            onClick={handlePurchase}
-            disabled={isPending || !isBalanceSufficient}
+            onClick={purchaseSuccess ? onClose : handlePurchase}
+            disabled={isPending || (!isBalanceSufficient && !purchaseSuccess)}
+            style={purchaseSuccess ? { background: '#16a34a' } : undefined}
           >
             {isPending ? (
               <>
                 <Loader size={18} className='animate-pulse' /> Đang xử lý...
+              </>
+            ) : purchaseSuccess ? (
+              <>
+                <CheckCircle size={18} /> Mua thành công
               </>
             ) : (
               <>

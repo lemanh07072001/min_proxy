@@ -1926,7 +1926,15 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
   - **BalanceCard**: Bỏ gradient chói → nền `slate-50` + border nhẹ, text tối dễ đọc.
 - **Files**: `VerticalMenu.tsx`, `BalanceCardClient.tsx`
 
-#### 12.65 Admin Users — Lịch sử giao dịch user
+#### 12.65 Landing page — fix khoảng trống + bỏ Xem demo
+
+- **Vấn đề**: Khoảng trống lớn dưới CTA "Cần tư vấn thêm?" do padding-block 100px. Button "Xem demo" không có chức năng.
+- **Sửa**:
+  - Giảm `padding-block-end` của `.products-section-new` từ 100px → 40px
+  - Bỏ button "Xem demo", đổi route "Mua Proxy Ngay" từ `/home` → `/proxy-xoay`
+- **Files**: `main.css`, `Hero.tsx`
+
+#### 12.66 Admin Users — Lịch sử giao dịch user
 
 - **Vấn đề**: Admin cộng/trừ tiền tay có ghi chú nhưng không có chỗ xem lại lịch sử giao dịch của user.
 - **Sửa**: Thêm modal xem lịch sử giao dịch (100 giao dịch gần nhất) với cột: thời gian, loại GD, số dư trước/thay đổi/sau, nội dung. Nút "Lịch sử" (icon History) trong cột Thao tác.
@@ -1961,6 +1969,41 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
   - Skeleton loading match layout mới
   - Empty state: thay "Chưa có thông báo nào" bằng welcome + 4 quick action cards (Mua Proxy, Nạp tiền, Check Proxy, API Docs)
 - **Files**: `home/page.tsx`, `globals.css`
+
+### 10/03/2026
+
+#### 12.69 Fix lỗi insert `quantity` vào bảng `api_keys`
+
+- **Vấn đề**: `HomeProxyPartner::buy()` insert cột `quantity` vào bảng `api_keys`, nhưng bảng này không có cột đó → lỗi `Column not found: 1054 Unknown column 'quantity'`
+- **Sửa**: Xóa `'quantity' => 1` khỏi batch insert `api_keys` (quantity chỉ thuộc bảng `orders`)
+- **Files**: `BE/app/Services/Partners/HomeProxy/HomeProxyPartner.php`
+
+#### 12.70 Nâng cấp UX trang Lịch sử mua hàng (client)
+
+- **Vấn đề**: Status labels SAI (status 3 hiện "Thất bại" nhưng thực tế là "Thiếu proxy", status 4/5 cũng sai), thiếu tên dịch vụ, không có search/filter, giá trong modal dùng sai source
+- **Sửa**:
+  - Dùng `ORDER_STATUS_LABELS`/`ORDER_STATUS_COLORS` từ constants thay hard-coded (đủ 10 trạng thái)
+  - Thêm cột "Dịch vụ" (tên + proxy_type) vào bảng chính
+  - Thêm search (mã đơn/tên dịch vụ) + filter theo trạng thái (client-side)
+  - Hiển thị thời gian còn lại ("còn Xd Xh") cho đơn đang hoạt động
+  - Hiển thị `delivered_quantity/quantity` khi khác nhau
+  - Fix giá dùng `price_per_unit` thay `type_servi.price`, protocol thực thay hard-coded
+  - Bật TimeProxyDie countdown trong DetailProxy
+  - Dọn console.log, fix text "Kích cỡ trang linh"
+- **Files**: `HistoryOrderPage.tsx`, `OrderDetail.tsx`, `DetaiProxy.tsx`
+
+#### 12.71 Fix lỗi `quantity` trong tất cả Partner files + double submit khi mua hàng
+
+- **Vấn đề 1**: Tất cả Partner files (HomeProxyStatic, ProxyVNStatic, UpproxyStatic, MktProxy, ProxyVN, ZingProxy, Upproxy rotating) insert cột `quantity` vào bảng `api_keys` nhưng bảng không có cột đó → lỗi SQL khi mua hàng
+- **Vấn đề 2**: CheckoutModal tạo axios instance mới mỗi lần mutate (không dùng `useAxiosAuth`), không có guard chống rapid-click → click mua 1 lần nhưng API có thể gọi nhiều lần
+- **Sửa**:
+  - Xóa `'quantity' => 1` / `'quantity' => $dataBody['quantity']` khỏi insert `api_keys` trong 7 file Partner
+  - CheckoutModal: dùng `useAxiosAuth()` gọi trực tiếp đến Laravel API, thêm `useRef` guard chống double-click
+  - Bỏ auto-close modal + auto-navigate sau mua thành công (giữ modal mở, khách tự đóng)
+  - Chặn đóng modal (overlay/nút X) khi đang pending
+  - Thêm state `purchaseSuccess` → nút chuyển "Mua thành công" (xanh), chặn mua lại vô tình
+  - Thêm invalidate `userOrders` query để trang lịch sử tự cập nhật
+- **Files**: `HomeProxyStaticPartner.php`, `ProxyVNStaticPartner.php`, `UpproxyStaticPartner.php`, `MktProxyPartner.php`, `ProxyVNPartner.php`, `ZingProxyPartner.php`, `UpproxyPartner.php`, `CheckoutModal.tsx`
 
 ---
 
