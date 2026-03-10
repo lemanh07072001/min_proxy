@@ -2037,6 +2037,17 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
   - Detect payment threshold 15s tránh false positive khi countdown gần hết
 - **Files**: `BE/app/Http/Controllers/Api/ProxyController.php`, `RechargePage.tsx`, `RechargeInputDialog.tsx`
 
+#### 12.75 Thêm cột partner_price + ẩn price_cost toàn bộ client API
+
+- **Vấn đề**: `price_cost` hiển thị trong lịch sử cho khách. Cần 2 loại giá cost: giá vốn bên mình (`price_cost`) và giá thực tế đối tác tính (`partner_price`) để đối chiếu.
+- **Sửa**:
+  - Migration thêm cột `partner_price` (decimal 15,2, nullable) vào `api_keys`
+  - Cập nhật ApiKey model: thêm `partner_price` vào `$fillable` và `$moneyFields`
+  - 8 Partner buy() methods: populate `price_cost` + `partner_price` khi tạo ApiKey
+  - Fix 4 endpoint còn thiếu `makeHidden`: `getOrderProxyRotating` (bỏ load User thừa), `getAllProxy` (fix cả Redis cache), `getProxy`, OrderController
+  - Tất cả client API giờ ẩn cả `price_cost` + `partner_price` + `api_key_partner`
+- **Files**: `BE/database/migrations/2026_03_10_000002_add_partner_price_to_api_keys.php`, `BE/app/Models/MySql/ApiKey.php`, `BE/app/Http/Controllers/Api/ProxyController.php`, `BE/app/Http/Controllers/Api/OrderController.php`, 8 Partner files
+
 ---
 
 ## 13. Known Issues — Danh sách vấn đề cần xử lý

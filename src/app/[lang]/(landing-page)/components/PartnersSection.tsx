@@ -77,7 +77,7 @@ const PartnersSection = () => {
         </div>
       </div>
 
-      <div className='container-lg'>
+      <div className='container-lg' style={{ position: 'relative', zIndex: 2 }}>
         {/* Header */}
         <div className='partners-header'>
           <h2 className='partners-title'>
