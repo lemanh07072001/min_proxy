@@ -5,13 +5,14 @@
 
 export const ORDER_STATUS = {
   PENDING: '0',           // Chờ xử lý
-  PROCESSING: '1',        // Đang xử lý
-  IN_USE: '2',            // Đang sử dụng
+  PROCESSING: '1',        // Đang gọi API đối tác
+  IN_USE: '2',            // Có proxy, đang sử dụng
   PARTIAL_COMPLETED: '3', // Hoàn 1 phần
-  COMPLETED: '4',         // Hoàn thành
+  COMPLETED: '4',         // Hết hạn tự nhiên
   FAILED: '5',            // Thất bại
   EXPIRED: '6',           // Hết hạn
-  FULL_COMPLETED: '7'     // Hoàn toàn bộ
+  FULL_COMPLETED: '7',    // Hoàn toàn bộ
+  CANCELED: '8'           // Đã hủy
 } as const
 
 export type OrderStatusType = (typeof ORDER_STATUS)[keyof typeof ORDER_STATUS]
@@ -23,12 +24,13 @@ export type OrderStatusType = (typeof ORDER_STATUS)[keyof typeof ORDER_STATUS]
 export const ORDER_STATUS_LABELS = {
   [ORDER_STATUS.PENDING]: 'Chờ xử lý',
   [ORDER_STATUS.PROCESSING]: 'Đang xử lý',
-  [ORDER_STATUS.IN_USE]: 'Đang sử dụng',
-  [ORDER_STATUS.PARTIAL_COMPLETED]: 'Hoàn 1 phần',
-  [ORDER_STATUS.COMPLETED]: 'Hoàn thành',
+  [ORDER_STATUS.IN_USE]: 'Hoạt động',
+  [ORDER_STATUS.PARTIAL_COMPLETED]: 'Hoàn một phần',
+  [ORDER_STATUS.COMPLETED]: 'Đã hoàn thành',
   [ORDER_STATUS.FAILED]: 'Thất bại',
-  [ORDER_STATUS.EXPIRED]: 'Hết hạn',
-  [ORDER_STATUS.FULL_COMPLETED]: 'Hoàn toàn bộ'
+  [ORDER_STATUS.EXPIRED]: 'Đã hết hạn',
+  [ORDER_STATUS.FULL_COMPLETED]: 'Đã hoàn toàn',
+  [ORDER_STATUS.CANCELED]: 'Đã hủy'
 } as const
 
 /**
@@ -38,12 +40,13 @@ export const ORDER_STATUS_LABELS = {
 export const ORDER_STATUS_COLORS = {
   [ORDER_STATUS.PENDING]: 'warning',
   [ORDER_STATUS.PROCESSING]: 'info',
-  [ORDER_STATUS.IN_USE]: 'info',
-  [ORDER_STATUS.PARTIAL_COMPLETED]: 'success',
+  [ORDER_STATUS.IN_USE]: 'success',
+  [ORDER_STATUS.PARTIAL_COMPLETED]: 'warning',
   [ORDER_STATUS.COMPLETED]: 'success',
   [ORDER_STATUS.FAILED]: 'error',
   [ORDER_STATUS.EXPIRED]: 'error',
-  [ORDER_STATUS.FULL_COMPLETED]: 'error'
+  [ORDER_STATUS.FULL_COMPLETED]: 'success',
+  [ORDER_STATUS.CANCELED]: 'secondary'
 } as const
 
 /**

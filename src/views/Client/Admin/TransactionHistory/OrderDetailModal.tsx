@@ -124,6 +124,9 @@ export default function OrderDetailModal({ isOpen, onClose, orderData, isLoading
       case ORDER_STATUS.FULL_COMPLETED:
         icon = <BadgeCheck size={16} />
         break
+      case ORDER_STATUS.CANCELED:
+        icon = <CircleX size={16} />
+        break
       default:
         icon = <CircleQuestionMark size={16} />
     }

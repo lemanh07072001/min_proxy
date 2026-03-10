@@ -1,5 +1,7 @@
 import { useQuery , useMutation, useQueryClient } from '@tanstack/react-query'
 
+import { useSession } from 'next-auth/react'
+
 import useAxiosAuth from '@/hooks/useAxiosAuth'
 
 export const useOrders = () => {
@@ -67,6 +69,33 @@ return res?.data
     },
     onSuccess: () => {
       // Refresh lại danh sách orders sau khi gửi lại thành công
+      queryClient.invalidateQueries({ queryKey: ['orders'] })
+    }
+  })
+}
+
+export const useConfirmRefund = () => {
+  const queryClient = useQueryClient()
+  const { data: session } = useSession()
+
+  return useMutation({
+    mutationFn: async (apiKeyId: number) => {
+      const res = await fetch('/api/admin/proxy/confirm-refund', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${(session as any)?.access_token}`
+        },
+        body: JSON.stringify({ api_key_id: apiKeyId })
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) throw { response: { data } }
+
+      return data
+    },
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['orders'] })
     }
   })

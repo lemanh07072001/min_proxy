@@ -23,7 +23,8 @@ import {
   Loader2,
   Clock,
   CircleX,
-  User
+  User,
+  ShieldCheck
 } from 'lucide-react'
 
 import {
@@ -59,6 +60,7 @@ import { formatDateTimeLocal } from '@/utils/formatDate'
 import DetailUserModal from '@/views/Client/Admin/TransactionHistory/DetailUserModal'
 import LogModal from '@/views/Client/Admin/TransactionHistory/LogModal'
 import OrderDetailModal from '@/views/Client/Admin/TransactionHistory/OrderDetailModal'
+import RefundCheckModal from '@/views/Client/Admin/TransactionHistory/RefundCheckModal'
 import { useUserOrders } from '@/hooks/apis/useUserOrders'
 import { useOrders, useCancelOrder, useResendOrder, useDeleteOrder, useApiKeys } from '@/hooks/apis/useOrders'
 import CustomTextField from '@/@core/components/mui/TextField'
@@ -80,6 +82,8 @@ export default function TableDepositHistory() {
   const [isModalDetailUserOpen, setIsModalDetailUserOpen] = useState(false)
   const [isLogModalOpen, setIsLogModalOpen] = useState(false)
   const [isOrderDetailModalOpen, setIsOrderDetailModalOpen] = useState(false)
+  const [isRefundCheckModalOpen, setIsRefundCheckModalOpen] = useState(false)
+  const [refundCheckOrderData, setRefundCheckOrderData] = useState<any>(null)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false)
   const [isResendDialogOpen, setIsResendDialogOpen] = useState(false)
@@ -211,6 +215,9 @@ return toYmd(rowDate) === toYmd(date as Date)
       case ORDER_STATUS.FULL_COMPLETED:
         icon = <BadgeCheck size={16} />
         break
+      case ORDER_STATUS.CANCELED:
+        icon = <CircleX size={16} />
+        break
       default:
         icon = <CircleQuestionMark size={16} />
     }
@@ -341,6 +348,15 @@ return toYmd(rowDate) === toYmd(date as Date)
                     <User size={18} />
                   </IconButton>
                 </Tooltip>
+                <Tooltip title='Kiểm tra proxy & Hoàn tiền'>
+                  <IconButton
+                    size='small'
+                    color='warning'
+                    onClick={() => handleOpenRefundCheckModal(row.original)}
+                  >
+                    <ShieldCheck size={18} />
+                  </IconButton>
+                </Tooltip>
               </div>
             )
           }
@@ -399,6 +415,11 @@ return toYmd(rowDate) === toYmd(date as Date)
   const handleOpenOrderDetailModal = (orderData: any) => {
     setSelectedOrderData(orderData)
     setIsOrderDetailModalOpen(true)
+  }
+
+  const handleOpenRefundCheckModal = (orderData: any) => {
+    setRefundCheckOrderData(orderData)
+    setIsRefundCheckModalOpen(true)
   }
 
   const handleCloseOrderDetailModal = () => {
@@ -539,6 +560,7 @@ return toYmd(rowDate) === toYmd(date as Date)
                   <MenuItem value={ORDER_STATUS.FAILED}>Thất bại</MenuItem>
                   <MenuItem value={ORDER_STATUS.EXPIRED}>Hết hạn</MenuItem>
                   <MenuItem value={ORDER_STATUS.FULL_COMPLETED}>Hoàn toàn bộ</MenuItem>
+                  <MenuItem value={ORDER_STATUS.CANCELED}>Đã hủy</MenuItem>
                 </CustomTextField>
 
                 <AppReactDatepicker
@@ -697,6 +719,15 @@ return toYmd(rowDate) === toYmd(date as Date)
         onClose={handleCloseOrderDetailModal}
         orderData={selectedOrderData}
         isLoading={false}
+      />
+
+      <RefundCheckModal
+        isOpen={isRefundCheckModalOpen}
+        onClose={() => {
+          setIsRefundCheckModalOpen(false)
+          setRefundCheckOrderData(null)
+        }}
+        orderData={refundCheckOrderData}
       />
 
       {/* Cancel Order Confirmation Dialog */}
