@@ -19,6 +19,7 @@ export const useHistoryOrders = () => {
     refetchOnWindowFocus: false,
     refetchInterval: (query) => {
       const orders = query.state.data
+
       if (!Array.isArray(orders)) return false
 
       const hasPending = orders.some((o: any) => PENDING_STATUSES.includes(Number(o.status)))

@@ -87,14 +87,18 @@ const OrderDetail: React.FC<OrderDetailProps> = ({ open, onClose, order }) => {
   const getTimeRemaining = () => {
     if (!order?.expired_at) return null
     const s = String(order.status)
+
     if (s !== '2' && s !== '3') return null
 
     const diff = new Date(order.expired_at).getTime() - Date.now()
+
     if (diff <= 0) return null
 
     const days = Math.floor(diff / (1000 * 60 * 60 * 24))
     const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
-    return days > 0 ? `${days}d ${hours}h` : `${hours}h`
+
+    
+return days > 0 ? `${days}d ${hours}h` : `${hours}h`
   }
 
   const columns = useMemo(
@@ -123,9 +127,11 @@ const OrderDetail: React.FC<OrderDetailProps> = ({ open, onClose, order }) => {
         cell: ({ row }: { row: any }) => {
           if (order?.service_type === '0') {
             const proxys = row.original.proxys || {}
+
             const proxyValues = Object.entries(proxys)
               .filter(([key]) => key !== 'loaiproxy')
               .map(([_, value]) => value)
+
             const firstProxy = String(proxyValues[0] || '-')
 
             return (
@@ -214,15 +220,20 @@ const OrderDetail: React.FC<OrderDetailProps> = ({ open, onClose, order }) => {
 
   const handleCopySelected = () => {
     const selectedRows = table.getFilteredSelectedRowModel().rows
+
     if (selectedRows.length === 0) return
 
     const texts = selectedRows.map((row: any) => {
       if (order?.service_type === '0') {
         const proxys = row.original.proxys || {}
         const vals = Object.entries(proxys).filter(([k]) => k !== 'loaiproxy').map(([_, v]) => v)
-        return String(vals[0] || '')
+
+        
+return String(vals[0] || '')
       }
-      return row.original?.api_key || ''
+
+      
+return row.original?.api_key || ''
     }).filter(Boolean)
 
     copy(texts.join('\n'), `Đã copy ${texts.length} ${order?.service_type === '0' ? 'proxy' : 'API key'}!`)
@@ -230,20 +241,26 @@ const OrderDetail: React.FC<OrderDetailProps> = ({ open, onClose, order }) => {
 
   const handleDownloadSelected = () => {
     const selectedRows = table.getFilteredSelectedRowModel().rows
+
     if (selectedRows.length === 0) return
 
     const texts = selectedRows.map((row: any) => {
       if (order?.service_type === '0') {
         const proxys = row.original.proxys || {}
         const vals = Object.entries(proxys).filter(([k]) => k !== 'loaiproxy').map(([_, v]) => v)
-        return String(vals[0] || '')
+
+        
+return String(vals[0] || '')
       }
-      return row.original?.api_key || ''
+
+      
+return row.original?.api_key || ''
     }).filter(Boolean)
 
     const blob = new Blob([texts.join('\n')], { type: 'text/plain;charset=utf-8' })
     const url = window.URL.createObjectURL(blob)
     const link = document.createElement('a')
+
     link.href = url
     link.download = `${order?.order_code || 'order'}_proxies_${new Date().toISOString().split('T')[0]}.txt`
     document.body.appendChild(link)

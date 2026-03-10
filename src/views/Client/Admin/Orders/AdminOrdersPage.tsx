@@ -577,12 +577,14 @@ return (
                   onChange={e => setApiLimitInput(e.target.value)}
                   onBlur={() => {
                     const val = Math.max(20, Math.min(10000, Number(apiLimitInput) || 100))
+
                     setApiLimitInput(String(val))
                     setApiLimit(val)
                   }}
                   onKeyDown={e => {
                     if (e.key === 'Enter') {
                       const val = Math.max(20, Math.min(10000, Number(apiLimitInput) || 100))
+
                       setApiLimitInput(String(val))
                       setApiLimit(val)
                     }
@@ -676,6 +678,7 @@ return (
                       value={displayPerPage}
                       onChange={e => {
                         const val = Number(e.target.value)
+
                         setDisplayPerPage(val)
                         table.setPageSize(val)
                       }}

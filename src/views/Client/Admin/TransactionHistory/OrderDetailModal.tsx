@@ -78,6 +78,7 @@ export default function OrderDetailModal({ isOpen, onClose, orderData, isLoading
 
   const downloadApiKeys = () => {
     const selectedRows = table.getFilteredSelectedRowModel().rows
+
     const keys = selectedRows.length > 0
       ? selectedRows.map((r: any) => r.original.api_key || getProxyText(r.original)).join('\n')
       : (dataApiKeys || []).map((item: any) => item.api_key || getProxyText(item)).join('\n')
@@ -85,6 +86,7 @@ export default function OrderDetailModal({ isOpen, onClose, orderData, isLoading
     const blob = new Blob([keys], { type: 'text/plain' })
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
+
     link.href = url
     link.download = `keys-${orderData?.order?.order_code || 'export'}.txt`
     document.body.appendChild(link)
@@ -95,13 +97,16 @@ export default function OrderDetailModal({ isOpen, onClose, orderData, isLoading
 
   const getProxyText = (item: any) => {
     const p = item.proxys
+
     if (p && typeof p === 'object') return p.HTTP || p.SOCK5 || '-'
-    return p || '-'
+    
+return p || '-'
   }
 
   const getStatusBadge = (status: string) => {
     const label = ORDER_STATUS_LABELS_ADMIN[status]
     const color = ORDER_STATUS_COLORS[status as keyof typeof ORDER_STATUS_COLORS]
+
     if (!label) return <Chip label='?' size='small' color='default' />
 
     const isPending = [ORDER_STATUS.PENDING, ORDER_STATUS.PROCESSING, ORDER_STATUS.RETRY_PROCESSING_PARTIAL].includes(status as any)
@@ -142,7 +147,9 @@ export default function OrderDetailModal({ isOpen, onClose, orderData, isLoading
         size: 220,
         cell: ({ row }: { row: any }) => {
           const text = row.original.api_key || getProxyText(row.original)
-          return (
+
+          
+return (
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontFamily: 'monospace', fontSize: '12px' }}>
               <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{text}</span>
               {text !== '-' && (
@@ -165,9 +172,11 @@ export default function OrderDetailModal({ isOpen, onClose, orderData, isLoading
         header: 'Trạng thái', size: 100,
         cell: ({ row }: { row: any }) => {
           const s = row.original?.status
+
           if (s === 'ACTIVE') return <Chip label='Hoạt động' size='small' icon={<BadgeCheck size={14} />} color='success' />
           if (s === 'INACTIVE') return <Chip label='Đã tắt' size='small' icon={<BadgeMinus size={14} />} color='warning' />
-          return <Chip label='Hết hạn' size='small' icon={<CircleX size={14} />} color='error' />
+          
+return <Chip label='Hết hạn' size='small' icon={<CircleX size={14} />} color='error' />
         }
       },
       {
@@ -281,6 +290,7 @@ export default function OrderDetailModal({ isOpen, onClose, orderData, isLoading
                       onClick={() => {
                         const rows = table.getFilteredSelectedRowModel().rows
                         const keys = rows.map((r: any) => r.original.api_key || getProxyText(r.original)).join('\n')
+
                         copyToClipboard(keys, 'bulk')
                       }}
                       style={{
