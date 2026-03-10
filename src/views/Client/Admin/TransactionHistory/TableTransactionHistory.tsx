@@ -77,13 +77,13 @@ export default function TableDepositHistory() {
 
   // Staged filter values (chưa apply, chỉ apply khi click "Tìm")
   const [searchInput, setSearchInput] = useState('')
-  const [statusInput, setStatusInput] = useState<string>('')
+  const [typeInput, setTypeInput] = useState<string>('')
   const [limitInput, setLimitInput] = useState<string>('100')
   const [sortInput, setSortInput] = useState<'desc' | 'asc'>('desc')
 
   // Applied filter values (gửi lên API)
   const [searchQuery, setSearchQuery] = useState('')
-  const [statusFilter, setStatusFilter] = useState<string>('')
+  const [typeFilter, setTypeFilter] = useState<string>('')
   const [limit, setLimit] = useState<number>(100)
   const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc')
 
@@ -103,11 +103,11 @@ export default function TableDepositHistory() {
     const parsedLimit = Math.min(Math.max(parseInt(limitInput) || 100, 100), 10000)
 
     setSearchQuery(searchInput.trim())
-    setStatusFilter(statusInput)
+    setTypeFilter(typeInput)
     setLimit(parsedLimit)
     setSortOrder(sortInput)
     setLimitInput(String(parsedLimit))
-  }, [searchInput, statusInput, limitInput, sortInput])
+  }, [searchInput, typeInput, limitInput, sortInput])
 
   const handleSearchKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
@@ -118,11 +118,11 @@ export default function TableDepositHistory() {
 
   const handleClearAll = useCallback(() => {
     setSearchInput('')
-    setStatusInput('')
+    setTypeInput('')
     setLimitInput('100')
     setSortInput('desc')
     setSearchQuery('')
-    setStatusFilter('')
+    setTypeFilter('')
     setLimit(100)
     setSortOrder('desc')
   }, [])
@@ -130,7 +130,7 @@ export default function TableDepositHistory() {
   // Data
   const { data: apiResponse, isLoading, isFetching } = useAdminTransactionHistory({
     search: searchQuery || undefined,
-    status: statusFilter || undefined,
+    type: typeFilter || undefined,
     limit,
     order: sortOrder
   })
@@ -430,7 +430,7 @@ export default function TableDepositHistory() {
     })
   }
 
-  const hasActiveFilters = !!(searchQuery || statusFilter || limit !== 100 || sortOrder !== 'desc')
+  const hasActiveFilters = !!(searchQuery || typeFilter || limit !== 100 || sortOrder !== 'desc')
 
   return (
     <>
@@ -490,27 +490,26 @@ export default function TableDepositHistory() {
               }}
             />
 
-            {/* Status filter */}
+            {/* Transaction type filter */}
             <CustomTextField
               select
               size='small'
-              value={statusInput}
-              onChange={e => setStatusInput(e.target.value)}
+              value={typeInput}
+              onChange={e => setTypeInput(e.target.value)}
               sx={selectSx}
               slotProps={{ select: { displayEmpty: true } }}
             >
               <MenuItem value=''>
-                <em>Tất cả trạng thái</em>
+                <em>Tất cả loại GD</em>
               </MenuItem>
-              <MenuItem value={ORDER_STATUS.PENDING}>Đang chờ</MenuItem>
-              <MenuItem value={ORDER_STATUS.PROCESSING}>Đang xử lý</MenuItem>
-              <MenuItem value={ORDER_STATUS.IN_USE}>Đang sử dụng</MenuItem>
-              <MenuItem value={ORDER_STATUS.IN_USE_PARTIAL}>Thiếu proxy</MenuItem>
-              <MenuItem value={ORDER_STATUS.EXPIRED}>Hết hạn</MenuItem>
-              <MenuItem value={ORDER_STATUS.FAILED}>Thất bại</MenuItem>
-              <MenuItem value={ORDER_STATUS.PARTIAL_REFUNDED}>Hoàn tiền 1 phần</MenuItem>
-              <MenuItem value={ORDER_STATUS.REFUNDED_ALL}>Đã hoàn tiền</MenuItem>
-              <MenuItem value={ORDER_STATUS.RETRY_PROCESSING_PARTIAL}>Đang mua bù</MenuItem>
+              <MenuItem value={TRANSACTION_TYPES.NAPTIEN_MANUAL}>Nạp tiền thủ công</MenuItem>
+              <MenuItem value={TRANSACTION_TYPES.THANHTOAN}>Mua proxy</MenuItem>
+              <MenuItem value={TRANSACTION_TYPES.GIAHAN}>Gia hạn</MenuItem>
+              <MenuItem value={TRANSACTION_TYPES.THANHTOAN_V4}>Mua proxy V4</MenuItem>
+              <MenuItem value={TRANSACTION_TYPES.GIAHAN_V4}>Gia hạn V4</MenuItem>
+              <MenuItem value='REFUND_PARTIAL'>Hoàn tiền 1 phần</MenuItem>
+              <MenuItem value='REFUND_FULL'>Hoàn tiền toàn bộ</MenuItem>
+              <MenuItem value={TRANSACTION_TYPES.RUT_HOA_HONG_AFFILIATE}>Rút hoa hồng</MenuItem>
             </CustomTextField>
 
             {/* Sort order */}

@@ -1797,6 +1797,68 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
   - Xóa unused imports: `ChevronDown`, `Info`, `sanitizeHtml`
 - **Files**: `ProxyCard.tsx`, `RotatingProxyPage.tsx`, `ServiceFormModal.tsx`
 
+### 09/03/2026
+
+#### 12.57 FE Admin — Trang đối soát giao dịch ngân hàng + Webhook Logs
+
+- **Vấn đề**: Admin không có giao diện xem/lọc giao dịch ngân hàng từ webhook pay2s, không đối soát được ai nạp, nạp bao nhiêu, có match hay không. Cũng không xem được lịch sử webhook raw data.
+- **Sửa**:
+  - **API hook** `useTransactionBank.ts`: 3 hooks — `useTransactionBank` (danh sách GD), `useTransactionBankSummary` (thống kê), `useWebhookLogs` (webhook logs). Pattern useAxiosAuth + useQuery
+  - **Trang Giao dịch ngân hàng**: Summary cards (tổng GD, tiền vào, đã/chưa xử lý) + filter bar (ngân hàng, trạng thái, loại, search) + bảng 10 cột (ID, gateway, số TK, mã GD, ngày, nội dung, loại IN/OUT, số tiền, trạng thái, ID đối tác) + server-side pagination
+  - **Trang Webhook Logs**: Filter bar (đối tác, response code) + bảng 8 cột (ID, partner, IP, method, response code badge màu, số GD, thời gian, nút xem chi tiết) + Dialog xem raw payload & headers JSON formatted
+  - **Navigation**: Thêm 2 menu items "Giao dịch ngân hàng" (Landmark icon) + "Webhook Logs" (Webhook icon) vào admin MenuSection, permission `admin.depositHistory`. Prefetch routes
+- **Files**:
+  - `FE/src/hooks/apis/useTransactionBank.ts` (mới)
+  - `FE/src/views/Client/Admin/TransactionBank/TableTransactionBank.tsx` (mới)
+  - `FE/src/views/Client/Admin/WebhookLogs/TableWebhookLogs.tsx` (mới)
+  - `FE/src/app/[lang]/(private)/(client)/admin/transaction-bank/page.tsx` (mới)
+  - `FE/src/app/[lang]/(private)/(client)/admin/webhook-logs/page.tsx` (mới)
+  - `FE/src/components/layout/vertical/VerticalMenu.tsx` (sửa — thêm 2 menu items + prefetch)
+
+#### 12.58 Gộp trang đối soát nạp tiền — investigation + cộng tiền thủ công
+
+- **Vấn đề**: Admin non-tech không biết phải làm gì. 2 menu tách rời (GD ngân hàng + Webhook). Khi khách báo nạp không lên tiền, không có công cụ điều tra nguyên nhân và không thể cộng tay từ giao diện.
+- **Sửa**:
+  - **BE**: Migration thêm `matched_user_id` + `matched_bank_auto_id` vào `transaction_bank`. Thêm 2 endpoint: `GET /admin/transaction-bank/{id}/investigate` (phân tích tại sao GD chưa xử lý: content match, pending deposit, reason) + `POST /admin/transaction-bank/{id}/manual-credit` (cộng tiền thủ công với anti-dup 4 lớp: is_processed check → lockForUpdate → endpoint recheck → unique TID)
+  - **Gộp 2 trang → 1**: Trang "Đối soát nạp tiền" với MUI Tabs (Giao dịch | Nhật ký hệ thống). Xóa page webhook-logs riêng
+  - **Investigation panel**: Click GD chưa xử lý → dialog hiện: webhook đã nhận ✅, nội dung CK khớp user hay không, user có lệnh nạp đang chờ hay không, nguyên nhân cụ thể
+  - **Cộng tiền thủ công**: Autocomplete chọn user (auto-suggest từ investigation), số tiền readonly, ghi chú admin → confirm → cộng qua DepositService
+  - **UX**: Date presets, cột "Người nhận", banner xanh/vàng, highlight dòng chưa xử lý, Webhook Logs tiếng Việt hóa
+  - **Menu**: Gộp 2 menu → 1 entry "Đối soát nạp tiền"
+- **Files**:
+  - `BE/database/migrations/2026_03_09_000002_add_matched_user_id_to_transaction_bank.php` (mới)
+  - `BE/app/Models/MySql/TransactionBank.php` (thêm matchedUser relation)
+  - `BE/app/Http/Controllers/Api/TransactionBankController.php` (thêm investigate + manualCredit)
+  - `BE/app/Http/Controllers/Api/WebhookPay2sController.php` (lưu matched_user_id)
+  - `BE/routes/api.php` (thêm 2 routes)
+  - `FE/src/hooks/apis/useTransactionBank.ts` (thêm useInvestigate + useManualCredit)
+  - `FE/src/app/[lang]/(private)/(client)/admin/transaction-bank/page.tsx` (rewrite — tabs)
+  - `FE/src/views/Client/Admin/TransactionBank/TableTransactionBank.tsx` (rewrite — investigation + manual credit)
+  - `FE/src/views/Client/Admin/WebhookLogs/TableWebhookLogs.tsx` (rewrite — tiếng Việt)
+  - `FE/src/components/layout/vertical/VerticalMenu.tsx` (gộp menu)
+
+#### 12.63 Quản lý nạp tiền — Evidence Chain 6 bước + Dismiss + Gộp 3 trang
+
+- **Vấn đề**: 3 trang admin rời rạc (Lịch sử giao dịch, Lịch sử chuyển tiền, Đối soát nạp tiền) gây nhầm lẫn. Khi khách báo "nạp không lên", admin phải mở 3 trang tự đoán. Không có chuỗi bằng chứng liên kết, không bỏ qua được GD spam.
+- **Sửa**:
+  - **BE**: Migration thêm `dismissed_at/dismissed_by/dismiss_reason` cho `transaction_bank`. Endpoint `investigateFull` — chuỗi bằng chứng 6 bước (webhook → GD ngân hàng → khớp nội dung CK → lệnh nạp → cộng tiền → hoàn tất) với 2 entry point: từ `transaction_bank` hoặc `bank_auto`. Endpoint `dismiss/undismiss` cho GD spam. Endpoint `adminDeposits` — danh sách bank_auto server-side pagination.
+  - **FE**: Gộp 3 trang → 1 trang "Quản lý nạp tiền" với 3 tabs (Giao dịch ngân hàng + Lệnh nạp tiền + Nhật ký webhook), badge đỏ hiện số cần xử lý. InvestigationDrawer — MUI Drawer hiện evidence chain dạng stepper (xanh/đỏ/xám), near-matches khi khớp sai, gợi ý hành động, form cộng tay + bỏ qua. Dismiss: row xám strikethrough, undo được.
+  - **Menu**: Đổi "Lịch sử giao dịch" → "Biến động số dư", "Đối soát nạp tiền" → "Quản lý nạp tiền". Xóa menu "Lịch sử chuyển tiền". Xóa trang admin/deposit-history.
+- **Files**:
+  - `BE/database/migrations/2026_03_10_000001_add_dismiss_to_transaction_bank.php` (mới)
+  - `BE/app/Models/MySql/TransactionBank.php` (thêm dismiss fields + relation)
+  - `BE/app/Http/Controllers/Api/TransactionBankController.php` (thêm investigateFull, dismiss, undismiss, adminDeposits)
+  - `BE/routes/api.php` (thêm 4 routes)
+  - `FE/src/hooks/apis/useDepositManagement.ts` (mới — 4 hooks)
+  - `FE/src/views/Client/Admin/DepositManagement/InvestigationDrawer.tsx` (mới)
+  - `FE/src/views/Client/Admin/DepositManagement/TabDepositRequests.tsx` (mới)
+  - `FE/src/app/[lang]/(private)/(client)/admin/transaction-bank/page.tsx` (rewrite — 3 tabs + badges)
+  - `FE/src/views/Client/Admin/TransactionBank/TableTransactionBank.tsx` (rewrite — dismiss + InvestigationDrawer)
+  - `FE/src/components/layout/vertical/VerticalMenu.tsx` (rename + cleanup)
+  - `FE/src/app/[lang]/(private)/(client)/admin/deposit-history/page.tsx` (xóa)
+  - `FE/src/views/Client/Admin/DepositHistory/TableDepositHistory.tsx` (xóa)
+  - `FE/src/app/[lang]/(private)/(client)/admin/webhook-logs/page.tsx` (xóa)
+
 #### 12.57 Tag redesign — pill badge trong card, nền đậm + icon
 
 - **Vấn đề**: Tag corner ribbon 8px quá nhỏ, mờ, khó đọc. Preview không khớp client.
@@ -1835,6 +1897,70 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
   - Hiển thị `#id` nhỏ (11px, màu xám) cạnh tên sản phẩm trên ProxyCard, PlanCard và CheckoutModal
   - Bỏ `backdrop-filter: blur(4px)` trên checkout overlay, giảm opacity còn 0.35 (tối nhẹ, không mờ)
 - **Files**: `ProxyCard.tsx`, `RotatingProxyPage.tsx`, `CheckoutModal.tsx`, `checkout-modal/styles.css`
+
+#### 12.62 Admin User Management — trang quản lý Users đầy đủ
+
+- **Vấn đề**: Admin không có giao diện quản lý users trên hệ thống mới (trang cũ chỉ là stub). Cần xem danh sách, tìm kiếm, sửa thông tin, cộng/trừ tiền, ban/unban, reset password.
+- **Sửa**:
+  - **BE**: Tạo `AdminUserController` với 5 endpoints: list (paginated + stats + search), update, adjust-balance, toggle-ban, reset-password. Migration thêm cột `is_banned` vào users table.
+  - **FE**: Stats cards (tổng users, mới tháng này, tổng số dư, tổng nạp). Bảng server-side pagination với 9 cột. Search theo tên/email/SĐT. 4 actions: Edit (modal form), Cộng/trừ tiền (modal toggle add/subtract), Ban/Unban (confirm dialog), Reset password (dialog hiện password mới).
+  - **Menu**: Đổi "Quản lý tài khoản" → "Users"
+- **Files**:
+  - `BE/app/Http/Controllers/Api/AdminUserController.php` (mới)
+  - `BE/database/migrations/2026_03_09_100001_add_is_banned_to_users_table.php` (mới)
+  - `BE/app/User.php` (thêm is_banned vào fillable)
+  - `BE/routes/api.php` (thêm 5 routes admin/users)
+  - `FE/src/hooks/apis/useAdminUsers.ts` (mới)
+  - `FE/src/views/Client/Admin/Users/UsersPage.tsx` (rewrite)
+  - `FE/src/views/Client/Admin/Users/TableUsers.tsx` (mới)
+  - `FE/src/views/Client/Admin/Users/ModalEditUser.tsx` (mới)
+  - `FE/src/views/Client/Admin/Users/ModalBalanceAdjust.tsx` (mới)
+  - `FE/src/components/layout/vertical/VerticalMenu.tsx` (đổi label)
+
+#### 12.64 Redesign sidebar menu + BalanceCard
+
+- **Vấn đề**: Menu nhóm "Dịch vụ" chứa quá nhiều item không liên quan. BalanceCard gradient orange→red quá chói, UX kém. Admin menu lộn xộn.
+- **Sửa**:
+  - **Client menu**: Đổi "Proxy" → "Sản phẩm", gom Check Proxy + Lịch sử mua hàng vào. Tách "Tài chính" (Nạp tiền, Lịch sử GD), "Kiếm tiền" (Affiliate, Đối tác), "Hỗ trợ" (API Docs, Hỗ trợ, Liên hệ). Bỏ section "Liên hệ" cũ.
+  - **Admin menu**: Sắp xếp theo nhóm — Sản phẩm & Đơn hàng (Quản lý sản phẩm, Đối tác, Đơn thiếu proxy), Tài chính (Lịch sử giao dịch, Quản lý nạp tiền), Người dùng & Hỗ trợ, Cài đặt. Đổi tên: "Dịch vụ" → "Quản lý sản phẩm", "Biến động số dư" → "Lịch sử giao dịch", "Users" → "Người dùng". Fix icon phù hợp.
+  - **BalanceCard**: Bỏ gradient chói → nền `slate-50` + border nhẹ, text tối dễ đọc.
+- **Files**: `VerticalMenu.tsx`, `BalanceCardClient.tsx`
+
+#### 12.65 Admin Users — Lịch sử giao dịch user
+
+- **Vấn đề**: Admin cộng/trừ tiền tay có ghi chú nhưng không có chỗ xem lại lịch sử giao dịch của user.
+- **Sửa**: Thêm modal xem lịch sử giao dịch (100 giao dịch gần nhất) với cột: thời gian, loại GD, số dư trước/thay đổi/sau, nội dung. Nút "Lịch sử" (icon History) trong cột Thao tác.
+- **Files**: `UserTransactionModal.tsx` (mới), `TableUsers.tsx`, `UsersPage.tsx`, `useAdminUsers.ts`, `AdminUserController.php`, `api.php`
+
+#### 12.66 Fix bộ lọc Lịch sử giao dịch + Trang Quản lý đơn hàng
+
+- **Vấn đề**: Bộ lọc "Lịch sử giao dịch" dùng trạng thái đơn hàng (ORDER_STATUS) thay vì loại giao dịch (TRANSACTION_TYPES). Thiếu trang quản lý đơn hàng riêng biệt cho admin.
+- **Sửa**:
+  - Fix dropdown filter: đổi từ ORDER_STATUS → TRANSACTION_TYPES, param `status` → `type`
+  - Tạo trang `/admin/orders` với: 4 stats cards (tổng đơn, doanh thu, vốn, lợi nhuận), bộ lọc (date range, status, partner, order type), bảng server-side pagination, actions (xem chi tiết, hủy+hoàn tiền, gửi lại)
+  - Thêm menu "Quản lý đơn hàng" (icon ShoppingCart) vào sidebar admin
+- **Files**: `TableTransactionHistory.tsx`, `AdminOrdersPage.tsx` (mới), `admin/orders/page.tsx` (mới), `useOrderReport.ts`, `VerticalMenu.tsx`
+
+#### 12.67 Redesign BalanceCard sidebar + Form nạp tiền
+
+- **Vấn đề**: Card "Số dư" sidebar quá plain. Form nạp tiền full-width trống trải, thiếu context (không hiện số dư, không có flow hint), warning đỏ hiện trước khi user làm gì.
+- **Sửa**:
+  - BalanceCard: compact 1 hàng (icon brand accent + label + số tiền), bỏ card background nặng
+  - RechargePage form: centered max-480px, header gradient brand, hiện số dư hiện tại, flow hint, mệnh giá dạng chips pill, bỏ warning trước QR
+  - RechargeInputDialog: sync UI tương tự (flow hint, chips pill, bỏ warning)
+- **Files**: `BalanceCardClient.tsx`, `RechargePage.tsx`, `RechargeInputDialog.tsx`
+
+#### 12.68 Redesign Announcement Feed trang chủ
+
+- **Vấn đề**: Mọi thông báo trông giống nhau (cùng avatar xanh "Admin"), không phân biệt loại khi lướt nhanh, action bar trống trải.
+- **Sửa**:
+  - Bỏ avatar + "Admin" lặp lại → thay bằng icon + màu theo loại (Tag/Sparkles/TrendingUp/Wrench/Megaphone)
+  - Thêm left border accent theo màu loại → lướt nhanh biết ngay bảo trì (đỏ) hay giảm giá (xanh)
+  - Header gọn: type icon + chip + time trên 1 dòng
+  - Action button thu gọn (inline, không full-width)
+  - Skeleton loading match layout mới
+  - Empty state: thay "Chưa có thông báo nào" bằng welcome + 4 quick action cards (Mua Proxy, Nạp tiền, Check Proxy, API Docs)
+- **Files**: `home/page.tsx`, `globals.css`
 
 ---
 

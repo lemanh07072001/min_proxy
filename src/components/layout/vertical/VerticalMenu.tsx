@@ -10,7 +10,6 @@ import {
   ShoppingBag,
   History,
   FileText,
-  User,
   MessageCircleQuestionMark,
   Handshake,
   Link,
@@ -23,7 +22,9 @@ import {
   Megaphone,
   Settings,
   LifeBuoy,
-  AlertTriangle
+  AlertTriangle,
+  Landmark,
+  ShoppingCart
 } from 'lucide-react'
 
 // MUI Imports
@@ -198,8 +199,9 @@ const VerticalMenu = ({ scrollMenu, dictionary }: Props) => {
     const routes = [
       'home', 'recharge', 'proxy-tinh', 'proxy-xoay', 'check-proxy', 'history-order', 'affiliate',
       'transaction-history', 'contact', 'profile', 'history-login',
-      'admin/dashboard', 'admin/transaction-history', 'admin/deposit-history',
-      'admin/users', 'admin/service-type', 'admin/partner', 'admin/announcements', 'admin/site-settings'
+      'admin/dashboard', 'admin/transaction-history',
+      'admin/users', 'admin/service-type', 'admin/partner', 'admin/announcements', 'admin/site-settings',
+      'admin/transaction-bank', 'admin/partial-orders', 'admin/support-tickets'
     ]
 
     const timers: ReturnType<typeof setTimeout>[] = []
@@ -296,7 +298,7 @@ const VerticalMenu = ({ scrollMenu, dictionary }: Props) => {
           </MenuItem>
         </MenuSection>
 
-        <MenuSection label='Proxy' rootStyles={menuSectionHeaderStyles}>
+        <MenuSection label='Sản phẩm' rootStyles={menuSectionHeaderStyles}>
           <MenuItem
             icon={<EthernetPort size={20} strokeWidth={1.5} />}
             {...nav('proxy-tinh')}
@@ -312,9 +314,25 @@ const VerticalMenu = ({ scrollMenu, dictionary }: Props) => {
           >
             {dictionary['navigation'].rotatingProxy}
           </MenuItem>
+
+          <MenuItem
+            icon={<ShoppingBag size={20} strokeWidth={1.5} />}
+            {...nav('check-proxy')}
+            href={`/${locale}/check-proxy`}
+          >
+            {dictionary['navigation'].checkProxy}
+          </MenuItem>
+
+          <MenuItem
+            icon={<History size={20} strokeWidth={1.5} />}
+            {...nav('history-order')}
+            href={`/${locale}/history-order`}
+          >
+            {dictionary['navigation'].purchaseHistory}
+          </MenuItem>
         </MenuSection>
 
-        <MenuSection label='Dịch vụ' rootStyles={menuSectionHeaderStyles}>
+        <MenuSection label='Tài chính' rootStyles={menuSectionHeaderStyles}>
           <MenuItem
             icon={<Wallet size={20} strokeWidth={1.5} />}
             {...nav('recharge')}
@@ -324,26 +342,21 @@ const VerticalMenu = ({ scrollMenu, dictionary }: Props) => {
           </MenuItem>
 
           <MenuItem
-            icon={<ShoppingBag size={20} strokeWidth={1.5} />}
-            {...nav('check-proxy')}
-            href={`/${locale}/check-proxy`}
+            icon={<FileText size={20} strokeWidth={1.5} />}
+            {...nav('transaction-history')}
+            href={`/${locale}/transaction-history`}
           >
-            {dictionary['navigation'].checkProxy}
+            {dictionary['navigation'].transactionHistory}
           </MenuItem>
-          <MenuItem
-            icon={<History size={20} strokeWidth={1.5} />}
-            {...nav('history-order')}
-            href={`/${locale}/history-order`}
-          >
-            {dictionary['navigation'].purchaseHistory}
-          </MenuItem>
+        </MenuSection>
 
+        <MenuSection label='Kiếm tiền' rootStyles={menuSectionHeaderStyles}>
           <MenuItem
             icon={<Link size={20} strokeWidth={1.5} />}
             {...nav('affiliate')}
             href={`/${locale}/affiliate`}
           >
-            {(dictionary['navigation'] as any).affiliate || 'Affiliate'}
+            {(dictionary['navigation'] as any).affiliate || 'Tiếp thị liên kết'}
           </MenuItem>
 
           <MenuItem
@@ -351,17 +364,11 @@ const VerticalMenu = ({ scrollMenu, dictionary }: Props) => {
             {...nav('partner')}
             href={`/${locale}/partner`}
           >
-            {(dictionary['navigation'] as any).partner || 'Partner'}
+            {(dictionary['navigation'] as any).partner || 'Đối tác'}
           </MenuItem>
+        </MenuSection>
 
-          <MenuItem
-            icon={<FileText size={20} strokeWidth={1.5} />}
-            {...nav('transaction-history')}
-            href={`/${locale}/transaction-history`}
-          >
-            {dictionary['navigation'].transactionHistory}
-          </MenuItem>
-
+        <MenuSection label='Hỗ trợ' rootStyles={menuSectionHeaderStyles}>
           <MenuItem
             icon={<FileText size={20} strokeWidth={1.5} />}
             rootStyles={getMenuItemStyles('docs-api')}
@@ -376,12 +383,6 @@ const VerticalMenu = ({ scrollMenu, dictionary }: Props) => {
           >
             Hỗ trợ
           </MenuItem>
-        </MenuSection>
-
-        <MenuSection label='Liên hệ' rootStyles={menuSectionHeaderStyles}>
-          <MenuItem icon={<User size={20} strokeWidth={1.5} />} rootStyles={baseMenuItemStyles}>
-            {dictionary['navigation'].guide}
-          </MenuItem>
           <MenuItem
             icon={<MessageCircleQuestionMark size={20} strokeWidth={1.5} />}
             {...nav('contact')}
@@ -394,36 +395,56 @@ const VerticalMenu = ({ scrollMenu, dictionary }: Props) => {
         {/* Admin Menu Section */}
         {!isAdminLoading && isAdmin && (
           <MenuSection label='Quản trị' rootStyles={menuSectionHeaderStyles}>
+            {/* Tổng quan */}
             {hasPermission('admin.dashboard') && (
               <MenuItem
                 icon={<BarChart3 size={20} strokeWidth={1.5} />}
                 {...nav('admin/dashboard')}
                 href={`/${locale}/admin/dashboard`}
               >
-                Dashboard Admin
+                Dashboard
               </MenuItem>
             )}
 
+            {/* Sản phẩm & Đơn hàng */}
+            {hasPermission('admin.serviceType') && (
+              <MenuItem
+                icon={<ShoppingBag size={20} strokeWidth={1.5} />}
+                {...nav('admin/service-type')}
+                href={`/${locale}/admin/service-type`}
+              >
+                Quản lý sản phẩm
+              </MenuItem>
+            )}
             {hasPermission('admin.partner') && (
               <MenuItem
-                icon={<BarChart3 size={20} strokeWidth={1.5} />}
+                icon={<Handshake size={20} strokeWidth={1.5} />}
                 {...nav('admin/partner')}
                 href={`/${locale}/admin/partner`}
               >
                 Đối tác
               </MenuItem>
             )}
-
-            {hasPermission('admin.users') && (
+            {hasPermission('admin.transactionHistory') && (
               <MenuItem
-                icon={<User size={20} strokeWidth={1.5} />}
-                {...nav('admin/users')}
-                href={`/${locale}/admin/users`}
+                icon={<ShoppingCart size={20} strokeWidth={1.5} />}
+                {...nav('admin/orders')}
+                href={`/${locale}/admin/orders`}
               >
-                Quản lý tài khoản
+                Quản lý đơn hàng
+              </MenuItem>
+            )}
+            {hasPermission('admin.transactionHistory') && (
+              <MenuItem
+                icon={<AlertTriangle size={20} strokeWidth={1.5} />}
+                {...nav('admin/partial-orders')}
+                href={`/${locale}/admin/partial-orders`}
+              >
+                Đơn thiếu proxy
               </MenuItem>
             )}
 
+            {/* Tài chính */}
             {hasPermission('admin.transactionHistory') && (
               <MenuItem
                 icon={<TransactionHistory />}
@@ -433,27 +454,37 @@ const VerticalMenu = ({ scrollMenu, dictionary }: Props) => {
                 Lịch sử giao dịch
               </MenuItem>
             )}
-
             {hasPermission('admin.depositHistory') && (
               <MenuItem
-                icon={<TransactionHistory />}
-                {...nav('admin/deposit-history')}
-                href={`/${locale}/admin/deposit-history`}
+                icon={<Landmark size={20} strokeWidth={1.5} />}
+                {...nav('admin/transaction-bank')}
+                href={`/${locale}/admin/transaction-bank`}
               >
-                Lịch sử chuyển tiền
+                Quản lý nạp tiền
               </MenuItem>
             )}
 
-            {hasPermission('admin.serviceType') && (
+            {/* Người dùng & Hỗ trợ */}
+            {hasPermission('admin.users') && (
               <MenuItem
-                icon={<TransactionHistory />}
-                {...nav('admin/service-type')}
-                href={`/${locale}/admin/service-type`}
+                icon={<Users size={20} strokeWidth={1.5} />}
+                {...nav('admin/users')}
+                href={`/${locale}/admin/users`}
               >
-                Dịch vụ
+                Người dùng
+              </MenuItem>
+            )}
+            {hasPermission('admin.transactionHistory') && (
+              <MenuItem
+                icon={<LifeBuoy size={20} strokeWidth={1.5} />}
+                {...nav('admin/support-tickets')}
+                href={`/${locale}/admin/support-tickets`}
+              >
+                Tickets hỗ trợ
               </MenuItem>
             )}
 
+            {/* Cài đặt */}
             {hasPermission('admin.announcements') && (
               <MenuItem
                 icon={<Megaphone size={20} strokeWidth={1.5} />}
@@ -470,24 +501,6 @@ const VerticalMenu = ({ scrollMenu, dictionary }: Props) => {
                 href={`/${locale}/admin/site-settings`}
               >
                 Cấu hình trang chủ
-              </MenuItem>
-            )}
-            {hasPermission('admin.transactionHistory') && (
-              <MenuItem
-                icon={<LifeBuoy size={20} strokeWidth={1.5} />}
-                {...nav('admin/support-tickets')}
-                href={`/${locale}/admin/support-tickets`}
-              >
-                Tickets hỗ trợ
-              </MenuItem>
-            )}
-            {hasPermission('admin.transactionHistory') && (
-              <MenuItem
-                icon={<AlertTriangle size={20} strokeWidth={1.5} />}
-                {...nav('admin/partial-orders')}
-                href={`/${locale}/admin/partial-orders`}
-              >
-                Đơn thiếu proxy
               </MenuItem>
             )}
           </MenuSection>

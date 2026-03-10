@@ -179,3 +179,46 @@ export const useOrderReportDetail = (params: OrderDetailParams, enabled = true) 
     refetchOnWindowFocus: false
   })
 }
+
+// ═══════════════════════════════════════════════════════
+// Admin Orders — server-side pagination
+// ═══════════════════════════════════════════════════════
+
+export interface AdminOrdersParams {
+  start: string
+  end: string
+  page?: number
+  per_page?: number
+  status?: number | null
+  partner_id?: number | null
+  order_type?: number | null
+}
+
+export const useAdminOrders = (params: AdminOrdersParams, enabled = true) => {
+  const { data: session } = useSession() as any
+  const axiosAuth = useAxiosAuth()
+
+  const { start, end, page = 1, per_page = 20, status, partner_id, order_type } = params
+
+  return useQuery({
+    queryKey: ['adminOrders', start, end, page, per_page, status, partner_id, order_type],
+    queryFn: async () => {
+      const res = await axiosAuth.get('/order-report/detail', {
+        params: {
+          start,
+          end,
+          page,
+          per_page,
+          ...(status !== null && status !== undefined ? { status } : {}),
+          ...(partner_id ? { partner_id } : {}),
+          ...(order_type !== null && order_type !== undefined ? { order_type } : {})
+        }
+      })
+
+      return res.data?.data ?? null
+    },
+    enabled: enabled && !!session?.access_token && !!start && !!end,
+    staleTime: 30 * 1000,
+    refetchOnWindowFocus: false
+  })
+}

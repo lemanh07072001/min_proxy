@@ -285,83 +285,178 @@ export default function RechargePage() {
               <Box
                 sx={{
                   background: 'var(--mui-palette-background-paper, #fff)',
-                  borderRadius: '10px',
+                  borderRadius: '12px',
                   border: '1px solid var(--mui-palette-divider, #e2e8f0)',
-                  padding: '20px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '14px'
+                  overflow: 'hidden'
                 }}
               >
-                <Typography sx={{ fontWeight: 600, fontSize: '14px', color: 'var(--mui-palette-text-primary, #1e293b)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <QrCode size={16} color='var(--primary-color)' />
-                  Nạp tiền bằng chuyển khoản ngân hàng
-                </Typography>
+                {/* Hướng dẫn 3 bước */}
+                <Box sx={{ padding: '20px', paddingBottom: '16px' }}>
+                  <Typography sx={{ fontWeight: 700, fontSize: '14px', color: '#1e293b', mb: 2, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Wallet size={16} color='var(--primary-color)' />
+                    Nạp tiền qua chuyển khoản ngân hàng
+                  </Typography>
 
-                <CustomTextField
-                  label='Số tiền nạp (VNĐ)'
-                  placeholder='10,000'
-                  type='text'
-                  value={rechargeAmount}
-                  onInput={changeInputAmount}
-                  slotProps={{
-                    input: {
-                      endAdornment: (
-                        <InputAdornment position='start' sx={{ '& .MuiTypography-root': { fontWeight: 'bold', fontSize: '13px' } }}>
-                          VND
-                        </InputAdornment>
-                      )
-                    }
-                  }}
-                  sx={{
-                    '& .MuiInputBase-root': { padding: '4px', fontSize: '15px', fontWeight: 'bold' },
-                    '& .MuiInputLabel-root': { fontSize: '13px', fontWeight: 600 }
-                  }}
-                />
-
-                <Box>
-                  <Typography sx={{ fontWeight: 600, fontSize: '13px', color: 'var(--mui-palette-text-secondary, #475569)', mb: 1 }}>Chọn nhanh:</Typography>
-                  <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'repeat(3, 1fr)', lg: 'repeat(5, 1fr)' }, gap: 1 }}>
-                    {denominations.map((denominationValue, key) => (
-                      <BoxAmount
-                        key={key}
-                        handleSelectAmount={handleAmountSelect}
-                        amount={denominationValue}
-                        isActive={denominationValue === amount}
-                      />
+                  <Box
+                    sx={{
+                      display: 'grid',
+                      gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, 1fr)' },
+                      gap: '12px',
+                      mb: 2
+                    }}
+                  >
+                    {[
+                      { step: '1', title: 'Tạo mã QR', desc: 'Nhập số tiền và bấm tạo QR bên dưới' },
+                      { step: '2', title: 'Chuyển khoản', desc: 'Quét QR hoặc chuyển khoản theo thông tin' },
+                      { step: '3', title: 'Nhận tiền', desc: 'Tiền tự động cộng sau 1–5 phút' }
+                    ].map(item => (
+                      <Box
+                        key={item.step}
+                        sx={{
+                          display: 'flex',
+                          gap: '10px',
+                          alignItems: 'flex-start',
+                          padding: '12px',
+                          borderRadius: '10px',
+                          background: '#f8fafc',
+                          border: '1px solid #f1f5f9'
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            width: 28,
+                            height: 28,
+                            borderRadius: '50%',
+                            background: 'var(--primary-gradient)',
+                            color: '#fff',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '13px',
+                            fontWeight: 700,
+                            flexShrink: 0
+                          }}
+                        >
+                          {item.step}
+                        </Box>
+                        <Box>
+                          <Typography sx={{ fontSize: '13px', fontWeight: 600, color: '#1e293b', lineHeight: 1.3 }}>
+                            {item.title}
+                          </Typography>
+                          <Typography sx={{ fontSize: '12px', color: '#64748b', lineHeight: 1.4, mt: 0.3 }}>
+                            {item.desc}
+                          </Typography>
+                        </Box>
+                      </Box>
                     ))}
+                  </Box>
+
+                  {/* Cảnh báo quan trọng */}
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '8px 12px',
+                      borderRadius: '8px',
+                      background: '#fffbeb',
+                      border: '1px solid #fde68a'
+                    }}
+                  >
+                    <CircleAlert size={15} color='#d97706' style={{ flexShrink: 0 }} />
+                    <Typography sx={{ fontSize: '12px', color: '#92400e', lineHeight: 1.4 }}>
+                      <strong>Quan trọng:</strong> Phải tạo QR trước rồi mới chuyển khoản. Chuyển khoản không qua QR sẽ không được ghi nhận tự động.
+                    </Typography>
                   </Box>
                 </Box>
 
-                <Typography sx={{ fontSize: '12px', color: '#dc2626', lineHeight: 1.5 }}>
-                  Sai nội dung hoặc 10 phút không lên tiền, vui lòng liên hệ hỗ trợ để kiểm tra.
-                </Typography>
+                {/* Divider */}
+                <Box sx={{ borderTop: '1px solid var(--mui-palette-divider, #e2e8f0)' }} />
 
-                <Button
-                  onClick={handleCreateQrCode}
-                  disabled={isButtonDisabled}
-                  variant='contained'
-                  fullWidth
-                  sx={{
-                    padding: '12px 16px',
-                    color: 'white',
-                    fontSize: '14px',
-                    fontWeight: 600,
-                    textTransform: 'none',
-                    borderRadius: '10px',
-                    '&.Mui-disabled': { backgroundColor: 'var(--mui-palette-action-disabledBackground, #f1f5f9)', color: 'var(--mui-palette-text-disabled, #94a3b8)', cursor: 'not-allowed !important' }
-                  }}
-                >
-                  {isGeneratingQR ? (
-                    <>
-                      <Loader size={15} className='spinning-icon me-2' /> Đang tạo QR...
-                    </>
-                  ) : (
-                    <>
-                      <QrCode size={15} className='me-2' /> Tạo QR Bank
-                    </>
-                  )}
-                </Button>
+                {/* Form body */}
+                <Box sx={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  {/* Số dư hiện tại */}
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      background: '#f8fafc',
+                      border: '1px solid #e2e8f0',
+                      borderRadius: '8px',
+                      padding: '10px 14px'
+                    }}
+                  >
+                    <Typography sx={{ fontSize: '13px', color: '#64748b' }}>Số dư hiện tại</Typography>
+                    <Typography sx={{ fontSize: '14px', fontWeight: 700, color: '#1e293b' }}>
+                      {new Intl.NumberFormat('vi-VN').format(user?.sodu ?? 0)}đ
+                    </Typography>
+                  </Box>
+
+                  {/* Input + Chips trên 1 row trên desktop */}
+                  <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: '12px', alignItems: { sm: 'flex-end' } }}>
+                    <Box sx={{ flex: 1 }}>
+                      <CustomTextField
+                        label='Số tiền nạp'
+                        placeholder='Nhập số tiền'
+                        type='text'
+                        fullWidth
+                        value={rechargeAmount}
+                        onInput={changeInputAmount}
+                        slotProps={{
+                          input: {
+                            endAdornment: (
+                              <InputAdornment position='end' sx={{ '& .MuiTypography-root': { fontWeight: 700, fontSize: '13px', color: '#94a3b8' } }}>
+                                VNĐ
+                              </InputAdornment>
+                            )
+                          }
+                        }}
+                        sx={{
+                          '& .MuiInputBase-root': { padding: '4px 8px', fontSize: '16px', fontWeight: 700 },
+                          '& .MuiInputLabel-root': { fontSize: '13px', fontWeight: 600 }
+                        }}
+                      />
+                    </Box>
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: '6px', pb: '4px' }}>
+                      {denominations.map((denominationValue, key) => (
+                        <BoxAmount
+                          key={key}
+                          handleSelectAmount={handleAmountSelect}
+                          amount={denominationValue}
+                          isActive={denominationValue === amount}
+                        />
+                      ))}
+                    </Box>
+                  </Box>
+
+                  {/* CTA */}
+                  <Button
+                    onClick={handleCreateQrCode}
+                    disabled={isButtonDisabled}
+                    variant='contained'
+                    sx={{
+                      padding: '10px 32px',
+                      color: 'white',
+                      fontSize: '14px',
+                      fontWeight: 600,
+                      textTransform: 'none',
+                      borderRadius: '10px',
+                      alignSelf: 'flex-start',
+                      '&.Mui-disabled': { backgroundColor: '#f1f5f9', color: '#94a3b8', cursor: 'not-allowed !important' }
+                    }}
+                  >
+                    {isGeneratingQR ? (
+                      <>
+                        <Loader size={15} className='spinning-icon me-2' /> Đang tạo QR...
+                      </>
+                    ) : (
+                      <>
+                        <QrCode size={15} className='me-2' /> Tạo mã QR thanh toán
+                      </>
+                    )}
+                  </Button>
+                </Box>
               </Box>
             )}
 
@@ -530,33 +625,30 @@ const BoxAmount = ({
   isActive: boolean
 }) => {
   const numericValue = amount.replace(/\D/g, '')
-  const data = numericValue.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+  const num = Number(numericValue)
+  const label = num >= 1_000_000 ? `${num / 1_000_000}tr` : `${num / 1_000}k`
 
   return (
     <Box
       onClick={() => handleSelectAmount(numericValue)}
       sx={{
-        padding: '10px 8px',
-        borderRadius: '10px',
+        padding: '6px 14px',
+        borderRadius: '20px',
         fontWeight: 600,
         fontSize: '13px',
-        textAlign: 'center',
         cursor: 'pointer',
-        transition: 'all 0.2s ease',
-        backgroundColor: isActive ? '#fff7ed' : '#fff',
-        border: isActive ? '1.5px solid var(--primary-color)' : '1px solid #e5e7eb',
-        color: isActive ? 'var(--primary-color)' : '#374151',
-        boxShadow: isActive ? '0 0 0 3px rgba(249,115,22,0.1)' : 'none',
+        transition: 'all 0.15s ease',
+        backgroundColor: isActive ? 'rgba(252, 67, 54, 0.08)' : '#f8fafc',
+        border: isActive ? '1.5px solid var(--primary-color)' : '1.5px solid #e2e8f0',
+        color: isActive ? 'var(--primary-color)' : '#475569',
         '&:hover': {
-          border: '1.5px solid var(--primary-color)',
-          backgroundColor: '#fff7ed',
-          color: 'var(--primary-color)',
-          transform: 'translateY(-1px)',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
+          borderColor: 'var(--primary-color)',
+          backgroundColor: 'rgba(252, 67, 54, 0.05)',
+          color: 'var(--primary-color)'
         }
       }}
     >
-      {data}
+      {label}
     </Box>
   )
 }

@@ -649,34 +649,26 @@ body {
 .announcement-post-header {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 16px 16px 0;
+  gap: 10px;
+  padding: 14px 16px 0;
 }
 
-.announcement-avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+.announcement-type-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
 }
 
-.announcement-author {
-  font-size: 14px;
-  font-weight: 700;
-  color: #1e293b;
-}
-
 .announcement-time {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 4px;
   font-size: 12px;
   color: #94a3b8;
-  margin-block-start: 2px;
 }
 
 .announcement-post-title {
@@ -801,30 +793,56 @@ body {
 .announcement-post-actions {
   display: flex;
   align-items: center;
-  border-block-start: 1px solid #f1f5f9;
-  padding: 4px 8px;
+  padding: 0 16px 12px;
 }
 
 .announcement-action-btn {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 6px;
-  flex: 1;
-  justify-content: center;
-  padding: 8px 12px;
+  gap: 5px;
+  padding: 5px 12px;
   border: none;
-  background: none;
+  background: #f8fafc;
   color: #64748b;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   border-radius: 6px;
-  transition: background 0.15s;
+  transition: background 0.15s, color 0.15s;
 }
 
 .announcement-action-btn:hover {
   background: #f1f5f9;
   color: #3b82f6;
+}
+
+.empty-feed-action {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 10px;
+  background: #f8fafc;
+  border: 1px solid #f1f5f9;
+  text-decoration: none;
+  transition: background 0.15s, border-color 0.15s, transform 0.15s;
+}
+
+.empty-feed-action:hover {
+  background: #fff;
+  border-color: #e2e8f0;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.empty-feed-action-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
 .announcement-skeleton {

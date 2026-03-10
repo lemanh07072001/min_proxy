@@ -13,19 +13,21 @@ import {
   FormControlLabel,
   Checkbox
 } from '@mui/material'
-import { Share2, Shield, Clock, X, ChevronLeft, ChevronRight, MessageCircle, Send, Youtube, ExternalLink } from 'lucide-react'
+import { Share2, Clock, X, ChevronLeft, ChevronRight, MessageCircle, Send, Youtube, ExternalLink, Tag, Sparkles, TrendingUp, Wrench, Megaphone, Wallet, Globe, Search, BookOpen, ArrowRight } from 'lucide-react'
 import { toast } from 'react-toastify'
+
+import { useParams } from 'next/navigation'
 
 import { useAnnouncements } from '@/hooks/apis/useAnnouncements'
 import type { Announcement } from '@/hooks/apis/useAnnouncements'
 import { useSidebarSettings } from '@/hooks/apis/useSidebarSettings'
 
-const TYPE_MAP: Record<string, { label: string; color: string }> = {
-  discount: { label: 'Giảm giá', color: '#22c55e' },
-  new_product: { label: 'Sản phẩm mới', color: '#3b82f6' },
-  price_change: { label: 'Thay đổi giá', color: '#f59e0b' },
-  maintenance: { label: 'Bảo trì', color: '#ef4444' },
-  general: { label: 'Chung', color: '#6b7280' }
+const TYPE_MAP: Record<string, { label: string; color: string; icon: typeof Tag }> = {
+  discount: { label: 'Giảm giá', color: '#22c55e', icon: Tag },
+  new_product: { label: 'Sản phẩm mới', color: '#3b82f6', icon: Sparkles },
+  price_change: { label: 'Thay đổi giá', color: '#f59e0b', icon: TrendingUp },
+  maintenance: { label: 'Bảo trì', color: '#ef4444', icon: Wrench },
+  general: { label: 'Chung', color: '#6b7280', icon: Megaphone }
 }
 
 function timeAgo(dateStr: string) {
@@ -233,6 +235,7 @@ function ModalAnnouncements({ items }: { items: Announcement[] }) {
 function AnnouncementPost({ announcement }: { announcement: Announcement }) {
   const [showFull, setShowFull] = useState(false)
   const typeInfo = TYPE_MAP[announcement.type] || TYPE_MAP.general
+  const TypeIcon = typeInfo.icon
 
   const sanitizedHTML = useMemo(() => sanitize(announcement.content), [announcement.content])
   const isLong = announcement.content.length > 500
@@ -254,36 +257,36 @@ function AnnouncementPost({ announcement }: { announcement: Announcement }) {
   }
 
   return (
-    <div className='announcement-post'>
+    <div className='announcement-post' style={{ borderLeft: `3px solid ${typeInfo.color}` }}>
+      {/* Header: icon + chip + time */}
       <div className='announcement-post-header'>
-        <div className='announcement-avatar'>
-          <Shield size={18} color='white' />
+        <div className='announcement-type-icon' style={{ backgroundColor: `${typeInfo.color}12`, color: typeInfo.color }}>
+          <TypeIcon size={16} />
         </div>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-            <span className='announcement-author'>Admin</span>
-            <Chip
-              label={typeInfo.label}
-              size='small'
-              sx={{
-                height: '20px',
-                fontSize: '11px',
-                fontWeight: 600,
-                backgroundColor: `${typeInfo.color}15`,
-                color: typeInfo.color,
-                border: `1px solid ${typeInfo.color}30`
-              }}
-            />
-          </div>
-          <div className='announcement-time'>
-            <Clock size={12} />
+        <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+          <Chip
+            label={typeInfo.label}
+            size='small'
+            sx={{
+              height: '22px',
+              fontSize: '11px',
+              fontWeight: 700,
+              backgroundColor: `${typeInfo.color}12`,
+              color: typeInfo.color,
+              border: `1px solid ${typeInfo.color}25`
+            }}
+          />
+          <span className='announcement-time'>
+            <Clock size={11} />
             {timeAgo(announcement.published_at)}
-          </div>
+          </span>
         </div>
       </div>
 
+      {/* Title */}
       <h3 className='announcement-post-title'>{announcement.title}</h3>
 
+      {/* Content */}
       <div
         className={`announcement-content ${isLong && !showFull ? 'announcement-content-collapsed' : ''}`}
         dangerouslySetInnerHTML={{ __html: sanitizedHTML }}
@@ -294,9 +297,10 @@ function AnnouncementPost({ announcement }: { announcement: Announcement }) {
         </button>
       )}
 
+      {/* Actions */}
       <div className='announcement-post-actions'>
         <button className='announcement-action-btn' onClick={handleShare}>
-          <Share2 size={16} />
+          <Share2 size={14} />
           Chia sẻ
         </button>
       </div>
@@ -382,21 +386,72 @@ function FeedSkeleton() {
     <div className='home-layout'>
       <div className='announcement-feed'>
         {[1, 2, 3].map(i => (
-          <div key={i} className='announcement-post'>
+          <div key={i} className='announcement-post' style={{ borderLeft: '3px solid #e2e8f0' }}>
             <div className='announcement-post-header'>
-              <div className='announcement-skeleton' style={{ width: 40, height: 40, borderRadius: '50%' }} />
-              <div style={{ flex: 1 }}>
-                <div className='announcement-skeleton' style={{ width: 100, height: 14, borderRadius: 4 }} />
-                <div className='announcement-skeleton' style={{ width: 80, height: 12, borderRadius: 4, marginTop: 6 }} />
-              </div>
+              <div className='announcement-skeleton' style={{ width: 32, height: 32, borderRadius: 10 }} />
+              <div className='announcement-skeleton' style={{ width: 70, height: 20, borderRadius: 12 }} />
+              <div className='announcement-skeleton' style={{ width: 80, height: 14, borderRadius: 4 }} />
             </div>
-            <div className='announcement-skeleton' style={{ width: '70%', height: 18, borderRadius: 4, margin: '12px 16px 8px' }} />
-            <div className='announcement-skeleton' style={{ width: '90%', height: 60, borderRadius: 6, margin: '0 16px 16px' }} />
+            <div className='announcement-skeleton' style={{ width: '65%', height: 17, borderRadius: 4, margin: '10px 16px 4px' }} />
+            <div className='announcement-skeleton' style={{ width: '90%', height: 50, borderRadius: 6, margin: '0 16px 14px' }} />
           </div>
         ))}
         <style>{`@keyframes skeletonPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }`}</style>
       </div>
       <HomeSidebar />
+    </div>
+  )
+}
+
+/* ─── Empty Feed ─── */
+function EmptyFeed() {
+  const { lang } = useParams()
+  const locale = lang || 'vi'
+
+  const quickActions = [
+    { icon: Globe, label: 'Mua Proxy', desc: 'Proxy tĩnh & xoay', href: `/${locale}/proxy-tinh`, color: '#3b82f6' },
+    { icon: Wallet, label: 'Nạp tiền', desc: 'Chuyển khoản ngân hàng', href: `/${locale}/recharge`, color: '#22c55e' },
+    { icon: Search, label: 'Check Proxy', desc: 'Kiểm tra proxy hoạt động', href: `/${locale}/check-proxy`, color: '#f59e0b' },
+    { icon: BookOpen, label: 'API Docs', desc: 'Tích hợp qua API', href: `/${locale}/api-docs`, color: '#8b5cf6' }
+  ]
+
+  return (
+    <div className='announcement-post' style={{ padding: 0, overflow: 'hidden' }}>
+      {/* Header */}
+      <div style={{ padding: '32px 24px 20px', textAlign: 'center' }}>
+        <div style={{ fontSize: '28px', marginBottom: '8px' }}>👋</div>
+        <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#1e293b', margin: '0 0 4px' }}>
+          Chào mừng bạn!
+        </h3>
+        <p style={{ fontSize: '13px', color: '#94a3b8', margin: 0 }}>
+          Hiện chưa có thông báo mới. Bắt đầu sử dụng dịch vụ ngay:
+        </p>
+      </div>
+
+      {/* Quick actions */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px', padding: '0 20px 24px' }}>
+        {quickActions.map(action => {
+          const Icon = action.icon
+
+          return (
+            <a
+              key={action.label}
+              href={action.href}
+              className='empty-feed-action'
+              style={{ '--action-color': action.color } as React.CSSProperties}
+            >
+              <div className='empty-feed-action-icon' style={{ backgroundColor: `${action.color}10`, color: action.color }}>
+                <Icon size={18} />
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: '13px', fontWeight: 600, color: '#1e293b' }}>{action.label}</div>
+                <div style={{ fontSize: '11px', color: '#94a3b8', lineHeight: 1.3 }}>{action.desc}</div>
+              </div>
+              <ArrowRight size={14} style={{ color: '#cbd5e1', flexShrink: 0 }} />
+            </a>
+          )
+        })}
+      </div>
     </div>
   )
 }
@@ -423,9 +478,7 @@ export default function HomePage() {
               <AnnouncementPost key={announcement.id} announcement={announcement} />
             ))
           ) : (
-            <div className='announcement-post' style={{ textAlign: 'center', padding: '48px 16px', color: '#94a3b8' }}>
-              <p style={{ fontSize: '15px' }}>Chưa có thông báo nào</p>
-            </div>
+            <EmptyFeed />
           )}
         </div>
 
