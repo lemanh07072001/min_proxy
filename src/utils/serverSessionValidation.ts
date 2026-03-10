@@ -96,7 +96,7 @@ export async function getServerUserData() {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${session.access_token}`
       },
-      cache: 'no-store'
+      next: { revalidate: 30 } // Cache 30s thay vì no-store — giảm API calls
     })
 
     if (response.ok) {

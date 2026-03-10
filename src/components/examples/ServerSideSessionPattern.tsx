@@ -1,10 +1,13 @@
+/* eslint-disable import/order */
 // ===============================================
 // PATTERN TỐT NHẤT: Server-side Session để tránh flicker
 // ===============================================
 
 import { getServerSession } from 'next-auth/next'
-import { authOptions } from '@/libs/auth'
+
 import type { Session } from 'next-auth'
+
+import { authOptions } from '@/libs/auth'
 
 // ===============================================
 // 1. SERVER COMPONENT - Lấy session và pass xuống
@@ -125,7 +128,7 @@ export async function LayoutWithSession({
       </main>
       
       {/* Footer */}
-      <Footer />
+      <footer>Footer</footer>
     </div>
   )
 }

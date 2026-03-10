@@ -12,10 +12,11 @@ import TextField from '@mui/material/TextField'
 import ToggleButton from '@mui/material/ToggleButton'
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup'
 
+import { toast } from 'react-toastify'
+
 import DialogCloseButton from '@/components/modals/DialogCloseButton'
 
 import { useAdjustBalance } from '@/hooks/apis/useAdminUsers'
-import { toast } from 'react-toastify'
 
 interface ModalBalanceAdjustProps {
   open: boolean
@@ -46,13 +47,17 @@ export default function ModalBalanceAdjust({ open, onClose, userData }: ModalBal
     if (!userData?.id) return
 
     const numAmount = Number(amount)
+
     if (!numAmount || numAmount <= 0) {
       toast.error('Vui lòng nhập số tiền hợp lệ')
-      return
+      
+return
     }
+
     if (!description.trim()) {
       toast.error('Vui lòng nhập lý do')
-      return
+      
+return
     }
 
     const finalAmount = type === 'subtract' ? -numAmount : numAmount
@@ -125,6 +130,7 @@ export default function ModalBalanceAdjust({ open, onClose, userData }: ModalBal
           value={amount}
           onChange={e => {
             const value = e.target.value.replace(/[^0-9]/g, '')
+
             setAmount(value)
           }}
           InputProps={{

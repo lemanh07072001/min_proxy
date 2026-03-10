@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { useSession } from 'next-auth/react'
+
 import useAxiosAuth from '@/hocs/useAxiosAuth'
 
 interface OrderReportParams {
@@ -18,7 +19,9 @@ interface OrderDetailParams extends OrderReportParams {
 
 const sr = (seed: number): number => {
   const x = Math.sin(seed * 9301 + 49297) * 233280
-  return x - Math.floor(x)
+
+  
+return x - Math.floor(x)
 }
 
 function generateMockDailyTrend() {
@@ -27,6 +30,7 @@ function generateMockDailyTrend() {
 
   for (let i = 6; i >= 0; i--) {
     const d = new Date(now)
+
     d.setDate(d.getDate() - i)
     const s = i * 11
     const base = 28 + Math.round(sr(s) * 12)
@@ -59,12 +63,15 @@ function generateMockOrders(count = 50) {
     'Trinh Quang Minh', 'Ha Thi Ngoc', 'Luu Duc Tai', 'Cao Van Khanh',
     'Tran Thi Huong', 'Phan Duc Manh', 'Le Van Tuan', 'Nguyen Thi Thao'
   ]
+
   const services = [
     'MktProxy Rotating 30d', 'HomeProxy Static 7d', 'ProxyVN Rotating 30d',
     'ZingProxy Rotating 7d', 'MktProxy Rotating 7d', 'Upproxy Static 30d',
     'HomeProxy Rotating 30d', 'ProxyVN Static 7d'
   ]
+
   const partners = ['MktProxy', 'HomeProxy', 'ProxyVN', 'ZingProxy', 'Upproxy']
+
   const statusPool = [
     { s: 4, n: 'expired' }, { s: 2, n: 'in_use' }, { s: 4, n: 'expired' },
     { s: 5, n: 'failed' }, { s: 2, n: 'in_use' }, { s: 4, n: 'expired' },
@@ -73,10 +80,12 @@ function generateMockOrders(count = 50) {
     { s: 2, n: 'in_use' }, { s: 5, n: 'failed' }, { s: 4, n: 'expired' },
     { s: 3, n: 'in_use_partial' }, { s: 7, n: 'waiting_refund' }, { s: 9, n: 'retry_processing_partial' }
   ]
+
   const now = new Date()
 
   return Array.from({ length: count }, (_, i) => {
     const d = new Date(now)
+
     d.setHours(d.getHours() - i * 2 - Math.round(sr(i * 7) * 5))
     const qty = 1 + Math.round(sr(i * 13) * 9)
     const price = 80_000 + Math.round(sr(i * 17) * 120_000)

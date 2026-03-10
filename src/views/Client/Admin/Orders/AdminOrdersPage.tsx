@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo, useState, useCallback } from 'react'
+
 import Image from 'next/image'
 
 import {
@@ -15,8 +16,7 @@ import {
   DollarSign,
   TrendingUp,
   Package,
-  X,
-  InputIcon
+  X
 } from 'lucide-react'
 
 import {
@@ -43,9 +43,10 @@ import Grid2 from '@mui/material/Grid2'
 import InputAdornment from '@mui/material/InputAdornment'
 import TextField from '@mui/material/TextField'
 
+import { toast } from 'react-toastify'
+
 import CustomTextField from '@/@core/components/mui/TextField'
 
-import { toast } from 'react-toastify'
 import { formatDateTimeLocal } from '@/utils/formatDate'
 
 import { useAdminOrders, useOrderReportSummary } from '@/hooks/apis/useOrderReport'
@@ -92,21 +93,29 @@ function StatCard({ title, value, icon: Icon, color }: { title: string; value: s
 
 function toInputDate(ddmmyyyy: string) {
   const [d, m, y] = ddmmyyyy.split('-')
-  return `${y}-${m}-${d}`
+
+  
+return `${y}-${m}-${d}`
 }
 
 function fromInputDate(yyyymmdd: string) {
   const [y, m, d] = yyyymmdd.split('-')
-  return `${d}-${m}-${y}`
+
+  
+return `${d}-${m}-${y}`
 }
 
 function getDefaults() {
   const now = new Date()
   const start = new Date(now)
+
   start.setDate(start.getDate() - 30)
+
   const fmt = (d: Date) =>
     `${String(d.getDate()).padStart(2, '0')}-${String(d.getMonth() + 1).padStart(2, '0')}-${d.getFullYear()}`
-  return { start: fmt(start), end: fmt(now) }
+
+  
+return { start: fmt(start), end: fmt(now) }
 }
 
 const inputSx = {
@@ -172,7 +181,9 @@ export default function AdminOrdersPage() {
   const orders = useMemo(() => {
     if (!searchQuery) return allOrders
     const q = searchQuery.toLowerCase()
-    return allOrders.filter(
+
+    
+return allOrders.filter(
       (o: any) =>
         o.order_code?.toLowerCase().includes(q) ||
         o.user_name?.toLowerCase().includes(q)
@@ -275,7 +286,9 @@ export default function AdminOrdersPage() {
           const delivered = row.original.delivered_quantity ?? 0
           const total = row.original.quantity ?? 0
           const isMissing = delivered < total
-          return (
+
+          
+return (
             <span style={{ fontSize: '13px', color: isMissing ? '#EF4444' : undefined, fontWeight: isMissing ? 600 : undefined }}>
               {delivered}/{total}
             </span>
@@ -302,7 +315,9 @@ export default function AdminOrdersPage() {
         cell: ({ row }: { row: any }) => {
           const status = row.original.status
           const config = STATUS_CONFIG[status] || { label: `Status ${status}`, color: '#94A3B8' }
-          return (
+
+          
+return (
             <Chip
               label={config.label}
               size='small'
@@ -341,7 +356,9 @@ export default function AdminOrdersPage() {
         cell: ({ row }: { row: any }) => {
           const order = row.original
           const status = order.status
-          return (
+
+          
+return (
             <div className='flex gap-1'>
               <Tooltip title='Chi tiết'>
                 <IconButton size='small' color='primary' onClick={() => handleOpenDetail(order)}>

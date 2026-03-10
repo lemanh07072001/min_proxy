@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
+
 import { useForm, Controller } from 'react-hook-form'
 
 import Button from '@mui/material/Button'
@@ -11,11 +12,12 @@ import DialogContent from '@mui/material/DialogContent'
 import DialogActions from '@mui/material/DialogActions'
 import Grid2 from '@mui/material/Grid2'
 
+import { toast } from 'react-toastify'
+
 import DialogCloseButton from '@/components/modals/DialogCloseButton'
 import CustomTextField from '@core/components/mui/TextField'
 
 import { useUpdateUser } from '@/hooks/apis/useAdminUsers'
-import { toast } from 'react-toastify'
 
 interface ModalEditUserProps {
   open: boolean

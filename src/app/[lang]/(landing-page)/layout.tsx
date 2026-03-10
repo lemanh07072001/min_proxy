@@ -1,82 +1,92 @@
-// Third-party Imports
 // MUI Imports
 import Button from '@mui/material/Button'
 import { ToastContainer } from 'react-toastify'
-import 'react-toastify/dist/ReactToastify.css'
-
-// Style Imports
-import '@/app/globals.css'
-import '@/app/shared-layout.css' // CSS chung cho cả private và public
-import '@/app/root.css'
-import '@/app/[lang]/(landing-page)/main.css'
-
-// Generated Icon CSS Imports
-import '@assets/iconify-icons/generated-icons.css'
-
-import LayoutWrapper from '@layouts/LayoutWrapper'
 
 import type { ChildrenType } from '@core/types'
 import Header from '@/app/[lang]/(landing-page)/components/Header'
-import { getSystemMode } from '@core/utils/serverHelpers'
-import VerticalLayout from '@layouts/VerticalLayout'
 
-import Providers from '@components/Providers'
-import HorizontalLayout from '@layouts/HorizontalLayout'
+// Lightweight providers — chỉ cần SettingsProvider + ThemeProvider cho MUI
+// KHÔNG dùng Providers.tsx vì nó gọi getServerSession() thừa
+// và wrap NextAuthProvider + ModalContextProvider (root layout đã wrap rồi)
+import { SettingsProvider } from '@core/contexts/settingsContext'
+import ThemeProvider from '@components/theme'
+import { getMode, getSettingsFromCookie, getSystemMode } from '@core/utils/serverHelpers'
 
 import ScrollToTop from '@core/components/scroll-to-top'
 import Footer from './components/Footer'
 
-function HorizontalFooter() {
-  return null
-}
-
 const Layout = async (props: ChildrenType) => {
   const { children } = props
 
-  // Vars
-  const direction = 'ltr'
-  const systemMode = await getSystemMode()
+  // Chỉ fetch những gì MUI theme cần — KHÔNG gọi getServerSession()
+  const [mode, settingsCookie, systemMode] = await Promise.all([
+    getMode(),
+    getSettingsFromCookie(),
+    getSystemMode()
+  ])
 
-  // const dictionary = await getDictionary(params.lang)
+  const direction = 'ltr'
 
   return (
     <>
-      <Providers direction={direction}>
-        <LayoutWrapper
-          systemMode={systemMode}
-          verticalLayout={
-            <VerticalLayout landingPage={true} navbar={<Header />} footer={<Footer />}>
+      {/* Override html/body/.main constraints cho landing page —
+          globals.css đặt html { block-size: 100% } và body { flex-auto }
+          làm giới hạn chiều cao = viewport, landing page cần scroll tự nhiên */}
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
+            html, html body {
+              height: auto !important;
+              block-size: auto !important;
+              min-block-size: auto !important;
+              overflow-y: auto !important;
+            }
+            html body {
+              flex: none !important;
+              display: block !important;
+            }
+            html body .main {
+              background: none !important;
+              display: block !important;
+              height: auto !important;
+              block-size: auto !important;
+              flex: none !important;
+            }
+          `
+        }}
+      />
+      <SettingsProvider settingsCookie={settingsCookie} mode={mode}>
+        <ThemeProvider direction={direction} systemMode={systemMode}>
+          <div className='landing-page-wrapper'>
+            <Header />
+            <main className='landing-page'>
               {children}
-              <ToastContainer
-                position="top-center"
-                autoClose={3000}
-                hideProgressBar={false}
-                newestOnTop
-                closeOnClick
-                rtl={false}
-                pauseOnFocusLoss={false}
-                draggable={false}
-                pauseOnHover
-                theme="light"
-                limit={3}
-              />
-            </VerticalLayout>
-          }
-          horizontalLayout={
-            <HorizontalLayout header={<Header />} footer={<HorizontalFooter />}>
-              {children}
-            </HorizontalLayout>
-          }
-        />
-        <ScrollToTop className='mui-fixed'>
-          <Button
-            variant='contained'
-            className='is-10 bs-10 rounded-full p-0 min-is-0 flex items-center justify-center'
-          >
-            <i className='tabler-arrow-up' />
-          </Button>
-        </ScrollToTop>
-      </Providers>
+            </main>
+            <Footer />
+            <ToastContainer
+              position="top-center"
+              autoClose={3000}
+              hideProgressBar={false}
+              newestOnTop
+              closeOnClick
+              rtl={false}
+              pauseOnFocusLoss={false}
+              draggable={false}
+              pauseOnHover
+              theme="light"
+              limit={3}
+            />
+          </div>
+          <ScrollToTop className='mui-fixed'>
+            <Button
+              variant='contained'
+              className='is-10 bs-10 rounded-full p-0 min-is-0 flex items-center justify-center'
+            >
+              <i className='tabler-arrow-up' />
+            </Button>
+          </ScrollToTop>
+        </ThemeProvider>
+      </SettingsProvider>
     </>
   )
 }

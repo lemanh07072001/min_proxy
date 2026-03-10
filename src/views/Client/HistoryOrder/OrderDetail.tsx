@@ -33,9 +33,9 @@ import {
 import { formatDateTimeLocal } from '@/utils/formatDate'
 import { useCopy } from '@/app/hooks/useCopy'
 import { ORDER_STATUS_LABELS, ORDER_STATUS_COLORS } from '@/constants/orderStatus'
+import { useApiKeys } from '@/hooks/apis/useOrders'
 import CustomIconButton from '@core/components/mui/IconButton'
 import DetailProxy from './DetaiProxy'
-import { useApiKeys } from '@/hooks/apis/useOrders'
 
 const getStatusBadge = (status: string) => {
   const label = ORDER_STATUS_LABELS[status] || 'Không xác định'
@@ -69,12 +69,10 @@ interface OrderDetailProps {
     buy_at: string
     expired_at: string
     proxy_type?: string
-    type_servi?: {
-      type: string
-      name: string
-      price: number
-      ip_version?: string
-    }
+    service_name?: string
+    service_type?: string
+    ip_version?: string
+    proxies?: any[]
   } | null
 }
 
@@ -88,10 +86,9 @@ const OrderDetail: React.FC<OrderDetailProps> = ({ open, onClose, order }) => {
   const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 })
   const [, copy] = useCopy()
 
-  // ----------------- Data -----------------
-  // Fetch keys on demand khi modal mở
-  const { data: apiKeysData, isLoading: isLoadingKeys } = useApiKeys(order?.id, open)
-  const dataOrder = apiKeysData || []
+  // ----------------- Data (fetch full ApiKey records) -----------------
+  const { data: apiKeysData = [], isLoading: isLoadingKeys } = useApiKeys(order?.id, open)
+  const dataOrder = apiKeysData
 
   // ----------------- Columns -----------------
   const columns = useMemo(
@@ -141,9 +138,9 @@ const OrderDetail: React.FC<OrderDetailProps> = ({ open, onClose, order }) => {
 
       {
         accessorKey: 'proxy',
-        header: order?.type_servi?.type === '0' ? 'Proxy' : 'Proxy API',
+        header: order?.service_type === '0' ? 'Proxy' : 'Proxy API',
         cell: ({ row }: { row: any }) => {
-          if (order?.type_servi?.type === '0') {
+          if (order?.service_type === '0') {
             // ----- Dữ liệu Proxy thông thường -----
             const proxys = row.original.proxys || {}
 
@@ -191,7 +188,7 @@ const OrderDetail: React.FC<OrderDetailProps> = ({ open, onClose, order }) => {
       {
         header: 'Tên',
         cell: ({ row }: { row: any }) => {
-          return <span className='text-red'>{order?.type_servi?.name}</span>
+          return <span className='text-red'>{order?.service_name}</span>
         },
         size: 150
       },
@@ -214,7 +211,7 @@ const OrderDetail: React.FC<OrderDetailProps> = ({ open, onClose, order }) => {
       },
       {
         header: 'Ip Version',
-        cell: ({ row }: { row: any }) => order?.type_servi?.ip_version,
+        cell: ({ row }: { row: any }) => order?.ip_version,
         size: 200
       },
       {
@@ -284,7 +281,7 @@ const OrderDetail: React.FC<OrderDetailProps> = ({ open, onClose, order }) => {
 
     let textToCopy = ''
 
-    if (order?.type_servi?.type === '0') {
+    if (order?.service_type === '0') {
       // For regular proxies
       selectedRows.forEach((row, index) => {
         const proxys = row.original.proxys || {}
@@ -313,7 +310,7 @@ const OrderDetail: React.FC<OrderDetailProps> = ({ open, onClose, order }) => {
     }
 
     if (textToCopy) {
-      copy(textToCopy, `Đã copy ${selectedCount} ${order?.type_servi?.type === '0' ? 'proxy' : 'API key'}!`)
+      copy(textToCopy, `Đã copy ${selectedCount} ${order?.service_type === '0' ? 'proxy' : 'API key'}!`)
     }
   }
 
@@ -324,9 +321,9 @@ const OrderDetail: React.FC<OrderDetailProps> = ({ open, onClose, order }) => {
     if (selectedRows.length === 0) return
 
     let content = ''
-    const itemType = order?.type_servi?.type === '0' ? 'proxy' : 'api_key'
+    const itemType = order?.service_type === '0' ? 'proxy' : 'api_key'
 
-    if (order?.type_servi?.type === '0') {
+    if (order?.service_type === '0') {
       // For regular proxies
       selectedRows.forEach((row, index) => {
         const proxys = row.original.proxys || {}

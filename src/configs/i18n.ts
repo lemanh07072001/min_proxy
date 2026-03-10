@@ -26,9 +26,11 @@ if (!i18n.isInitialized) {
       useSuspense: false
     },
     debug: false,
+
     // Đảm bảo có thể thay đổi ngôn ngữ
     saveMissing: false,
     missingKeyHandler: false,
+
     // Force reload when language changes
     reloadOnPrerender: true
   })

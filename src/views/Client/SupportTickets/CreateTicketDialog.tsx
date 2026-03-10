@@ -53,12 +53,14 @@ export default function CreateTicketDialog({ open, onClose }: Props) {
   const handleSubmit = () => {
     if (!message.trim()) {
       toast.error('Vui lòng nhập nội dung')
-      return
+      
+return
     }
 
     if (needsOrder && !orderId) {
       toast.error('Vui lòng chọn đơn hàng liên quan')
-      return
+      
+return
     }
 
     createTicket.mutate(
@@ -126,7 +128,7 @@ export default function CreateTicketDialog({ open, onClose }: Props) {
               <div style={{ fontSize: '13px', color: '#94a3b8', padding: '8px 0' }}>Đang tải danh sách đơn hàng...</div>
             ) : (orders as any[]).length === 0 ? (
               <div style={{ fontSize: '13px', color: '#ef4444', padding: '8px 12px', background: '#fef2f2', borderRadius: '8px', border: '1px solid #fecaca' }}>
-                Bạn chưa có đơn hàng nào. Vui lòng chọn loại "Khác" để gửi yêu cầu hỗ trợ chung.
+                Bạn chưa có đơn hàng nào. Vui lòng chọn loại &quot;Khác&quot; để gửi yêu cầu hỗ trợ chung.
               </div>
             ) : (
               <CustomTextField

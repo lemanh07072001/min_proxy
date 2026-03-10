@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+
 import useAxiosAuth from '@/hocs/useAxiosAuth'
 
 export interface TransactionBankParams {
@@ -81,7 +82,9 @@ export const useInvestigate = (id: number | null) => {
     queryKey: ['transactionBankInvestigate', id],
     queryFn: async () => {
       const res = await axiosAuth.get(`/admin/transaction-bank/${id}/investigate`)
-      return res?.data?.data
+
+      
+return res?.data?.data
     },
     enabled: !!id,
     staleTime: 0,
@@ -100,7 +103,9 @@ export const useManualCredit = () => {
   return useMutation({
     mutationFn: async ({ id, user_id, admin_note }: { id: number; user_id: number; admin_note?: string }) => {
       const res = await axiosAuth.post(`/admin/transaction-bank/${id}/manual-credit`, { user_id, admin_note })
-      return res?.data
+
+      
+return res?.data
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['transactionBank'] })

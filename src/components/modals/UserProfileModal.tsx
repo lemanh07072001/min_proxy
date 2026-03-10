@@ -124,6 +124,7 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onClose }) 
             <div className='flex items-center space-x-6'>
               <div className='relative'>
                 <img
+
                   // src={editedUser.avatar}
                   // alt={editedUser.name}
                   className='w-24 h-24 rounded-full border-4 border-white shadow-lg object-cover'

@@ -54,7 +54,9 @@ export const confirmUrlInChildren = (children: ChildrenType['children'], url: st
 
     if (component && (component.props as { href?: string })?.href) {
       const componentHref = (component.props as { href?: string }).href
-      return exactMatch === true || exactMatch === undefined
+
+      
+return exactMatch === true || exactMatch === undefined
         ? componentHref === url
         : !!(activeUrl && url.includes(activeUrl))
     }
@@ -94,7 +96,9 @@ const processMenuChildren = (children: ReactNode, mapFunction: (child: ReactNode
     // If child has menuData prop, create a GenerateVerticalMenu component
     // Otherwise, apply the transformation function to the child
     const childProps = child.props as { menuData?: Parameters<typeof GenerateVerticalMenu>[0]['menuData'] }
-    return childProps?.menuData ? <GenerateVerticalMenu menuData={childProps.menuData} /> : mapFunction(child)
+
+    
+return childProps?.menuData ? <GenerateVerticalMenu menuData={childProps.menuData} /> : mapFunction(child)
   })
 }
 

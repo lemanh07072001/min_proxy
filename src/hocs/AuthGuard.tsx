@@ -1,6 +1,7 @@
 'use client'
 
 import { usePathname } from 'next/navigation'
+
 import { useSession } from 'next-auth/react'
 
 import type { Locale } from '@/configs/configi18n'

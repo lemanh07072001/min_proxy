@@ -1,7 +1,9 @@
 'use client'
 
 import { useCallback, useMemo, useState } from 'react'
+
 import Image from 'next/image'
+
 import {
   Search, X, Loader2, Clock3, BadgeCheck, CircleAlert,
   ArrowDownUp, Landmark, CreditCard, Eye, User as UserIcon, CalendarDays, Ban
@@ -15,6 +17,7 @@ import MenuItem from '@mui/material/MenuItem'
 import Button from '@mui/material/Button'
 import IconButton from '@mui/material/IconButton'
 import Pagination from '@mui/material/Pagination'
+
 import CustomTextField from '@/@core/components/mui/TextField'
 import useMediaQuery from '@/@menu/hooks/useMediaQuery'
 import { formatDateTimeLocal } from '@/utils/formatDate'
@@ -26,7 +29,9 @@ const fmtDate = (d: Date) => {
   const dd = String(d.getDate()).padStart(2, '0')
   const mm = String(d.getMonth() + 1).padStart(2, '0')
   const yyyy = d.getFullYear()
-  return `${dd}-${mm}-${yyyy}`
+
+  
+return `${dd}-${mm}-${yyyy}`
 }
 
 const fmtMoney = (n: number) => new Intl.NumberFormat('vi-VN').format(n)
@@ -34,16 +39,26 @@ const fmtMoney = (n: number) => new Intl.NumberFormat('vi-VN').format(n)
 const getDatePreset = (key: string): { start?: string; end?: string } => {
   const now = new Date()
   const end = fmtDate(now)
+
   switch (key) {
     case 'today': return { start: end, end }
+
     case '7d': {
-      const d = new Date(); d.setDate(d.getDate() - 6)
-      return { start: fmtDate(d), end }
+      const d = new Date();
+
+ d.setDate(d.getDate() - 6)
+      
+return { start: fmtDate(d), end }
     }
+
     case '30d': {
-      const d = new Date(); d.setDate(d.getDate() - 29)
-      return { start: fmtDate(d), end }
+      const d = new Date();
+
+ d.setDate(d.getDate() - 29)
+      
+return { start: fmtDate(d), end }
     }
+
     default: return {}
   }
 }
@@ -194,16 +209,20 @@ export default function TableTransactionBank() {
         size: 160,
         cell: ({ row }: { row: any }) => {
           const user = row.original.matched_user
+
           if (!user) {
             if (row.original.transfer_type !== 'IN') return <span style={{ color: '#94a3b8', fontSize: '12px' }}>—</span>
             if (row.original.dismissed_at) return <span style={{ color: '#94a3b8', fontSize: '12px', fontStyle: 'italic' }}>Đã bỏ qua</span>
-            return (
+            
+return (
               <span style={{ color: '#f59e0b', fontSize: '12px', fontStyle: 'italic' }}>
                 Chưa xác định
               </span>
             )
           }
-          return (
+
+          
+return (
             <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
               <UserIcon size={13} style={{ color: '#6366f1', flexShrink: 0 }} />
               <span style={{ fontSize: '12px', fontWeight: 500 }}>{user.name || user.email}</span>
@@ -219,11 +238,14 @@ export default function TableTransactionBank() {
           if (row.original.transfer_type !== 'IN') {
             return <Chip label='Tiền ra' size='small' variant='outlined' sx={chipSx} />
           }
+
           if (row.original.dismissed_at) {
             return <Chip label='Đã bỏ qua' size='small' icon={<Ban size={14} />} variant='outlined'
               sx={{ ...chipSx, color: '#94a3b8', borderColor: '#d1d5db' }} />
           }
-          return row.original.is_processed
+
+          
+return row.original.is_processed
             ? <Chip label='Đã cộng tiền' size='small' icon={<BadgeCheck size={14} />} color='success' sx={chipSx} />
             : <Chip label='Chưa xử lý' size='small' icon={<CircleAlert size={14} />} color='warning'
                 sx={{ ...chipSx, '& .MuiChip-label': { color: '#fff', whiteSpace: 'nowrap' }, '& .MuiChip-icon': { color: '#fff' } }}

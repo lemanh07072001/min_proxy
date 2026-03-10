@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+
 import type { Locale } from '@/configs/configi18n'
 
 interface PageMetadataConfig {

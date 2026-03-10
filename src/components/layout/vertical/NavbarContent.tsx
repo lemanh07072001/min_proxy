@@ -3,9 +3,10 @@
 // React Imports
 import { useContext } from 'react'
 
+import { useParams, useRouter } from 'next/navigation'
+
 import { createPortal } from 'react-dom'
 
-import { useParams, useRouter } from 'next/navigation'
 
 // Third-party Imports
 import classnames from 'classnames'
@@ -17,6 +18,10 @@ import Button from '@mui/material/Button'
 
 import { Clock, Wallet } from 'lucide-react'
 
+import Box from '@mui/material/Box'
+
+import Typography from '@mui/material/Typography'
+
 import NavToggle from './NavToggle'
 import ModeDropdown from '@components/layout/shared/ModeDropdown'
 import UserDropdown from '@components/layout/shared/UserDropdown'
@@ -26,8 +31,6 @@ import { useModalContext } from '@/app/contexts/ModalContext'
 // Util Imports
 import { verticalLayoutClasses } from '@layouts/utils/layoutClasses'
 
-import Box from '@mui/material/Box'
-import Typography from '@mui/material/Typography'
 
 import LanguageDropdown from '@components/layout/shared/LanguageDropdown'
 import { usePendingBankQr } from '@/hooks/apis/useBankQr'

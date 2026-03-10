@@ -8,15 +8,12 @@ import { Shield, Zap, Globe, Users, ArrowRight } from 'lucide-react'
 
 import { useTranslation } from 'react-i18next'
 
-import { useLanguageSync } from '@/hooks/useLanguageSync'
-
 import Link from '@/components/Link'
 
 const Hero = () => {
   const params = useParams()
   const { lang: locale } = params
   const { t } = useTranslation()
-  useLanguageSync() // Sync language with URL
 
   return (
     <section className='hero-main'>

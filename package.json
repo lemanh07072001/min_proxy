@@ -84,6 +84,7 @@
     "@iconify/tools": "4.1.1",
     "@iconify/types": "2.0.0",
     "@iconify/utils": "2.2.1",
+    "@next/bundle-analyzer": "^16.1.6",
     "@types/express": "^5.0.3",
     "@types/node": "^22.18.8",
     "@types/react": "^19.0.0",

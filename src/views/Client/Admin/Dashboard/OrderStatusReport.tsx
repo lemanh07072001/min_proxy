@@ -1,9 +1,11 @@
 'use client'
 
 import { useState, useMemo } from 'react'
+
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 import { Grid2, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Pagination, MenuItem, Select, FormControl, InputLabel } from '@mui/material'
 import { BarChart3, List } from 'lucide-react'
+
 import { useOrderReportSummary, useOrderReportDetail, MOCK_SUMMARY, MOCK_DETAIL } from '@/hooks/apis/useOrderReport'
 import { usePartners } from '@/hooks/apis/usePartners'
 import { formatCurrency, formatNumber } from '@/utils/formatters'
@@ -25,7 +27,9 @@ function formatDate(d: Date): string {
   const day = String(d.getDate()).padStart(2, '0')
   const month = String(d.getMonth() + 1).padStart(2, '0')
   const year = d.getFullYear()
-  return `${day}-${month}-${year}`
+
+  
+return `${day}-${month}-${year}`
 }
 
 interface OrderStatusReportProps {
@@ -34,7 +38,12 @@ interface OrderStatusReportProps {
 }
 
 export default function OrderStatusReport({ filterStart, filterEnd }: OrderStatusReportProps) {
-  const startDate = filterStart || formatDate((() => { const d = new Date(); d.setDate(d.getDate() - 7); return d })())
+  const startDate = filterStart || formatDate((() => { const d = new Date();
+
+ d.setDate(d.getDate() - 7); 
+
+return d })())
+
   const endDate = filterEnd || formatDate(new Date())
   const [partnerId, setPartnerId] = useState<number | null>(null)
   const [selectedStatus, setSelectedStatus] = useState<number | null>(null)
@@ -65,15 +74,19 @@ export default function OrderStatusReport({ filterStart, filterEnd }: OrderStatu
   // Client-side pagination
   const totalOrders = allOrders.length
   const lastPage = Math.max(1, Math.ceil(totalOrders / perPage))
+
   const paginatedOrders = useMemo(() => {
     const start = (clientPage - 1) * perPage
-    return allOrders.slice(start, start + perPage)
+
+    
+return allOrders.slice(start, start + perPage)
   }, [allOrders, clientPage, perPage])
 
   // Pie chart data
   const pieData = useMemo(() => {
     if (!summary?.status_breakdown) return []
-    return summary.status_breakdown
+    
+return summary.status_breakdown
       .filter((s: any) => s.count > 0)
       .map((s: any) => ({
         name: STATUS_CONFIG[s.status]?.label ?? s.label,
@@ -87,7 +100,8 @@ export default function OrderStatusReport({ filterStart, filterEnd }: OrderStatu
   // Bar chart data
   const barData = useMemo(() => {
     if (!summary?.daily_trend) return []
-    return summary.daily_trend.map((d: any) => ({
+    
+return summary.daily_trend.map((d: any) => ({
       date: d.date.slice(5), // MM-DD
       ...d,
     }))

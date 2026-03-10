@@ -29,6 +29,7 @@ const useAxiosAuth = () => {
     setOnAuthError(async () => {
       const currentPath = window.location.pathname
       const callbackUrl = currentPath.includes('/login') ? '/' : currentPath
+
       await signOut({ callbackUrl })
     })
 

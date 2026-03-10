@@ -10,8 +10,10 @@ import { useLanguageSync } from '@/hooks/useLanguageSync'
 
 const AboutHero = () => {
   const { t } = useTranslation()
+
   useLanguageSync() // Sync language with URL
-  return (
+  
+return (
     <section className='about-hero-modern'>
       <div className='about-hero-bg'>
         <div className='hero-gradient'></div>

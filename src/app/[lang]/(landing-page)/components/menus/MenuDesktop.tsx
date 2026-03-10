@@ -8,15 +8,61 @@ import { SessionContext, useSession } from 'next-auth/react'
 
 import { useTranslation } from 'react-i18next'
 
-import useMenuLandingPage from '@/app/data/MenuLandingPage'
+import { ArrowUpRight } from 'lucide-react'
 
-import LanguageSelect from '@components/language-selector/LanguageSelect'
+import useMenuLandingPage from '@/app/data/MenuLandingPage'
 
 import Link from '@components/Link'
 import LanguageDropdown from '@components/layout/shared/LanguageDropdown'
 import { useModalContext } from '@/app/contexts/ModalContext'
 
-import UserDropdown from '@components/layout/shared/UserDropdown'
+const navLinkBase: React.CSSProperties = {
+  fontSize: 14,
+  fontWeight: 500,
+  color: '#64748b',
+  textDecoration: 'none',
+  padding: '6px 14px',
+  borderRadius: 8,
+  transition: 'all 0.2s ease',
+  cursor: 'pointer',
+  whiteSpace: 'nowrap'
+}
+
+const navLinkActive: React.CSSProperties = {
+  ...navLinkBase,
+  color: '#ef4444',
+  fontWeight: 600
+}
+
+const ctaPillStyle: React.CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: 6,
+  textDecoration: 'none',
+  background: 'linear-gradient(135deg, #ef4444, #f97316)',
+  color: 'white',
+  padding: '8px 22px',
+  borderRadius: 50,
+  fontWeight: 600,
+  fontSize: 13,
+  border: 'none',
+  cursor: 'pointer',
+  transition: 'all 0.2s ease',
+  whiteSpace: 'nowrap'
+}
+
+const textBtnStyle: React.CSSProperties = {
+  background: 'none',
+  border: 'none',
+  color: '#475569',
+  fontSize: 13,
+  fontWeight: 500,
+  cursor: 'pointer',
+  padding: '8px 16px',
+  borderRadius: 8,
+  transition: 'all 0.2s ease',
+  whiteSpace: 'nowrap'
+}
 
 export default function MenuDesktop() {
   const pathname = usePathname()
@@ -30,59 +76,88 @@ export default function MenuDesktop() {
 
   const { lang: locale } = params
 
-  const handleOpenModalLogin = () => {
-    openAuthModal('login')
-  }
-
-  const handleOpenModalRegister = () => {
-    openAuthModal('register')
-  }
+  const handleOpenModalLogin = () => openAuthModal('login')
+  const handleOpenModalRegister = () => openAuthModal('register')
 
   return (
     <>
-      <ul className='navbar-nav mx-auto'>
+      {/* Nav Links — centered */}
+      <nav
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 4,
+          flex: 1,
+          justifyContent: 'center'
+        }}
+      >
         {MenuLandingPage.map((item, index) => {
           const isActive = pathname === `/${locale}${item.href}`
 
           return (
-            <li key={index} className='nav-item'>
-              <Link
-                href={`/${locale}${item.href}`}
-                className={`nav-link nav-link-custom ${isActive ? 'active' : ''}`}
-                target={item.target}
-                rel={item.target === '_blank' ? 'noopener noreferrer' : undefined}
-              >
-                {item.label}
-              </Link>
-            </li>
+            <Link
+              key={index}
+              href={`/${locale}${item.href}`}
+              target={item.target}
+              rel={item.target === '_blank' ? 'noopener noreferrer' : undefined}
+              style={isActive ? navLinkActive : navLinkBase}
+              onMouseEnter={e => {
+                if (!isActive) {
+                  ;(e.target as HTMLElement).style.color = '#0f172a'
+                  ;(e.target as HTMLElement).style.backgroundColor = 'rgba(0,0,0,0.03)'
+                }
+              }}
+              onMouseLeave={e => {
+                if (!isActive) {
+                  ;(e.target as HTMLElement).style.color = '#64748b'
+                  ;(e.target as HTMLElement).style.backgroundColor = 'transparent'
+                }
+              }}
+            >
+              {item.label}
+            </Link>
           )
         })}
-      </ul>
+      </nav>
 
-      <div className='flex items-center gap-2'>
+      {/* Right actions */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
         <LanguageDropdown />
 
         {session && session.status === 'authenticated' ? (
-          // <UserDropdown session={data} />
-          <Link
-            className='btn btn-gradient-primary me-2'
-            style={{ padding: '5px 20px' }}
-            href={`/${locale}/home`}
-            target={`_blank`}
-          >
-            Đi đến Trang chủ
+          <Link href={`/${locale}/home`} target='_blank' style={ctaPillStyle}>
+            Trang chủ
+            <ArrowUpRight size={14} />
           </Link>
         ) : (
-          <div className='d-flex align-items-center gap-2'>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
             <button
-              className='btn btn-gradient-primary me-2'
-              style={{ padding: '5px 20px' }}
+              onClick={handleOpenModalLogin}
+              style={textBtnStyle}
+              onMouseEnter={e => {
+                ;(e.target as HTMLElement).style.backgroundColor = 'rgba(0,0,0,0.04)'
+                ;(e.target as HTMLElement).style.color = '#0f172a'
+              }}
+              onMouseLeave={e => {
+                ;(e.target as HTMLElement).style.backgroundColor = 'transparent'
+                ;(e.target as HTMLElement).style.color = '#475569'
+              }}
+            >
+              {t('landing.header.auth.login')}
+            </button>
+            <button
               onClick={handleOpenModalRegister}
+              style={ctaPillStyle}
+              onMouseEnter={e => {
+                ;(e.target as HTMLElement).style.transform = 'translateY(-1px)'
+                ;(e.target as HTMLElement).style.boxShadow = '0 4px 14px rgba(239, 68, 68, 0.35)'
+              }}
+              onMouseLeave={e => {
+                ;(e.target as HTMLElement).style.transform = 'translateY(0)'
+                ;(e.target as HTMLElement).style.boxShadow = 'none'
+              }}
             >
               {t('landing.header.auth.register')}
-            </button>
-            <button className='btn btn-gradient-primary' style={{ padding: '5px 20px' }} onClick={handleOpenModalLogin}>
-              {t('landing.header.auth.login')}
             </button>
           </div>
         )}

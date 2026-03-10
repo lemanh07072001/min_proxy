@@ -48,9 +48,10 @@ import {
 
 import Grid2 from '@mui/material/Grid2'
 
+import { toast } from 'react-toastify'
+
 import { useAdminUsers, useAdminUserStats, useToggleBan, useResetPassword } from '@/hooks/apis/useAdminUsers'
 import type { AdminUser, UserStats } from '@/hooks/apis/useAdminUsers'
-import { toast } from 'react-toastify'
 
 interface TableUsersProps {
   onEditUser?: (user: any) => void
@@ -65,7 +66,9 @@ const formatVND = (value: number) => {
 const formatDate = (dateStr: string) => {
   if (!dateStr) return '-'
   const d = new Date(dateStr)
-  return d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' })
+
+  
+return d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' })
 }
 
 function StatCard({ title, value, icon: Icon, color }: { title: string; value: string | number; icon: any; color: string }) {
@@ -130,6 +133,7 @@ export default function TableUsers({ onEditUser, onAdjustBalance, onViewTransact
   const handleSearch = useCallback(() => {
     setSearch(searchInput)
     const val = Math.max(1, Math.min(20000, Number(fetchLimitInput) || 100))
+
     setFetchLimit(val)
     setFetchLimitInput(String(val))
     setPagination(prev => ({ ...prev, pageIndex: 0 }))
@@ -193,6 +197,7 @@ export default function TableUsers({ onEditUser, onAdjustBalance, onViewTransact
       {
         onSuccess: (data) => {
           const pw = data?.data?.new_password
+
           setGeneratedPassword(pw)
           toast.success(data?.message || 'Đã reset mật khẩu')
         },
@@ -246,7 +251,9 @@ export default function TableUsers({ onEditUser, onAdjustBalance, onViewTransact
         header: 'Trạng thái',
         cell: ({ row }: { row: any }) => {
           const isBanned = row.original?.is_banned
-          return isBanned ? (
+
+          
+return isBanned ? (
             <Chip label='Bị khóa' size='small' icon={<BadgeMinus size={14} />} color='error' />
           ) : (
             <Chip label='Hoạt động' size='small' icon={<BadgeCheck size={14} />} color='success' />
@@ -263,7 +270,9 @@ export default function TableUsers({ onEditUser, onAdjustBalance, onViewTransact
         header: 'Thao tác',
         cell: ({ row }: { row: any }) => {
           const user = row.original
-          return (
+
+          
+return (
             <div className='flex gap-1'>
               <Tooltip title='Sửa thông tin'>
                 <IconButton size='small' color='info' onClick={() => onEditUser?.(user)}>

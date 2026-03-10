@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+
 import useAxiosAuth from '@/hocs/useAxiosAuth'
 
 // ─── User hooks ────────────────────────────────────────
@@ -10,7 +11,9 @@ export const useMyTickets = () => {
     queryKey: ['myTickets'],
     queryFn: async () => {
       const res = await axiosAuth.get('/support-tickets')
-      return res.data.data
+
+      
+return res.data.data
     },
     staleTime: 30 * 1000,
     refetchOnWindowFocus: false
@@ -24,7 +27,9 @@ export const useCreateTicket = () => {
   return useMutation({
     mutationFn: async (data: { order_id?: number; type: string; message: string }) => {
       const res = await axiosAuth.post('/support-tickets', data)
-      return res.data
+
+      
+return res.data
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['myTickets'] })
@@ -41,7 +46,9 @@ export const useAdminTickets = (params?: { status?: string; type?: string }) => 
     queryKey: ['adminTickets', params],
     queryFn: async () => {
       const res = await axiosAuth.get('/admin/support-tickets', { params })
-      return res.data.data
+
+      
+return res.data.data
     },
     staleTime: 30 * 1000,
     refetchOnWindowFocus: false
@@ -55,7 +62,9 @@ export const usePartialOrders = () => {
     queryKey: ['partialOrders'],
     queryFn: async () => {
       const res = await axiosAuth.get('/admin/partial-orders')
-      return res.data.data
+
+      
+return res.data.data
     },
     staleTime: 30 * 1000,
     refetchOnWindowFocus: false
@@ -69,7 +78,9 @@ export const useRetryPartial = () => {
   return useMutation({
     mutationFn: async (orderId: number) => {
       const res = await axiosAuth.post(`/admin/retry-partial/${orderId}`)
-      return res.data
+
+      
+return res.data
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['partialOrders'] })
@@ -85,7 +96,9 @@ export const useRefundPartial = () => {
   return useMutation({
     mutationFn: async (orderId: number) => {
       const res = await axiosAuth.post(`/admin/refund-partial/${orderId}`)
-      return res.data
+
+      
+return res.data
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['partialOrders'] })
@@ -101,7 +114,9 @@ export const useResolveTicket = () => {
   return useMutation({
     mutationFn: async ({ id, admin_note, status }: { id: number; admin_note: string; status?: number }) => {
       const res = await axiosAuth.post(`/admin/support-tickets/${id}/resolve`, { admin_note, status })
-      return res.data
+
+      
+return res.data
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminTickets'] })
@@ -116,7 +131,9 @@ export const useUpdateTicketStatus = () => {
   return useMutation({
     mutationFn: async ({ id, status }: { id: number; status: number }) => {
       const res = await axiosAuth.post(`/admin/support-tickets/${id}/status`, { status })
-      return res.data
+
+      
+return res.data
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminTickets'] })
@@ -131,7 +148,9 @@ export const useMarkTicketViewed = () => {
   return useMutation({
     mutationFn: async (id: number) => {
       const res = await axiosAuth.post(`/admin/support-tickets/${id}/view`)
-      return res.data
+
+      
+return res.data
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminTickets'] })
@@ -148,7 +167,9 @@ export const useOrderLogs = (orderId: number | null) => {
     queryKey: ['orderLogs', orderId],
     queryFn: async () => {
       const res = await axiosAuth.get(`/admin/order-logs/${orderId}`)
-      return res.data.data
+
+      
+return res.data.data
     },
     enabled: !!orderId,
     staleTime: 30 * 1000,
@@ -162,7 +183,9 @@ export const useAssignTicket = () => {
   return useMutation({
     mutationFn: async ({ id, assigned_to }: { id: number; assigned_to: number }) => {
       const res = await axiosAuth.post(`/admin/support-tickets/${id}/assign`, { assigned_to })
-      return res.data
+
+      
+return res.data
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminTickets'] })

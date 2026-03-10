@@ -34,7 +34,8 @@ export default function ResolveTicketDialog({ open, onClose, ticket }: Props) {
   const handleSubmit = () => {
     if (!adminNote.trim()) {
       toast.error('Vui lòng nhập ghi chú xử lý')
-      return
+      
+return
     }
 
     resolveTicket.mutate(

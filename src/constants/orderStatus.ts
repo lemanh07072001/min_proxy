@@ -94,6 +94,7 @@ export const TRANSACTION_TYPE_LABELS: Record<string, string> = {
   [TRANSACTION_TYPES.THANHTOAN_V4]: 'Thanh toán',
   [TRANSACTION_TYPES.GIAHAN_V4]: 'Gia hạn',
   [TRANSACTION_TYPES.RUT_HOA_HONG_AFFILIATE]: 'Rút hoa hồng',
+
   // Deposit types (BankAuto)
   PLUS: 'Nạp tiền',
   MINUS: 'Hoàn tiền'

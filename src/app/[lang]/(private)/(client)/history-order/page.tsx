@@ -1,9 +1,9 @@
+import { Globe } from 'lucide-react'
+import type { Metadata } from 'next'
+
 import HistoryOrderPage from '@/views/Client/HistoryOrder/HistoryOrderPage'
 
 import './styles.css'
-
-import { Globe } from 'lucide-react'
-import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: `${process.env.NEXT_PUBLIC_APP_NAME} | Lịch sử đơn hàng`

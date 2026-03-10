@@ -1,4 +1,6 @@
 // Type Imports
+import { getServerSession } from 'next-auth/next'
+
 import type { ChildrenType, Direction } from '@core/types'
 
 // Context Imports
@@ -6,10 +8,10 @@ import { VerticalNavProvider } from '@menu/contexts/verticalNavContext'
 import { SettingsProvider } from '@core/contexts/settingsContext'
 import ThemeProvider from '@components/theme'
 import { ModalContextProvider } from '@/app/contexts/ModalContext'
+
 // Util Imports
 import { getMode, getSettingsFromCookie, getSystemMode } from '@core/utils/serverHelpers'
 import { NextAuthProvider } from '@/app/contexts/nextAuthProvider'
-import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/libs/auth'
 
 type Props = ChildrenType & {

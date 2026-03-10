@@ -1,8 +1,9 @@
 'use client'
 
+import { DollarSign, TrendingDown, TrendingUp, Wallet } from 'lucide-react'
+
 import KPICard from '@/components/UI/KPICard'
 import { formatCurrency, formatNumber } from '@/utils/formatters'
-import { DollarSign, TrendingDown, TrendingUp, Wallet } from 'lucide-react'
 import type { FinancialReportData } from '@/hooks/apis/useFinancialReport'
 
 interface RevenueProfitCardsProps {

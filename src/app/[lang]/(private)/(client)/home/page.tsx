@@ -2,6 +2,8 @@
 
 import { useState, useMemo, useEffect } from 'react'
 
+import { useParams } from 'next/navigation'
+
 import {
   Chip,
   Dialog,
@@ -16,7 +18,6 @@ import {
 import { Share2, Clock, X, ChevronLeft, ChevronRight, MessageCircle, Send, Youtube, ExternalLink, Tag, Sparkles, TrendingUp, Wrench, Megaphone, Wallet, Globe, Search, BookOpen, ArrowRight } from 'lucide-react'
 import { toast } from 'react-toastify'
 
-import { useParams } from 'next/navigation'
 
 import { useAnnouncements } from '@/hooks/apis/useAnnouncements'
 import type { Announcement } from '@/hooks/apis/useAnnouncements'
@@ -74,6 +75,7 @@ const MODAL_COOLDOWN_MS = 30 * 60 * 1000 // 30 phút
 function getDismissedMap(): Record<string, number> {
   try {
     const raw = localStorage.getItem(MODAL_STORAGE_KEY)
+
     if (!raw) return {}
     const parsed = JSON.parse(raw)
 
@@ -133,6 +135,7 @@ function ModalAnnouncements({ items }: { items: Announcement[] }) {
   if (pendingItems.length === 0) return null
 
   const current = pendingItems[currentIdx]
+
   if (!current) return null
 
   const typeInfo = TYPE_MAP[current.type] || TYPE_MAP.general

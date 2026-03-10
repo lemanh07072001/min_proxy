@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+
 import { useSession, signOut } from 'next-auth/react'
 
 /**
@@ -19,7 +20,8 @@ export const useClientAuthGuard = () => {
   useEffect(() => {
     if (status === 'loading') {
       setIsLoading(true)
-      return
+      
+return
     }
 
     if (!session || session.error === 'TokenExpiredError' || !session.access_token) {

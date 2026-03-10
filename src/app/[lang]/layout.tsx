@@ -7,13 +7,15 @@ import '@/app/css-variables.css'
 import '@/app/globals.css'
 import '@/app/shared-layout.css' // CSS chung cho cả private và public
 import '@/app/root.css'
+
 // import '@/app/figtree.css'
 
 // Generated Icon CSS Imports
 import '@assets/iconify-icons/generated-icons.css'
 
-import { Figtree } from 'next/font/google'
+import { Suspense } from 'react'
 
+import { Figtree } from 'next/font/google'
 import { headers } from 'next/headers'
 
 // Utils
@@ -21,9 +23,9 @@ import type { Metadata } from 'next'
 
 import InitColorSchemeScript from '@mui/material/InitColorSchemeScript'
 
-import { getServerUserData } from '@/utils/serverSessionValidation'
+import { getServerSession } from 'next-auth/next'
 
-// import { getServerSession } from 'next-auth/next' // Removed unused import
+import { getServerUserData } from '@/utils/serverSessionValidation'
 
 import { i18n } from '@/configs/configi18n'
 
@@ -46,11 +48,10 @@ import { authOptions } from '@/libs/auth'
 import I18nextProvider from '@/app/i18n-provider'
 
 import StoreProvider from '@/components/StoreProvider'
+
 import ReferralHandler from '@/components/ReferralHandler'
 import { NextAuthProvider } from '@/app/contexts/nextAuthProvider'
 import NavigationProgress from '@/components/NavigationProgress'
-
-import { getServerSession } from 'next-auth/next'
 
 import { siteConfig } from '@/configs/siteConfig'
 
@@ -182,7 +183,9 @@ const RootLayout = async (props: ChildrenType & { params: Promise<{ lang: string
                 <BrandingProvider>
                   <StoreProvider initialUser={user}>
                     <ModalContextProvider>
-                      <ReferralHandler />
+                      <Suspense fallback={null}>
+                        <ReferralHandler />
+                      </Suspense>
                       <div className='relative z-10 main'>{children}</div>
                     </ModalContextProvider>
                   </StoreProvider>

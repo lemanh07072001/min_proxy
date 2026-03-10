@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { useSession } from 'next-auth/react'
+
 import useAxiosAuth from '@/hocs/useAxiosAuth'
 
 export interface DailyTrendItem {
@@ -87,7 +88,9 @@ export interface FinancialReportData {
 /** Deterministic pseudo-random (cùng seed → cùng kết quả) */
 const sr = (seed: number): number => {
   const x = Math.sin(seed * 9301 + 49297) * 233280
-  return x - Math.floor(x)
+
+  
+return x - Math.floor(x)
 }
 
 function generateMockTrend(): DailyTrendItem[] {
@@ -96,6 +99,7 @@ function generateMockTrend(): DailyTrendItem[] {
 
   for (let i = 29; i >= 0; i--) {
     const d = new Date(now)
+
     d.setDate(d.getDate() - i)
     const isWe = d.getDay() === 0 || d.getDay() === 6
 
@@ -284,7 +288,9 @@ export const useFinancialReport = (params?: FinancialReportParams) => {
     queryKey: ['financialReport', params?.start, params?.end],
     queryFn: async () => {
       const res = await axiosAuth.get('/admin/financial-report', { params })
-      return res.data?.data ?? null
+
+      
+return res.data?.data ?? null
     },
     enabled: !!session?.access_token,
     placeholderData: MOCK_FINANCIAL,
@@ -301,7 +307,9 @@ export const useReconciliation = (params?: FinancialReportParams) => {
     queryKey: ['reconciliation', params?.start, params?.end],
     queryFn: async () => {
       const res = await axiosAuth.get('/admin/reconciliation', { params })
-      return res.data?.data ?? null
+
+      
+return res.data?.data ?? null
     },
     enabled: !!session?.access_token,
     placeholderData: MOCK_RECONCILIATION,

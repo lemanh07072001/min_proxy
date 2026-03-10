@@ -1,7 +1,8 @@
 'use client'
 
-import { formatCurrency } from '@/utils/formatters'
 import { CheckCircle, AlertTriangle } from 'lucide-react'
+
+import { formatCurrency } from '@/utils/formatters'
 import { useReconciliation, MOCK_RECONCILIATION } from '@/hooks/apis/useFinancialReport'
 
 interface ReconciliationCardProps {

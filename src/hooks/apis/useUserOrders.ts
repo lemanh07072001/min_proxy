@@ -10,7 +10,9 @@ export const useUserOrders = (userId?: number) => {
     queryFn: async () => {
       if (!userId) return [] // tránh lỗi undefined
       const res = await axiosAuth.get(`/get-user-order/${userId}`)
-      return res?.data ?? []
+
+      
+return res?.data ?? []
     },
     enabled: !!userId, // chỉ fetch khi có userId
     refetchOnWindowFocus: false,

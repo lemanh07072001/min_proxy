@@ -1,7 +1,9 @@
 'use client'
 
 import { useEffect } from 'react'
+
 import { usePathname } from 'next/navigation'
+
 import { useNavigationPending, setNavigationPending } from '@/lib/navigationState'
 
 function NavigationSkeleton() {

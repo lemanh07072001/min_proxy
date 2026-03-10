@@ -2,6 +2,7 @@
 'use client'
 
 import { useRef, useState, useEffect } from 'react'
+
 import { usePathname } from 'next/navigation'
 
 import "@components/language-selector/main.css"
@@ -33,7 +34,9 @@ export default function LanguageSelect() {
     };
 
     document.addEventListener('mousedown', handleClickOutside);
-    return () => {
+
+    
+return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);

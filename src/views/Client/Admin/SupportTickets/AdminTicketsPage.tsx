@@ -219,7 +219,9 @@ export default function AdminTicketsPage() {
         size: 140,
         cell: ({ row }: { row: any }) => {
           const status = row.original.status
-          return (
+
+          
+return (
             <Chip
               label={TICKET_STATUS_LABELS[status] || '?'}
               size='small'
@@ -235,7 +237,9 @@ export default function AdminTicketsPage() {
         cell: ({ row }: { row: any }) => {
           const assigned = row.original.assigned_to_user
           const processing = row.original.processing_by_user
-          return (
+
+          
+return (
             <div style={{ fontSize: '13px' }}>
               {assigned ? (
                 <span style={{ fontWeight: 600 }}>{assigned.name}</span>
@@ -253,7 +257,9 @@ export default function AdminTicketsPage() {
         size: 110,
         cell: ({ row }: { row: any }) => {
           const viewed = row.original.viewed_by_user
-          return viewed ? (
+
+          
+return viewed ? (
             <span style={{ fontSize: '12px', color: '#64748b' }}>{viewed.name}</span>
           ) : (
             <span style={{ fontSize: '12px', color: '#94a3b8' }}>—</span>

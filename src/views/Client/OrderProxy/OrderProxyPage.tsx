@@ -34,7 +34,7 @@ import {
 
 import Chip from '@mui/material/Chip'
 
-import './styles.css'
+import './stylesOrder.css'
 import Pagination from '@mui/material/Pagination'
 
 import Checkbox from '@mui/material/Checkbox'

@@ -15,7 +15,6 @@ import { Box } from '@mui/material'
 
 import { CheckCheck, Copy } from 'lucide-react'
 
-import TimeProxyRotating from './TimeProxyRotating'
 import TimeProxyDie from './TimeProxyDie'
 
 import DialogCloseButton from '@components/modals/DialogCloseButton'

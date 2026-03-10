@@ -31,6 +31,7 @@ import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
 
 import CustomTextField from '@/@core/components/mui/TextField'
+
 // RichTextEditor removed — using plain textarea for note
 import { TAG_CONFIG, PREDEFINED_TAGS, getTagStyle } from '@/configs/tagConfig'
 import { usePartners } from '@/hooks/apis/usePartners'
@@ -78,9 +79,11 @@ const schema = yup.object({
     .transform(value => (value ? value.trim() : value))
     .test('is-valid-json', 'Body Api phải là JSON hợp lệ', function (value) {
       if (!value) return true
+
       try {
         JSON.parse(value)
-        return true
+        
+return true
       } catch (error) {
         return false
       }
@@ -122,6 +125,7 @@ export default function ServiceFormModal({ open, onClose, serviceId, initialData
 
   // Data fetching
   const { data: partners = [], isLoading: loadingPartners } = usePartners()
+
   // Chỉ gọi API khi edit mà không có initialData (fallback)
   const { data: fetchedData, isLoading: loadingService } = useServiceType(serviceId, isEditMode && open && !initialData)
   const serviceData = initialData || fetchedData
@@ -208,12 +212,16 @@ export default function ServiceFormModal({ open, onClose, serviceId, initialData
     resolver: async (data, context, options) => {
       try {
         const values = await schema.validate(data, { abortEarly: false })
-        return { values, errors: {} }
+
+        
+return { values, errors: {} }
       } catch (err: any) {
         if (!err.inner || !Array.isArray(err.inner)) {
           console.error('Validation error:', err)
-          return { values: {}, errors: { name: { type: 'validation', message: err.message || 'Lỗi validation' } } }
+          
+return { values: {}, errors: { name: { type: 'validation', message: err.message || 'Lỗi validation' } } }
         }
+
         const formattedErrors = err.inner.reduce(
           (allErrors: any, currentError: any) => ({
             ...allErrors,
@@ -224,7 +232,9 @@ export default function ServiceFormModal({ open, onClose, serviceId, initialData
           }),
           {}
         )
-        return { values: {}, errors: formattedErrors }
+
+        
+return { values: {}, errors: formattedErrors }
       }
     },
     mode: 'onSubmit',
@@ -260,6 +270,7 @@ export default function ServiceFormModal({ open, onClose, serviceId, initialData
   useEffect(() => {
     if (serviceData && isEditMode) {
       let bodyApiString = ''
+
       if (serviceData.api_body) {
         try {
           bodyApiString =
@@ -273,14 +284,18 @@ export default function ServiceFormModal({ open, onClose, serviceId, initialData
 
       // Parse multi_inputs (có thể là JSON string hoặc array)
       let multiInputs = serviceData.multi_inputs
+
       if (typeof multiInputs === 'string') { try { multiInputs = JSON.parse(multiInputs) } catch { multiInputs = null } }
+
       if (multiInputs && Array.isArray(multiInputs)) {
         setMultiInputFields(multiInputs.length > 0 ? multiInputs : [{ key: '', value: '' }])
       }
 
       // Parse price_by_duration (có thể là JSON string hoặc array)
       let priceDurations = serviceData.price_by_duration
+
       if (typeof priceDurations === 'string') { try { priceDurations = JSON.parse(priceDurations) } catch { priceDurations = null } }
+
       if (priceDurations && Array.isArray(priceDurations)) {
         setPriceFields(
           priceDurations.length > 0
@@ -295,6 +310,7 @@ export default function ServiceFormModal({ open, onClose, serviceId, initialData
 
       // Parse protocols (có thể là JSON string hoặc array)
       let parsedProtocols = serviceData.protocols
+
       if (typeof parsedProtocols === 'string') { try { parsedProtocols = JSON.parse(parsedProtocols) } catch { parsedProtocols = [] } }
 
       reset({
@@ -360,6 +376,7 @@ export default function ServiceFormModal({ open, onClose, serviceId, initialData
 
   const ITEM_HEIGHT = 48
   const ITEM_PADDING_TOP = 8
+
   const MenuProps = {
     PaperProps: {
       style: {
@@ -411,8 +428,10 @@ export default function ServiceFormModal({ open, onClose, serviceId, initialData
 
           Object.entries(res.errors).forEach(([field, fieldErrors]: [string, any]) => {
             const msg = Array.isArray(fieldErrors) ? fieldErrors[0] : fieldErrors
+
             // Map BE field name → FE field name
             const feField = field === 'api_body' ? 'body_api' : field
+
             setError(feField as any, { type: 'server', message: msg })
             errors.push(msg)
             if (techFields.includes(feField)) hasTechError = true
@@ -427,6 +446,7 @@ export default function ServiceFormModal({ open, onClose, serviceId, initialData
         }
 
         setFormErrors(errors)
+
         // Scroll to top of dialog to show error
         document.getElementById('service-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
       }
@@ -435,14 +455,18 @@ export default function ServiceFormModal({ open, onClose, serviceId, initialData
 
   const onError = (validationErrors: any) => {
     console.error('Form validation errors:', validationErrors)
+
     // Auto mở accordion nếu lỗi ở tech fields
     const techFields = ['partner_id', 'api_partner', 'cost_price', 'code', 'body_api']
+
     if (Object.keys(validationErrors).some(f => techFields.includes(f))) setTechExpanded(true)
+
     const messages = Object.values(validationErrors)
       .map((error: any) => error?.message)
       .filter(Boolean) as string[]
 
     setFormErrors(messages)
+
     // Scroll to top of dialog to show error
     document.getElementById('service-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
@@ -671,12 +695,16 @@ export default function ServiceFormModal({ open, onClose, serviceId, initialData
                             MenuProps,
                             renderValue: selected => {
                               const values = selected as unknown as string[]
+
                               if (!values || values.length === 0) return <em>Chọn giao thức</em>
-                              return (
+                              
+return (
                                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
                                   {values.map(val => {
                                     const p = protocols.find(p => p.value === val)
-                                    return <Chip key={val} label={p?.label || val} size='small' />
+
+                                    
+return <Chip key={val} label={p?.label || val} size='small' />
                                   })}
                                 </div>
                               )
@@ -701,7 +729,9 @@ export default function ServiceFormModal({ open, onClose, serviceId, initialData
                     control={control}
                     render={({ field }) => {
                       const selectedTags = field.value ? field.value.split(',').map((t: string) => t.trim()).filter(Boolean) : []
-                      return (
+
+                      
+return (
                         <CustomTextField
                           select
                           fullWidth
@@ -709,6 +739,7 @@ export default function ServiceFormModal({ open, onClose, serviceId, initialData
                           value={selectedTags}
                           onChange={(e: any) => {
                             const val = e.target.value as string[]
+
                             field.onChange(val.join(', '))
                           }}
                           onBlur={field.onBlur}
@@ -721,12 +752,16 @@ export default function ServiceFormModal({ open, onClose, serviceId, initialData
                               MenuProps,
                               renderValue: (selected: any) => {
                                 const values = selected as string[]
+
                                 if (!values || values.length === 0) return <em>Chọn tags</em>
-                                return (
+                                
+return (
                                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
                                     {values.map((tag: string) => {
                                       const config = TAG_CONFIG[tag]
-                                      return (
+
+                                      
+return (
                                         <Chip key={tag} label={tag} size='small' sx={{ fontSize: '11px', fontWeight: 700, backgroundColor: config?.bgColor || '#f1f5f9', color: config?.textColor || '#475569', border: `1px solid ${config?.borderColor || '#e2e8f0'}` }} />
                                       )
                                     })}
@@ -738,7 +773,9 @@ export default function ServiceFormModal({ open, onClose, serviceId, initialData
                         >
                           {PREDEFINED_TAGS.map(tag => {
                             const config = TAG_CONFIG[tag]
-                            return (
+
+                            
+return (
                               <MenuItem key={tag} value={tag}>
                                 <Chip label={tag} size='small' sx={{ fontSize: '11px', fontWeight: 700, backgroundColor: config.bgColor || '#f1f5f9', color: config.textColor || '#475569', border: `1px solid ${config.borderColor || '#e2e8f0'}`, mr: 1 }} />
                                 {config.hidden ? `${tag} (ẩn khỏi trang mua)` : tag}
@@ -1076,16 +1113,25 @@ export default function ServiceFormModal({ open, onClose, serviceId, initialData
                   previewData.request_limit && { label: 'Giới hạn request', value: previewData.request_limit, icon: Zap, color: '#22c55e' },
                   previewData.concurrent_connections && { label: 'Kết nối đồng thời', value: previewData.concurrent_connections, icon: Users, color: '#ef4444' },
                 ].filter(Boolean)
+
                 const hasSpecs = specFeatureRows.length > 0
 
                 // Render tags
                 const tagElements = previewData.tag ? previewData.tag.split(',').map((t: string) => t.trim()).filter(Boolean) : []
-                const visibleTagEls = tagElements.filter((tag: string) => { const cfg = getTagStyle(tag); return !(cfg && 'hidden' in cfg && cfg.hidden) })
+
+                const visibleTagEls = tagElements.filter((tag: string) => { const cfg = getTagStyle(tag);
+
+ 
+
+return !(cfg && 'hidden' in cfg && cfg.hidden) })
+
                 const renderTags = () => visibleTagEls.length > 0 ? (
                   <div style={{ position: 'absolute', top: '-12px', right: '14px', zIndex: 2, display: 'flex', gap: '6px' }}>
                     {visibleTagEls.map((tag: string, i: number) => {
                       const cfg = getTagStyle(tag)
-                      return <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '5px 14px', fontSize: '11.5px', fontWeight: 700, borderRadius: '20px', background: `linear-gradient(180deg, rgba(255,255,255,0.2) 0%, transparent 50%), ${cfg.gradient || cfg.bgColor}`, color: cfg.textColor, boxShadow: `0 2px 10px ${cfg.borderColor}55, inset 0 1px 0 rgba(255,255,255,0.2)`, border: '1px solid rgba(255,255,255,0.25)', letterSpacing: '0.3px', lineHeight: 1.2 }}>
+
+                      
+return <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '5px 14px', fontSize: '11.5px', fontWeight: 700, borderRadius: '20px', background: `linear-gradient(180deg, rgba(255,255,255,0.2) 0%, transparent 50%), ${cfg.gradient || cfg.bgColor}`, color: cfg.textColor, boxShadow: `0 2px 10px ${cfg.borderColor}55, inset 0 1px 0 rgba(255,255,255,0.2)`, border: '1px solid rgba(255,255,255,0.25)', letterSpacing: '0.3px', lineHeight: 1.2 }}>
                         {cfg.icon && <span style={{ fontSize: '12px' }}>{cfg.icon}</span>}{tag}
                       </span>
                     })}
@@ -1096,9 +1142,12 @@ export default function ServiceFormModal({ open, onClose, serviceId, initialData
                 const renderNotePreview = () => {
                   if (!previewData.note || previewData.note === '<p></p>') return null
                   const text = previewData.note.replace(/<[^>]+>/g, '').trim()
+
                   if (!text) return null
                   const preview = text.length > 80 ? text.substring(0, 80) + '...' : text
-                  return <p style={{ fontSize: '13px', color: '#64748b', margin: '0 0 8px', lineHeight: 1.4 }}>{preview}</p>
+
+                  
+return <p style={{ fontSize: '13px', color: '#64748b', margin: '0 0 8px', lineHeight: 1.4 }}>{preview}</p>
                 }
 
                 // Render footer
@@ -1130,6 +1179,7 @@ export default function ServiceFormModal({ open, onClose, serviceId, initialData
                     {renderTags()}
 
                     {watchedType === '1' ? (
+
                       /* ===== ROTATING — giống PlanCard ===== */
                       <>
                         {/* Header: title + price */}
@@ -1180,7 +1230,9 @@ export default function ServiceFormModal({ open, onClose, serviceId, initialData
                           {/* Multi_inputs feature rows — giống StaticFeatureRow */}
                           {(() => {
                             const featureColors = ['#f97316', '#3b82f6', '#22c55e', '#8b5cf6', '#06b6d4', '#f59e0b', '#ef4444']
-                            return multiInputFields.filter((f: any) => f.key && f.value).map((input: any, i: number) => (
+
+                            
+return multiInputFields.filter((f: any) => f.key && f.value).map((input: any, i: number) => (
                               <div key={i} className='feature-row'>
                                 <div className='feature-icons'>
                                   <CheckCircle size={16} color={featureColors[i % featureColors.length]} />
@@ -1197,6 +1249,7 @@ export default function ServiceFormModal({ open, onClose, serviceId, initialData
                         {renderFooter()}
                       </>
                     ) : (
+
                       /* ===== STATIC — giống ProxyCard ===== */
                       <>
                         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', paddingTop: '4px' }}>

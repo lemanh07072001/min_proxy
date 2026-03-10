@@ -5,10 +5,14 @@ import { useState, useMemo } from 'react'
 import './styles.css'
 
 import { Filter, Globe, Wifi, X, SearchX, SlidersHorizontal } from 'lucide-react'
+
+import { Box, Grid2, Typography } from '@mui/material'
+
+import Chip from '@mui/material/Chip'
+
 import ProxyCard from '@/app/[lang]/(private)/(client)/components/proxy-card/ProxyCard'
 import { shouldHideByTag, getCountryName } from '@/configs/tagConfig'
-import { Box, Grid2, Typography } from '@mui/material'
-import Chip from '@mui/material/Chip'
+
 import { useCountries } from '@/hooks/apis/useCountries'
 
 interface StaticProxyPageProps {

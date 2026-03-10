@@ -6,7 +6,9 @@ export const useCountries = () => {
     queryKey: ['countries'],
     queryFn: async () => {
       const res = await axios.get('/api/countries')
-      return res?.data?.data ?? []
+
+      
+return res?.data?.data ?? []
     },
     refetchOnMount: false,
     refetchOnWindowFocus: false,

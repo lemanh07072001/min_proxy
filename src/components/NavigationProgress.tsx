@@ -1,7 +1,9 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+
 import { usePathname } from 'next/navigation'
+
 import { useNavigationPending } from '@/lib/navigationState'
 
 export default function NavigationProgress() {

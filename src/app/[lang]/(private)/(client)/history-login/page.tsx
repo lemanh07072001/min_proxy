@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+
 import HistoryLoginPage from '@views/Client/HistoryLogin/HistoryLoginPage'
 
 export const metadata: Metadata = {

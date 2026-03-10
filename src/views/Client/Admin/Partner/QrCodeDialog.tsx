@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+
 import {
   Dialog,
   DialogTitle,
@@ -12,8 +13,9 @@ import {
   CircularProgress
 } from '@mui/material'
 
-import { useGenerateQrCode } from '@/hooks/apis/usePartners'
 import { toast } from 'react-toastify'
+
+import { useGenerateQrCode } from '@/hooks/apis/usePartners'
 
 interface QrCodeDialogProps {
   open: boolean
@@ -42,6 +44,7 @@ export default function QrCodeDialog({ open, onClose, partner, amount }: QrCodeD
             onSuccess: (data) => {
               
               const qrUrl = data?.data?.image
+
               if (qrUrl) {
                 if(data?.data?.type === 'image'){
                     setQrCodeUrl(qrUrl)

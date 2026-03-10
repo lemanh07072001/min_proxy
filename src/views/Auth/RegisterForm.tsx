@@ -92,6 +92,7 @@ export default function RegisterForm() {
 
         // Hiển thị toast với lỗi chung (nếu có)
         const firstError = Object.values(serverErrors)[0]
+
         if (Array.isArray(firstError) && firstError[0]) {
           toast.error(firstError[0])
         }

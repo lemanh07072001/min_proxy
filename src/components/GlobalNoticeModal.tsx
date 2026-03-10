@@ -23,6 +23,7 @@ export default function GlobalNoticeModal() {
       const raw = typeof window !== 'undefined' ? localStorage.getItem(STORAGE_KEY) : null
       const suppressUntil = raw ? Number(raw) : 0
       const now = Date.now()
+
       setOpen(!(suppressUntil && suppressUntil > now))
     } catch {
       setOpen(true)
@@ -33,9 +34,11 @@ export default function GlobalNoticeModal() {
     try {
       if (dontShow) {
         const until = Date.now() + TWO_HOURS_MS
+
         localStorage.setItem(STORAGE_KEY, String(until))
       }
     } catch {}
+
     setOpen(false)
   }
 

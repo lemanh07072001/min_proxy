@@ -80,7 +80,7 @@ export default function HistoryOrderPage() {
 
       result = result.filter((order: any) =>
         order.order_code?.toLowerCase().includes(search) ||
-        order.type_servi?.name?.toLowerCase().includes(search)
+        order.service_name?.toLowerCase().includes(search)
       )
     }
 
@@ -127,7 +127,7 @@ export default function HistoryOrderPage() {
         header: 'Dịch vụ',
         cell: ({ row }: { row: any }) => (
           <div>
-            <div className='font-semibold text-sm'>{row.original.type_servi?.name || '-'}</div>
+            <div className='font-semibold text-sm'>{row.original.service_name || '-'}</div>
             {row.original.proxy_type && (
               <span className='text-xs text-gray-500'>{row.original.proxy_type}</span>
             )}
@@ -261,7 +261,7 @@ export default function HistoryOrderPage() {
       secure: true
     })
 
-    socket.on('connect', () => console.log('✅ Connected to socket:', socket.id))
+    socket.on('connect', () => {})
     socket.on('order_completed', data => {
       queryClient.invalidateQueries({ queryKey: ['userOrders'] })
       setTimeout(() => {

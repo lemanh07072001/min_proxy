@@ -35,7 +35,8 @@ export function getTagStyle(label: string): TagStyle {
 
 export function shouldHideByTag(tagString?: string | null): boolean {
   if (!tagString) return false
-  return tagString.split(',').some(t => t.trim() === 'Đóng')
+  
+return tagString.split(',').some(t => t.trim() === 'Đóng')
 }
 
 /** Convert country code (VN, US...) to flag emoji (🇻🇳, 🇺🇸...) */

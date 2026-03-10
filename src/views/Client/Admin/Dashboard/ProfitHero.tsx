@@ -1,7 +1,8 @@
 'use client'
 
-import { formatCurrency } from '@/utils/formatters'
 import { TrendingUp, TrendingDown, DollarSign, Receipt, RefreshCw, Users, Clock } from 'lucide-react'
+
+import { formatCurrency } from '@/utils/formatters'
 import type { FinancialReportData } from '@/hooks/apis/useFinancialReport'
 
 interface ProfitHeroProps {
@@ -11,12 +12,15 @@ interface ProfitHeroProps {
 
 export default function ProfitHero({ revenue, periodDays }: ProfitHeroProps) {
   const isProfitable = revenue.profit > 0
+
   const bgClass = isProfitable
     ? 'from-emerald-500 to-emerald-700'
     : 'from-red-500 to-red-700'
 
   const dailyProfit = Math.round(revenue.profit / periodDays)
   const dailyRevenue = Math.round(revenue.confirmed / periodDays)
+
+
   // Lợi nhuận dự kiến từ pipeline: expected × margin hiện tại
   const expectedProfit = revenue.expected > 0 && revenue.margin_percent > 0
     ? Math.round(revenue.expected * revenue.margin_percent / 100)

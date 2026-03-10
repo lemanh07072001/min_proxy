@@ -12,6 +12,7 @@ import {
   CartesianGrid,
   Tooltip
 } from 'recharts'
+
 import type { DailyTrendItem } from '@/hooks/apis/useFinancialReport'
 
 interface TrendChartsProps {
@@ -21,12 +22,15 @@ interface TrendChartsProps {
 function formatCompact(value: number): string {
   if (value >= 1000000) return (value / 1000000).toFixed(1) + 'M'
   if (value >= 1000) return (value / 1000).toFixed(0) + 'K'
-  return value.toString()
+  
+return value.toString()
 }
 
 function formatDate(dateStr: string): string {
   const d = new Date(dateStr)
-  return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`
+
+  
+return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`
 }
 
 const CustomTooltip = ({ active, payload, label }: any) => {

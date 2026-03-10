@@ -25,6 +25,7 @@ const QuantityControl: React.FC<QuantityControlProps> = ({
   const handleIncrease = () => {
     if (safeValue < max) {
       const newValue = safeValue + 1
+
       onChange?.(newValue)
     }
   }
@@ -32,12 +33,14 @@ const QuantityControl: React.FC<QuantityControlProps> = ({
   const handleDecrease = () => {
     if (safeValue > min) {
       const newValue = safeValue - 1
+
       onChange?.(newValue)
     }
   }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = parseInt(e.target.value) || min
+
     if (newValue >= min && newValue <= max) {
       onChange?.(newValue)
     }

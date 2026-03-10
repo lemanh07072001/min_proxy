@@ -2,7 +2,9 @@
 
 import type { ReactNode } from 'react'
 import { createContext, useContext, useEffect, useRef, useState } from 'react'
+
 import { useSearchParams } from 'next/navigation'
+
 import { useSession } from 'next-auth/react'
 
 interface ModalContextType {
@@ -42,6 +44,7 @@ export const ModalContextProvider = ({ children }: ModalContextProviderProps) =>
   const [resetEmail, setResetEmail] = useState<string | null>(null)
   const [resetToken, setResetToken] = useState<string | null>(null)
   const [resetPassword, setResetPassword] = useState<string | null>(null)
+
   // ✅ Thêm state cho referral code
   const [referralCode, setReferralCode] = useState<string | null>(null)
 

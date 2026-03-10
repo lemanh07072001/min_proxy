@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+
 import axiosInstance from '@/libs/axios'
 
 export async function POST(request: Request) {

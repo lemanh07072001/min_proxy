@@ -15,6 +15,7 @@ import MenuItem from '@mui/material/MenuItem'
 import Button from '@mui/material/Button'
 import IconButton from '@mui/material/IconButton'
 import Pagination from '@mui/material/Pagination'
+
 import CustomTextField from '@/@core/components/mui/TextField'
 import useMediaQuery from '@/@menu/hooks/useMediaQuery'
 import { formatDateTimeLocal } from '@/utils/formatDate'
@@ -38,16 +39,23 @@ const getDatePreset = (key: string): { start?: string; end?: string } => {
 
   switch (key) {
     case 'today': return { start: end, end }
+
     case '7d': {
-      const d = new Date(); d.setDate(d.getDate() - 6)
+      const d = new Date();
+
+ d.setDate(d.getDate() - 6)
 
       return { start: fmtDate(d), end }
     }
+
     case '30d': {
-      const d = new Date(); d.setDate(d.getDate() - 29)
+      const d = new Date();
+
+ d.setDate(d.getDate() - 29)
 
       return { start: fmtDate(d), end }
     }
+
     default: return {}
   }
 }

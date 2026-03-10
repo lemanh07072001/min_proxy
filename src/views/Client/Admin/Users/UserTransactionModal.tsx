@@ -1,7 +1,9 @@
 'use client'
 
 import { useMemo, useState } from 'react'
+
 import Image from 'next/image'
+
 import { Clock3, List, X, Loader2 } from 'lucide-react'
 
 import {
@@ -52,6 +54,7 @@ function parseDescription(row: any): string {
 
   if (type === 'NAPTIEN_MANUAL' && parsed) {
     const parts: string[] = []
+
     if (parsed.note) parts.push(parsed.note)
     if (parsed.admin || parsed.admin_name) parts.push('Admin: ' + (parsed.admin_name || parsed.admin))
     if (parts.length) return parts.join(' | ')
@@ -61,8 +64,6 @@ function parseDescription(row: any): string {
 }
 
 export default function UserTransactionModal({ open, onClose, userId, userName }: UserTransactionModalProps) {
-  if (!open) return null
-
   const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 20 })
 
   const { data: transactions = [], isLoading, isError, error } = useUserTransactions(userId, open && !!userId)
@@ -73,9 +74,12 @@ export default function UserTransactionModal({ open, onClose, userId, userName }
         header: 'Thời gian',
         cell: ({ row }: { row: any }) => {
           const dateStr = row.original?.thoigian || row.original?.created_at
+
           if (!dateStr) return '-'
           const d = new Date(dateStr)
-          return (
+
+          
+return (
             <div style={{ display: 'flex', alignItems: 'center', gap: 4, whiteSpace: 'nowrap' }}>
               <Clock3 size={13} />
               <span>{d.toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
@@ -89,7 +93,9 @@ export default function UserTransactionModal({ open, onClose, userId, userName }
         cell: ({ row }: { row: any }) => {
           const type = row.original?.type || ''
           const info = TYPE_LABELS[type] || { label: type, color: 'default' as const }
-          return <Chip label={info.label} size='small' color={info.color} />
+
+          
+return <Chip label={info.label} size='small' color={info.color} />
         },
         size: 140
       },
@@ -105,7 +111,9 @@ export default function UserTransactionModal({ open, onClose, userId, userName }
         cell: ({ row }: { row: any }) => {
           const amount = row.original?.sotienthaydoi ?? 0
           const isPositive = amount >= 0
-          return (
+
+          
+return (
             <span
               style={{
                 fontWeight: 600,
@@ -130,7 +138,9 @@ export default function UserTransactionModal({ open, onClose, userId, userName }
         header: 'Nội dung',
         cell: ({ row }: { row: any }) => {
           const desc = parseDescription(row.original)
-          return (
+
+          
+return (
             <Tooltip title={desc} placement='top-start'>
               <span
                 style={{
@@ -160,6 +170,8 @@ export default function UserTransactionModal({ open, onClose, userId, userName }
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel()
   })
+
+  if (!open) return null
 
   const totalRows = transactions.length
   const { pageIndex, pageSize } = pagination

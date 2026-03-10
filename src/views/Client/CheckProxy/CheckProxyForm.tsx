@@ -1,5 +1,7 @@
 'use client'
 
+import React, { useState, useRef } from 'react'
+
 import {
   AlertCircle,
   CheckCircle,
@@ -15,8 +17,6 @@ import {
 } from 'lucide-react'
 
 import './styles.css'
-
-import React, { useState, useRef } from 'react'
 
 import MenuItem from '@mui/material/MenuItem'
 

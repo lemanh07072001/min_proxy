@@ -35,9 +35,10 @@ import {
   IconButton
 } from '@mui/material'
 
+import { toast } from 'react-toastify'
+
 import useAxiosAuth from '@/hocs/useAxiosAuth'
 import { useCopyServiceType, useDeleteServiceType } from '@/hooks/apis/useServiceType'
-import { toast } from 'react-toastify'
 import ServiceFormModal from '@/views/Client/Admin/ServiceType/ServiceFormModal'
 import { getTagStyle } from '@/configs/tagConfig'
 
@@ -148,19 +149,25 @@ export default function TableServiceType() {
 
   const filteredData = useMemo(() => {
     let result = dataServices
+
     if (searchText) {
       const lower = searchText.toLowerCase()
+
       result = result.filter((item: any) => item.name?.toLowerCase().includes(lower))
     }
+
     if (filterType === 'static') {
       result = result.filter((item: any) => item.type === 0 || item.type === '0')
     } else if (filterType === 'rotating') {
       result = result.filter((item: any) => item.type === 1 || item.type === '1')
     }
+
     if (filterStatus) {
       result = result.filter((item: any) => item.status === filterStatus)
     }
-    return result
+
+    
+return result
   }, [dataServices, searchText, filterType, filterStatus])
 
   const columns = useMemo(
@@ -209,7 +216,9 @@ export default function TableServiceType() {
         cell: ({ row }: { row: any }) => {
           const type = row.original?.type
           const displayText = type === 0 || type === '0' ? 'Tĩnh' : type === 1 || type === '1' ? 'Xoay' : type || '-'
-          return (
+
+          
+return (
             <div>
               <div className='font-bold'>{displayText}</div>
             </div>
@@ -221,7 +230,9 @@ export default function TableServiceType() {
         header: 'Proxy Type',
         cell: ({ row }: { row: any }) => {
           const proxyType = row.original?.proxy_type
-          return (
+
+          
+return (
             <div>
               <div className='font-bold'>
                 {proxyType === 'residential' ? 'Dân cư' : proxyType === 'datacenter' ? 'Datacenter' : proxyType || '-'}
@@ -235,7 +246,9 @@ export default function TableServiceType() {
         header: 'IP Version',
         cell: ({ row }: { row: any }) => {
           const ipVersion = row.original?.ip_version
-          return (
+
+          
+return (
             <div>
               <div className='font-bold'>
                 {ipVersion === 'ipv4' ? 'IPv4' : ipVersion === 'ipv6' ? 'IPv6' : ipVersion || '-'}
@@ -249,10 +262,13 @@ export default function TableServiceType() {
         header: 'Protocols',
         cell: ({ row }: { row: any }) => {
           const protocols = row.original?.protocols
+
           if (!protocols || protocols.length === 0) {
             return <div>-</div>
           }
-          return (
+
+          
+return (
             <div className='flex flex-wrap gap-1'>
               {protocols.map((protocol: string, index: number) => (
                 <Chip
@@ -271,20 +287,28 @@ export default function TableServiceType() {
         header: 'Giá bán',
         cell: ({ row }: { row: any }) => {
           const priceData = row.original?.price_by_duration
+
           if (!priceData) return <div style={{ color: '#94a3b8' }}>-</div>
           let prices: any[] = []
+
           try {
             prices = typeof priceData === 'string' ? JSON.parse(priceData) : priceData
           } catch { return <div style={{ color: '#94a3b8' }}>-</div> }
+
           if (!Array.isArray(prices) || prices.length === 0) return <div style={{ color: '#94a3b8' }}>-</div>
           const durationLabels: Record<string, string> = { '1': 'Ngày', '7': 'Tuần', '30': 'Tháng' }
-          return (
+
+          
+return (
             <div style={{ fontSize: '12px', lineHeight: '1.6' }}>
               {['1', '7', '30'].map(d => {
                 const item = prices.find((p: any) => p.key === d || p.duration === d)
+
                 if (!item) return null
                 const price = new Intl.NumberFormat('vi-VN').format(parseInt(item.value || item.price || '0') || 0)
-                return (
+
+                
+return (
                   <div key={d}>
                     <span style={{ color: '#64748b' }}>{durationLabels[d]}: </span>
                     <span style={{ fontWeight: 600, color: '#334155' }}>{price}đ</span>
@@ -300,14 +324,19 @@ export default function TableServiceType() {
         header: 'Tag',
         cell: ({ row }: { row: any }) => {
           const tagStr = row.original?.tag
+
           if (!tagStr) return <div style={{ color: '#94a3b8' }}>-</div>
           const tags = tagStr.split(',').map((t: string) => t.trim()).filter(Boolean)
+
           if (tags.length === 0) return <div style={{ color: '#94a3b8' }}>-</div>
-          return (
+          
+return (
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
               {tags.map((tag: string, i: number) => {
                 const style = getTagStyle(tag)
-                return (
+
+                
+return (
                   <span key={i} style={{ padding: '2px 8px', fontSize: '11px', fontWeight: 600, borderRadius: '4px', backgroundColor: style.bgColor, color: style.textColor, border: `1px solid ${style.borderColor}`, whiteSpace: 'nowrap' }}>
                     {tag}
                   </span>

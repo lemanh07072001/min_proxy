@@ -24,6 +24,7 @@ interface Props {
   onClose: () => void
   source: 'transaction_bank' | 'bank_auto' | null
   sourceId: number | null
+
   /** Pre-filled info for header */
   headerInfo?: {
     amount?: number
@@ -31,6 +32,7 @@ interface Props {
     userEmail?: string
     gateway?: string
   }
+
   /** transaction_bank id for manual credit / dismiss (only when source=transaction_bank) */
   transactionBankId?: number | null
 }
@@ -209,7 +211,7 @@ export default function InvestigationDrawer({ open, onClose, source, sourceId, h
                         <Typography fontSize={11} fontWeight={600} color='text.secondary' mb={0.5}>Gần giống:</Typography>
                         {step.data.near_matches.map((m: any, i: number) => (
                           <Typography key={i} fontSize={11} color='text.secondary'>
-                            • "{m.transfer_content}" — {m.user_name} ({m.user_email})
+                            • &quot;{m.transfer_content}&quot; — {m.user_name} ({m.user_email})
                           </Typography>
                         ))}
                       </Box>
@@ -312,7 +314,7 @@ export default function InvestigationDrawer({ open, onClose, source, sourceId, h
                 <Divider sx={{ my: 2 }} />
                 <Typography fontWeight={600} fontSize={14} mb={1}>Bỏ qua giao dịch</Typography>
                 <Typography fontSize={12} color='text.secondary' mb={1.5}>
-                  GD này sẽ không còn hiện trong "Chưa xử lý". Có thể hủy bỏ qua sau.
+                  GD này sẽ không còn hiện trong &quot;Chưa xử lý&quot;. Có thể hủy bỏ qua sau.
                 </Typography>
                 <TextField
                   size='small'

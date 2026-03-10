@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+
 import useAxiosAuth from '@/hocs/useAxiosAuth'
 
 export interface AdminUsersParams {
@@ -43,7 +44,9 @@ export const useAdminUsers = (params: AdminUsersParams = {}) => {
       const res = await axiosAuth.get('/admin/users', {
         params: { page, per_page, search, sort_by, sort_order }
       })
-      return res?.data
+
+      
+return res?.data
     },
     staleTime: 30 * 1000,
     refetchOnWindowFocus: false
@@ -58,7 +61,9 @@ export const useAdminUserStats = () => {
     queryKey: ['adminUserStats'],
     queryFn: async () => {
       const res = await axiosAuth.get('/admin/users/stats')
-      return res?.data?.data as UserStats
+
+      
+return res?.data?.data as UserStats
     },
     staleTime: 60 * 1000,
     refetchOnWindowFocus: false
@@ -73,7 +78,9 @@ export const useUpdateUser = () => {
   return useMutation({
     mutationFn: async ({ userId, data }: { userId: number; data: any }) => {
       const res = await axiosAuth.post(`/admin/users/${userId}/update`, data)
-      return res?.data
+
+      
+return res?.data
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminUsers'] })
@@ -89,7 +96,9 @@ export const useAdjustBalance = () => {
   return useMutation({
     mutationFn: async ({ userId, amount, description }: { userId: number; amount: number; description: string }) => {
       const res = await axiosAuth.post(`/admin/users/${userId}/adjust-balance`, { amount, description })
-      return res?.data
+
+      
+return res?.data
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminUsers'] })
@@ -105,7 +114,9 @@ export const useToggleBan = () => {
   return useMutation({
     mutationFn: async ({ userId, is_banned }: { userId: number; is_banned: boolean }) => {
       const res = await axiosAuth.post(`/admin/users/${userId}/ban`, { is_banned })
-      return res?.data
+
+      
+return res?.data
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminUsers'] })
@@ -120,7 +131,9 @@ export const useResetPassword = () => {
   return useMutation({
     mutationFn: async ({ userId, new_password }: { userId: number; new_password?: string }) => {
       const res = await axiosAuth.post(`/admin/users/${userId}/reset-password`, { new_password })
-      return res?.data
+
+      
+return res?.data
     }
   })
 }
@@ -134,7 +147,9 @@ export const useUserTransactions = (userId?: number, enabled = true) => {
     queryFn: async () => {
       if (!userId) return []
       const res = await axiosAuth.get(`/admin/users/${userId}/transactions`)
-      return res?.data?.data ?? []
+
+      
+return res?.data?.data ?? []
     },
     enabled: enabled && !!userId,
     staleTime: 30 * 1000,

@@ -1,5 +1,6 @@
-import axiosInstance from '@/libs/axios'
 import { NextRequest, NextResponse } from 'next/server'
+
+import axiosInstance from '@/libs/axios'
 
 export async function GET(request: NextRequest) {
   try {

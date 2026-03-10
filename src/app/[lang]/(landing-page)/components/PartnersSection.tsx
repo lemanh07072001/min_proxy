@@ -6,8 +6,6 @@ import { Star, Shield, CheckCircle } from 'lucide-react'
 
 import { useTranslation } from 'react-i18next'
 
-import { useLanguageSync } from '@/hooks/useLanguageSync'
-
 const partners = [
   { name: 'PC', display: 'PC', color: '#ef4444' },
   { name: 'GemLogin', display: 'GEMLOGIN', color: '#3b82f6' },
@@ -25,8 +23,6 @@ const trustItems = [
 
 const PartnersSection = () => {
   const { t } = useTranslation()
-
-  useLanguageSync()
 
   return (
     <section style={{ padding: '60px 24px', background: '#f8fafc' }}>

@@ -16,9 +16,10 @@ import {
 } from '@mui/material'
 import Grid2 from '@mui/material/Grid2'
 
+import { toast } from 'react-toastify'
+
 import { useCreateAnnouncement, useUpdateAnnouncement } from '@/hooks/apis/useAnnouncements'
 import type { Announcement } from '@/hooks/apis/useAnnouncements'
-import { toast } from 'react-toastify'
 import RichTextEditor from '@/components/editor/RichTextEditor'
 
 const TYPE_OPTIONS = [

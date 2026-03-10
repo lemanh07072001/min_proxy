@@ -1,10 +1,11 @@
 import React from 'react'
 
+import type { Metadata } from 'next'
+
 import AboutHero from '@/app/[lang]/(landing-page)/components/abount/AboutHero'
 import CompanyInfo from '@/app/[lang]/(landing-page)/components/abount/CompanyInfo'
 import TeamSection from '@/app/[lang]/(landing-page)/components/abount/TeamSection'
 import MissionVision from '@/app/[lang]/(landing-page)/components/abount/MissionVision'
-import type { Metadata } from 'next'
 
 export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }): Promise<Metadata> {
   const { lang } = await params

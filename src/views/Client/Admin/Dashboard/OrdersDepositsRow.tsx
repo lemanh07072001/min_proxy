@@ -1,6 +1,5 @@
 'use client'
 
-import { formatCurrency, formatNumber } from '@/utils/formatters'
 import {
   ShoppingCart,
   XCircle,
@@ -14,6 +13,8 @@ import {
   DollarSign,
   Receipt
 } from 'lucide-react'
+
+import { formatCurrency, formatNumber } from '@/utils/formatters'
 import type { FinancialReportData, OrderStatusItem } from '@/hooks/apis/useFinancialReport'
 
 interface OrdersDepositsRowProps {
@@ -99,7 +100,9 @@ export default function OrdersDepositsRow({ orders, deposits, revenue, periodDay
         {activeStatuses.map((s: OrderStatusItem) => {
           const meta = STATUS_LABELS[s.status] ?? { label: s.label, color: 'text-gray-600' }
           const pct = orders.total > 0 ? ((s.count / orders.total) * 100).toFixed(1) : '0'
-          return (
+
+          
+return (
             <StatRow
               key={s.status}
               icon={<span className={`w-2 h-2 rounded-full inline-block ${meta.color.replace('text-', 'bg-')}`} />}

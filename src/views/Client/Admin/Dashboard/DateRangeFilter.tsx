@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+
 import DatePicker from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'
 import { Calendar } from 'lucide-react'
@@ -23,7 +24,9 @@ function formatDateParam(date: Date): string {
   const d = String(date.getDate()).padStart(2, '0')
   const m = String(date.getMonth() + 1).padStart(2, '0')
   const y = date.getFullYear()
-  return `${d}-${m}-${y}`
+
+  
+return `${d}-${m}-${y}`
 }
 
 export default function DateRangeFilter({ onFilterChange }: DateRangeFilterProps) {
@@ -40,7 +43,8 @@ export default function DateRangeFilter({ onFilterChange }: DateRangeFilterProps
 
     if (key === 'all_time') {
       onFilterChange({})
-      return
+      
+return
     }
 
     let start: Date

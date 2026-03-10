@@ -49,6 +49,7 @@ export function BrandingProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (isLoading) return
     const root = document.documentElement
+
     root.style.setProperty('--primary-hover', branding.primaryHover, 'important')
     root.style.setProperty('--primary-gradient', branding.primaryGradient, 'important')
   }, [branding.primaryHover, branding.primaryGradient, isLoading])

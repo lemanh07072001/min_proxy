@@ -1,7 +1,8 @@
 'use client'
 
-import { formatCurrency, formatNumber } from '@/utils/formatters'
 import { Building2 } from 'lucide-react'
+
+import { formatCurrency, formatNumber } from '@/utils/formatters'
 import type { PartnerBreakdownItem } from '@/hooks/apis/useFinancialReport'
 
 interface PartnerBreakdownProps {

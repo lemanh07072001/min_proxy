@@ -1,10 +1,9 @@
 'use client'
 
-import React, { useState, useEffect, useContext } from 'react'
+import React, { useState, useEffect, useContext, useCallback } from 'react'
 
 import Image from 'next/image'
-
-import { motion, useScroll, useTransform } from 'framer-motion'
+import dynamic from 'next/dynamic'
 
 import Box from '@mui/material/Box'
 
@@ -12,43 +11,43 @@ import { SessionContext, useSession } from 'next-auth/react'
 
 import { User } from 'lucide-react'
 
-import VuexyLogo from '@core/svg/Logo'
-
-import logo from '../../../../../public/images/logo/logo-minsoftware-new-small.png'
 import MenuDesktop from './menus/MenuDesktop'
 import MenuMobile from './menus/MenuMobile'
 import LanguageDropdown from '@components/layout/shared/LanguageDropdown'
 import UserDropdown from '@components/layout/shared/UserDropdown'
-import AuthModal from '@/components/modals/AuthModal'
+
+const AuthModal = dynamic(() => import('@/components/modals/AuthModal'), { ssr: false })
+
 import { useModalContext } from '@/app/contexts/ModalContext'
 import { useResponsive } from '@/app/hooks/useResponsive'
 
-import CustomAvatar from '@core/components/mui/Avatar'
 import CustomIconButton from '@core/components/mui/IconButton'
 
 const MainHeader = () => {
-  const [isOpenMenu, setIsOpenMenu] = useState<boolean>(false)
-  const { scrollY } = useScroll()
+  const [isOpenMenu, setIsOpenMenu] = useState(false)
+  const [scrolled, setScrolled] = useState(false)
   const { isMobile } = useResponsive()
   const { openAuthModal } = useModalContext()
   const sessionContext = useContext(SessionContext)
-  const { data } = sessionContext ?? {}
   const session = useSession()
 
-  // 1. ĐÃ XÓA: state `scrolled` và useEffect theo dõi scroll thủ công.
-  //    Tất cả hiệu ứng scroll giờ đây đều do Framer Motion xử lý.
+  // Lightweight scroll listener thay cho framer-motion
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 40)
 
-  // Đổi màu nền và các hiệu ứng khác khi scroll bằng Framer Motion
-  const bgColor = useTransform(scrollY, [0, 80], ['#f9fafc', '#ffffff'])
-  const shadow = useTransform(scrollY, [0, 80], ['0px 0px 0px rgba(0,0,0,0)', '0px 2px 8px rgba(0,0,0,0.1)'])
-  const height = useTransform(scrollY, [0, 80], ['80px', '65px'])
+    window.addEventListener('scroll', onScroll, { passive: true })
+
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
 
   // Đóng menu mobile khi bấm ra ngoài
   useEffect(() => {
+    if (!isOpenMenu) return
+
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Element
 
-      if (isOpenMenu && !target.closest('.navbar-collapse') && !target.closest('.navbar-toggler')) {
+      if (!target.closest('.navbar-collapse') && !target.closest('.navbar-toggler')) {
         setIsOpenMenu(false)
       }
     }
@@ -58,63 +57,62 @@ const MainHeader = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [isOpenMenu])
 
-  // Chặn scroll của body khi menu mobile mở
+  // Chặn scroll khi menu mobile mở
   useEffect(() => {
-    if (isOpenMenu) {
-      document.body.classList.add('menu-open')
-    } else {
-      document.body.classList.remove('menu-open')
-    }
+    document.body.classList.toggle('menu-open', isOpenMenu)
 
-    return () => {
-      document.body.classList.remove('menu-open')
-    }
+    return () => document.body.classList.remove('menu-open')
   }, [isOpenMenu])
 
-  // Hàm để đóng menu (được truyền xuống cho MenuMobile)
-  const handleCloseMenu = () => {
-    setIsOpenMenu(false)
-  }
-
-  // Hàm để bật/tắt menu mobile
-  const toggleMobileMenu = () => {
-    setIsOpenMenu(!isOpenMenu)
-  }
-
-  const handleOpenModalLogin = () => {
-    openAuthModal('login')
-  }
-
-  const handleOpenModalRegister = () => {
-    openAuthModal('register')
-  }
+  const handleCloseMenu = useCallback(() => setIsOpenMenu(false), [])
+  const toggleMobileMenu = useCallback(() => setIsOpenMenu(prev => !prev), [])
+  const handleOpenModalLogin = useCallback(() => openAuthModal('login'), [openAuthModal])
 
   return (
     <>
-      <motion.nav
+      <nav
         className='navbar navbar-expand-lg navbar-light navbar-custom sticky-top'
         style={{
-          backgroundColor: bgColor,
-          boxShadow: shadow,
-          height: height
+          backgroundColor: scrolled ? 'rgba(255,255,255,0.98)' : 'rgba(255,255,255,0.92)',
+          boxShadow: scrolled
+            ? '0 1px 3px rgba(0,0,0,0.05), 0 4px 20px rgba(0,0,0,0.03)'
+            : 'none',
+          height: scrolled ? 62 : 72,
+          backdropFilter: 'blur(16px)',
+          WebkitBackdropFilter: 'blur(16px)',
+          borderBottom: '1px solid rgba(0,0,0,0.05)',
+          position: 'sticky',
+          top: 0,
+          zIndex: 1000,
+          transition: 'all 0.3s ease'
         }}
-        transition={{ duration: 0.3, ease: 'easeInOut' }}
       >
-        <div className='container-lg'>
+        <div
+          style={{
+            maxWidth: 1200,
+            margin: '0 auto',
+            width: '100%',
+            padding: '0 28px',
+            display: 'flex',
+            alignItems: 'center',
+            height: '100%'
+          }}
+        >
           {/* Logo */}
-          <a className='navbar-brand navbar-brand-custom d-flex align-items-center logo' href='#'>
+          <a href='#' style={{ display: 'flex', alignItems: 'center', textDecoration: 'none', flexShrink: 0 }}>
             <Image
               src='/images/logo/Logo_MKT_Proxy.png'
-              alt='Logo_MKT_Proxy'
-              width={180}
-              height={50}
+              alt='MKT Proxy'
+              width={150}
+              height={42}
               priority
               unoptimized
+              style={{ objectFit: 'contain' }}
             />
           </a>
 
+          {/* Mobile: toggle + user actions */}
           <div className='header-mobile'>
-            {/* Mobile Toggle */}
             <button
               className='navbar-toggler'
               type='button'
@@ -124,33 +122,24 @@ const MainHeader = () => {
               <span className='navbar-toggler-icon'></span>
             </button>
 
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center'
-              }}
-            >
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
               <LanguageDropdown />
               {session && session.status === 'authenticated' ? (
                 <UserDropdown />
               ) : (
-                <CustomIconButton
-                  aria-label='capture screenshot'
-                  color='primary'
-                  size='small'
-                  onClick={handleOpenModalLogin}
-                >
+                <CustomIconButton aria-label='login' color='primary' size='small' onClick={handleOpenModalLogin}>
                   <User />
                 </CustomIconButton>
               )}
             </Box>
           </div>
 
-          <div className={` navbar-collapse ${isOpenMenu ? 'show' : ''}`} id='navbarNav'>
+          {/* Desktop/Mobile nav content */}
+          <div className={`navbar-collapse ${isOpenMenu ? 'show' : ''}`} id='navbarNav' style={{ flex: 1 }}>
             {isMobile ? <MenuMobile onClose={handleCloseMenu} /> : <MenuDesktop />}
           </div>
         </div>
-      </motion.nav>
+      </nav>
 
       <AuthModal />
     </>

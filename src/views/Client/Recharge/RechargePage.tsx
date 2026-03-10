@@ -96,21 +96,26 @@ export default function RechargePage() {
   useEffect(() => {
     if (!pendingRecord?.expires_at) {
       setCountdown(0)
-      return
+      
+return
     }
 
     const calcRemaining = () => {
       const expiresAt = new Date(pendingRecord.expires_at).getTime()
       const now = Date.now()
-      return Math.max(0, Math.floor((expiresAt - now) / 1000))
+
+      
+return Math.max(0, Math.floor((expiresAt - now) / 1000))
     }
 
     setCountdown(calcRemaining())
 
     const timer = setInterval(() => {
       const remaining = calcRemaining()
+
       setCountdown(remaining)
       countdownRef.current = remaining
+
       if (remaining <= 0) {
         clearInterval(timer)
         refetchPending()
@@ -154,18 +159,23 @@ export default function RechargePage() {
 
   const formatCurrency = (value: string) => {
     const numericValue = value.replace(/\D/g, '')
-    return numericValue.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+
+    
+return numericValue.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
   }
 
   const formatCountdown = (seconds: number) => {
     const m = Math.floor(seconds / 60)
     const s = seconds % 60
-    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`
+
+    
+return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`
   }
 
   const changeInputAmount = (event: React.ChangeEvent<HTMLInputElement>) => {
     const formatted = formatCurrency(event.target.value)
     const rawValue = event.target.value.replace(/[^0-9]/g, '')
+
     setAmount(rawValue)
     setRechargeAmount(formatted)
   }
@@ -173,8 +183,10 @@ export default function RechargePage() {
   const handleAmountSelect = (selectedAmount: string) => {
     if (hasPending) return
     const formatted = formatCurrency(selectedAmount)
+
     setRechargeAmount(formatted)
     const rawValue = selectedAmount.replace(/[^0-9]/g, '')
+
     setAmount(rawValue)
   }
 
@@ -182,18 +194,22 @@ export default function RechargePage() {
     if (hasPending) return
 
     setIsGeneratingQR(true)
+
     try {
       const result = await createBankQr.mutateAsync({ amount: Number(amount) })
+
       if (result.success && result.data) {
         setCreatedRecord(result.data)
         refetchPending()
       }
     } catch (error: any) {
       const errorData = error?.response?.data
+
       if (errorData?.data) {
         setCreatedRecord(errorData.data)
         refetchPending()
       }
+
       console.error('Lỗi khi tạo QR:', error)
     } finally {
       setIsGeneratingQR(false)
@@ -209,6 +225,7 @@ export default function RechargePage() {
       await updateTransferName.mutateAsync(transferNameInput.trim())
     } catch (error: any) {
       const msg = error?.response?.data?.message || 'Lỗi khi lưu tên chuyển tiền.'
+
       setTransferNameError(msg)
     }
   }
@@ -216,12 +233,15 @@ export default function RechargePage() {
   const getQrUrl = () => {
     if (!pendingRecord) return ''
     const addInfo = pendingRecord.note || pendingRecord.transaction_code
-    return `https://img.vietqr.io/image/${BANK_INFO.bankCode}-${BANK_INFO.accountNumber}-compact2.png?amount=${pendingRecord.amount}&addInfo=${encodeURIComponent(addInfo)}`
+
+    
+return `https://img.vietqr.io/image/${BANK_INFO.bankCode}-${BANK_INFO.accountNumber}-compact2.png?amount=${pendingRecord.amount}&addInfo=${encodeURIComponent(addInfo)}`
   }
 
   const handleCancelPending = async () => {
     if (!pendingRecord) return
     wasCancelledRef.current = true
+
     try {
       await cancelBankQr.mutateAsync(pendingRecord.id)
       setCreatedRecord(null)
@@ -235,6 +255,7 @@ export default function RechargePage() {
   const handleCopyAll = () => {
     if (!pendingRecord) return
     const textToCopy = `${BANK_INFO.accountNumber} - ${BANK_INFO.accountName} - ${pendingRecord.amount} - ${pendingRecord.note || pendingRecord.transaction_code}`
+
     copy(textToCopy)
   }
 
@@ -784,6 +805,7 @@ function DepositHistoryTab() {
 
   const handleDeleteDeposit = async (id: number) => {
     setDeletingId(id)
+
     try {
       await cancelBankQr.mutateAsync(id)
       refetchDeposits()
@@ -808,7 +830,9 @@ function DepositHistoryTab() {
         size: 120,
         cell: ({ row }: any) => {
           const formatter = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' })
-          return <span className='text-sm font-bold'>{formatter.format(row.original.amount || 0)}</span>
+
+          
+return <span className='text-sm font-bold'>{formatter.format(row.original.amount || 0)}</span>
         }
       },
       {
@@ -830,10 +854,12 @@ function DepositHistoryTab() {
         size: 120,
         cell: ({ row }: any) => {
           const status = row.original.status
+
           if (status === 'success') return <Chip label='Thành công' size='small' color='success' />
           if (status === 'pending') return <Chip label='Đang chờ' size='small' color='warning' />
           if (status === 'failed') return <Chip label='Thất bại' size='small' color='error' />
-          return <Chip label={status || '-'} size='small' />
+          
+return <Chip label={status || '-'} size='small' />
         }
       },
       {
@@ -852,9 +878,12 @@ function DepositHistoryTab() {
         size: 60,
         cell: ({ row }: any) => {
           const status = row.original.status
+
           if (status !== 'pending') return null
           const isDeleting = deletingId === row.original.id
-          return (
+
+          
+return (
             <Button
               size='small'
               variant='text'
@@ -897,7 +926,9 @@ function TransactionHistoryTab() {
     queryKey: ['getTransactionHistory'],
     queryFn: async () => {
       const res = await axiosAuth.get('/get-transaction-history')
-      return res.data ?? []
+
+      
+return res.data ?? []
     }
   })
 
@@ -945,7 +976,9 @@ function TransactionHistoryTab() {
         header: 'Số trước',
         cell: ({ row }: any) => {
           const formatter = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' })
-          return <span className='text-sm text-gray-500 font-bold'>{formatter.format(row.original.sotientruoc)}</span>
+
+          
+return <span className='text-sm text-gray-500 font-bold'>{formatter.format(row.original.sotientruoc)}</span>
         }
       },
       {
@@ -953,7 +986,9 @@ function TransactionHistoryTab() {
         header: 'Số tiền',
         cell: ({ row }: any) => {
           const formatter = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' })
-          return <span className='text-sm text-gray-500 font-bold'>{formatter.format(row.original.sotienthaydoi)}</span>
+
+          
+return <span className='text-sm text-gray-500 font-bold'>{formatter.format(row.original.sotienthaydoi)}</span>
         }
       },
       {
@@ -961,7 +996,9 @@ function TransactionHistoryTab() {
         header: 'Số tiền sau',
         cell: ({ row }: any) => {
           const formatter = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' })
-          return <span className='text-sm text-gray-500 font-bold'>{formatter.format(row.original.sotiensau)}</span>
+
+          
+return <span className='text-sm text-gray-500 font-bold'>{formatter.format(row.original.sotiensau)}</span>
         }
       },
       {

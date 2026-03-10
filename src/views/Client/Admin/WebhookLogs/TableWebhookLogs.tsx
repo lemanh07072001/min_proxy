@@ -1,7 +1,9 @@
 'use client'
 
 import { useCallback, useMemo, useState } from 'react'
+
 import Image from 'next/image'
+
 import {
   Search, X, Loader2, Clock3, Webhook, Eye,
   CheckCircle2, XCircle, AlertTriangle, Info
@@ -18,6 +20,7 @@ import Pagination from '@mui/material/Pagination'
 import Dialog from '@mui/material/Dialog'
 import DialogTitle from '@mui/material/DialogTitle'
 import DialogContent from '@mui/material/DialogContent'
+
 import CustomTextField from '@/@core/components/mui/TextField'
 import useMediaQuery from '@/@menu/hooks/useMediaQuery'
 import { formatDateTimeLocal } from '@/utils/formatDate'
@@ -35,7 +38,8 @@ function getStatusInfo(code: number): { label: string; color: 'success' | 'error
   if (code >= 200 && code < 300) return { label: 'Thành công', color: 'success', icon: <CheckCircle2 size={14} /> }
   if (code === 401) return { label: 'Từ chối', color: 'warning', icon: <AlertTriangle size={14} /> }
   if (code >= 500) return { label: 'Lỗi hệ thống', color: 'error', icon: <XCircle size={14} /> }
-  return { label: `Mã ${code}`, color: 'default', icon: <Info size={14} /> }
+  
+return { label: `Mã ${code}`, color: 'default', icon: <Info size={14} /> }
 }
 
 export default function TableWebhookLogs() {
@@ -109,7 +113,9 @@ export default function TableWebhookLogs() {
         size: 130,
         cell: ({ row }: { row: any }) => {
           const info = getStatusInfo(row.original.response_code)
-          return <Chip label={info.label} size='small' color={info.color} icon={info.icon} sx={chipSx} />
+
+          
+return <Chip label={info.label} size='small' color={info.color} icon={info.icon} sx={chipSx} />
         }
       },
       {
@@ -243,7 +249,9 @@ export default function TableWebhookLogs() {
               ) : (
                 table.getRowModel().rows.map(row => {
                   const isFailed = row.original.response_code >= 400
-                  return (
+
+                  
+return (
                     <tr className='table-row' key={row.id}
                       style={{
                         cursor: 'pointer',

@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { useSession } from 'next-auth/react'
+
 import useAxiosAuth from '@/hocs/useAxiosAuth'
 
 export const useProfile = () => {

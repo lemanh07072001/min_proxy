@@ -1,5 +1,5 @@
-import { useQuery } from '@tanstack/react-query'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery , useMutation, useQueryClient } from '@tanstack/react-query'
+
 import useAxiosAuth from '@/hocs/useAxiosAuth'
 
 export const useOrders = () => {
@@ -9,7 +9,9 @@ export const useOrders = () => {
     queryKey: ['orderProxyStatic'],
     queryFn: async () => {
       const res = await axiosAuth.get('/transaction-history')
-      return res?.data?.data ?? []
+
+      
+return res?.data?.data ?? []
     },
     staleTime: 30 * 1000,
     refetchOnWindowFocus: false
@@ -23,7 +25,9 @@ export const useApiKeys = (order_id?: string | number, enabled: boolean = true) 
     queryKey: ['orderApiKeys', order_id],
     queryFn: async () => {
       const res = await axiosAuth.get(`/get-key-proxy/${order_id}`)
-      return res?.data?.data ?? []
+
+      
+return res?.data?.data ?? []
     },
     enabled: !!order_id && enabled,
     refetchOnMount: false,
@@ -39,7 +43,9 @@ export const useCancelOrder = () => {
   return useMutation({
     mutationFn: async (orderId: number) => {
       const res = await axiosAuth.post(`/cancel-order/${orderId}`)
-      return res?.data
+
+      
+return res?.data
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['orderProxyStatic'] })
@@ -56,7 +62,9 @@ export const useResendOrder = () => {
   return useMutation({
     mutationFn: async (orderId: number) => {
       const res = await axiosAuth.post(`/resend-order/${orderId}`)
-      return res?.data
+
+      
+return res?.data
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['orderProxyStatic'] })
@@ -73,7 +81,9 @@ export const useDeleteOrder = () => {
   return useMutation({
     mutationFn: async (orderId: number) => {
       const res = await axiosAuth.delete(`/orders/${orderId}`)
-      return res?.data
+
+      
+return res?.data
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['orderProxyStatic'] })

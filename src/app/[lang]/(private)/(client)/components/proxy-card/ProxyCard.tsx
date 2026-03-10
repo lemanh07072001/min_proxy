@@ -23,21 +23,21 @@ interface ProxyCardProps {
 }
 
 const ProxyCard: React.FC<ProxyCardProps> = ({ provider, isFirstCard = false, countries = [] }) => {
-  if (shouldHideByTag(provider?.tag)) return null
-
   const session = useSession()
   const { openAuthModal } = useModalContext()
   const [checkoutOpen, setCheckoutOpen] = useState(false)
-
 
   const isAvailable = provider?.is_purchasable !== false
   const hasPriceByDuration = provider?.price_by_duration && provider.price_by_duration.length > 0
 
   const visibleTags = useMemo(() => {
     if (!provider?.tag) return []
-    return provider.tag.split(',').filter((t: string) => {
+    
+return provider.tag.split(',').filter((t: string) => {
       const tagDef = getTagStyle(t)
-      return !(tagDef && 'hidden' in tagDef && tagDef.hidden)
+
+      
+return !(tagDef && 'hidden' in tagDef && tagDef.hidden)
     })
   }, [provider?.tag])
 
@@ -61,9 +61,12 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, isFirstCard = false, co
   function getCountryName() {
     if (!countries || countries.length === 0) return null
     const countryCode = provider?.country || provider?.country_code
+
     if (!countryCode) return null
     const country = countries.find((c: any) => c.code === countryCode)
-    return country?.name || null
+
+    
+return country?.name || null
   }
 
   function getDurationLabel(duration: string) {
@@ -85,14 +88,19 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, isFirstCard = false, co
         price: parseInt(item.value, 10) || 0
       }))
     }
-    return [{ key: '1', label: 'Ngày', price: parseInt(provider.price, 10) || 0 }]
+
+    
+return [{ key: '1', label: 'Ngày', price: parseInt(provider.price, 10) || 0 }]
   }, [provider.price_by_duration, provider.price, hasPriceByDuration])
 
   // Protocols cho CheckoutModal
   const protocolList: string[] = useMemo(() => {
     if (provider.protocols && Array.isArray(provider.protocols)) return provider.protocols
-    return defaultProtocols.map(p => p.id)
+    
+return defaultProtocols.map(p => p.id)
   }, [provider.protocols])
+
+  if (shouldHideByTag(provider?.tag)) return null
 
   // Giá hiển thị ở header (giá thấp nhất)
   const headerPrice = priceOptions[0]?.price || parseInt(provider?.price, 10) || 0
@@ -100,8 +108,10 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, isFirstCard = false, co
   const handleBuy = () => {
     if (session.status !== 'authenticated') {
       openAuthModal('login')
-      return
+      
+return
     }
+
     setCheckoutOpen(true)
   }
 
@@ -122,7 +132,9 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, isFirstCard = false, co
           <div style={{ position: 'absolute', top: '-12px', right: '14px', zIndex: 2, display: 'flex', gap: '6px' }}>
             {visibleTags.map((tag: string, i: number) => {
               const tagDef = getTagStyle(tag)
-              return <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '5px 14px', fontSize: '11.5px', fontWeight: 700, borderRadius: '20px', background: `linear-gradient(180deg, rgba(255,255,255,0.2) 0%, transparent 50%), ${tagDef.gradient || tagDef.bgColor}`, color: tagDef.textColor, boxShadow: `0 2px 10px ${tagDef.borderColor}55, inset 0 1px 0 rgba(255,255,255,0.2)`, border: '1px solid rgba(255,255,255,0.25)', letterSpacing: '0.3px', lineHeight: 1.2 }}>{tagDef.icon && <span style={{ fontSize: '12px' }}>{tagDef.icon}</span>}{tag.trim()}</span>
+
+              
+return <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '5px 14px', fontSize: '11.5px', fontWeight: 700, borderRadius: '20px', background: `linear-gradient(180deg, rgba(255,255,255,0.2) 0%, transparent 50%), ${tagDef.gradient || tagDef.bgColor}`, color: tagDef.textColor, boxShadow: `0 2px 10px ${tagDef.borderColor}55, inset 0 1px 0 rgba(255,255,255,0.2)`, border: '1px solid rgba(255,255,255,0.25)', letterSpacing: '0.3px', lineHeight: 1.2 }}>{tagDef.icon && <span style={{ fontSize: '12px' }}>{tagDef.icon}</span>}{tag.trim()}</span>
             })}
           </div>
         )}
@@ -139,9 +151,12 @@ const ProxyCard: React.FC<ProxyCardProps> = ({ provider, isFirstCard = false, co
           {/* Note preview (mô tả ngắn) */}
           {provider?.note && provider.note !== '<p></p>' && (() => {
             const text = provider.note.replace(/<[^>]+>/g, '').trim()
+
             if (!text) return null
             const preview = text.length > 80 ? text.substring(0, 80) + '...' : text
-            return <p style={{ fontSize: '13px', color: '#64748b', margin: '0 0 8px', lineHeight: 1.4 }}>{preview}</p>
+
+            
+return <p style={{ fontSize: '13px', color: '#64748b', margin: '0 0 8px', lineHeight: 1.4 }}>{preview}</p>
           })()}
 
           {/* Product info as feature rows */}

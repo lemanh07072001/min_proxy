@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+
 import useAxiosAuth from '@/hocs/useAxiosAuth'
 
 interface CreateCodeTransactionParams {
@@ -23,7 +24,9 @@ export const useCreateCodeTransaction = () => {
   return useMutation({
     mutationFn: async (params: CreateCodeTransactionParams) => {
       const res = await axiosAuth.post('/code-transactions', params)
-      return res?.data
+
+      
+return res?.data
     },
     onSuccess: () => {
       // Refresh lại danh sách code transactions sau khi tạo thành công
@@ -42,7 +45,9 @@ export const useCodeTransactions = () => {
     queryKey: ['code-transactions'],
     queryFn: async () => {
       const res = await axiosAuth.get('/code-transactions')
-      return (res?.data?.data ?? res?.data ?? []) as CodeTransaction[]
+
+      
+return (res?.data?.data ?? res?.data ?? []) as CodeTransaction[]
     },
     staleTime: 30 * 1000,
     refetchOnWindowFocus: false

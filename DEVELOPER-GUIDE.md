@@ -1928,14 +1928,15 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
 
 #### 12.65 Landing page — rewrite PartnersSection + audit toàn bộ
 
-- **Vấn đề**: PartnersSection blank hoàn toàn (content không render) do CSS phức tạp: 820+ dòng duplicate, decorative background (z-index/mask/animation) che content. Padding sections thừa. Hero có `target='_blank'` trên link nội bộ.
+- **Vấn đề**: PartnersSection blank hoàn toàn (content không render) do CSS phức tạp: 820+ dòng duplicate, decorative background (z-index/mask/animation) che content. Padding sections thừa. Hero có `target='_blank'` trên link nội bộ. `<main>` có class `flex-auto` giãn ra fill viewport → khoảng trắng lớn dưới content.
 - **Sửa**:
   - **PartnersSection**: Rewrite hoàn toàn — bỏ decorative background, floating shapes, grid pattern SVG, infinite scroll animation, CSS mask. Dùng inline styles đảm bảo render. Component gọn từ 233 → 120 dòng.
   - **CSS cleanup**: Xóa 820+ dòng CSS partners duplicate trong `main.css` (4854 → 4035 dòng). Xóa CSS partners trong `mobile-responsive.css`.
+  - **Layout fix**: Bỏ `flex-auto` trên VerticalLayout root + LayoutContent khi landing page. Override `height/min-height` trên html/body via CSS `:has(.landing-page)`.
+  - **Missing sections**: Thêm `TestimonialsSection` (reviews khách hàng) + `VietnamCoverageSection` (bản đồ phủ sóng) vào page.tsx. Rewrite cả 2 với inline styles, bỏ CSS classes không tồn tại.
   - **Products section**: Giảm `padding-block-end` từ 100px → 40px
   - **Hero**: Bỏ button "Xem demo", đổi route "Mua Proxy Ngay" → `/proxy-xoay`, bỏ `target='_blank'` trên link nội bộ
-- **Files**: `PartnersSection.tsx`, `Hero.tsx`, `main.css`, `mobile-responsive.css`
-- **Files**: `main.css`, `Hero.tsx`
+- **Files**: `PartnersSection.tsx`, `TestimonialsSection.tsx`, `VietnamCoverageSection.tsx`, `Hero.tsx`, `page.tsx`, `VerticalLayout.tsx`, `LayoutContent.tsx`, `main.css`, `mobile-responsive.css`
 
 #### 12.66 Admin Users — Lịch sử giao dịch user
 
@@ -2053,8 +2054,89 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
   - Order: ẩn thêm `metadata`, `transaction_id`
   - ServiceType (order history): ẩn `discount_price`, `code`, `order`, `note`, `allow_user`, `date_mapping`, `multi_inputs`
   - Fix `PlaceOrder` command: xóa relationship `api_key` không tồn tại, update `ModelMongo` namespace cho `mongodb/laravel-mongodb` v4+
-  - `getOrder()` bỏ eager load `apiKeys` — FE `OrderDetail` giờ fetch on-demand qua `useApiKeys(order.id)` + loading state
-- **Files**: `BE/database/migrations/2026_03_10_000002_add_partner_price_to_api_keys.php`, `BE/app/Models/MySql/ApiKey.php`, `BE/app/Http/Controllers/Api/ProxyController.php`, `BE/app/Http/Controllers/Api/OrderController.php`, `BE/app/Console/Commands/PlaceOrder.php`, `BE/app/Models/Mongo/ModelMongo.php`, `FE/src/views/Client/HistoryOrder/OrderDetail.tsx`, 8 Partner files
+  - `getOrder()`: bỏ object `type_servi` → flatten thành `service_name`, `service_type`, `ip_version`
+  - `getOrder()`: `proxies` chỉ trả data đơn giản (id + proxy info + type), không trả full ApiKey
+  - FE `OrderDetail`: fetch full proxy data qua `useApiKeys(order.id)` khi mở modal
+  - FE: cập nhật `HistoryOrderPage` + `OrderDetail` dùng flat fields thay `type_servi.*`
+- **Files**: `BE/database/migrations/2026_03_10_000002_add_partner_price_to_api_keys.php`, `BE/app/Models/MySql/ApiKey.php`, `BE/app/Http/Controllers/Api/ProxyController.php`, `BE/app/Http/Controllers/Api/OrderController.php`, `BE/app/Console/Commands/PlaceOrder.php`, `BE/app/Models/Mongo/ModelMongo.php`, `FE/src/views/Client/HistoryOrder/OrderDetail.tsx`, `FE/src/views/Client/HistoryOrder/HistoryOrderPage.tsx`, 8 Partner files
+
+#### 12.76 Fix toàn bộ landing page - sections không hiển thị
+
+- **Vấn đề**: Landing page bị trắng ở phần dưới (Footer invisible). Root cause: `html { block-size: 100% }` (globals.css) + `body { flex-auto }` giới hạn chiều cao = viewport → không scroll được. Footer dùng CSS classes + Bootstrap grid bị ảnh hưởng bởi global `* { margin:0; padding:0 }` reset. `:has()` selector không reliable.
+- **Sửa**:
+  - **Footer.tsx**: rewrite hoàn toàn bằng inline styles, bỏ CSS classes, Bootstrap grid, `useTranslation`/`useLanguageSync`
+  - **layout.tsx**: thêm `<style>` tag override `html/body { height: auto; block-size: auto; flex: none }` và `.main { background: none; display: block }`
+  - **main.css**: scope `* { margin:0; padding:0 }` vào `.landing-page-wrapper` only (trước đó apply global gây hỏng các trang khác), xóa `:has()` rule
+  - TestimonialsSection: bỏ `next/image`, dùng avatar initials thay ảnh external
+  - VietnamCoverageSection: bỏ `useTranslation`/`useLanguageSync` thừa, thêm `Link` cho nút đăng ký
+- **Files**: `Footer.tsx`, `layout.tsx` (landing-page), `main.css`, `TestimonialsSection.tsx`, `VietnamCoverageSection.tsx`
+
+#### 12.77 Redesign landing page header — UX mềm mại hơn
+
+- **Vấn đề**: Header trông "phèn" — mix Bootstrap navbar + MUI + custom CSS không đồng nhất. Active state (background đỏ + underline) quá aggressive. CTA button gradient đỏ-cam trông template-like. Background `#f9fafc` xám xỉn.
+- **Sửa**:
+  - **MainHeader.tsx**: inline styles, background glass effect `rgba(255,255,255,0.92)` + `backdrop-filter: blur(16px)`, subtle shadow on scroll, height `72→62px` on scroll
+  - **MenuDesktop.tsx**: nav links `color: #64748b` → hover `#0f172a` + subtle bg. Active chỉ đổi màu `#ef4444` (không background tint/underline). CTA: "Đăng nhập" text button + "Đăng ký" pill gradient. Authenticated: "Trang chủ" pill + arrow icon
+  - Bỏ unused imports (`VuexyLogo`, `CustomAvatar`, `LanguageSelect`)
+- **Files**: `MainHeader.tsx`, `MenuDesktop.tsx`
+
+#### 12.78 Tối ưu performance landing page
+
+- **Vấn đề**: Landing page render chậm, UX kém. Root causes: (1) `useLanguageSync()` gọi trong mọi component gây re-render thừa (2) Duplicate CSS imports giữa root layout và landing layout (3) Tất cả sections load đồng thời dù nằm dưới fold (4) Framer Motion (~60KB) import chỉ cho scroll animation đơn giản
+- **Sửa**:
+  - Xóa `useLanguageSync()` khỏi Hero, ProductsSection, PartnersSection, Header (I18nProvider ở root layout đã sync)
+  - Xóa duplicate CSS imports (`globals.css`, `shared-layout.css`, `root.css`, `main.css`, `iconify`) khỏi landing layout — root layout đã import
+  - Below-fold components dùng `dynamic()` với `ssr: true` (ProductsSection, VietnamCoverage, Partners, Testimonials)
+  - Thay `framer-motion` bằng CSS `transition: all 0.3s ease` + `useState` scroll listener (`{ passive: true }`) trong MainHeader
+  - Header.tsx: bỏ `'use client'`, `useState`, `useTranslation` thừa — chỉ render `<MainHeader />`
+- **Files**: `page.tsx`, `layout.tsx` (landing), `MainHeader.tsx`, `Header.tsx`, `Hero.tsx`, `ProductsSection.tsx`, `PartnersSection.tsx`
+
+#### 12.79 Fix navigation lag — bỏ provider nặng + cache API
+
+- **Vấn đề**: Click navigate khựng lại vì: (1) `Providers.tsx` gọi `getServerSession()` lần thứ 3 (root layout đã gọi 2 lần) (2) `NextAuthProvider` + `ModalContextProvider` bị wrap 2 lần (root + Providers) (3) `VerticalNavProvider` load thừa (landing không có sidebar) (4) `getServerUserData()` gọi `POST /me` với `cache: 'no-store'` mỗi request
+- **Sửa**:
+  - **layout.tsx (landing)**: bỏ `Providers`, inline chỉ `SettingsProvider` + `ThemeProvider` (MUI cần). Bỏ `NextAuthProvider`/`ModalContextProvider`/`VerticalNavProvider` (root layout đã có hoặc không cần)
+  - **serverSessionValidation.ts**: đổi `cache: 'no-store'` → `next: { revalidate: 30 }` cho `POST /me` — giảm API calls
+- **Files**: `layout.tsx` (landing), `serverSessionValidation.ts`
+
+#### 12.80 Cải thiện navigation smoothness — loading state + lazy load
+
+- **Vấn đề**: Navigation cảm giác "cứng" — không có visual feedback khi chuyển trang, AuthModal (framer-motion + 5 forms) load eager dù chưa cần, `ReferralHandler` dùng `useSearchParams()` block render, `ReactQueryDevtools` load cả production
+- **Sửa**:
+  - Tạo `loading.tsx` cho landing route group — spinner hiện ngay khi navigate
+  - Lazy load `AuthModal` bằng `next/dynamic` + `ssr: false` trong MainHeader
+  - Thêm fade-in animation (`pageIn`) cho landing page content
+  - Wrap `ReferralHandler` trong `<Suspense>` ở root layout (tránh `useSearchParams()` block render)
+  - `TanstackProvider`: lazy load `ReactQueryDevtools` chỉ khi `NODE_ENV === 'development'`
+- **Files**: `loading.tsx` (landing, mới), `MainHeader.tsx`, `page.tsx` (landing), `layout.tsx` (root), `TanstackProvider.tsx`
+
+#### 12.81 Fix ESLint errors còn lại (batch 2)
+
+- **Vấn đề**: Nhiều lỗi ESLint còn sót: `@typescript-eslint/no-unused-vars` rule not found, `<a>` thay vì `<Link>`, import order sai, import module không tồn tại, unescaped entities, JSX component undefined
+- **Sửa**:
+  - Đổi `@typescript-eslint/no-unused-vars` → `no-unused-vars` trong eslint-disable comments (3 files)
+  - `FileUploaderSingle.tsx`: thay `<a>` bằng `<Link>` từ `next/link`
+  - Fix import order: `history-order/page.tsx`, `layout.tsx`, `CheckProxyForm.tsx`
+  - Xóa import `PasswordReset` (file không tồn tại, không dùng) trong `AuthModal.tsx`
+  - Xóa import `TimeProxyRotating` (file không tồn tại, không dùng) trong `DetaiProxy.tsx`
+  - Đổi `./styles.css` → `./stylesOrder.css` trong `OrderProxyPage.tsx`
+  - Đổi `import { EmblaCarouselType }` → `import type` trong `useAutoplay.tsx`
+  - Xóa `InputIcon` (không tồn tại, không dùng) khỏi import `AdminOrdersPage.tsx`
+  - Thay `"` → `&quot;` trong JSX text: `InvestigationDrawer.tsx`, `CreateTicketDialog.tsx`
+  - Thêm import `BadgeMinus` vào `OrderDetailModal.tsx` (dùng nhưng chưa import)
+  - Di chuyển `getServerSession` import trước `getServerUserData` + xóa duplicate trong `layout.tsx`
+- **Files**: `useLayoutInit.ts`, `route.ts`, `GenerateMenu.tsx`, `FileUploaderSingle.tsx`, `history-order/page.tsx`, `layout.tsx`, `AuthModal.tsx`, `CheckProxyForm.tsx`, `DetaiProxy.tsx`, `OrderProxyPage.tsx`, `useAutoplay.tsx`, `AdminOrdersPage.tsx`, `InvestigationDrawer.tsx`, `CreateTicketDialog.tsx`, `OrderDetailModal.tsx`
+
+#### 12.82 Fix toàn bộ ESLint errors — build pass + thêm bundle analyzer
+
+- **Vấn đề**: `npm run build` fail do ~45 ESLint errors (rules-of-hooks, import order, unescaped entities, undefined components, missing imports)
+- **Sửa**:
+  - Auto-fix hàng trăm lỗi format (import/order, padding-line, newline-before-return)
+  - Fix 17 lỗi `rules-of-hooks`: di chuyển early return (`if (!open) return null`) xuống SAU tất cả hooks trong 4 modal/component (TransactionModal, UserTransactionModal, ProxyCard, QrCodeDisplayDialog)
+  - Fix import order, unescaped entities, undefined components (xem 12.81 cho chi tiết batch trước)
+  - Thêm `@next/bundle-analyzer` để phân tích bundle size (chạy với `ANALYZE=true npm run build`)
+- **Kết quả**: Build pass trong ~48s, chỉ còn warnings (exhaustive-deps)
+- **Files**: `next.config.ts`, `TransactionModal.tsx`, `UserTransactionModal.tsx`, `ProxyCard.tsx`, `QrCodeDisplayDialog.tsx`, `MainHeader.tsx`, `layout.tsx`, `ServerSideSessionPattern.tsx`, `TablePartner.tsx` + nhiều file khác
 
 ---
 

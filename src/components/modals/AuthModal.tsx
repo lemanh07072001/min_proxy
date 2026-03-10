@@ -3,8 +3,6 @@
 import { X, Eye, EyeOff } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 
-import PasswordReset from '@views/Auth/PasswordReset'
-
 import { useTranslation } from 'react-i18next'
 
 import { useModalContext } from '@/app/contexts/ModalContext'

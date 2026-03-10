@@ -1,8 +1,10 @@
 'use client'
 
 import React, { useEffect } from 'react'
-import { useTranslation } from 'react-i18next'
+
 import { useParams } from 'next/navigation'
+
+import { useTranslation } from 'react-i18next'
 
 interface LanguageSyncWrapperProps {
   children: React.ReactNode

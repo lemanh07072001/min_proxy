@@ -1,9 +1,11 @@
 'use client'
 
 import { useState } from 'react'
+
 import { Button, Grid2, Box, Dialog, DialogTitle, DialogContent, DialogActions, MenuItem } from '@mui/material'
 import { Plus, X } from 'lucide-react'
 import { toast } from 'react-toastify'
+
 import CustomTextField from '@/@core/components/mui/TextField'
 
 interface PriceField {
@@ -49,6 +51,7 @@ export default function PriceByDurationModal({
 
   const handleFieldChange = (index: number, field: 'key' | 'value' | 'cost', value: string) => {
     const updatedFields = [...fields]
+
     updatedFields[index][field] = value
     setFields(updatedFields)
   }
@@ -56,17 +59,21 @@ export default function PriceByDurationModal({
   const handleSave = () => {
     // Validate: check if all fields are filled
     const hasEmptyFields = fields.some(field => !field.key || !field.value)
+
     if (hasEmptyFields) {
       toast.error('Vui lòng điền đầy đủ tất cả các trường')
-      return
+      
+return
     }
 
     // Validate: check for duplicate durations
     const keys = fields.map(f => f.key)
     const hasDuplicates = keys.some((key, index) => keys.indexOf(key) !== index)
+
     if (hasDuplicates) {
       toast.error('Không được chọn trùng thời gian')
-      return
+      
+return
     }
 
     // Đảm bảo cost luôn có trong mỗi field (ít nhất là empty string)
@@ -88,7 +95,9 @@ export default function PriceByDurationModal({
   // Get available options for each select (excluding already selected ones)
   const getAvailableOptions = (currentIndex: number) => {
     const selectedKeys = fields.map((f, idx) => (idx !== currentIndex ? f.key : null)).filter(Boolean)
-    return durationOptions.filter(opt => !selectedKeys.includes(opt.value))
+
+    
+return durationOptions.filter(opt => !selectedKeys.includes(opt.value))
   }
 
   return (

@@ -12,12 +12,15 @@ export const useUpdateTransferName = () => {
   return useMutation({
     mutationFn: async (transferName: string) => {
       const res = await axiosAuth.post('/update-transfer-name', { transfer_name: transferName })
-      return res?.data
+
+      
+return res?.data
     },
     onSuccess: async () => {
       // Refetch user data to update Redux store
       try {
         const res = await axiosAuth.post('/me')
+
         if (res?.data) {
           dispatch(setUser(res.data))
         }

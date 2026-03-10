@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
+
 import useAxiosAuth from '@/hocs/useAxiosAuth'
 
 export const useHistoryOrders = () => {
@@ -8,7 +9,9 @@ export const useHistoryOrders = () => {
     queryKey: ['userOrders'],
     queryFn: async () => {
       const res = await axiosAuth.get('/get-order')
-      return res.data.data
+
+      
+return res.data.data
     },
     staleTime: 30 * 1000,
     refetchOnWindowFocus: false

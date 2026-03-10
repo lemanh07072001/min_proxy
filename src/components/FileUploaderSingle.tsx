@@ -1,6 +1,9 @@
 // React Imports
 import { useState } from 'react'
 
+// Next Imports
+import Link from 'next/link'
+
 // MUI Imports
 import Box from '@mui/material/Box'
 import Avatar from '@mui/material/Avatar'
@@ -49,9 +52,9 @@ const FileUploaderSingle = () => {
           </Typography>
           <Typography>
             Drop files here or click{' '}
-            <a href='/' onClick={e => e.preventDefault()} className='text-textPrimary no-underline'>
+            <Link href='/' onClick={e => e.preventDefault()} className='text-textPrimary no-underline'>
               browse
-            </a>{' '}
+            </Link>{' '}
             thorough your machine
           </Typography>
         </div>

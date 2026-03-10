@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+
 import useAxiosAuth from '@/hocs/useAxiosAuth'
 
 export interface PendingBankQr {
@@ -36,7 +37,9 @@ export const useCreateBankQr = () => {
   return useMutation({
     mutationFn: async (params: { amount: number }) => {
       const res = await axiosAuth.post('/create-bank-qr', params)
-      return res?.data as CreateBankQrResponse
+
+      
+return res?.data as CreateBankQrResponse
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pending-bank-qr'] })
@@ -59,7 +62,9 @@ export const useCancelBankQr = () => {
   return useMutation({
     mutationFn: async (id: number) => {
       const res = await axiosAuth.delete(`/cancel-bank-qr/${id}`)
-      return res?.data
+
+      
+return res?.data
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pending-bank-qr'] })
@@ -82,13 +87,17 @@ export const usePendingBankQr = (enabled: boolean = true, activePolling: boolean
     queryKey: ['pending-bank-qr'],
     queryFn: async () => {
       const res = await axiosAuth.get('/pending-bank-qr')
-      return res?.data as PendingBankQrResponse
+
+      
+return res?.data as PendingBankQrResponse
     },
     enabled,
     refetchInterval: (query) => {
       const hasPending = !!query.state.data?.data
+
       if (activePolling && hasPending) return 5000
-      return hasPending ? 30000 : 60000
+      
+return hasPending ? 30000 : 60000
     },
     refetchOnMount: true,
     refetchOnWindowFocus: true,

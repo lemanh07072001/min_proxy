@@ -12,6 +12,7 @@ interface ProtocolOption {
 
 // Interface hỗ trợ cả cách sử dụng cũ và mới
 interface ProtocolSelectorProps {
+
   // Cách sử dụng cũ (tương thích ngược)
   value?: string
   onChange?: (newValue: string) => void

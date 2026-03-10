@@ -90,13 +90,18 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({
     const base = sorted[0]
     const baseDays = parseInt(base.key) || 1
     const basePrice = base.price
+
     if (!basePrice) return null
     const currentDays = parseInt(key) || 0
+
     if (!currentDays) return null
     const originalPrice = (basePrice / baseDays) * currentDays
+
     if (price >= originalPrice) return null
     const pct = (1 - price / originalPrice) * 100
-    return pct > 0 ? Math.round(pct) : null
+
+    
+return pct > 0 ? Math.round(pct) : null
   }
 
   const { mutate, isPending } = useMutation({
@@ -191,7 +196,9 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({
               <div className='checkout-duration-options'>
                 {priceOptions.map((option) => {
                   const discount = calculateDiscount(option.key, option.price)
-                  return (
+
+                  
+return (
                     <label
                       key={option.key}
                       className={`checkout-duration-option ${selectedDuration === option.key ? 'active' : ''}`}

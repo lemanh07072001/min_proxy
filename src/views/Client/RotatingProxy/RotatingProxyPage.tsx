@@ -12,12 +12,14 @@ import Switch from '@mui/material/Switch'
 import MenuItem from '@mui/material/MenuItem'
 import { useSession } from 'next-auth/react'
 
+import { Box, Grid2, Typography } from '@mui/material'
+
+import Chip from '@mui/material/Chip'
+
 import { getTagStyle, shouldHideByTag, getCountryName } from '@/configs/tagConfig'
 
 import { useModalContext } from '@/app/contexts/ModalContext'
 
-import { Box, Grid2, Typography } from '@mui/material'
-import Chip from '@mui/material/Chip'
 
 import CustomTextField from '@core/components/mui/TextField'
 import CheckoutModal from '@/components/checkout-modal/CheckoutModal'
@@ -151,10 +153,12 @@ const SwitchFeatureRow = ({ feature, control, planId }) => (
 const RadioFeatureRow = ({ feature, control, planId, plan }) => {
   const getDurationLabel = (key: string) => {
     const days = parseInt(key)
+
     if (days === 1) return 'Ngày'
     if (days === 7) return 'Tuần'
     if (days === 30) return 'Tháng'
-    return `${days} ngày`
+    
+return `${days} ngày`
   }
 
   // Hàm tính phần trăm giảm giá theo công thức: (1 - giá_thực_tế / giá_gốc) * 100
@@ -243,9 +247,12 @@ const RadioFeatureRow = ({ feature, control, planId, plan }) => {
                   const calculatedDiscount = feature.field === 'time' 
                     ? calculateDiscount(item.key, item.value) 
                     : null
+
                   const discount = calculatedDiscount !== null 
                     ? calculatedDiscount 
                     : (item.discount ? parseInt(item.discount) : 0)
+
+
                   // Hiển thị label: nếu là time thì dùng getDurationLabel, nếu là protocol thì dùng item.label
                   const displayLabel = feature.field === 'time' ? getDurationLabel(item.key) : item.label
 
@@ -322,19 +329,24 @@ const PlanCard = ({ plan }) => {
 
   // Build priceOptions từ time feature
   const timeFeature = plan.features.find((f: any) => f.field === 'time')
+
   const priceOptions = useMemo(() => {
     if (!timeFeature?.options?.length) {
       return [{ key: '1', label: 'Ngày', price: plan.price || 0 }]
     }
-    return timeFeature.options.map((opt: any) => ({
+
+    
+return timeFeature.options.map((opt: any) => ({
       key: opt.key,
       label: (() => {
         const days = parseInt(opt.key)
+
         if (days === 1) return 'Ngày'
         if (days === 7) return 'Tuần'
         if (days === 30) return 'Tháng'
         if (days === 365) return 'Năm'
-        return `${opt.key} ngày`
+        
+return `${opt.key} ngày`
       })(),
       price: parseInt(opt.value, 10) || 0
     }))
@@ -345,9 +357,12 @@ const PlanCard = ({ plan }) => {
 
   const visibleTags = useMemo(() => {
     if (!plan?.tag) return []
-    return plan.tag.split(',').filter((t: string) => {
+    
+return plan.tag.split(',').filter((t: string) => {
       const tagDef = getTagStyle(t)
-      return !(tagDef && 'hidden' in tagDef && tagDef.hidden)
+
+      
+return !(tagDef && 'hidden' in tagDef && tagDef.hidden)
     })
   }, [plan?.tag])
 
@@ -355,8 +370,10 @@ const PlanCard = ({ plan }) => {
   const notePreview = useMemo(() => {
     if (!plan.note || plan.note === '<p></p>') return null
     const text = plan.note.replace(/<[^>]+>/g, '').trim()
+
     if (!text) return null
-    return text.length > 80 ? text.substring(0, 80) + '...' : text
+    
+return text.length > 80 ? text.substring(0, 80) + '...' : text
   }, [plan.note])
 
   // Form chỉ còn cho dynamic fields (input/checkbox/select) — không cho time/protocol
@@ -390,13 +407,17 @@ const PlanCard = ({ plan }) => {
   const handleBuy = () => {
     if (session.status !== 'authenticated') {
       openAuthModal('login')
-      return
+      
+return
     }
+
+
     // Nếu có dynamic fields cần validate, dùng handleSubmit
     const hasDynamicFields = plan.features.some((f: any) =>
       f.field && f.field !== 'time' && f.field !== 'protocol' && f.field !== 'quantity' &&
       ['input', 'checkbox', 'select'].includes(f.status)
     )
+
     if (hasDynamicFields) {
       handleSubmit(onSubmit)()
     } else {
@@ -419,7 +440,9 @@ const PlanCard = ({ plan }) => {
           <div style={{ position: 'absolute', top: '-12px', right: '14px', zIndex: 2, display: 'flex', gap: '6px' }}>
             {visibleTags.map((tag: string, i: number) => {
               const tagDef = getTagStyle(tag)
-              return <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '5px 14px', fontSize: '11.5px', fontWeight: 700, borderRadius: '20px', background: `linear-gradient(180deg, rgba(255,255,255,0.2) 0%, transparent 50%), ${tagDef.gradient || tagDef.bgColor}`, color: tagDef.textColor, boxShadow: `0 2px 10px ${tagDef.borderColor}55, inset 0 1px 0 rgba(255,255,255,0.2)`, border: '1px solid rgba(255,255,255,0.25)', letterSpacing: '0.3px', lineHeight: 1.2 }}>{tagDef.icon && <span style={{ fontSize: '12px' }}>{tagDef.icon}</span>}{tag.trim()}</span>
+
+              
+return <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '5px 14px', fontSize: '11.5px', fontWeight: 700, borderRadius: '20px', background: `linear-gradient(180deg, rgba(255,255,255,0.2) 0%, transparent 50%), ${tagDef.gradient || tagDef.bgColor}`, color: tagDef.textColor, boxShadow: `0 2px 10px ${tagDef.borderColor}55, inset 0 1px 0 rgba(255,255,255,0.2)`, border: '1px solid rgba(255,255,255,0.25)', letterSpacing: '0.3px', lineHeight: 1.2 }}>{tagDef.icon && <span style={{ fontSize: '12px' }}>{tagDef.icon}</span>}{tag.trim()}</span>
             })}
           </div>
         )}

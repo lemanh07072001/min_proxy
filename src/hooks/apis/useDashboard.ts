@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { useSession } from 'next-auth/react'
+
 import useAxiosAuth from '@/hocs/useAxiosAuth'
 
 interface DashboardParams {
@@ -14,7 +15,9 @@ export const useDashboard = () => {
     queryKey: ['dashboard'],
     queryFn: async () => {
       const res = await axiosAuth.get('/get-dashboard')
-      return res.data?.data ?? null
+
+      
+return res.data?.data ?? null
     },
     enabled: !!session?.access_token,
     staleTime: 60 * 1000,
@@ -33,14 +36,18 @@ export const useDashboardMonthly = (params?: DashboardParams, enabled: boolean =
       const day = String(today.getDate()).padStart(2, '0')
       const month = String(today.getMonth() + 1).padStart(2, '0')
       const year = today.getFullYear()
-      return `${day}-${month}-${year}`
+
+      
+return `${day}-${month}-${year}`
     }
 
     if (date instanceof Date) {
       const day = String(date.getDate()).padStart(2, '0')
       const month = String(date.getMonth() + 1).padStart(2, '0')
       const year = date.getFullYear()
-      return `${day}-${month}-${year}`
+
+      
+return `${day}-${month}-${year}`
     }
 
     // If date is string in format DD/MM/YYYY, convert to DD-MM-YYYY
@@ -59,7 +66,9 @@ export const useDashboardMonthly = (params?: DashboardParams, enabled: boolean =
       const res = await axiosAuth.get('/get-dashboard-by-date', {
         params: { date: formattedDate }
       })
-      return res.data?.data ?? null
+
+      
+return res.data?.data ?? null
     },
     enabled: enabled && !!session?.access_token,
     refetchOnMount: false,

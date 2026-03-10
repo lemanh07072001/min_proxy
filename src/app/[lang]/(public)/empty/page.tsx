@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+
 import EmptyAuthPage from '@/components/EmptyAuthPage'
 
 export const metadata: Metadata = {

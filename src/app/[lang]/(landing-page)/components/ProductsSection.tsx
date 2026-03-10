@@ -8,14 +8,10 @@ import { Shield, Star, CheckCircle, ArrowRight } from 'lucide-react'
 
 import { useTranslation } from 'react-i18next'
 
-import { useLanguageSync } from '@/hooks/useLanguageSync'
-
 import Link from '@components/Link'
 
 export default function ProductsSection({ local }: { local: string }) {
   const { t } = useTranslation()
-
-  useLanguageSync() // Sync language with URL
 
   const products = [
     {

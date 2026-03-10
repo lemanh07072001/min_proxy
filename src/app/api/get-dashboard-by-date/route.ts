@@ -1,5 +1,6 @@
-import axiosInstance from '@/libs/axios'
 import { NextRequest, NextResponse } from 'next/server'
+
+import axiosInstance from '@/libs/axios'
 
 export async function GET(request: NextRequest) {
   try {
@@ -18,6 +19,7 @@ export async function GET(request: NextRequest) {
       const day = String(today.getDate()).padStart(2, '0')
       const month = String(today.getMonth() + 1).padStart(2, '0')
       const year = today.getFullYear()
+
       date = `${day}-${month}-${year}`
     }
 

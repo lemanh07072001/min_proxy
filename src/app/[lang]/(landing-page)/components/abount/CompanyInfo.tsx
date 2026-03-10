@@ -12,7 +12,9 @@ import { useLanguageSync } from '@/hooks/useLanguageSync'
 
 const CompanyInfo = () => {
   const { t } = useTranslation()
+
   useLanguageSync()
+
   const advantages = [
     {
       icon: '/images/softwares/bao-mat.jpg',

@@ -10,6 +10,7 @@ import { useLanguageSync } from '@/hooks/useLanguageSync'
 
 const About = () => {
   const { t } = useTranslation()
+
   useLanguageSync()
   
   const values = t('landing.cooperate.about.values', { returnObjects: true }) as Array<{
@@ -115,7 +116,9 @@ const About = () => {
         <div className='grid grid-cols-1 md:grid-cols-3 gap-8'>
           {(values || []).map((value, index) => {
             const IconComponent = valueIcons[index]
-            return (
+
+            
+return (
               <div key={index} className='text-center p-8 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors'>
                 <div className='bg-red-600 p-4 rounded-xl inline-block mb-6'>
                   <IconComponent className='w-8 h-8 text-white' />
