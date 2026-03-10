@@ -1926,12 +1926,15 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
   - **BalanceCard**: Bỏ gradient chói → nền `slate-50` + border nhẹ, text tối dễ đọc.
 - **Files**: `VerticalMenu.tsx`, `BalanceCardClient.tsx`
 
-#### 12.65 Landing page — fix khoảng trống + bỏ Xem demo
+#### 12.65 Landing page — rewrite PartnersSection + audit toàn bộ
 
-- **Vấn đề**: Khoảng trống lớn dưới CTA "Cần tư vấn thêm?" do padding-block 100px. Button "Xem demo" không có chức năng.
+- **Vấn đề**: PartnersSection blank hoàn toàn (content không render) do CSS phức tạp: 820+ dòng duplicate, decorative background (z-index/mask/animation) che content. Padding sections thừa. Hero có `target='_blank'` trên link nội bộ.
 - **Sửa**:
-  - Giảm `padding-block-end` của `.products-section-new` từ 100px → 40px
-  - Bỏ button "Xem demo", đổi route "Mua Proxy Ngay" từ `/home` → `/proxy-xoay`
+  - **PartnersSection**: Rewrite hoàn toàn — bỏ decorative background, floating shapes, grid pattern SVG, infinite scroll animation, CSS mask. Dùng inline styles đảm bảo render. Component gọn từ 233 → 120 dòng.
+  - **CSS cleanup**: Xóa 820+ dòng CSS partners duplicate trong `main.css` (4854 → 4035 dòng). Xóa CSS partners trong `mobile-responsive.css`.
+  - **Products section**: Giảm `padding-block-end` từ 100px → 40px
+  - **Hero**: Bỏ button "Xem demo", đổi route "Mua Proxy Ngay" → `/proxy-xoay`, bỏ `target='_blank'` trên link nội bộ
+- **Files**: `PartnersSection.tsx`, `Hero.tsx`, `main.css`, `mobile-responsive.css`
 - **Files**: `main.css`, `Hero.tsx`
 
 #### 12.66 Admin Users — Lịch sử giao dịch user
@@ -2045,8 +2048,12 @@ Hai hàm xử lý order fail với retry logic giống nhau (retry 3 lần → F
   - Cập nhật ApiKey model: thêm `partner_price` vào `$fillable` và `$moneyFields`
   - 8 Partner buy() methods: populate `price_cost` + `partner_price` khi tạo ApiKey
   - Fix 4 endpoint còn thiếu `makeHidden`: `getOrderProxyRotating` (bỏ load User thừa), `getAllProxy` (fix cả Redis cache), `getProxy`, OrderController
-  - Tất cả client API giờ ẩn cả `price_cost` + `partner_price` + `api_key_partner`
-- **Files**: `BE/database/migrations/2026_03_10_000002_add_partner_price_to_api_keys.php`, `BE/app/Models/MySql/ApiKey.php`, `BE/app/Http/Controllers/Api/ProxyController.php`, `BE/app/Http/Controllers/Api/OrderController.php`, 8 Partner files
+  - Tất cả client API giờ ẩn cả `price_cost` + `partner_price` + `api_key_partner` + `parent_api_mapping`
+  - Strip `cost` từ `price_by_duration` trong 3 endpoint order history
+  - Order: ẩn thêm `metadata`, `transaction_id`
+  - ServiceType (order history): ẩn `discount_price`, `code`, `order`, `note`, `allow_user`, `date_mapping`, `multi_inputs`
+  - Fix `PlaceOrder` command: xóa relationship `api_key` không tồn tại, update `ModelMongo` namespace cho `mongodb/laravel-mongodb` v4+
+- **Files**: `BE/database/migrations/2026_03_10_000002_add_partner_price_to_api_keys.php`, `BE/app/Models/MySql/ApiKey.php`, `BE/app/Http/Controllers/Api/ProxyController.php`, `BE/app/Http/Controllers/Api/OrderController.php`, `BE/app/Console/Commands/PlaceOrder.php`, `BE/app/Models/Mongo/ModelMongo.php`, 8 Partner files
 
 ---
 
