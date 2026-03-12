@@ -207,23 +207,23 @@ export default function StaticProxyPage({ data }: StaticProxyPageProps) {
               </div>
               <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                 <Chip
-                  label='Đang bán'
-                  variant={showActiveOnly ? 'filled' : 'outlined'}
-                  onClick={() => setShowActiveOnly(true)}
-                  sx={{
-                    fontWeight: 600, fontSize: '13px', height: '34px', borderRadius: '8px',
-                    ...(showActiveOnly
-                      ? { bgcolor: '#1e293b', color: '#fff', '&:hover': { bgcolor: '#334155' } }
-                      : { borderColor: '#cbd5e1', color: '#334155', '&:hover': { bgcolor: '#f1f5f9', borderColor: '#94a3b8' } })
-                  }}
-                />
-                <Chip
                   label='Tất cả'
                   variant={!showActiveOnly ? 'filled' : 'outlined'}
                   onClick={() => setShowActiveOnly(false)}
                   sx={{
                     fontWeight: 600, fontSize: '13px', height: '34px', borderRadius: '8px',
                     ...(!showActiveOnly
+                      ? { bgcolor: '#1e293b', color: '#fff', '&:hover': { bgcolor: '#334155' } }
+                      : { borderColor: '#cbd5e1', color: '#334155', '&:hover': { bgcolor: '#f1f5f9', borderColor: '#94a3b8' } })
+                  }}
+                />
+                <Chip
+                  label='Đang bán'
+                  variant={showActiveOnly ? 'filled' : 'outlined'}
+                  onClick={() => setShowActiveOnly(true)}
+                  sx={{
+                    fontWeight: 600, fontSize: '13px', height: '34px', borderRadius: '8px',
+                    ...(showActiveOnly
                       ? { bgcolor: '#1e293b', color: '#fff', '&:hover': { bgcolor: '#334155' } }
                       : { borderColor: '#cbd5e1', color: '#334155', '&:hover': { bgcolor: '#f1f5f9', borderColor: '#94a3b8' } })
                   }}

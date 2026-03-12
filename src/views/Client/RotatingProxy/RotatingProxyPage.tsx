@@ -157,7 +157,7 @@ const RadioFeatureRow = ({ feature, control, planId, plan }) => {
     if (days === 1) return 'Ngày'
     if (days === 7) return 'Tuần'
     if (days === 30) return 'Tháng'
-    
+
 return `${days} ngày`
   }
 
@@ -244,12 +244,12 @@ return `${days} ngày`
               >
                 {feature.options?.map((item: any, index: number) => {
                   // Tính discount theo công thức mới nếu là feature time, nếu không thì dùng discount cũ
-                  const calculatedDiscount = feature.field === 'time' 
-                    ? calculateDiscount(item.key, item.value) 
+                  const calculatedDiscount = feature.field === 'time'
+                    ? calculateDiscount(item.key, item.value)
                     : null
 
-                  const discount = calculatedDiscount !== null 
-                    ? calculatedDiscount 
+                  const discount = calculatedDiscount !== null
+                    ? calculatedDiscount
                     : (item.discount ? parseInt(item.discount) : 0)
 
 
@@ -335,7 +335,7 @@ const PlanCard = ({ plan }) => {
       return [{ key: '1', label: 'Ngày', price: plan.price || 0 }]
     }
 
-    
+
 return timeFeature.options.map((opt: any) => ({
       key: opt.key,
       label: (() => {
@@ -345,7 +345,7 @@ return timeFeature.options.map((opt: any) => ({
         if (days === 7) return 'Tuần'
         if (days === 30) return 'Tháng'
         if (days === 365) return 'Năm'
-        
+
 return `${opt.key} ngày`
       })(),
       price: parseInt(opt.value, 10) || 0
@@ -357,11 +357,11 @@ return `${opt.key} ngày`
 
   const visibleTags = useMemo(() => {
     if (!plan?.tag) return []
-    
+
 return plan.tag.split(',').filter((t: string) => {
       const tagDef = getTagStyle(t)
 
-      
+
 return !(tagDef && 'hidden' in tagDef && tagDef.hidden)
     })
   }, [plan?.tag])
@@ -372,7 +372,7 @@ return !(tagDef && 'hidden' in tagDef && tagDef.hidden)
     const text = plan.note.replace(/<[^>]+>/g, '').trim()
 
     if (!text) return null
-    
+
 return text.length > 80 ? text.substring(0, 80) + '...' : text
   }, [plan.note])
 
@@ -407,7 +407,7 @@ return text.length > 80 ? text.substring(0, 80) + '...' : text
   const handleBuy = () => {
     if (session.status !== 'authenticated') {
       openAuthModal('login')
-      
+
 return
     }
 
@@ -441,7 +441,7 @@ return
             {visibleTags.map((tag: string, i: number) => {
               const tagDef = getTagStyle(tag)
 
-              
+
 return <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '5px 14px', fontSize: '11.5px', fontWeight: 700, borderRadius: '20px', background: `linear-gradient(180deg, rgba(255,255,255,0.2) 0%, transparent 50%), ${tagDef.gradient || tagDef.bgColor}`, color: tagDef.textColor, boxShadow: `0 2px 10px ${tagDef.borderColor}55, inset 0 1px 0 rgba(255,255,255,0.2)`, border: '1px solid rgba(255,255,255,0.25)', letterSpacing: '0.3px', lineHeight: 1.2 }}>{tagDef.icon && <span style={{ fontSize: '12px' }}>{tagDef.icon}</span>}{tag.trim()}</span>
             })}
           </div>
@@ -586,7 +586,7 @@ export default function RotatingProxyPage({ data }: RotatingProxyPageProps) {
   const [selectedVersion, setSelectedVersion] = useState('')
   const [selectedProxyType, setSelectedProxyType] = useState('')
   const [selectedCountry, setSelectedCountry] = useState('')
-  const [showActiveOnly, setShowActiveOnly] = useState(true)
+  const [showActiveOnly, setShowActiveOnly] = useState(false)
 
   const { data: countries } = useCountries()
 
