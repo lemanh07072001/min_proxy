@@ -586,6 +586,7 @@ export default function RotatingProxyPage({ data }: RotatingProxyPageProps) {
   const [selectedVersion, setSelectedVersion] = useState('')
   const [selectedProxyType, setSelectedProxyType] = useState('')
   const [selectedCountry, setSelectedCountry] = useState('')
+  const [showActiveOnly, setShowActiveOnly] = useState(true)
 
   const { data: countries } = useCountries()
 
@@ -610,14 +611,14 @@ export default function RotatingProxyPage({ data }: RotatingProxyPageProps) {
     return { versions, proxyTypes, countries: countryOptions }
   }, [data, countries])
 
-  const hasActiveFilter = selectedVersion || selectedProxyType || selectedCountry
+  const hasActiveFilter = selectedVersion || selectedProxyType || selectedCountry || !showActiveOnly
 
   // Lọc danh sách plan theo các filter
   const filteredProviders = useMemo(
     () =>
       data?.filter((plan: any) => {
         if (shouldHideByTag(plan?.tag)) return false
-        if (plan?.is_purchasable === false) return false
+        if (showActiveOnly && plan?.is_purchasable === false) return false
         if (selectedVersion && plan.ip_version?.toLowerCase() !== selectedVersion.toLowerCase()) return false
         if (selectedProxyType && plan.proxy_type?.toLowerCase() !== selectedProxyType.toLowerCase()) return false
 
@@ -629,13 +630,14 @@ export default function RotatingProxyPage({ data }: RotatingProxyPageProps) {
 
         return true
       }),
-    [data, selectedVersion, selectedProxyType, selectedCountry]
+    [data, selectedVersion, selectedProxyType, selectedCountry, showActiveOnly]
   )
 
   const clearAllFilters = () => {
     setSelectedVersion('')
     setSelectedProxyType('')
     setSelectedCountry('')
+    setShowActiveOnly(true)
   }
 
   const versionLabel = (v: string) => (v === 'ipv4' ? 'IPv4' : v === 'ipv6' ? 'IPv6' : v.toUpperCase())
@@ -758,6 +760,40 @@ export default function RotatingProxyPage({ data }: RotatingProxyPageProps) {
               </div>
             </div>
           )}
+
+          {/* Trạng thái */}
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+              <ShoppingCart size={14} color='#64748b' />
+              <span style={{ fontSize: '12px', fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                Trạng thái
+              </span>
+            </div>
+            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+              <Chip
+                label='Đang bán'
+                variant={showActiveOnly ? 'filled' : 'outlined'}
+                onClick={() => setShowActiveOnly(true)}
+                sx={{
+                  fontWeight: 600, fontSize: '13px', height: '34px', borderRadius: '8px',
+                  ...(showActiveOnly
+                    ? { bgcolor: '#1e293b', color: '#fff', '&:hover': { bgcolor: '#334155' } }
+                    : { borderColor: '#cbd5e1', color: '#334155', '&:hover': { bgcolor: '#f1f5f9', borderColor: '#94a3b8' } })
+                }}
+              />
+              <Chip
+                label='Tất cả'
+                variant={!showActiveOnly ? 'filled' : 'outlined'}
+                onClick={() => setShowActiveOnly(false)}
+                sx={{
+                  fontWeight: 600, fontSize: '13px', height: '34px', borderRadius: '8px',
+                  ...(!showActiveOnly
+                    ? { bgcolor: '#1e293b', color: '#fff', '&:hover': { bgcolor: '#334155' } }
+                    : { borderColor: '#cbd5e1', color: '#334155', '&:hover': { bgcolor: '#f1f5f9', borderColor: '#94a3b8' } })
+                }}
+              />
+            </div>
+          </div>
 
           {filterOptions.countries.length > 0 && (
             <div>
