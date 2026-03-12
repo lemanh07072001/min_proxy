@@ -46,6 +46,7 @@ const COUNTRY_CODE_FIX: Record<string, string> = {
 
 export function fixCountryCode(code: string): string {
   const lower = code.toLowerCase().trim()
+
   return COUNTRY_CODE_FIX[lower] || lower
 }
 

@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
+
 import { useSelector, useDispatch } from 'react-redux'
 import { useSession } from 'next-auth/react'
 import { Wallet } from 'lucide-react'
@@ -36,6 +37,7 @@ export default function BalanceCardClient({ isWalletVisible, isInitialLoad }: Ba
     }, 30000)
 
     return () => clearInterval(interval)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status])
 
   // Ẩn balance card khi chưa đăng nhập
