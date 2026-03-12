@@ -126,9 +126,9 @@ export default function ServiceFormModal({ open, onClose, serviceId, initialData
   // Data fetching
   const { data: partners = [], isLoading: loadingPartners } = usePartners()
 
-  // Chỉ gọi API khi edit mà không có initialData (fallback)
-  const { data: fetchedData, isLoading: loadingService } = useServiceType(serviceId, isEditMode && open && !initialData)
-  const serviceData = initialData || fetchedData
+  // Luôn fetch chi tiết khi edit để lấy đầy đủ field (api_partner bị hidden trong list)
+  const { data: fetchedData, isLoading: loadingService } = useServiceType(serviceId, isEditMode && open)
+  const serviceData = fetchedData || initialData
   const { data: serviceTypes = [] } = useServiceTypes()
 
   // Mutations
