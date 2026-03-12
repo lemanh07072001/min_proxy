@@ -12,7 +12,7 @@ PM2_NAME="mktproxy-fe"          # <-- đổi tên PM2 process nếu khác
 cd "$APP_DIR"
 
 echo "📦 Pulling code..."
-git pull origin develop
+git pull
 
 echo "📚 Installing deps..."
 npm ci --production=false
