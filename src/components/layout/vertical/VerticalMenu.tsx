@@ -87,14 +87,6 @@ const fontSizes = {
   menuItem: '12px'
 }
 
-const menuSectionHeaderStyles = {
-  fontSize: fontSizes.label,
-  fontWeight: 600,
-  color: colors.textMuted,
-  padding: '0',
-  marginBottom: '1rem'
-}
-
 const activeMenuItemStyles = {
   ['.' + menuClasses.button]: {
     background: `${colors.bgActive} !important`,
@@ -123,7 +115,7 @@ const activeMenuItemStyles = {
   }
 }
 
-const baseMenuItemStyles = {
+const baseButtonStyles = {
   ['.' + menuClasses.button]: {
     width: '100%',
     color: `${colors.textDefault} !important`,
@@ -139,10 +131,6 @@ const baseMenuItemStyles = {
       boxShadow: 'none !important'
     }
   },
-  ['.' + menuClasses.label]: {
-    marginTop: '2px',
-    display: 'inline'
-  },
 
   [`&:not(.${menuClasses.subMenuRoot}) > .${menuClasses.button}.${menuClasses.active}`]: {
     background: 'transparent !important',
@@ -151,25 +139,6 @@ const baseMenuItemStyles = {
   },
   [`&:not(.${menuClasses.subMenuRoot}) > .${menuClasses.button}.${menuClasses.active} .${menuClasses.icon}`]: {
     color: `${colors.textDefault} !important`
-  }
-}
-
-const activeSubMenuStyles = {
-  ['&.' + menuClasses.open + ' > .' + menuClasses.button]: {
-    color: colors.textActive,
-    fontSizes: fontSizes.menuItem
-  }
-}
-
-// Pre-compute merged styles (constant, no need to recalculate per render)
-const mergedActiveStyles = { ...baseMenuItemStyles, ...activeMenuItemStyles }
-
-const subMenuStyles = {
-  ...baseMenuItemStyles,
-  ...activeSubMenuStyles,
-  ['.' + menuClasses.label]: {
-    ...baseMenuItemStyles['.' + menuClasses.label],
-    fontSize: fontSizes.label
   }
 }
 
@@ -231,6 +200,67 @@ const VerticalMenu = ({ scrollMenu, dictionary }: Props) => {
   const { isBreakpointReached, transitionDuration, isCollapsed, isHovered } = verticalNavOptions
   const ScrollWrapper = isBreakpointReached ? 'div' : PerfectScrollbar
   const isWalletVisible = !isCollapsed || (isHovered ?? false)
+  const collapsedNotHovered = isCollapsed && !isHovered
+
+  // Dynamic styles — react to collapsed state
+  const baseMenuItemStyles = useMemo(() => ({
+    ...baseButtonStyles,
+    ['.' + menuClasses.button]: {
+      ...baseButtonStyles['.' + menuClasses.button],
+      ...(collapsedNotHovered && {
+        justifyContent: 'center',
+        paddingInline: '0 !important'
+      })
+    },
+    ['.' + menuClasses.label]: {
+      marginTop: '2px',
+      ...(collapsedNotHovered && {
+        opacity: 0,
+        width: 0,
+        overflow: 'hidden'
+      })
+    }
+  }), [collapsedNotHovered])
+
+  const mergedActiveStyles = useMemo(() => ({
+    ...baseMenuItemStyles,
+    ...(collapsedNotHovered
+      ? {
+          ['.' + menuClasses.button]: {
+            ...baseMenuItemStyles['.' + menuClasses.button],
+            [`&.${menuClasses.active}`]: {
+              background: 'transparent !important',
+              color: `${colors.iconHoverSpecial} !important`,
+              boxShadow: 'none !important'
+            }
+          },
+          [`&:not(.${menuClasses.subMenuRoot}) > .${menuClasses.button}.${menuClasses.active}`]: {
+            background: 'transparent !important',
+            color: `${colors.iconHoverSpecial} !important`
+          },
+          [`&:not(.${menuClasses.subMenuRoot}) > .${menuClasses.button}.${menuClasses.active} .${menuClasses.icon}`]: {
+            color: `${colors.iconHoverSpecial} !important`
+          }
+        }
+      : activeMenuItemStyles)
+  }), [baseMenuItemStyles, collapsedNotHovered])
+
+  const menuSectionHeaderStyles = useMemo(() => ({
+    fontSize: fontSizes.label,
+    fontWeight: 600,
+    color: colors.textMuted,
+    padding: '0',
+    marginBottom: collapsedNotHovered ? '0' : '1rem',
+    ...(collapsedNotHovered && {
+      [`& .${menuClasses.menuSectionContent}`]: {
+        paddingBlock: '4px !important',
+        marginBlockStart: '4px',
+        '&:before': {
+          content: 'none'
+        }
+      }
+    })
+  }), [collapsedNotHovered])
 
   // Memoize theme styles — avoids recalculation when unrelated state changes
   const themeMenuItemStyles = useMemo(() => menuItemStyles(verticalNavOptions, theme), [verticalNavOptions, theme])
@@ -240,7 +270,7 @@ const VerticalMenu = ({ scrollMenu, dictionary }: Props) => {
     const fullPath = `/${locale}/${path}`
 
     return activePath === fullPath ? mergedActiveStyles : baseMenuItemStyles
-  }, [locale, activePath])
+  }, [locale, activePath, mergedActiveStyles, baseMenuItemStyles])
 
   // Navigation handler — React 18 batches setState automatically, no flushSync needed
   const handleMenuNav = useCallback((path: string) => {

@@ -36,22 +36,31 @@ const menuItemStyles = (verticalNavOptions: VerticalNavState, theme: Theme): Men
         }
       },
       [`&:not(.${menuClasses.subMenuRoot}) > .${menuClasses.button}.${menuClasses.active}`]: {
-        ...(popoutCollapsed && level > 0
+        ...(collapsedNotHovered
           ? {
-              backgroundColor: 'var(--mui-palette-primary-lightOpacity)',
-              color: 'var(--mui-palette-primary-main)',
+              backgroundColor: 'transparent',
+              color: '#FC4336',
+              boxShadow: 'none',
               [`& .${menuClasses.icon}`]: {
-                color: 'var(--mui-palette-primary-main)'
+                color: '#FC4336'
               }
             }
-          : {
-              color: '#fff !important',
-              background: 'var(--primary-gradient, linear-gradient(45deg, #FC4336, #F88A4B)) !important',
-              boxShadow: '0px 2px 6px rgba(252, 67, 54, 0.3)',
-              [`& .${menuClasses.icon}`]: {
-                color: '#fff !important'
+          : popoutCollapsed && level > 0
+            ? {
+                backgroundColor: 'var(--mui-palette-primary-lightOpacity)',
+                color: 'var(--mui-palette-primary-main)',
+                [`& .${menuClasses.icon}`]: {
+                  color: 'var(--mui-palette-primary-main)'
+                }
               }
-            })
+            : {
+                color: '#fff !important',
+                background: 'var(--primary-gradient, linear-gradient(45deg, #FC4336, #F88A4B)) !important',
+                boxShadow: '0px 2px 6px rgba(252, 67, 54, 0.3)',
+                [`& .${menuClasses.icon}`]: {
+                  color: '#fff !important'
+                }
+              })
       }
     }),
     button: ({ level, active }) => ({
