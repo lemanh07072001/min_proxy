@@ -103,10 +103,12 @@ return d })())
       const date = o.created_at?.slice(0, 10)
 
       if (!date) return
+
       if (!groups[date]) {
         groups[date] = { date, total: 0, total_amount: 0 }
         Object.values(STATUS_KEY).forEach(k => { groups[date][k] = 0 })
       }
+
       groups[date].total++
       groups[date].total_amount += o.total_amount || 0
       const key = STATUS_KEY[Number(o.status)]

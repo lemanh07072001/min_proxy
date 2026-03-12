@@ -182,6 +182,7 @@ export default function ServiceFormModal({ open, onClose, serviceId, initialData
       value: code,
       label: COUNTRY_NAMES[code] || code.toUpperCase()
     }))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [serviceTypes])
 
   const ipVersionOptions = useMemo(() => {

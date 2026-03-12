@@ -50,6 +50,7 @@ export default function FillProxiesDialog({ order, onClose, onSuccess }: FillPro
 
       setInputText(prev => (prev ? prev + '\n' + text.trim() : text.trim()))
     }
+
     reader.readAsText(file)
     e.target.value = ''
   }
@@ -66,9 +67,11 @@ export default function FillProxiesDialog({ order, onClose, onSuccess }: FillPro
       {
         onSuccess: (data: any) => {
           toast.success(data?.message || 'Thêm proxy thành công')
+
           if (data?.data?.skipped?.length) {
             toast.warning(`${data.data.skipped.length} dòng bị bỏ qua do định dạng sai`)
           }
+
           onSuccess?.()
           onClose()
         },

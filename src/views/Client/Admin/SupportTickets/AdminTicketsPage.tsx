@@ -84,6 +84,7 @@ export default function AdminTicketsPage() {
         viewTimerRef.current = null
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedTicket, isResolveOpen])
 
   const handleApplyFilters = useCallback(() => {
@@ -278,6 +279,7 @@ return viewed ? (
         )
       }
     ],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   )
 

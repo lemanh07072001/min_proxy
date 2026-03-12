@@ -595,6 +595,7 @@ export default function RotatingProxyPage({ data }: RotatingProxyPageProps) {
 
     const versions = [...new Set(data.map((p: any) => p.ip_version?.toLowerCase()).filter(Boolean))]
     const proxyTypes = [...new Set(data.map((p: any) => p.proxy_type?.toLowerCase()).filter(Boolean))]
+
     const countrySet = [...new Set(
       data.map((p: any) => (p.country || p.country_code)?.trim()?.toUpperCase()).filter(Boolean)
     )]
@@ -618,8 +619,10 @@ export default function RotatingProxyPage({ data }: RotatingProxyPageProps) {
         if (shouldHideByTag(plan?.tag)) return false
         if (selectedVersion && plan.ip_version?.toLowerCase() !== selectedVersion.toLowerCase()) return false
         if (selectedProxyType && plan.proxy_type?.toLowerCase() !== selectedProxyType.toLowerCase()) return false
+
         if (selectedCountry) {
           const pc = (plan.country || plan.country_code)?.trim()?.toUpperCase()
+
           if (pc !== selectedCountry) return false
         }
 

@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 
+// eslint-disable-next-line import/no-named-as-default
 import DatePicker from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'
 import { Calendar } from 'lucide-react'

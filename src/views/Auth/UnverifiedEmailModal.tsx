@@ -34,6 +34,7 @@ export default function UnverifiedEmailModal({
     } catch (error) {
       setIsResending(false)
 
+      // eslint-disable-next-line import/no-named-as-default-member
       if (axios.isAxiosError(error)) {
         const status = error.response?.status
 

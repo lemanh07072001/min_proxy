@@ -51,6 +51,7 @@ export function useRole() {
     if (!(session as any)?.role) return 'user' as UserRole
 
     return (session as any).role.toLowerCase() as UserRole
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [(session as any)?.role])
 
   const isAdmin = useMemo(() => {

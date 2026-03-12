@@ -68,6 +68,7 @@ export default function QrCodeDialog({ open, onClose, partner, amount }: QrCodeD
     } else {
       setQrCodeUrl(null)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, partner, amount])
 
   return (

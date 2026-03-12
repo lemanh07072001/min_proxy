@@ -115,6 +115,7 @@ return (
         size: 180
       },
     ],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [partnerId]
   )
 

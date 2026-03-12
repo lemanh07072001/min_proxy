@@ -44,6 +44,7 @@ const useAxiosAuth = () => {
       // Sync token mới vào axios
       setAccessToken((newSession as any)?.access_token || null)
     })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return axiosInstance

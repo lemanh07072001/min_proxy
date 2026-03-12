@@ -4,10 +4,7 @@
 import { useRef, useState } from 'react'
 import type { MouseEvent } from 'react'
 
-import { useRouter } from 'next/navigation'
-
-// Next Imports
-import { useParams } from 'next/navigation'
+import { useRouter, useParams } from 'next/navigation'
 
 // MUI Imports
 import Badge from '@mui/material/Badge'

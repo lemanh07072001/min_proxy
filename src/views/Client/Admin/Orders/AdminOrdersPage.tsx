@@ -2,9 +2,10 @@
 
 import { useMemo, useState, useCallback } from 'react'
 
+import Image from 'next/image'
+
 import { useQueryClient } from '@tanstack/react-query'
 
-import Image from 'next/image'
 
 import {
   List,
@@ -191,7 +192,7 @@ export default function AdminOrdersPage() {
   const cancelMutation = useCancelOrder()
   const resendMutation = useResendOrder()
 
-  const allOrders = ordersData?.orders ?? []
+  const allOrders = useMemo(() => ordersData?.orders ?? [], [ordersData?.orders])
 
   // Client-side search filter (mã đơn, user)
   const orders = useMemo(() => {
@@ -221,10 +222,13 @@ return allOrders.filter(
     if (searchQuery) return calcFromOrders(orders)
 
     const s = ordersData?.summary
+
     if (!s) return { ...calcFromOrders(allOrders), total_orders: serverPagination.total || allOrders.length }
 
     const localFallback = calcFromOrders(allOrders)
-    return {
+
+    
+return {
       total_orders: Number(s.total_orders) || serverPagination.total || allOrders.length,
       total_amount: s.total_amount != null ? Number(s.total_amount) : localFallback.total_amount,
       total_cost:   s.total_cost   != null ? Number(s.total_cost)   : localFallback.total_cost,
@@ -240,6 +244,7 @@ return allOrders.filter(
     setPartnerFilter(partnerInput !== '' ? Number(partnerInput) : null)
     setOrderTypeFilter(orderTypeInput !== '' ? Number(orderTypeInput) : null)
     setSearchQuery(searchInput.trim())
+
     // Invalidate cache để luôn fetch data mới nhất khi click Tìm kiếm
     queryClient.invalidateQueries({ queryKey: ['adminOrders'] })
   }, [startInput, endInput, statusInput, partnerInput, orderTypeInput, searchInput, queryClient])

@@ -3,12 +3,18 @@
 import { useCallback, useEffect, useRef } from 'react'
 
 import { useEditor, EditorContent } from '@tiptap/react'
+// eslint-disable-next-line import/no-named-as-default
 import StarterKit from '@tiptap/starter-kit'
+// eslint-disable-next-line import/no-named-as-default
 import Underline from '@tiptap/extension-underline'
+// eslint-disable-next-line import/no-named-as-default
 import TextAlign from '@tiptap/extension-text-align'
 import { TextStyle } from '@tiptap/extension-text-style'
+// eslint-disable-next-line import/no-named-as-default
 import Color from '@tiptap/extension-color'
+// eslint-disable-next-line import/no-named-as-default
 import FontSize from '@tiptap/extension-font-size'
+// eslint-disable-next-line import/no-named-as-default
 import Image from '@tiptap/extension-image'
 import {
   Bold,
