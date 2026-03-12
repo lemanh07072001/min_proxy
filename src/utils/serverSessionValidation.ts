@@ -77,15 +77,13 @@ export async function validateServerSessionBasic() {
 
 /**
  * Server-side utility để lấy user data từ API
- * Sử dụng trong layout để pass user data xuống client
+ * Nhận session từ bên ngoài để tránh gọi getServerSession() lần thứ 2
  */
-export async function getServerUserData() {
-  const session = (await getServerSession(authOptions as any)) as any
+export async function getServerUserData(existingSession?: any) {
+  const session = existingSession ?? (await getServerSession(authOptions as any)) as any
 
   // Kiểm tra session và access_token trước khi gọi API
   if (!session || !session.access_token) {
-    console.log('⚠️ [getServerUserData] Không có session hoặc access_token')
-
     return null
   }
 
@@ -96,15 +94,13 @@ export async function getServerUserData() {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${session.access_token}`
       },
-      next: { revalidate: 30 } // Cache 30s thay vì no-store — giảm API calls
+      next: { revalidate: 120 } // Cache 2 phút — user data ít thay đổi
     })
 
     if (response.ok) {
       const userData = await response.json()
 
       return userData
-    } else {
-      console.log('❌ [getServerUserData] API trả về lỗi:', response.status)
     }
   } catch (error) {
     console.error('❌ [getServerUserData] Lỗi khi gọi API:', error)

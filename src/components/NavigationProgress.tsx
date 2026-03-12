@@ -25,7 +25,7 @@ export default function NavigationProgress() {
     if (pathname !== prevPathRef.current) {
       prevPathRef.current = pathname
       setPhase('finishing')
-      timeoutRef.current = setTimeout(() => setPhase('idle'), 400)
+      timeoutRef.current = setTimeout(() => setPhase('idle'), 150)
     }
 
     return () => {

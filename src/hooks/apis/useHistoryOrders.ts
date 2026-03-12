@@ -24,8 +24,8 @@ export const useHistoryOrders = () => {
 
       const hasPending = orders.some((o: any) => PENDING_STATUSES.includes(Number(o.status)))
 
-      // Có đơn đang chờ → poll 5s, không → tắt polling
-      return hasPending ? 5000 : false
+      // Có đơn đang chờ → poll 10s, không → tắt polling
+      return hasPending ? 10000 : false
     }
   })
 }

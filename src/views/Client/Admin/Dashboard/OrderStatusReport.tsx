@@ -6,9 +6,15 @@ import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Toolti
 import { Grid2, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Pagination, MenuItem, Select, FormControl, InputLabel } from '@mui/material'
 import { BarChart3, List } from 'lucide-react'
 
-import { useOrderReportSummary, useOrderReportDetail, MOCK_SUMMARY, MOCK_DETAIL } from '@/hooks/apis/useOrderReport'
+import { useOrderReportDetail, MOCK_DETAIL } from '@/hooks/apis/useOrderReport'
 import { usePartners } from '@/hooks/apis/usePartners'
 import { formatCurrency, formatNumber } from '@/utils/formatters'
+
+const STATUS_KEY: Record<number, string> = {
+  0: 'pending', 1: 'processing', 2: 'in_use', 3: 'in_use_partial',
+  4: 'expired', 5: 'failed', 6: 'partial_refunded', 7: 'waiting_refund',
+  8: 'refunded_all', 9: 'retry_processing_partial'
+}
 
 const STATUS_CONFIG: Record<number, { label: string; color: string }> = {
   0: { label: 'Chờ xử lý', color: '#94A3B8' },
@@ -52,24 +58,16 @@ return d })())
 
   const { data: partners } = usePartners()
 
-  const summaryParams = useMemo(() => ({
-    start: startDate,
-    end: endDate,
-    partner_id: partnerId,
-  }), [startDate, endDate, partnerId])
-
-  const { data: summaryRaw, isFetching: summaryFetching } = useOrderReportSummary(summaryParams)
-  const summary = (summaryRaw?.status_breakdown?.length > 0) ? summaryRaw : MOCK_SUMMARY
-
   const detailParams = useMemo(() => ({
     start: startDate,
     end: endDate,
     partner_id: partnerId,
     status: selectedStatus,
+    per_page: 5000,
   }), [startDate, endDate, partnerId, selectedStatus])
 
   const { data: detailRaw, isFetching: detailFetching } = useOrderReportDetail(detailParams)
-  const allOrders = (detailRaw?.orders?.length > 0) ? detailRaw.orders : MOCK_DETAIL.orders
+  const allOrders: any[] = (detailRaw?.orders?.length > 0) ? detailRaw.orders : MOCK_DETAIL.orders
 
   // Client-side pagination
   const totalOrders = allOrders.length
@@ -78,34 +76,63 @@ return d })())
   const paginatedOrders = useMemo(() => {
     const start = (clientPage - 1) * perPage
 
-    
-return allOrders.slice(start, start + perPage)
+    return allOrders.slice(start, start + perPage)
   }, [allOrders, clientPage, perPage])
 
+  // Tổng hợp status_breakdown từ orders
+  const statusBreakdown = useMemo(() => {
+    const groups: Record<number, { status: number; count: number; total_amount: number; total_quantity: number }> = {}
+
+    allOrders.forEach((o: any) => {
+      const s = Number(o.status)
+
+      if (!groups[s]) groups[s] = { status: s, count: 0, total_amount: 0, total_quantity: 0 }
+      groups[s].count++
+      groups[s].total_amount += o.total_amount || 0
+      groups[s].total_quantity += o.quantity || 0
+    })
+
+    return Object.values(groups).sort((a, b) => a.status - b.status)
+  }, [allOrders])
+
+  // Tổng hợp daily_trend từ orders
+  const dailyTrend = useMemo(() => {
+    const groups: Record<string, any> = {}
+
+    allOrders.forEach((o: any) => {
+      const date = o.created_at?.slice(0, 10)
+
+      if (!date) return
+      if (!groups[date]) {
+        groups[date] = { date, total: 0, total_amount: 0 }
+        Object.values(STATUS_KEY).forEach(k => { groups[date][k] = 0 })
+      }
+      groups[date].total++
+      groups[date].total_amount += o.total_amount || 0
+      const key = STATUS_KEY[Number(o.status)]
+
+      if (key) groups[date][key]++
+    })
+
+    return Object.values(groups).sort((a, b) => a.date.localeCompare(b.date))
+  }, [allOrders])
+
   // Pie chart data
-  const pieData = useMemo(() => {
-    if (!summary?.status_breakdown) return []
-    
-return summary.status_breakdown
-      .filter((s: any) => s.count > 0)
-      .map((s: any) => ({
-        name: STATUS_CONFIG[s.status]?.label ?? s.label,
-        value: s.count,
-        status: s.status,
-        color: STATUS_CONFIG[s.status]?.color ?? '#94A3B8',
-        total_amount: s.total_amount,
-      }))
-  }, [summary])
+  const pieData = useMemo(() => statusBreakdown
+    .filter(s => s.count > 0)
+    .map(s => ({
+      name: STATUS_CONFIG[s.status]?.label ?? String(s.status),
+      value: s.count,
+      status: s.status,
+      color: STATUS_CONFIG[s.status]?.color ?? '#94A3B8',
+      total_amount: s.total_amount,
+    })), [statusBreakdown])
 
   // Bar chart data
-  const barData = useMemo(() => {
-    if (!summary?.daily_trend) return []
-    
-return summary.daily_trend.map((d: any) => ({
-      date: d.date.slice(5), // MM-DD
-      ...d,
-    }))
-  }, [summary])
+  const barData = useMemo(() => dailyTrend.map(d => ({
+    date: d.date.slice(5), // MM-DD
+    ...d,
+  })), [dailyTrend])
 
   const handlePieClick = (data: any) => {
     if (data?.status !== undefined) {
@@ -150,7 +177,7 @@ return summary.daily_trend.map((d: any) => ({
         )}
       </div>
 
-      <div className={`space-y-4 transition-opacity duration-300 ${summaryFetching || detailFetching ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
+      <div className={`space-y-4 transition-opacity duration-300 ${detailFetching ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
           {/* Charts */}
           <Grid2 container spacing={3}>
             {/* Pie Chart */}

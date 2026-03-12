@@ -25,7 +25,7 @@ import InitColorSchemeScript from '@mui/material/InitColorSchemeScript'
 
 import { getServerSession } from 'next-auth/next'
 
-import { getServerUserData } from '@/utils/serverSessionValidation'
+// getServerUserData đã bỏ khỏi layout — session.user đã chứa userData từ JWT
 
 import { i18n } from '@/configs/configi18n'
 
@@ -148,13 +148,15 @@ const RootLayout = async (props: ChildrenType & { params: Promise<{ lang: string
 
   const direction = i18n.langDirection[params.lang as Locale]
 
-  // Fetch TẤT CẢ song song — tránh waterfall tuần tự
-  const [headersList, systemMode, user, session] = await Promise.all([
+  // Fetch song song — không còn blocking API call /me
+  const [headersList, systemMode, session] = await Promise.all([
     headers(),
     getSystemMode(),
-    getServerUserData(),
     getServerSession(authOptions as any) as any
   ])
+
+  // Dùng userData từ JWT session — không cần gọi API /me (tiết kiệm ~200-500ms)
+  const user = session?.user ?? null
 
   return (
     <TranslationWrapper headersList={headersList} lang={params.lang as Locale}>

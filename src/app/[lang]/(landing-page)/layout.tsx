@@ -75,6 +75,7 @@ const Layout = async (props: ChildrenType) => {
               pauseOnHover
               theme="light"
               limit={3}
+              style={{ zIndex: 99999 }}
             />
           </div>
           <ScrollToTop className='mui-fixed'>

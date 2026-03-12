@@ -171,7 +171,7 @@ export default function HistoryOrderPage() {
       },
       {
         header: 'Loại',
-        size: 70,
+        size: 95,
         cell: ({ row }: { row: any }) => (
           <Chip
             label={row.original.order_type === 1 ? 'Gia hạn' : 'Mua'}
@@ -386,7 +386,7 @@ export default function HistoryOrderPage() {
 
           {/* Table */}
           <div className='table-wrapper' style={{ overflowX: 'auto' }}>
-            <table className='data-table' style={{ minWidth: '1200px', ...(isLoading || filteredOrders.length === 0 ? { height: '100%' } : {}) }}>
+            <table className='data-table' style={{ minWidth: '1225px', ...(isLoading || filteredOrders.length === 0 ? { height: '100%' } : {}) }}>
               <thead className='table-header'>
                 {table.getHeaderGroups().map(headerGroup => (
                   <tr key={headerGroup.id}>

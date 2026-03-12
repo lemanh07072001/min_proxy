@@ -22,7 +22,6 @@ import {
   Megaphone,
   Settings,
   LifeBuoy,
-  AlertTriangle,
   Landmark,
   ShoppingCart
 } from 'lucide-react'
@@ -201,7 +200,7 @@ const VerticalMenu = ({ scrollMenu, dictionary }: Props) => {
       'transaction-history', 'contact', 'profile', 'history-login',
       'admin/dashboard', 'admin/transaction-history',
       'admin/users', 'admin/service-type', 'admin/partner', 'admin/announcements', 'admin/site-settings',
-      'admin/transaction-bank', 'admin/partial-orders', 'admin/support-tickets'
+      'admin/transaction-bank', 'admin/support-tickets'
     ]
 
     const timers: ReturnType<typeof setTimeout>[] = []
@@ -432,15 +431,6 @@ const VerticalMenu = ({ scrollMenu, dictionary }: Props) => {
                 href={`/${locale}/admin/orders`}
               >
                 Quản lý đơn hàng
-              </MenuItem>
-            )}
-            {hasPermission('admin.transactionHistory') && (
-              <MenuItem
-                icon={<AlertTriangle size={20} strokeWidth={1.5} />}
-                {...nav('admin/partial-orders')}
-                href={`/${locale}/admin/partial-orders`}
-              >
-                Đơn thiếu proxy
               </MenuItem>
             )}
 

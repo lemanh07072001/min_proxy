@@ -11,6 +11,7 @@ interface OrderReportParams {
 
 interface OrderDetailParams extends OrderReportParams {
   status?: number | null
+  per_page?: number
 }
 
 // ═══════════════════════════════════════════════════════
@@ -168,7 +169,7 @@ export const useOrderReportDetail = (params: OrderDetailParams, enabled = true) 
   const axiosAuth = useAxiosAuth()
 
   return useQuery({
-    queryKey: ['orderReportDetail', params.start, params.end, params.partner_id, params.status],
+    queryKey: ['orderReportDetail', params.start, params.end, params.partner_id, params.status, params.per_page ?? 100],
     queryFn: async () => {
       const res = await axiosAuth.get('/order-report/detail', {
         params: {
@@ -176,7 +177,7 @@ export const useOrderReportDetail = (params: OrderDetailParams, enabled = true) 
           end: params.end,
           ...(params.partner_id ? { partner_id: params.partner_id } : {}),
           ...(params.status !== null && params.status !== undefined ? { status: params.status } : {}),
-          per_page: 100
+          per_page: params.per_page ?? 100
         }
       })
 

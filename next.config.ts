@@ -14,7 +14,16 @@ const nextConfig: NextConfig = {
     staleTimes: {
       dynamic: 30,
       static: 180
-    }
+    },
+    optimizePackageImports: [
+      '@mui/material',
+      '@mui/icons-material',
+      'lucide-react',
+      'recharts',
+      '@iconify/tools',
+      '@iconify/utils',
+      '@iconify/types'
+    ]
   },
   turbopack: {
     root: process.cwd()

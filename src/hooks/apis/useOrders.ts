@@ -72,6 +72,24 @@ return res?.data
   })
 }
 
+// Hook admin thêm proxy thủ công vào đơn thiếu
+export const useFillProxies = () => {
+  const axiosAuth = useAxiosAuth()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ orderId, lines }: { orderId: number; lines: string[] }) => {
+      const res = await axiosAuth.post(`/admin/fill-proxies/${orderId}`, { lines })
+
+      return res?.data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['adminOrders'] })
+      queryClient.invalidateQueries({ queryKey: ['partialOrders'] })
+    }
+  })
+}
+
 // Hook để xóa đơn hàng
 export const useDeleteOrder = () => {
   const axiosAuth = useAxiosAuth()
