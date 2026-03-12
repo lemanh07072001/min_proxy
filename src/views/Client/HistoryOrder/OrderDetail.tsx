@@ -26,7 +26,6 @@ import Checkbox from '@mui/material/Checkbox'
 import {
   Copy,
   Clock,
-  Eye,
   FileDown,
   X,
   ShoppingCart,
@@ -41,7 +40,6 @@ import { formatDateTimeLocal } from '@/utils/formatDate'
 import { useCopy } from '@/app/hooks/useCopy'
 import { ORDER_STATUS_LABELS, ORDER_STATUS_COLORS } from '@/constants/orderStatus'
 import { useApiKeys } from '@/hooks/apis/useOrders'
-import DetailProxy from './DetaiProxy'
 
 const formatVND = (v: number) => new Intl.NumberFormat('vi-VN').format(v) + 'đ'
 
@@ -69,8 +67,6 @@ interface OrderDetailProps {
 
 const OrderDetail: React.FC<OrderDetailProps> = ({ open, onClose, order }) => {
   const [rowSelection, setRowSelection] = useState({})
-  const [isOpen, setIsOpen] = useState(false)
-  const [dataApiKey, setDataApiKey] = useState<string>()
   const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 })
   const [, copy] = useCopy()
   const [copiedField, setCopiedField] = useState<string | null>(null)
@@ -186,20 +182,6 @@ return days > 0 ? `${days}d ${hours}h` : `${hours}h`
         ),
         size: 160
       },
-      {
-        header: '',
-        id: 'actions',
-        size: 40,
-        cell: ({ row }: { row: any }) => (
-          <button
-            onClick={() => { setDataApiKey(row.original.api_key); setIsOpen(true) }}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: '#3b82f6' }}
-            title='Xem chi tiết'
-          >
-            <Eye size={16} />
-          </button>
-        )
-      }
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [order, copiedField, copy]
@@ -454,7 +436,6 @@ return row.original?.api_key || ''
         </DialogContent>
       </Dialog>
 
-      <DetailProxy isOpen={isOpen} handleClose={() => setIsOpen(false)} apiKey={dataApiKey as any} />
     </>
   )
 }
