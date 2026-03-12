@@ -67,6 +67,8 @@ const SelectFeatureRow = ({ feature, control, planId }) => (
 
 // Component này render một dòng feature tĩnh (chỉ hiển thị thông tin)
 const StaticFeatureRow = ({ feature }) => {
+  if (!feature.value && feature.value !== 0) return null
+
   const IconComponent = feature.icon || CheckCircle
   const iconColor = feature.iconColor || '#22c55e'
 
@@ -81,7 +83,7 @@ const StaticFeatureRow = ({ feature }) => {
       </div>
       <div className='feature-content'>
         <span className='feature-label'>{feature.label}:</span>
-        {feature.value && <span className='feature-value'>{feature.value}</span>}
+        <span className='feature-value'>{feature.value}</span>
       </div>
     </div>
   )
