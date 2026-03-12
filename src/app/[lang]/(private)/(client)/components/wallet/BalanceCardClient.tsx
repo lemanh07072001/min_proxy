@@ -8,7 +8,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 
 import type { RootState } from '@/store'
 import { setUser } from '@/store/userSlice'
-import useAxiosAuth from '@/hooks/useAxiosAuth'
+import useAxiosAuth from '@/hocs/useAxiosAuth'
 
 interface BalanceCardClientProps {
   isWalletVisible: boolean
