@@ -6,8 +6,13 @@ set -e
 # Chỉnh APP_DIR trước khi chạy trên server
 # ================================================
 
-APP_DIR="/var/www/mktproxy-fe"  # <-- đổi path này khi deploy lên server
-PM2_NAME="mktproxy-fe"          # <-- đổi tên PM2 process nếu khác
+# Load config từ .env.deploy (không bị track git)
+if [ -f ".env.deploy" ]; then
+  source .env.deploy
+fi
+
+APP_DIR="${APP_DIR:-/var/www/mktproxy-fe}"
+PM2_NAME="${PM2_NAME:-mktproxy-fe}"
 
 cd "$APP_DIR"
 
