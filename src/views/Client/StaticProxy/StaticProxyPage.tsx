@@ -23,7 +23,7 @@ export default function StaticProxyPage({ data }: StaticProxyPageProps) {
   const [selectedVersion, setSelectedVersion] = useState('')
   const [selectedProxyType, setSelectedProxyType] = useState('')
   const [selectedCountry, setSelectedCountry] = useState('')
-  const [showActiveOnly, setShowActiveOnly] = useState(true)
+  const [showActiveOnly, setShowActiveOnly] = useState(false)
 
   const { data: countries } = useCountries()
 
