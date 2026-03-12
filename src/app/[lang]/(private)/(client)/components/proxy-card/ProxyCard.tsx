@@ -60,13 +60,12 @@ return !(tagDef && 'hidden' in tagDef && tagDef.hidden)
 
   function getCountryName() {
     if (!countries || countries.length === 0) return null
-    const countryCode = provider?.country || provider?.country_code
+    const countryCode = (provider?.country || provider?.country_code)?.trim()?.toUpperCase()
 
     if (!countryCode) return null
-    const country = countries.find((c: any) => c.code === countryCode)
+    const country = countries.find((c: any) => c.code?.toUpperCase() === countryCode)
 
-    
-return country?.name || null
+    return country?.name || null
   }
 
   function getDurationLabel(duration: string) {
@@ -165,7 +164,7 @@ return <p style={{ fontSize: '13px', color: '#64748b', margin: '0 0 8px', lineHe
               <div className='feature-icons'><MapPin size={16} color='#6366f1' /></div>
               <div className='feature-content'>
                 <span className='feature-label'>Loại IP:</span>
-                <span className='feature-value' style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>Static {convertIpVersion(provider.ip_version)} — {(provider?.country || provider?.country_code) && <img src={`https://flagcdn.com/w40/${(provider.country || provider.country_code).toLowerCase()}.png`} alt='' style={{ width: 18, height: 13, objectFit: 'cover', borderRadius: 2 }} />}{getCountryName() || provider?.country_name || provider?.country || 'N/A'}</span>
+                <span className='feature-value' style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>Static {convertIpVersion(provider.ip_version)} — {(provider?.country || provider?.country_code) && <img src={`https://flagcdn.com/w40/${(provider.country || provider.country_code).trim().toLowerCase()}.png`} alt='' style={{ width: 18, height: 13, objectFit: 'cover', borderRadius: 2 }} />}{getCountryName() || provider?.country_name || provider?.country || 'N/A'}</span>
               </div>
             </div>
             {/* Protocol as static feature row */}

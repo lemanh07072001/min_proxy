@@ -8,7 +8,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 
 import { z } from 'zod'
 
-import protocols from '@/utils/protocolProxy'
+import { protocols } from '@/utils/protocolProxy'
 
 import CustomTextField from '@core/components/mui/TextField'
 

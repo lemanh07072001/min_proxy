@@ -383,6 +383,7 @@ export default function OrderProxyPage() {
         size: 150
       }
     ],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   )
 

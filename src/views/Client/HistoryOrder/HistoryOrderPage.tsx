@@ -21,6 +21,7 @@ import {
   getPaginationRowModel
 } from '@tanstack/react-table'
 
+import Button from '@mui/material/Button'
 import Chip from '@mui/material/Chip'
 import MenuItem from '@mui/material/MenuItem'
 import TextField from '@mui/material/TextField'
@@ -50,6 +51,7 @@ export default function HistoryOrderPage() {
   const [selectedOrder, setSelectedOrder] = useState<any | null>(null)
   const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 })
   const [searchText, setSearchText] = useState('')
+  const [appliedSearch, setAppliedSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
 
   const queryClient = useQueryClient()
@@ -62,12 +64,17 @@ export default function HistoryOrderPage() {
     dataUpdatedAt
   } = useHistoryOrders()
 
+  const handleSearch = () => {
+    setAppliedSearch(searchText.trim())
+    setPagination(prev => ({ ...prev, pageIndex: 0 }))
+  }
+
   // Client-side filtering
   const filteredOrders = useMemo(() => {
     let result = dataOrders
 
-    if (searchText.trim()) {
-      const search = searchText.trim().toLowerCase()
+    if (appliedSearch.trim()) {
+      const search = appliedSearch.trim().toLowerCase()
 
       result = result.filter((order: any) =>
         order.order_code?.toLowerCase().includes(search) ||
@@ -80,7 +87,7 @@ export default function HistoryOrderPage() {
     }
 
     return result
-  }, [dataOrders, searchText, statusFilter])
+  }, [dataOrders, appliedSearch, statusFilter])
 
   // Đếm đơn đang chờ xử lý
   const pendingOrders = useMemo(() => {
@@ -307,10 +314,8 @@ export default function HistoryOrderPage() {
                   size='small'
                   placeholder='Tìm mã đơn, dịch vụ...'
                   value={searchText}
-                  onChange={e => {
-                    setSearchText(e.target.value)
-                    setPagination(prev => ({ ...prev, pageIndex: 0 }))
-                  }}
+                  onChange={e => setSearchText(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter') handleSearch() }}
                   sx={{ width: 220, '& .MuiOutlinedInput-root': { fontSize: '13px', borderRadius: '8px' } }}
                   InputProps={{
                     startAdornment: (
@@ -320,7 +325,7 @@ export default function HistoryOrderPage() {
                     ),
                     endAdornment: searchText ? (
                       <InputAdornment position='end'>
-                        <IconButton size='small' onClick={() => setSearchText('')} sx={{ p: '2px' }}>
+                        <IconButton size='small' onClick={() => { setSearchText(''); setAppliedSearch(''); setPagination(prev => ({ ...prev, pageIndex: 0 })) }} sx={{ p: '2px' }}>
                           <X size={14} />
                         </IconButton>
                       </InputAdornment>
@@ -343,6 +348,14 @@ export default function HistoryOrderPage() {
                     <MenuItem key={value} value={value}>{label}</MenuItem>
                   ))}
                 </CustomTextField>
+                <Button
+                  variant='contained'
+                  size='small'
+                  onClick={handleSearch}
+                  sx={{ height: 36, borderRadius: '8px', fontSize: '13px', textTransform: 'none', whiteSpace: 'nowrap', px: 2 }}
+                >
+                  Tìm kiếm
+                </Button>
               </div>
             </div>
 

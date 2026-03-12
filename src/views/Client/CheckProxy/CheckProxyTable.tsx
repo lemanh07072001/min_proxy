@@ -204,6 +204,7 @@ export default function CheckProxyTable({ data, checkedProxy }: CheckProxyTableP
         size: 80
       }
     ],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   )
 

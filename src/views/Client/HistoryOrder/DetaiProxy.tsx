@@ -36,27 +36,24 @@ const DetailProxy = ({ isOpen, handleClose, apiKey }: DetailModalProps) => {
   const [isSocksCopied, copySocks] = useCopy()
   const [isIpCopied, copyIp] = useCopy()
 
-  const fetchProxyData = async () => {
-    if (!apiKey) return
+  useEffect(() => {
+    if (!isOpen || !apiKey) return
+
     setIsLoading(true)
     setError(null)
 
-    try {
-      const res = await axiosAuth.get(`/get-proxy-rotating/${apiKey}`)
-
-      setProxyData(res.data?.data ? (Array.isArray(res.data.data) ? res.data.data : [res.data.data]) : [])
-    } catch (err: any) {
-      console.error('Lỗi khi lấy proxy:', err)
-      setError('Không thể tải dữ liệu proxy')
-      setProxyData([])
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    if (!isOpen || !apiKey) return
-    fetchProxyData()
+    axiosAuth.get(`/get-proxy-rotating/${apiKey}`)
+      .then(res => {
+        setProxyData(res.data?.data ? (Array.isArray(res.data.data) ? res.data.data : [res.data.data]) : [])
+      })
+      .catch((err: any) => {
+        console.error('Lỗi khi lấy proxy:', err)
+        setError('Không thể tải dữ liệu proxy')
+        setProxyData([])
+      })
+      .finally(() => {
+        setIsLoading(false)
+      })
 
     // Cleanup khi đóng modal => reset data
     return () => {
@@ -64,7 +61,7 @@ const DetailProxy = ({ isOpen, handleClose, apiKey }: DetailModalProps) => {
       setError(null)
       setIsLoading(false)
     }
-  }, [isOpen, apiKey])
+  }, [isOpen, apiKey, axiosAuth])
 
   return (
     <>

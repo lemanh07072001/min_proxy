@@ -397,6 +397,7 @@ export default function OrderRotatingProxyPage() {
         size: 120
       }
     ],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   ) as any[]
 

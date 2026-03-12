@@ -32,10 +32,12 @@ export default function StaticProxyPage({ data }: StaticProxyPageProps) {
 
     const versions = [...new Set(data.map((p: any) => p.ip_version?.toLowerCase()).filter(Boolean))]
     const proxyTypes = [...new Set(data.map((p: any) => p.proxy_type?.toLowerCase()).filter(Boolean))]
-    const countrySet = [...new Set(data.map((p: any) => p.country || p.country_code).filter(Boolean))]
+    const countrySet = [...new Set(
+      data.map((p: any) => (p.country || p.country_code)?.trim()?.toUpperCase()).filter(Boolean)
+    )]
 
     const countryOptions = countrySet.map(code => {
-      const found = countries?.find((c: any) => c.code === code)
+      const found = countries?.find((c: any) => c.code?.toUpperCase() === code)
 
       return { code, name: found?.name || getCountryName(code as string) }
     })
@@ -52,8 +54,10 @@ export default function StaticProxyPage({ data }: StaticProxyPageProps) {
         if (shouldHideByTag(provider?.tag)) return false
         if (selectedVersion && provider.ip_version?.toLowerCase() !== selectedVersion.toLowerCase()) return false
         if (selectedProxyType && provider.proxy_type?.toLowerCase() !== selectedProxyType.toLowerCase()) return false
-        if (selectedCountry && provider.country_code !== selectedCountry && provider.country !== selectedCountry)
-          return false
+        if (selectedCountry) {
+          const pc = (provider.country || provider.country_code)?.trim()?.toUpperCase()
+          if (pc !== selectedCountry) return false
+        }
 
         return true
       }),

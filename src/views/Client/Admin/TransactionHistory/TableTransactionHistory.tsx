@@ -351,6 +351,7 @@ export default function TableDepositHistory() {
         }
       }
     ],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [isMobile]
   )
 
@@ -368,7 +369,7 @@ export default function TableDepositHistory() {
   // Modal handlers
   useEffect(() => {
     if (selectedUserId) refetch()
-  }, [selectedUserId])
+  }, [selectedUserId, refetch])
 
   const handleOpenModalUserDetail = (userId: number) => {
     setSelectedUserId(userId)

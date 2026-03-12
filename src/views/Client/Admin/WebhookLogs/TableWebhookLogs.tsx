@@ -142,6 +142,7 @@ return <Chip label={info.label} size='small' color={info.color} icon={info.icon}
         )
       }
     ],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [isMobile]
   )
 
