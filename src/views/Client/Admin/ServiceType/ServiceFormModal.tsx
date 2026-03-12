@@ -33,7 +33,7 @@ import * as yup from 'yup'
 import CustomTextField from '@/@core/components/mui/TextField'
 
 // RichTextEditor removed — using plain textarea for note
-import { TAG_CONFIG, PREDEFINED_TAGS, getTagStyle } from '@/configs/tagConfig'
+import { TAG_CONFIG, PREDEFINED_TAGS, getTagStyle, fixCountryCode } from '@/configs/tagConfig'
 import { usePartners } from '@/hooks/apis/usePartners'
 import { useServiceType, useCreateServiceType, useUpdateServiceType, useServiceTypes } from '@/hooks/apis/useServiceType'
 import MultiInputModal from '@/views/Client/Admin/ServiceType/MultiInputModal'
@@ -1186,8 +1186,8 @@ return <p style={{ fontSize: '13px', color: '#64748b', margin: '0 0 8px', lineHe
                         {/* Header: title + price */}
                         <div style={{ marginBottom: '12px', paddingBottom: '10px', borderBottom: '1px solid #f1f5f9', paddingTop: '4px' }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#1e293b', margin: 0, textAlign: 'left' }}>{previewData.name || 'Tên sản phẩm'}</h3>
-                            {firstPrice > 0 && <div style={{ fontSize: '18px', fontWeight: 700, color: '#e53e3e', whiteSpace: 'nowrap' }}>{firstPrice.toLocaleString('vi-VN')}đ</div>}
+                            <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#1e293b', margin: 0, textAlign: 'left' }}>{previewData.name || 'Tên sản phẩm'} {serviceId && <span style={{ fontSize: '11px', fontWeight: 500, color: '#94a3b8' }}>#{serviceId}</span>}</h3>
+                            {firstPrice > 0 && <div style={{ fontSize: '18px', fontWeight: 700, color: '#e53e3e', whiteSpace: 'nowrap' }}>{validPrices.length > 1 && <span style={{ fontSize: '12px', fontWeight: 500, color: '#94a3b8', marginRight: '2px' }}>từ</span>}{firstPrice.toLocaleString('vi-VN')}đ</div>}
                           </div>
                         </div>
 
@@ -1202,7 +1202,7 @@ return <p style={{ fontSize: '13px', color: '#64748b', margin: '0 0 8px', lineHe
                               <div className='feature-icons'><MapPin size={16} color='#6366f1' /></div>
                               <div className='feature-content'>
                                 <span className='feature-label'>Loại IP:</span>
-                                <span className='feature-value' style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>Rotating {convertIpVersion(previewData.ip_version || '')} — {previewData.country && <img src={`https://flagcdn.com/w40/${previewData.country.toLowerCase()}.png`} alt='' style={{ width: 18, height: 13, objectFit: 'cover', borderRadius: 2 }} />}{COUNTRY_NAMES[previewData.country] || previewData.country || 'N/A'}</span>
+                                <span className='feature-value' style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>Rotating {convertIpVersion(previewData.ip_version || '')} — {previewData.country && <img src={`https://flagcdn.com/w40/${fixCountryCode(previewData.country)}.png`} alt='' style={{ width: 18, height: 13, objectFit: 'cover', borderRadius: 2 }} />}{COUNTRY_NAMES[previewData.country] || previewData.country || 'N/A'}</span>
                               </div>
                             </div>
                           )}
@@ -1257,8 +1257,8 @@ return multiInputFields.filter((f: any) => f.key && f.value).map((input: any, i:
                           {/* Header: title + price */}
                           <div style={{ marginBottom: '10px', paddingBottom: '8px', borderBottom: '1px solid #f1f5f9', paddingTop: tagElements.length > 0 ? '6px' : undefined }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                              <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#1e293b', margin: 0 }}>{previewData.name || 'Tên sản phẩm'}</h3>
-                              {firstPrice > 0 && <div style={{ fontSize: '18px', fontWeight: 700, color: '#e53e3e', whiteSpace: 'nowrap' }}>{firstPrice.toLocaleString('vi-VN')}đ</div>}
+                              <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#1e293b', margin: 0 }}>{previewData.name || 'Tên sản phẩm'} {serviceId && <span style={{ fontSize: '11px', fontWeight: 500, color: '#94a3b8' }}>#{serviceId}</span>}</h3>
+                              {firstPrice > 0 && <div style={{ fontSize: '18px', fontWeight: 700, color: '#e53e3e', whiteSpace: 'nowrap' }}>{validPrices.length > 1 && <span style={{ fontSize: '12px', fontWeight: 500, color: '#94a3b8', marginRight: '2px' }}>từ</span>}{firstPrice.toLocaleString('vi-VN')}đ</div>}
                             </div>
                           </div>
 
@@ -1272,7 +1272,7 @@ return multiInputFields.filter((f: any) => f.key && f.value).map((input: any, i:
                                 <div className='feature-icons'><MapPin size={16} color='#6366f1' /></div>
                                 <div className='feature-content'>
                                   <span className='feature-label'>Loại IP:</span>
-                                  <span className='feature-value' style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>Static {convertIpVersion(previewData.ip_version || '')} — {previewData.country && <img src={`https://flagcdn.com/w40/${previewData.country.toLowerCase()}.png`} alt='' style={{ width: 18, height: 13, objectFit: 'cover', borderRadius: 2 }} />}{COUNTRY_NAMES[previewData.country] || previewData.country || 'N/A'}</span>
+                                  <span className='feature-value' style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>Static {convertIpVersion(previewData.ip_version || '')} — {previewData.country && <img src={`https://flagcdn.com/w40/${fixCountryCode(previewData.country)}.png`} alt='' style={{ width: 18, height: 13, objectFit: 'cover', borderRadius: 2 }} />}{COUNTRY_NAMES[previewData.country] || previewData.country || 'N/A'}</span>
                                 </div>
                               </div>
                             )}

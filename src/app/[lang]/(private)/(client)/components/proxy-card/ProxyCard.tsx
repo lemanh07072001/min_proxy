@@ -10,7 +10,7 @@ import { useSession } from 'next-auth/react'
 
 import CheckoutModal from '@/components/checkout-modal/CheckoutModal'
 import type { PriceOption } from '@/components/checkout-modal/CheckoutModal'
-import { getTagStyle, shouldHideByTag } from '@/configs/tagConfig'
+import { getTagStyle, shouldHideByTag, fixCountryCode } from '@/configs/tagConfig'
 import { protocols as defaultProtocols } from '@/utils/protocolProxy'
 
 import { useModalContext } from '@/app/contexts/ModalContext'
@@ -164,7 +164,7 @@ return <p style={{ fontSize: '13px', color: '#64748b', margin: '0 0 8px', lineHe
               <div className='feature-icons'><MapPin size={16} color='#6366f1' /></div>
               <div className='feature-content'>
                 <span className='feature-label'>Loại IP:</span>
-                <span className='feature-value' style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>Static {convertIpVersion(provider.ip_version)} — {(provider?.country || provider?.country_code) && <img src={`https://flagcdn.com/w40/${(provider.country || provider.country_code).trim().toLowerCase()}.png`} alt='' style={{ width: 18, height: 13, objectFit: 'cover', borderRadius: 2 }} />}{getCountryName() || provider?.country_name || provider?.country || 'N/A'}</span>
+                <span className='feature-value' style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>Static {convertIpVersion(provider.ip_version)} — {(provider?.country || provider?.country_code) && <img src={`https://flagcdn.com/w40/${fixCountryCode(provider.country || provider.country_code)}.png`} alt='' style={{ width: 18, height: 13, objectFit: 'cover', borderRadius: 2 }} />}{getCountryName() || provider?.country_name || provider?.country || 'N/A'}</span>
               </div>
             </div>
             {/* Protocol as static feature row */}

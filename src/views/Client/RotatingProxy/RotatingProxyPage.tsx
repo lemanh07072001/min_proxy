@@ -16,7 +16,7 @@ import { Box, Grid2, Typography } from '@mui/material'
 
 import Chip from '@mui/material/Chip'
 
-import { getTagStyle, shouldHideByTag, getCountryName } from '@/configs/tagConfig'
+import { getTagStyle, shouldHideByTag, getCountryName, fixCountryCode } from '@/configs/tagConfig'
 
 import { useModalContext } from '@/app/contexts/ModalContext'
 
@@ -471,7 +471,7 @@ return <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap:
               <div className='feature-icons'><MapPin size={16} color='#6366f1' /></div>
               <div className='feature-content'>
                 <span className='feature-label'>Loại IP:</span>
-                <span className='feature-value' style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>Rotating {plan.ip_version?.toUpperCase() === 'IPV4' ? 'V4' : plan.ip_version?.toUpperCase() === 'IPV6' ? 'V6' : plan.ip_version || ''} — {(plan?.country || plan?.country_code) && <img src={`https://flagcdn.com/w40/${(plan.country || plan.country_code).toLowerCase()}.png`} alt='' style={{ width: 18, height: 13, objectFit: 'cover', borderRadius: 2 }} />}{getCountryName(plan.country || plan.country_code || '')}</span>
+                <span className='feature-value' style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>Rotating {plan.ip_version?.toUpperCase() === 'IPV4' ? 'V4' : plan.ip_version?.toUpperCase() === 'IPV6' ? 'V6' : plan.ip_version || ''} — {(plan?.country || plan?.country_code) && <img src={`https://flagcdn.com/w40/${fixCountryCode(plan.country || plan.country_code)}.png`} alt='' style={{ width: 18, height: 13, objectFit: 'cover', borderRadius: 2 }} />}{getCountryName(plan.country || plan.country_code || '')}</span>
               </div>
             </div>
           )}
@@ -597,12 +597,12 @@ export default function RotatingProxyPage({ data }: RotatingProxyPageProps) {
     const proxyTypes = [...new Set(data.map((p: any) => p.proxy_type?.toLowerCase()).filter(Boolean))]
 
     const countrySet = [...new Set(
-      data.map((p: any) => (p.country || p.country_code)?.trim()?.toUpperCase()).filter(Boolean)
+      data.map((p: any) => fixCountryCode((p.country || p.country_code || '').trim()).toUpperCase()).filter(Boolean)
     )]
 
     // Map country codes to names from countries API
     const countryOptions = countrySet.map(code => {
-      const found = countries?.find((c: any) => c.code?.toUpperCase() === code)
+      const found = countries?.find((c: any) => fixCountryCode(c.code).toUpperCase() === code)
 
       return { code, name: found?.name || getCountryName(code) }
     })
@@ -617,11 +617,12 @@ export default function RotatingProxyPage({ data }: RotatingProxyPageProps) {
     () =>
       data?.filter((plan: any) => {
         if (shouldHideByTag(plan?.tag)) return false
+        if (plan?.is_purchasable === false) return false
         if (selectedVersion && plan.ip_version?.toLowerCase() !== selectedVersion.toLowerCase()) return false
         if (selectedProxyType && plan.proxy_type?.toLowerCase() !== selectedProxyType.toLowerCase()) return false
 
         if (selectedCountry) {
-          const pc = (plan.country || plan.country_code)?.trim()?.toUpperCase()
+          const pc = fixCountryCode((plan.country || plan.country_code || '').trim()).toUpperCase()
 
           if (pc !== selectedCountry) return false
         }
@@ -781,7 +782,7 @@ export default function RotatingProxyPage({ data }: RotatingProxyPageProps) {
                 {filterOptions.countries.map((c: any) => (
                   <Chip
                     key={c.code}
-                    icon={<img src={`https://flagcdn.com/w40/${c.code.toLowerCase()}.png`} alt={c.code} style={{ width: 20, height: 15, objectFit: 'cover', borderRadius: 2, marginLeft: 8 }} />}
+                    icon={<img src={`https://flagcdn.com/w40/${fixCountryCode(c.code)}.png`} alt={c.code} style={{ width: 20, height: 15, objectFit: 'cover', borderRadius: 2, marginLeft: 8 }} />}
                     label={c.name}
                     variant={selectedCountry === c.code ? 'filled' : 'outlined'}
                     onClick={() => setSelectedCountry(selectedCountry === c.code ? '' : c.code)}

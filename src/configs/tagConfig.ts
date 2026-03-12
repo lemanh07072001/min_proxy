@@ -39,13 +39,14 @@ export function shouldHideByTag(tagString?: string | null): boolean {
 return tagString.split(',').some(t => t.trim() === 'Đóng')
 }
 
-/** Convert country code (VN, US...) to flag emoji (🇻🇳, 🇺🇸...) */
-export function countryCodeToFlag(code: string): string {
-  return code
-    .toUpperCase()
-    .split('')
-    .map(c => String.fromCodePoint(0x1F1E6 + c.charCodeAt(0) - 65))
-    .join('')
+/** Sửa country code sai từ DB (vd: "vi" → "vn" cho Việt Nam) */
+const COUNTRY_CODE_FIX: Record<string, string> = {
+  vi: 'vn',
+}
+
+export function fixCountryCode(code: string): string {
+  const lower = code.toLowerCase().trim()
+  return COUNTRY_CODE_FIX[lower] || lower
 }
 
 /** Country code → Vietnamese name fallback */
@@ -54,8 +55,9 @@ const COUNTRY_NAMES: Record<string, string> = {
   th: 'Thái Lan', id: 'Indonesia', my: 'Malaysia', ph: 'Philippines', in: 'Ấn Độ',
   cn: 'Trung Quốc', tw: 'Đài Loan', hk: 'Hồng Kông', de: 'Đức', gb: 'Anh',
   fr: 'Pháp', au: 'Úc', ca: 'Canada', br: 'Brazil', ru: 'Nga', ge: 'Georgia',
+  vi: 'Việt Nam',
 }
 
 export function getCountryName(code: string): string {
-  return COUNTRY_NAMES[code.toLowerCase()] || code.toUpperCase()
+  return COUNTRY_NAMES[code.toLowerCase().trim()] || code.toUpperCase()
 }

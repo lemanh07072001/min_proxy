@@ -25,7 +25,7 @@ export type OrderStatusType = (typeof ORDER_STATUS)[keyof typeof ORDER_STATUS]
 export const ORDER_STATUS_LABELS: Record<string, string> = {
   [ORDER_STATUS.PENDING]: 'Chờ xử lý',
   [ORDER_STATUS.PROCESSING]: 'Đang tạo proxy',
-  [ORDER_STATUS.IN_USE]: 'Đang sử dụng',
+  [ORDER_STATUS.IN_USE]: 'Có thể sử dụng',
   [ORDER_STATUS.IN_USE_PARTIAL]: 'Thiếu proxy',
   [ORDER_STATUS.EXPIRED]: 'Hết hạn',
   [ORDER_STATUS.FAILED]: 'Lỗi đơn hàng',

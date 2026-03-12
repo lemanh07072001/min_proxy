@@ -11,7 +11,7 @@ import { Box, Grid2, Typography } from '@mui/material'
 import Chip from '@mui/material/Chip'
 
 import ProxyCard from '@/app/[lang]/(private)/(client)/components/proxy-card/ProxyCard'
-import { shouldHideByTag, getCountryName } from '@/configs/tagConfig'
+import { shouldHideByTag, getCountryName, fixCountryCode } from '@/configs/tagConfig'
 
 import { useCountries } from '@/hooks/apis/useCountries'
 
@@ -34,11 +34,11 @@ export default function StaticProxyPage({ data }: StaticProxyPageProps) {
     const proxyTypes = [...new Set(data.map((p: any) => p.proxy_type?.toLowerCase()).filter(Boolean))]
 
     const countrySet = [...new Set(
-      data.map((p: any) => (p.country || p.country_code)?.trim()?.toUpperCase()).filter(Boolean)
+      data.map((p: any) => fixCountryCode((p.country || p.country_code || '').trim()).toUpperCase()).filter(Boolean)
     )]
 
     const countryOptions = countrySet.map(code => {
-      const found = countries?.find((c: any) => c.code?.toUpperCase() === code)
+      const found = countries?.find((c: any) => fixCountryCode(c.code).toUpperCase() === code)
 
       return { code, name: found?.name || getCountryName(code as string) }
     })
@@ -53,11 +53,12 @@ export default function StaticProxyPage({ data }: StaticProxyPageProps) {
     () =>
       data?.filter((provider: any) => {
         if (shouldHideByTag(provider?.tag)) return false
+        if (provider?.is_purchasable === false) return false
         if (selectedVersion && provider.ip_version?.toLowerCase() !== selectedVersion.toLowerCase()) return false
         if (selectedProxyType && provider.proxy_type?.toLowerCase() !== selectedProxyType.toLowerCase()) return false
 
         if (selectedCountry) {
-          const pc = (provider.country || provider.country_code)?.trim()?.toUpperCase()
+          const pc = fixCountryCode((provider.country || provider.country_code || '').trim()).toUpperCase()
 
           if (pc !== selectedCountry) return false
         }
@@ -217,7 +218,7 @@ export default function StaticProxyPage({ data }: StaticProxyPageProps) {
                   {filterOptions.countries.map((c: any) => (
                     <Chip
                       key={c.code}
-                      icon={<img src={`https://flagcdn.com/w40/${c.code.toLowerCase()}.png`} alt={c.code} style={{ width: 20, height: 15, objectFit: 'cover', borderRadius: 2, marginLeft: 8 }} />}
+                      icon={<img src={`https://flagcdn.com/w40/${fixCountryCode(c.code)}.png`} alt={c.code} style={{ width: 20, height: 15, objectFit: 'cover', borderRadius: 2, marginLeft: 8 }} />}
                       label={c.name}
                       variant={selectedCountry === c.code ? 'filled' : 'outlined'}
                       onClick={() => setSelectedCountry(selectedCountry === c.code ? '' : c.code)}
