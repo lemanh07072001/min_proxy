@@ -50,9 +50,10 @@ export default function ModalAddReseller({ open, onClose, type, resellerData }: 
   const availableUsers = useMemo(() => {
     const allUsers = usersResponse?.data ?? []
 
+    // role accessor trả string, raw trả number — check cả 2
     return allUsers.filter((u: any) => {
       const role = u.role ?? u.attributes?.role
-      // role accessor trả string, raw trả number — check cả 2
+
       return role !== 2 && role !== 'reseller' && role !== 0 && role !== 'admin'
     })
   }, [usersResponse])
