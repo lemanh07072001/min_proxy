@@ -5,7 +5,7 @@ import { useMemo } from 'react'
 import { useSession } from 'next-auth/react'
 
 // Định nghĩa các role có thể có trong hệ thống
-export type UserRole = 'admin' | 'user' | 'manager'
+export type UserRole = 'admin' | 'user' | 'manager' | 'reseller'
 
 // Định nghĩa các quyền
 export type Permission =
@@ -16,6 +16,7 @@ export type Permission =
   | 'admin.depositHistory'
   | 'admin.serviceType'
   | 'admin.announcements'
+  | 'reseller.credentials'
   | 'user.proxy'
   | 'user.orders'
   | 'user.profile'
@@ -34,9 +35,13 @@ const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     'admin.serviceType',
     'admin.announcements'
   ],
+  reseller: [
+    'reseller.credentials',
+    'user.proxy',
+    'user.orders',
+    'user.profile'
+  ],
   manager: [
-    // Manager sẽ có quyền hạn chế hơn admin, chỉ có một số quyền cơ bản
-    // Có thể cấu hình sau khi bạn quyết định manager cần quyền gì
     'user.proxy',
     'user.orders',
     'user.profile'
@@ -56,6 +61,10 @@ export function useRole() {
 
   const isAdmin = useMemo(() => {
     return userRole === 'admin'
+  }, [userRole])
+
+  const isReseller = useMemo(() => {
+    return userRole === 'reseller'
   }, [userRole])
 
   const isManager = useMemo(() => {
@@ -89,6 +98,7 @@ export function useRole() {
   return {
     userRole,
     isAdmin,
+    isReseller,
     isManager,
     hasPermission,
     hasAnyPermission,
@@ -103,6 +113,12 @@ export function useIsAdmin() {
   const { isAdmin, isLoading } = useRole()
 
   return { isAdmin, isLoading }
+}
+
+export function useIsReseller() {
+  const { isReseller, isLoading } = useRole()
+
+  return { isReseller, isLoading }
 }
 
 export function useIsManager() {
