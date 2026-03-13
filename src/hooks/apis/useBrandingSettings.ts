@@ -2,6 +2,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import useAxiosAuth from '@/hocs/useAxiosAuth'
 
+export type SiteMode = 'parent' | 'child' | 'standalone'
+
 export interface BrandingSettings {
   site_name: string | null
   site_description: string | null
@@ -10,6 +12,7 @@ export interface BrandingSettings {
   primary_color: string | null
   primary_hover: string | null
   primary_gradient: string | null
+  site_mode: SiteMode | null
 }
 
 export const useBrandingSettings = () => {

@@ -17,6 +17,7 @@ import CustomTextField from '@core/components/mui/TextField'
 import CustomIconButton from '@core/components/mui/IconButton'
 
 import { useCreateBankQr, usePendingBankQr, type PendingBankQr } from '@/hooks/apis/useBankQr'
+import { useBankInfo } from '@/hooks/apis/useBankInfo'
 import { useCopy } from '@/app/hooks/useCopy'
 import useAxiosAuth from '@/hocs/useAxiosAuth'
 import { setUser } from '@/store/userSlice'
@@ -24,13 +25,6 @@ import type { AppDispatch } from '@/store'
 
 const denominations = ['50000', '100000', '200000', '500000', '1000000']
 const EXPIRE_SECONDS = 600 // 10 phút
-
-const BANK_INFO = {
-  bankCode: '970436',
-  bankName: 'Vietcombank',
-  accountNumber: '1056968673',
-  accountName: 'LUONG VAN THUY'
-}
 
 interface RechargeInputDialogProps {
   isOpen: boolean
@@ -49,6 +43,7 @@ export default function RechargeInputDialog({ isOpen, handleClose }: RechargeInp
 
   const createBankQr = useCreateBankQr()
   const { data: pendingData, refetch: refetchPending } = usePendingBankQr(isOpen, true)
+  const { data: bankInfo } = useBankInfo()
   const [, copy] = useCopy()
   const axiosAuth = useAxiosAuth()
 
@@ -191,13 +186,13 @@ export default function RechargeInputDialog({ isOpen, handleClose }: RechargeInp
   const getQrUrl = () => {
     if (!pendingRecord) return ''
 
-    return `https://img.vietqr.io/image/${BANK_INFO.bankCode}-${BANK_INFO.accountNumber}-compact2.png?amount=${pendingRecord.amount}&addInfo=${encodeURIComponent(pendingRecord.transaction_code)}`
+    return `https://img.vietqr.io/image/${bankInfo!.bank_code}-${bankInfo!.account_number}-compact2.png?amount=${pendingRecord.amount}&addInfo=${encodeURIComponent(pendingRecord.transaction_code)}`
   }
 
   const handleCopyAll = () => {
     if (!pendingRecord) return
 
-    const textToCopy = `${BANK_INFO.accountNumber} - ${BANK_INFO.accountName} - ${pendingRecord.amount} - ${pendingRecord.transaction_code}`
+    const textToCopy = `${bankInfo!.account_number} - ${bankInfo!.account_name} - ${pendingRecord.amount} - ${pendingRecord.transaction_code}`
 
     copy(textToCopy)
   }
@@ -472,9 +467,9 @@ export default function RechargeInputDialog({ isOpen, handleClose }: RechargeInp
                       height: '100%'
                     }}
                   >
-                    <InfoRow label='Ngân hàng' value={BANK_INFO.bankName} />
-                    <InfoRow label='Số tài khoản' value={BANK_INFO.accountNumber} copy={copy} />
-                    <InfoRow label='Chủ tài khoản' value={BANK_INFO.accountName} copy={copy} />
+                    <InfoRow label='Ngân hàng' value={bankInfo!.bank_name} />
+                    <InfoRow label='Số tài khoản' value={bankInfo!.account_number} copy={copy} />
+                    <InfoRow label='Chủ tài khoản' value={bankInfo!.account_name} copy={copy} />
                     <InfoRow
                       label='Số tiền cần thanh toán'
                       value={`${formatCurrency(String(pendingRecord.amount))}đ`}

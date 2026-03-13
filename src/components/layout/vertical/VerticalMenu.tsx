@@ -40,8 +40,6 @@ import { Menu, MenuItem, MenuSection, SubMenu } from '@menu/vertical-menu'
 
 // Hook Imports
 import useVerticalNav from '@menu/hooks/useVerticalNav'
-import { useRole } from '@/hooks/useRole'
-import { setNavigationPending } from '@/lib/navigationState'
 
 // Styled Component Imports
 import StyledVerticalNavExpandIcon from '@menu/styles/vertical/StyledVerticalNavExpandIcon'
@@ -49,6 +47,11 @@ import StyledVerticalNavExpandIcon from '@menu/styles/vertical/StyledVerticalNav
 // Style Imports
 import menuItemStyles from '@core/styles/vertical/menuItemStyles'
 import menuSectionStyles from '@core/styles/vertical/menuSectionStyles'
+
+// App Imports
+import { useRole } from '@/hooks/useRole'
+import { setNavigationPending } from '@/lib/navigationState'
+import { useBranding } from '@/app/contexts/BrandingContext'
 import type { getDictionary } from '@/utils/getDictionary'
 import BalanceCard from '@/app/[lang]/(private)/(client)/components/wallet/BalanceCard'
 import { TransactionHistory } from '@/components/icons'
@@ -154,6 +157,7 @@ const VerticalMenu = ({ scrollMenu, dictionary }: Props) => {
   const params = useParams()
   const { lang: locale } = params
   const { isAdmin, isLoading: isAdminLoading, hasPermission } = useRole()
+  const { isChild } = useBranding()
 
   const [isInitialLoad, setIsInitialLoad] = useState(true)
 
@@ -168,7 +172,7 @@ const VerticalMenu = ({ scrollMenu, dictionary }: Props) => {
       'home', 'recharge', 'proxy-tinh', 'proxy-xoay', 'check-proxy', 'history-order', 'affiliate',
       'transaction-history', 'contact', 'profile', 'history-login',
       'admin/dashboard', 'admin/transaction-history',
-      'admin/users', 'admin/service-type', 'admin/partner', 'admin/announcements', 'admin/site-settings',
+      'admin/users', 'admin/service-type', 'admin/partner', 'admin/resellers', 'admin/announcements', 'admin/site-settings',
       'admin/transaction-bank', 'admin/support-tickets'
     ]
 
@@ -445,13 +449,22 @@ const VerticalMenu = ({ scrollMenu, dictionary }: Props) => {
                 Quản lý sản phẩm
               </MenuItem>
             )}
-            {hasPermission('admin.partner') && (
+            {hasPermission('admin.partner') && !isChild && (
               <MenuItem
                 icon={<Handshake size={20} strokeWidth={1.5} />}
                 {...nav('admin/partner')}
                 href={`/${locale}/admin/partner`}
               >
                 Đối tác
+              </MenuItem>
+            )}
+            {hasPermission('admin.partner') && !isChild && (
+              <MenuItem
+                icon={<Users size={20} strokeWidth={1.5} />}
+                {...nav('admin/resellers')}
+                href={`/${locale}/admin/resellers`}
+              >
+                Quản lý Reseller
               </MenuItem>
             )}
             {hasPermission('admin.transactionHistory') && (

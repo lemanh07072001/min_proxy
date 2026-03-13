@@ -14,8 +14,8 @@ import { useSession } from 'next-auth/react'
 import CustomIconButton from '@core/components/mui/IconButton'
 
 import { useCopy } from '@/app/hooks/useCopy'
-
-import { getBankNumber } from '@/utils/bankInfo'
+import { useBankInfo } from '@/hooks/apis/useBankInfo'
+import { generateTransactionCode } from '@/utils/bankInfo'
 
 const formatCurrency = (value: string) => {
   const numericValue = value.replace(/\D/g, '')
@@ -44,26 +44,15 @@ export default function QrCodeDisplayDialog({
   const userId = (session?.user as any)?.id ?? ''
 
   const [, copy] = useCopy()
+  const { data: bankInfo } = useBankInfo()
 
-  // Thông tin ngân hàng cơ bản
-  const BANK_INFO_BASE = {
-    bankCode: '970436',
-    bankName: 'Vietcombank',
-    accountNumber: '1056968673',
-    accountName: 'LUONG VAN THUY'
-  }
-
-  // Sử dụng mã giao dịch đã được truyền từ RechargeInputDialog, nếu không có thì tạo mới (fallback)
-  const BANK_INFO = {
-    ...BANK_INFO_BASE,
-    note: transactionCode || getBankNumber(userId).note
-  }
+  const note = transactionCode || generateTransactionCode(userId)
 
   if (!qrDataUrl) return null
 
   const handleCopyAll = () => {
     // Ghép các chuỗi lại theo đúng định dạng bạn muốn
-    const textToCopy = `${BANK_INFO.accountNumber} - ${BANK_INFO.accountName} - ${amount} - ${BANK_INFO.note}`
+    const textToCopy = `${bankInfo!.account_number} - ${bankInfo!.account_name} - ${amount} - ${note}`
 
     // Gọi hàm copy từ hooks
     copy(textToCopy)
@@ -125,11 +114,11 @@ export default function QrCodeDisplayDialog({
                 }}
               >
                 {/* Thông tin chuyển khoản */}
-                <InfoRow label='Ngân hàng' value={BANK_INFO.bankName} />
-                <InfoRow label='Số tài khoản' value={BANK_INFO.accountNumber} isCopy={true} copy={copy} />
-                <InfoRow label='Chủ tài khoản' value={BANK_INFO.accountName} isCopy={true} copy={copy} />
+                <InfoRow label='Ngân hàng' value={bankInfo!.bank_name} />
+                <InfoRow label='Số tài khoản' value={bankInfo!.account_number} isCopy={true} copy={copy} />
+                <InfoRow label='Chủ tài khoản' value={bankInfo!.account_name} isCopy={true} copy={copy} />
                 <InfoRow label='Số tiền cần thanh toán' value={`${rechargeAmount}đ`} isCopy={true} copy={copy} />
-                <InfoRow label='Nội dung chuyển khoản' value={BANK_INFO.note} isCopy={true} copy={copy} />
+                <InfoRow label='Nội dung chuyển khoản' value={note} isCopy={true} copy={copy} />
               </Box>
             </div>
 
@@ -145,7 +134,7 @@ export default function QrCodeDisplayDialog({
               Chuyển đúng số tiền: <strong>{formatCurrency(amount)} VNĐ</strong>
             </li>
             <li>
-              Nhập đúng nội dung: <strong>{BANK_INFO.note}</strong>
+              Nhập đúng nội dung: <strong>{note}</strong>
             </li>
             <li>Tiền sẽ được cộng vào tài khoản sau 1-5 phút</li>
             <li>Liên hệ hỗ trợ nếu sau 10 phút chưa nhận được tiền</li>

@@ -11,16 +11,3 @@ export const generateTransactionCode = (userId: number | string): string => {
   // Tạo mã giao dịch: 152 + date + random + id_user (nối liền không có dấu +)
   return `152${date}${random}${userId}`
 }
-
-export const getBankNumber = (userId: number | string) => {
-  // Sử dụng hàm generateTransactionCode để tạo mã giao dịch
-  const transactionCode = generateTransactionCode(userId)
-
-  return {
-    bankCode: '970436',
-    bankName: 'Vietcombank',
-    accountNumber: '1056968673',
-    accountName: 'LUONG VAN THUY',
-    note: transactionCode
-  }
-}

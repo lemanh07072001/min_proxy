@@ -38,6 +38,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import CustomTextField from '@core/components/mui/TextField'
 
 import { useCreateBankQr, usePendingBankQr, useCancelBankQr, type PendingBankQr } from '@/hooks/apis/useBankQr'
+import { useBankInfo } from '@/hooks/apis/useBankInfo'
 import { useUpdateTransferName } from '@/hooks/apis/useTransferName'
 import { useDepositHistory } from '@/hooks/apis/useDeponsitHistory'
 import { useCopy } from '@/app/hooks/useCopy'
@@ -49,13 +50,6 @@ import type { AppDispatch, RootState } from '@/store'
 
 const denominations = ['50000', '100000', '200000', '500000', '1000000']
 const EXPIRE_SECONDS = 600
-
-const BANK_INFO = {
-  bankCode: '970436',
-  bankName: 'Vietcombank',
-  accountNumber: '1056968673',
-  accountName: 'LUONG VAN THUY'
-}
 
 export default function RechargePage() {
   const { user } = useSelector((state: RootState) => state.user)
@@ -79,6 +73,7 @@ export default function RechargePage() {
   const createBankQr = useCreateBankQr()
   const cancelBankQr = useCancelBankQr()
   const { data: pendingData, refetch: refetchPending } = usePendingBankQr(true, true)
+  const { data: bankInfo } = useBankInfo()
   const [, copy] = useCopy()
   const axiosAuth = useAxiosAuth()
 
@@ -235,7 +230,7 @@ return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`
     const addInfo = pendingRecord.note || pendingRecord.transaction_code
 
     
-return `https://img.vietqr.io/image/${BANK_INFO.bankCode}-${BANK_INFO.accountNumber}-compact2.png?amount=${pendingRecord.amount}&addInfo=${encodeURIComponent(addInfo)}`
+return `https://img.vietqr.io/image/${bankInfo!.bank_code}-${bankInfo!.account_number}-compact2.png?amount=${pendingRecord.amount}&addInfo=${encodeURIComponent(addInfo)}`
   }
 
   const handleCancelPending = async () => {
@@ -254,7 +249,7 @@ return `https://img.vietqr.io/image/${BANK_INFO.bankCode}-${BANK_INFO.accountNum
 
   const handleCopyAll = () => {
     if (!pendingRecord) return
-    const textToCopy = `${BANK_INFO.accountNumber} - ${BANK_INFO.accountName} - ${pendingRecord.amount} - ${pendingRecord.note || pendingRecord.transaction_code}`
+    const textToCopy = `${bankInfo!.account_number} - ${bankInfo!.account_name} - ${pendingRecord.amount} - ${pendingRecord.note || pendingRecord.transaction_code}`
 
     copy(textToCopy)
   }
@@ -605,9 +600,9 @@ return `https://img.vietqr.io/image/${BANK_INFO.bankCode}-${BANK_INFO.accountNum
                     <Typography sx={{ fontSize: '20px', fontWeight: 'bold', textAlign: 'center', color: 'var(--primary-color)' }}>
                       {formatCurrency(String(pendingRecord.amount))} VNĐ
                     </Typography>
-                    <InfoRow label='Ngân hàng' value={BANK_INFO.bankName} />
-                    <InfoRow label='Số tài khoản' value={BANK_INFO.accountNumber} copy={copy} />
-                    <InfoRow label='Chủ tài khoản' value={BANK_INFO.accountName} copy={copy} />
+                    <InfoRow label='Ngân hàng' value={bankInfo!.bank_name} />
+                    <InfoRow label='Số tài khoản' value={bankInfo!.account_number} copy={copy} />
+                    <InfoRow label='Chủ tài khoản' value={bankInfo!.account_name} copy={copy} />
                     <InfoRow
                       label='Nội dung chuyển khoản'
                       value={pendingRecord.note || pendingRecord.transaction_code}

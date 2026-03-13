@@ -10,6 +10,8 @@ import { useSidebarSettings, useUpdateSidebarSettings } from '@/hooks/apis/useSi
 import type { SupportLink, YoutubeVideo } from '@/hooks/apis/useSidebarSettings'
 import { useBrandingSettings, useUpdateBrandingSettings } from '@/hooks/apis/useBrandingSettings'
 import type { BrandingSettings } from '@/hooks/apis/useBrandingSettings'
+import { useSupplierSettings, useUpdateSupplierSettings } from '@/hooks/apis/useSupplierSettings'
+import { useBranding } from '@/app/contexts/BrandingContext'
 import useAxiosAuth from '@/hocs/useAxiosAuth'
 
 const ICON_OPTIONS = [
@@ -35,10 +37,17 @@ const defaultBranding: BrandingSettings = {
 
 export default function SiteSettingsForm() {
   const axiosAuth = useAxiosAuth()
+  const { isChild } = useBranding()
   const { data: sidebarData, isLoading: loadingSidebar } = useSidebarSettings()
   const { data: brandingData, isLoading: loadingBranding } = useBrandingSettings()
   const updateSidebarMutation = useUpdateSidebarSettings()
   const updateBrandingMutation = useUpdateBrandingSettings()
+
+  // Supplier settings (chỉ site con)
+  const { data: supplierData } = useSupplierSettings()
+  const updateSupplierMutation = useUpdateSupplierSettings()
+  const [supplier, setSupplier] = useState({ supplier_api_url: '', supplier_api_key: '', supplier_api_secret: '' })
+  const [supplierTestResult, setSupplierTestResult] = useState<any>(null)
 
   const [supportLinks, setSupportLinks] = useState<SupportLink[]>([])
   const [youtubeVideos, setYoutubeVideos] = useState<YoutubeVideo[]>([])
@@ -67,6 +76,16 @@ export default function SiteSettingsForm() {
       })
     }
   }, [brandingData])
+
+  useEffect(() => {
+    if (supplierData) {
+      setSupplier({
+        supplier_api_url: supplierData.supplier_api_url || '',
+        supplier_api_key: supplierData.supplier_api_key || '',
+        supplier_api_secret: '',
+      })
+    }
+  }, [supplierData])
 
   const handleImageUpload = async (file: File, field: 'logo_url' | 'favicon_url') => {
     const formData = new FormData()
@@ -447,6 +466,88 @@ export default function SiteSettingsForm() {
               </Button>
             </div>
           </div>
+
+          {/* ========== Supplier Settings (chỉ site con) ========== */}
+          {isChild && (
+            <div>
+              <h6 style={{ fontSize: '14px', fontWeight: 600, color: '#1e293b', marginBottom: 4 }}>
+                Kết nối nhà cung cấp (site mẹ)
+              </h6>
+              <p style={{ fontSize: '12px', color: '#94a3b8', marginBottom: 12 }}>
+                Thay đổi API credentials kết nối đến site mẹ. {supplierData?.source === 'database' ? 'Đang dùng credentials từ database.' : 'Đang dùng credentials từ .env.'}
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <TextField
+                  size='small'
+                  label='Supplier API URL'
+                  value={supplier.supplier_api_url}
+                  onChange={e => setSupplier(prev => ({ ...prev, supplier_api_url: e.target.value }))}
+                  placeholder='https://api.site-me.com/api'
+                  fullWidth
+                />
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <TextField
+                    size='small'
+                    label='API Key'
+                    value={supplier.supplier_api_key}
+                    onChange={e => setSupplier(prev => ({ ...prev, supplier_api_key: e.target.value }))}
+                    placeholder='rsl_xxxxx'
+                    sx={{ flex: 1 }}
+                  />
+                  <TextField
+                    size='small'
+                    label='API Secret (nhập mới để thay đổi)'
+                    type='password'
+                    value={supplier.supplier_api_secret}
+                    onChange={e => setSupplier(prev => ({ ...prev, supplier_api_secret: e.target.value }))}
+                    placeholder='sec_xxxxx'
+                    sx={{ flex: 1 }}
+                  />
+                </div>
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                  <Button
+                    size='small'
+                    variant='contained'
+                    onClick={() => {
+                      if (!supplier.supplier_api_url || !supplier.supplier_api_key || !supplier.supplier_api_secret) {
+                        toast.error('Vui lòng nhập đầy đủ URL, API Key và API Secret')
+
+                        return
+                      }
+
+                      setSupplierTestResult(null)
+                      updateSupplierMutation.mutate(supplier, {
+                        onSuccess: (data) => {
+                          toast.success(data?.message || 'Cập nhật thành công')
+                          setSupplierTestResult(data?.test)
+                          setSupplier(prev => ({ ...prev, supplier_api_secret: '' }))
+                        },
+                        onError: (error: any) => {
+                          toast.error(error?.response?.data?.message || 'Có lỗi xảy ra')
+                        }
+                      })
+                    }}
+                    disabled={updateSupplierMutation.isPending}
+                    startIcon={updateSupplierMutation.isPending ? <Loader2 size={14} className='animate-spin' /> : <Save size={14} />}
+                    sx={{ textTransform: 'none', fontSize: '13px', color: '#fff' }}
+                  >
+                    {updateSupplierMutation.isPending ? 'Đang lưu...' : 'Lưu & Test kết nối'}
+                  </Button>
+                  {supplierTestResult && (
+                    <span style={{
+                      fontSize: '13px',
+                      color: supplierTestResult.connected ? '#059669' : '#dc2626',
+                      fontWeight: 500
+                    }}>
+                      {supplierTestResult.connected
+                        ? `Kết nối OK — Số dư: ${new Intl.NumberFormat('vi-VN').format(supplierTestResult.balance)}đ`
+                        : `Lỗi kết nối: ${supplierTestResult.error}`}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
