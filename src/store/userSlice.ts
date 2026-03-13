@@ -14,17 +14,20 @@ export interface User {
   name?: string
   email?: string
   sodu?: number
+  role?: string
   transfer_config?: TransferConfig | null
 }
 
 interface UserState {
   user: User | null
   sodu: number
+  role: string | null
 }
 
 const initialState: UserState = {
   user: null,
-  sodu: 0
+  sodu: 0,
+  role: null
 }
 
 const userSlice = createSlice({
@@ -36,6 +39,10 @@ const userSlice = createSlice({
 
       if (action.payload.sodu !== undefined) {
         state.sodu = action.payload.sodu
+      }
+
+      if (action.payload.role !== undefined) {
+        state.role = action.payload.role
       }
     },
     setBalance: (state, action: PayloadAction<number>) => {

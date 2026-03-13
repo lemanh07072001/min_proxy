@@ -3,6 +3,9 @@
 import { useMemo } from 'react'
 
 import { useSession } from 'next-auth/react'
+import { useSelector } from 'react-redux'
+
+import type { RootState } from '@/store'
 
 // Định nghĩa các role có thể có trong hệ thống
 export type UserRole = 'admin' | 'user' | 'manager' | 'reseller'
@@ -51,13 +54,16 @@ const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
 
 export function useRole() {
   const { data: session, status } = useSession()
+  const reduxRole = useSelector((state: RootState) => state.user.role)
 
+  // Ưu tiên Redux (cập nhật realtime từ /me mỗi 30s) > session (chỉ cập nhật khi login/refresh)
   const userRole = useMemo(() => {
+    if (reduxRole) return reduxRole.toLowerCase() as UserRole
     if (!(session as any)?.role) return 'user' as UserRole
 
     return (session as any).role.toLowerCase() as UserRole
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [(session as any)?.role])
+  }, [reduxRole, (session as any)?.role])
 
   const isAdmin = useMemo(() => {
     return userRole === 'admin'

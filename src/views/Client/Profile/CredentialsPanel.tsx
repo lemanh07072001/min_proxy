@@ -107,7 +107,6 @@ export default function CredentialsPanel() {
         )}
 
         <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
-          <InfoField label='Markup mặc định' value={`${data.default_markup_percent}%`} />
           {data.allowed_ips && data.allowed_ips.length > 0 && (
             <div>
               <Typography variant='body2' color='text.secondary' sx={{ mb: 0.5, fontWeight: 500 }}>

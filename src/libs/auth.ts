@@ -20,15 +20,42 @@ async function refreshToken(token: JWT): Promise<JWT> {
 
     console.log('✅ [Server Refresh] Refresh thành công.')
 
-    const newToken = {
-      ...token,
-      access_token: refreshedTokens.access_token,
-      accessTokenExpires: Date.now() + (refreshedTokens.expires_in || 3600) * 1000,
-      refresh_token: refreshedTokens.refresh_token ?? token.refresh_token,
-      error: undefined
+    const newAccessToken = refreshedTokens.access_token
+
+    // Gọi /me để sync role + userData mới nhất (phòng trường hợp admin promote role)
+    let updatedRole = token.role
+    let updatedUserData = token.userData
+
+    try {
+      const meRes = await fetch(`${process.env.API_URL}/me`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${newAccessToken}`
+        }
+      })
+
+      if (meRes.ok) {
+        const meData = await meRes.json()
+
+        if (meData?.id) {
+          updatedRole = meData.role || updatedRole
+          updatedUserData = meData
+        }
+      }
+    } catch {
+      // Nếu /me lỗi thì giữ nguyên role cũ, không ảnh hưởng refresh flow
     }
 
-    return newToken
+    return {
+      ...token,
+      access_token: newAccessToken,
+      accessTokenExpires: Date.now() + (refreshedTokens.expires_in || 3600) * 1000,
+      refresh_token: refreshedTokens.refresh_token ?? token.refresh_token,
+      role: updatedRole,
+      userData: updatedUserData,
+      error: undefined
+    }
   } catch (error) {
     console.error('❌ [Server Refresh] Lỗi khi làm mới token:', error)
 
