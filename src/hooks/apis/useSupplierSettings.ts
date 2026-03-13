@@ -6,7 +6,7 @@ export interface SupplierSettings {
   supplier_api_url: string | null
   supplier_api_key: string | null
   supplier_api_secret: string | null
-  source: 'database' | 'env'
+  configured: boolean
 }
 
 export const useSupplierSettings = () => {

@@ -474,7 +474,7 @@ export default function SiteSettingsForm() {
                 Kết nối nhà cung cấp (site mẹ)
               </h6>
               <p style={{ fontSize: '12px', color: '#94a3b8', marginBottom: 12 }}>
-                Thay đổi API credentials kết nối đến site mẹ. {supplierData?.source === 'database' ? 'Đang dùng credentials từ database.' : 'Đang dùng credentials từ .env.'}
+                Thay đổi API credentials kết nối đến site mẹ. {supplierData?.configured ? 'Đã cấu hình.' : 'Chưa cấu hình — vui lòng nhập thông tin bên dưới.'}
               </p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 <TextField

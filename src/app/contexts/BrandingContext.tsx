@@ -27,9 +27,9 @@ const defaultBranding: BrandingContextValue = {
   primaryColor: siteConfig.primaryColor,
   primaryHover: siteConfig.primaryHover,
   primaryGradient: siteConfig.primaryGradient,
-  siteMode: 'standalone',
+  siteMode: 'child',
   isParent: false,
-  isChild: false,
+  isChild: true,
   isLoading: false,
 }
 
@@ -40,7 +40,7 @@ export const useBranding = () => useContext(BrandingContext)
 export function BrandingProvider({ children }: { children: React.ReactNode }) {
   const { data, isLoading } = useBrandingSettings()
 
-  const siteMode: SiteMode = data?.site_mode || 'standalone'
+  const siteMode: SiteMode = data?.site_mode || 'child'
 
   const branding = useMemo<BrandingContextValue>(() => ({
     name: data?.site_name || siteConfig.name,

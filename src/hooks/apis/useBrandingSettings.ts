@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import useAxiosAuth from '@/hocs/useAxiosAuth'
 
-export type SiteMode = 'parent' | 'child' | 'standalone'
+export type SiteMode = 'parent' | 'child'
 
 export interface BrandingSettings {
   site_name: string | null
