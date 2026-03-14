@@ -39,7 +39,7 @@ export const authLabels: Record<string, { label: string; description: string }> 
   }
 }
 
-const BASE = process.env.NEXT_PUBLIC_API_DOCS_URL || process.env.NEXT_PUBLIC_API_URL || 'https://app.mktproxy.com/api'
+const BASE = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8002/api'
 
 export const apiEndpoints: ApiEndpoint[] = [
   // ═══════════════════════════════════════

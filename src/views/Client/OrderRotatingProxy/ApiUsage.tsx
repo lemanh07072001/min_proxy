@@ -10,8 +10,7 @@ import { apiEndpoints, categoryLabels, type ApiEndpoint } from '@/configs/apiDoc
 const LANGS = ['cURL', 'PHP', 'Node.js', 'Python', 'Go'] as const
 
 // URL docs (hiển thị trong code examples) vs URL thật (dùng cho "Chạy thử")
-const DOCS_BASE = process.env.NEXT_PUBLIC_API_DOCS_URL || process.env.NEXT_PUBLIC_API_URL || ''
-const LIVE_BASE = process.env.NEXT_PUBLIC_API_URL || DOCS_BASE
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8002/api'
 
 function buildUrl(ep: ApiEndpoint): string {
   let url = ep.endpoint
@@ -303,7 +302,7 @@ return 'bg-gray-600'
     setLoading(true); setLiveRes(null); setLiveStatus(null)
 
     try {
-      const url = buildUrl(ep).replace(DOCS_BASE, LIVE_BASE)
+      const url = buildUrl(ep).replace(API_BASE, API_BASE)
       const headers: Record<string, string> = { 'X-API-Key': userApiKey }
       const opts: RequestInit = { method: ep.method, headers }
 
@@ -367,7 +366,7 @@ return 'bg-gray-600'
     return (
       <div className='flex rounded-xl overflow-hidden border border-gray-200 bg-white flex-1 min-h-0'>
         {sidebar}
-        <GettingStarted apiKey={userApiKey} docsBase={DOCS_BASE} />
+        <GettingStarted apiKey={userApiKey} docsBase={API_BASE} />
       </div>
     )
   }

@@ -481,7 +481,7 @@ export default function SiteSettingsForm() {
                   label='Supplier API URL'
                   value={supplier.supplier_api_url}
                   onChange={e => setSupplier(prev => ({ ...prev, supplier_api_url: e.target.value }))}
-                  placeholder='https://api.site-me.com/api'
+                  placeholder='https://app.mktproxy.com/api'
                   fullWidth
                 />
                 <TextField
