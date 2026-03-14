@@ -225,15 +225,15 @@ export const apiEndpoints: ApiEndpoint[] = [
     auth: 'x_api_key',
     requestBody: `{
   "service_type_id": 1,
-  "quantity": 5,
-  "duration": 30,
+  "quantity": 1,
+  "duration": 1,
   "protocol": "http"
 }`,
     parameters: [
       { name: 'service_type_id', type: 'integer', required: true, description: 'ID sản phẩm (lấy từ GET /products)', example: '1' },
-      { name: 'quantity', type: 'integer', required: true, description: 'Số lượng proxy (1-2000)', example: '5' },
-      { name: 'duration', type: 'integer', required: true, description: 'Số ngày sử dụng', example: '30' },
-      { name: 'protocol', type: 'string', required: false, description: 'Giao thức: "http" hoặc "socks5" (mặc định http)', example: 'http' }
+      { name: 'quantity', type: 'integer', required: false, description: 'Số lượng proxy, 1-2000 (mặc định: 1)', example: '1' },
+      { name: 'duration', type: 'integer', required: false, description: 'Số ngày sử dụng: 1, 7 hoặc 30 (mặc định: 1)', example: '1' },
+      { name: 'protocol', type: 'string', required: false, description: 'Giao thức: "http" hoặc "socks5" (mặc định: http)', example: 'http' }
     ],
     responses: {
       '200 OK': `{

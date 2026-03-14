@@ -16,6 +16,7 @@ const LIVE_BASE = process.env.NEXT_PUBLIC_API_URL || DOCS_BASE
 function buildUrl(ep: ApiEndpoint): string {
   let url = ep.endpoint
   const qp: string[] = []
+
   ep.parameters?.forEach(p => {
     if (url.includes(`{${p.name}}`)) {
       url = url.replace(`{${p.name}}`, p.example)
@@ -24,7 +25,8 @@ function buildUrl(ep: ApiEndpoint): string {
     }
   })
   if (qp.length) url += '?' + qp.join('&')
-  return url
+  
+return url
 }
 
 function genCode(ep: ApiEndpoint, lang: string, key: string): string {
@@ -37,57 +39,79 @@ function genCode(ep: ApiEndpoint, lang: string, key: string): string {
   switch (lang) {
     case 'cURL': {
       const p = ['curl']
+
       if (isPost) p.push('-X POST')
       p.push(`-H "X-API-Key: ${k}"`)
+
       if (isPost && compact) {
         p.push('-H "Content-Type: application/json"')
         p.push(`-d '${compact}'`)
       }
+
       p.push(`"${url}"`)
-      return p.join(' \\\n  ')
+      
+return p.join(' \\\n  ')
     }
+
     case 'PHP': {
       let c = `$ch = curl_init("${url}");\ncurl_setopt($ch, CURLOPT_RETURNTRANSFER, true);\n`
       const h = [`  "X-API-Key: ${k}"`]
+
       if (isPost && compact) h.push(`  "Content-Type: application/json"`)
       c += `curl_setopt($ch, CURLOPT_HTTPHEADER, [\n${h.join(',\n')}\n]);\n`
+
       if (isPost && compact) {
         c += `curl_setopt($ch, CURLOPT_POST, true);\ncurl_setopt($ch, CURLOPT_POSTFIELDS, '${compact}');\n`
       }
+
       c += `\n$response = curl_exec($ch);\ncurl_close($ch);\n$data = json_decode($response, true);\nprint_r($data);`
-      return c
+      
+return c
     }
+
     case 'Node.js': {
       const h = [`    "X-API-Key": "${k}"`]
+
       if (isPost && compact) h.push(`    "Content-Type": "application/json"`)
       let c = `const res = await fetch("${url}", {\n`
+
       if (isPost) c += `  method: "POST",\n`
       c += `  headers: {\n${h.join(',\n')}\n  }`
       if (isPost && compact) c += `,\n  body: JSON.stringify(${compact})`
       c += `\n});\nconst data = await res.json();\nconsole.log(data);`
-      return c
+      
+return c
     }
+
     case 'Python': {
       const m = isPost ? 'post' : 'get'
       const a = [`"${url}"`, `headers={"X-API-Key": "${k}"}`]
+
       if (isPost && compact) a.push(`json=${compact}`)
-      return `import requests\n\nres = requests.${m}(\n  ${a.join(',\n  ')}\n)\nprint(res.json())`
+      
+return `import requests\n\nres = requests.${m}(\n  ${a.join(',\n  ')}\n)\nprint(res.json())`
     }
+
     case 'Go': {
       let c = 'package main\n\nimport (\n  "fmt"\n  "io"\n  "net/http"\n'
+
       if (isPost) c += '  "strings"\n'
       c += ')\n\nfunc main() {\n'
+
       if (isPost && compact) {
         c += `  body := strings.NewReader(\`${compact}\`)\n`
         c += `  req, _ := http.NewRequest("POST", "${url}", body)\n`
       } else {
         c += `  req, _ := http.NewRequest("GET", "${url}", nil)\n`
       }
+
       c += `  req.Header.Set("X-API-Key", "${k}")\n`
       if (isPost) c += `  req.Header.Set("Content-Type", "application/json")\n`
       c += `\n  resp, _ := http.DefaultClient.Do(req)\n  defer resp.Body.Close()\n  data, _ := io.ReadAll(resp.Body)\n  fmt.Println(string(data))\n}`
-      return c
+      
+return c
     }
+
     default: return ''
   }
 }
@@ -97,7 +121,9 @@ function genCode(ep: ApiEndpoint, lang: string, key: string): string {
 function CopyBtn({ text, label }: { text: string; label?: string }) {
   const [ok, setOk] = useState(false)
   const copy = () => { navigator.clipboard.writeText(text); setOk(true); setTimeout(() => setOk(false), 2000) }
-  return (
+
+  
+return (
     <button onClick={copy} className='flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-gray-700 hover:bg-gray-600 text-gray-300 hover:text-white transition-colors text-xs font-medium'>
       {ok ? <Check size={13} /> : <Copy size={13} />}
       <span>{ok ? 'Copied!' : (label || 'Copy')}</span>
@@ -125,8 +151,10 @@ export default function ApiUsage({ endpoints }: ApiUsageProps) {
 
   const grouped = useMemo(() => {
     const g: Record<string, ApiEndpoint[]> = {}
+
     data.forEach(a => { if (!g[a.category]) g[a.category] = []; g[a.category].push(a) })
-    return g
+    
+return g
   }, [data])
 
   const methodColor = (m: string) => {
@@ -134,7 +162,8 @@ export default function ApiUsage({ endpoints }: ApiUsageProps) {
     if (m === 'POST') return 'bg-emerald-600'
     if (m === 'PUT') return 'bg-amber-600'
     if (m === 'DELETE') return 'bg-red-600'
-    return 'bg-gray-600'
+    
+return 'bg-gray-600'
   }
 
 
@@ -145,16 +174,20 @@ export default function ApiUsage({ endpoints }: ApiUsageProps) {
   const tryIt = async () => {
     if (!userApiKey) return
     setLoading(true); setLiveRes(null); setLiveStatus(null)
+
     try {
       const url = buildUrl(ep).replace(DOCS_BASE, LIVE_BASE)
       const headers: Record<string, string> = { 'X-API-Key': userApiKey }
       const opts: RequestInit = { method: ep.method, headers }
+
       if (ep.method === 'POST' && ep.requestBody) {
         headers['Content-Type'] = 'application/json'
         opts.body = ep.requestBody
       }
+
       const res = await fetch(url, opts)
       const d = await res.json()
+
       setLiveStatus(res.status)
       setLiveRes(JSON.stringify(d, null, 2))
     } catch (e: any) {

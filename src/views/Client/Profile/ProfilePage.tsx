@@ -36,6 +36,7 @@ export default function ProfilePage({ dataProfile }: ProfileProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const axiosAuth = useAxiosAuth()
   const { data: session, status } = useSession()
+
   const handleAvatarClick = () => {
     fileInputRef.current?.click()
   }
