@@ -5,7 +5,6 @@ import useAxiosAuth from '@/hocs/useAxiosAuth'
 export interface SupplierSettings {
   supplier_api_url: string | null
   supplier_api_key: string | null
-  supplier_api_secret: string | null
   configured: boolean
 }
 
@@ -32,7 +31,6 @@ export const useUpdateSupplierSettings = () => {
     mutationFn: async (data: {
       supplier_api_url: string
       supplier_api_key: string
-      supplier_api_secret: string
     }) => {
       const res = await axiosAuth.post('/admin/update-supplier-settings', data)
 

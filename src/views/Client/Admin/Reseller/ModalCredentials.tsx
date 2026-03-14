@@ -12,7 +12,7 @@ import IconButton from '@mui/material/IconButton'
 import TextField from '@mui/material/TextField'
 import InputAdornment from '@mui/material/InputAdornment'
 
-import { Copy, Eye, EyeOff, RefreshCw } from 'lucide-react'
+import { Copy, RefreshCw } from 'lucide-react'
 import { toast } from 'react-toastify'
 
 import DialogCloseButton from '@/components/modals/DialogCloseButton'
@@ -26,7 +26,6 @@ interface ModalCredentialsProps {
 }
 
 export default function ModalCredentials({ open, onClose, reseller }: ModalCredentialsProps) {
-  const [showSecret, setShowSecret] = useState(false)
   const [confirmRegenerate, setConfirmRegenerate] = useState(false)
 
   const regenerateMutation = useRegenerateCredentials()
@@ -42,8 +41,8 @@ export default function ModalCredentials({ open, onClose, reseller }: ModalCrede
     if (!reseller?.id) return
 
     regenerateMutation.mutate(reseller.id, {
-      onSuccess: (data) => {
-        toast.success('Đã tạo credentials mới')
+      onSuccess: () => {
+        toast.success('Đã tạo API key mới')
         setConfirmRegenerate(false)
       },
       onError: (error: any) => {
@@ -63,7 +62,7 @@ export default function ModalCredentials({ open, onClose, reseller }: ModalCrede
     >
       <DialogTitle>
         <Typography variant='h5' component='span'>
-          API Credentials
+          API Key
         </Typography>
         <DialogCloseButton onClick={onClose} disableRipple>
           <i className='tabler-x' />
@@ -84,36 +83,13 @@ export default function ModalCredentials({ open, onClose, reseller }: ModalCrede
         <TextField
           fullWidth
           label='API Key'
-          value={profile?.api_key || ''}
+          value={reseller?.api_key || ''}
           slotProps={{
             input: {
               readOnly: true,
               endAdornment: (
                 <InputAdornment position='end'>
-                  <IconButton size='small' onClick={() => handleCopy(profile?.api_key || '', 'API Key')}>
-                    <Copy size={16} />
-                  </IconButton>
-                </InputAdornment>
-              )
-            }
-          }}
-          sx={{ mb: 2 }}
-        />
-
-        <TextField
-          fullWidth
-          label='API Secret'
-          type={showSecret ? 'text' : 'password'}
-          value={profile?.api_secret || ''}
-          slotProps={{
-            input: {
-              readOnly: true,
-              endAdornment: (
-                <InputAdornment position='end'>
-                  <IconButton size='small' onClick={() => setShowSecret(!showSecret)}>
-                    {showSecret ? <EyeOff size={16} /> : <Eye size={16} />}
-                  </IconButton>
-                  <IconButton size='small' onClick={() => handleCopy(profile?.api_secret || '', 'API Secret')}>
+                  <IconButton size='small' onClick={() => handleCopy(reseller?.api_key || '', 'API Key')}>
                     <Copy size={16} />
                   </IconButton>
                 </InputAdornment>
@@ -131,12 +107,12 @@ export default function ModalCredentials({ open, onClose, reseller }: ModalCrede
             onClick={() => setConfirmRegenerate(true)}
             size='small'
           >
-            Tạo lại credentials
+            Tạo lại API Key
           </Button>
         ) : (
           <div style={{ padding: 12, backgroundColor: '#fff3e0', borderRadius: 8 }}>
             <Typography variant='body2' color='warning.main' sx={{ mb: 1 }}>
-              Credentials cũ sẽ ngừng hoạt động ngay lập tức. Site con sẽ cần cập nhật lại .env.
+              API key cũ sẽ ngừng hoạt động ngay lập tức. Site con sẽ cần cập nhật lại.
             </Typography>
             <Button
               variant='contained'

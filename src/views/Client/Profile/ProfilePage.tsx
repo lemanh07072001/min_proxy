@@ -12,7 +12,6 @@ import ChangePassword from './ChangePassword'
 import SettingsPanel from './SettingsPanel'
 import CredentialsPanel from './CredentialsPanel'
 import useAxiosAuth from '@/hocs/useAxiosAuth'
-import { useRole } from '@/hooks/useRole'
 
 type TabType = 'account' | 'password' | 'settings' | 'credentials'
 
@@ -37,8 +36,6 @@ export default function ProfilePage({ dataProfile }: ProfileProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const axiosAuth = useAxiosAuth()
   const { data: session, status } = useSession()
-  const { isReseller } = useRole()
-
   const handleAvatarClick = () => {
     fileInputRef.current?.click()
   }
@@ -77,7 +74,7 @@ export default function ProfilePage({ dataProfile }: ProfileProps) {
     { id: 'account' as TabType, label: 'Thông tin tài khoản', icon: User },
     { id: 'password' as TabType, label: 'Đổi mật khẩu', icon: Lock },
     { id: 'settings' as TabType, label: 'Cài đặt', icon: Settings },
-    ...(isReseller ? [{ id: 'credentials' as TabType, label: 'API Credentials', icon: Key }] : [])
+    { id: 'credentials' as TabType, label: 'API Key', icon: Key }
   ]
 
   return (
@@ -154,7 +151,7 @@ export default function ProfilePage({ dataProfile }: ProfileProps) {
             {activeTab === 'account' && <AccountInfo dataUser={dataProfile} />}
             {activeTab === 'password' && <ChangePassword />}
             {activeTab === 'settings' && <SettingsPanel />}
-            {activeTab === 'credentials' && isReseller && <CredentialsPanel />}
+            {activeTab === 'credentials' && <CredentialsPanel />}
           </div>
         </div>
       </div>

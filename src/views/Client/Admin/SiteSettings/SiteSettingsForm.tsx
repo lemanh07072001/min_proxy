@@ -46,7 +46,7 @@ export default function SiteSettingsForm() {
   // Supplier settings (chỉ site con)
   const { data: supplierData } = useSupplierSettings()
   const updateSupplierMutation = useUpdateSupplierSettings()
-  const [supplier, setSupplier] = useState({ supplier_api_url: '', supplier_api_key: '', supplier_api_secret: '' })
+  const [supplier, setSupplier] = useState({ supplier_api_url: '', supplier_api_key: '' })
   const [supplierTestResult, setSupplierTestResult] = useState<any>(null)
 
   const [supportLinks, setSupportLinks] = useState<SupportLink[]>([])
@@ -82,7 +82,6 @@ export default function SiteSettingsForm() {
       setSupplier({
         supplier_api_url: supplierData.supplier_api_url || '',
         supplier_api_key: supplierData.supplier_api_key || '',
-        supplier_api_secret: '',
       })
     }
   }, [supplierData])
@@ -485,32 +484,21 @@ export default function SiteSettingsForm() {
                   placeholder='https://api.site-me.com/api'
                   fullWidth
                 />
-                <div style={{ display: 'flex', gap: 8 }}>
-                  <TextField
-                    size='small'
-                    label='API Key'
-                    value={supplier.supplier_api_key}
-                    onChange={e => setSupplier(prev => ({ ...prev, supplier_api_key: e.target.value }))}
-                    placeholder='rsl_xxxxx'
-                    sx={{ flex: 1 }}
-                  />
-                  <TextField
-                    size='small'
-                    label='API Secret (nhập mới để thay đổi)'
-                    type='password'
-                    value={supplier.supplier_api_secret}
-                    onChange={e => setSupplier(prev => ({ ...prev, supplier_api_secret: e.target.value }))}
-                    placeholder='sec_xxxxx'
-                    sx={{ flex: 1 }}
-                  />
-                </div>
+                <TextField
+                  size='small'
+                  label='API Key'
+                  value={supplier.supplier_api_key}
+                  onChange={e => setSupplier(prev => ({ ...prev, supplier_api_key: e.target.value }))}
+                  placeholder='mkt_xxxxx'
+                  fullWidth
+                />
                 <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                   <Button
                     size='small'
                     variant='contained'
                     onClick={() => {
-                      if (!supplier.supplier_api_url || !supplier.supplier_api_key || !supplier.supplier_api_secret) {
-                        toast.error('Vui lòng nhập đầy đủ URL, API Key và API Secret')
+                      if (!supplier.supplier_api_url || !supplier.supplier_api_key) {
+                        toast.error('Vui lòng nhập đầy đủ URL và API Key')
 
                         return
                       }
@@ -520,7 +508,6 @@ export default function SiteSettingsForm() {
                         onSuccess: (data) => {
                           toast.success(data?.message || 'Cập nhật thành công')
                           setSupplierTestResult(data?.test)
-                          setSupplier(prev => ({ ...prev, supplier_api_secret: '' }))
                         },
                         onError: (error: any) => {
                           toast.error(error?.response?.data?.message || 'Có lỗi xảy ra')

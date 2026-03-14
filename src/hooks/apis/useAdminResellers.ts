@@ -5,8 +5,6 @@ import useAxiosAuth from '@/hocs/useAxiosAuth'
 export interface ResellerProfile {
   id: number
   user_id: number
-  api_key: string
-  api_secret: string
   domain: string | null
   company_name: string | null
   default_markup_percent: number
@@ -24,6 +22,7 @@ export interface AdminReseller {
   sodu: number
   sotiennap: number
   is_banned: boolean
+  api_key: string | null
   created_at: string
   orders_count: number
   reseller_profile: ResellerProfile | null

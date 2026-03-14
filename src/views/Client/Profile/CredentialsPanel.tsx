@@ -2,20 +2,21 @@
 
 import { useState } from 'react'
 
-import { Copy, Check, Eye, EyeOff } from 'lucide-react'
+import { Copy, Check, RefreshCw, Plus } from 'lucide-react'
 import { toast } from 'react-toastify'
 
-import Chip from '@mui/material/Chip'
+import Button from '@mui/material/Button'
 import Alert from '@mui/material/Alert'
 import Skeleton from '@mui/material/Skeleton'
 import Typography from '@mui/material/Typography'
 
-import { useMyCredentials } from '@/hooks/apis/useMyCredentials'
+import { useMyCredentials, useRegenerateMyCredentials } from '@/hooks/apis/useMyCredentials'
 
 export default function CredentialsPanel() {
   const { data, isLoading, error } = useMyCredentials()
+  const regenerateMutation = useRegenerateMyCredentials()
   const [copiedField, setCopiedField] = useState<string | null>(null)
-  const [showSecret, setShowSecret] = useState(false)
+  const [confirmRegenerate, setConfirmRegenerate] = useState(false)
 
   const handleCopy = (value: string, field: string) => {
     navigator.clipboard.writeText(value)
@@ -24,146 +25,130 @@ export default function CredentialsPanel() {
     setTimeout(() => setCopiedField(null), 2000)
   }
 
+  const handleGenerate = () => {
+    regenerateMutation.mutate(undefined, {
+      onSuccess: () => {
+        toast.success('Đã tạo API Key')
+        setConfirmRegenerate(false)
+      },
+      onError: (err: any) => {
+        toast.error(err?.response?.data?.message || 'Có lỗi xảy ra')
+      }
+    })
+  }
+
+  const handleRegenerate = () => {
+    regenerateMutation.mutate(undefined, {
+      onSuccess: () => {
+        toast.success('Đã tạo API Key mới')
+        setConfirmRegenerate(false)
+      },
+      onError: (err: any) => {
+        toast.error(err?.response?.data?.message || 'Có lỗi xảy ra')
+      }
+    })
+  }
+
   if (isLoading) {
     return (
       <div className='bg-white rounded-2xl shadow-sm border border-gray-100 p-6'>
-        <Skeleton variant='rectangular' height={300} sx={{ borderRadius: 2 }} />
+        <Skeleton variant='rectangular' height={200} sx={{ borderRadius: 2 }} />
       </div>
     )
   }
 
-  if (error || !data) {
+  if (error) {
     return (
       <div className='bg-white rounded-2xl shadow-sm border border-gray-100 p-6'>
-        <Alert severity='error'>
-          Không thể tải thông tin credentials. Tài khoản chưa được thiết lập reseller.
+        <Alert severity='error'>Không thể tải thông tin API Key.</Alert>
+      </div>
+    )
+  }
+
+  // Chưa có API Key — hiển thị nút tạo
+  if (!data?.api_key) {
+    return (
+      <div className='bg-white rounded-2xl shadow-sm border border-gray-100 p-6'>
+        <h2 className='text-lg font-semibold text-gray-900 mb-4'>API Key</h2>
+        <Alert severity='info' sx={{ mb: 3 }}>
+          Bạn chưa có API Key. Tạo API Key để sử dụng API mua proxy tự động.
         </Alert>
+        <Button
+          variant='contained'
+          color='primary'
+          startIcon={<Plus size={16} />}
+          onClick={handleGenerate}
+          disabled={regenerateMutation.isPending}
+        >
+          {regenerateMutation.isPending ? 'Đang tạo...' : 'Tạo API Key'}
+        </Button>
       </div>
     )
   }
 
   return (
     <div className='bg-white rounded-2xl shadow-sm border border-gray-100 p-6'>
-      <div className='flex items-center justify-between mb-6'>
-        <h2 className='text-lg font-semibold text-gray-900'>API Credentials</h2>
-        <Chip
-          label={data.status === 1 ? 'Active' : 'Suspended'}
-          color={data.status === 1 ? 'success' : 'error'}
-          size='small'
-        />
-      </div>
-
-      {data.status === 0 && (
-        <Alert severity='error' sx={{ mb: 3 }}>
-          Tài khoản reseller đang bị tạm ngưng. Liên hệ admin site mẹ để kích hoạt lại.
-        </Alert>
-      )}
+      <h2 className='text-lg font-semibold text-gray-900 mb-6'>API Key</h2>
 
       <div className='space-y-4'>
         {/* API Key */}
-        <CredentialField
-          label='API Key'
-          value={data.api_key}
-          copied={copiedField === 'API Key'}
-          onCopy={() => handleCopy(data.api_key, 'API Key')}
-        />
-
-        {/* API Secret */}
         <div>
           <Typography variant='body2' color='text.secondary' sx={{ mb: 0.5, fontWeight: 500 }}>
-            API Secret
+            API Key
           </Typography>
           <div className='flex items-center gap-2 bg-gray-50 rounded-lg px-4 py-3 border border-gray-200'>
-            <code className='flex-1 text-sm text-gray-800 font-mono break-all'>
-              {showSecret ? data.api_secret : '\u2022'.repeat(40)}
-            </code>
+            <code className='flex-1 text-sm text-gray-800 font-mono break-all'>{data.api_key}</code>
             <button
-              onClick={() => setShowSecret(!showSecret)}
-              className='p-1.5 rounded-md hover:bg-gray-200 transition-colors text-gray-500'
-              title={showSecret ? 'Ẩn' : 'Hiện'}
-            >
-              {showSecret ? <EyeOff size={16} /> : <Eye size={16} />}
-            </button>
-            <button
-              onClick={() => handleCopy(data.api_secret, 'API Secret')}
+              onClick={() => handleCopy(data.api_key!, 'API Key')}
               className='p-1.5 rounded-md hover:bg-gray-200 transition-colors text-gray-500'
               title='Copy'
             >
-              {copiedField === 'API Secret' ? <Check size={16} className='text-green-600' /> : <Copy size={16} />}
+              {copiedField === 'API Key' ? <Check size={16} className='text-green-600' /> : <Copy size={16} />}
             </button>
           </div>
         </div>
 
-        {/* Thông tin thêm */}
-        {(data.company_name || data.domain) && (
-          <div className='grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2'>
-            {data.company_name && (
-              <InfoField label='Công ty' value={data.company_name} />
-            )}
-            {data.domain && (
-              <InfoField label='Domain' value={data.domain} />
-            )}
+        {/* Tạo lại API Key */}
+        {!confirmRegenerate ? (
+          <Button
+            variant='outlined'
+            color='warning'
+            startIcon={<RefreshCw size={16} />}
+            onClick={() => setConfirmRegenerate(true)}
+            size='small'
+          >
+            Tạo lại API Key
+          </Button>
+        ) : (
+          <div style={{ padding: 12, backgroundColor: '#fff3e0', borderRadius: 8 }}>
+            <Typography variant='body2' color='warning.main' sx={{ mb: 1 }}>
+              API Key cũ sẽ ngừng hoạt động ngay lập tức. Các hệ thống đang dùng key cũ sẽ cần cập nhật lại.
+            </Typography>
+            <Button
+              variant='contained'
+              color='warning'
+              size='small'
+              onClick={handleRegenerate}
+              disabled={regenerateMutation.isPending}
+              sx={{ mr: 1 }}
+            >
+              {regenerateMutation.isPending ? 'Đang xử lý...' : 'Xác nhận'}
+            </Button>
+            <Button
+              variant='tonal'
+              color='secondary'
+              size='small'
+              onClick={() => setConfirmRegenerate(false)}
+            >
+              Hủy
+            </Button>
           </div>
         )}
-
-        <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
-          {data.allowed_ips && data.allowed_ips.length > 0 && (
-            <div>
-              <Typography variant='body2' color='text.secondary' sx={{ mb: 0.5, fontWeight: 500 }}>
-                IP được phép
-              </Typography>
-              <div className='flex gap-1 flex-wrap'>
-                {data.allowed_ips.map((ip, i) => (
-                  <Chip key={i} label={ip} size='small' variant='outlined' />
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
       </div>
 
       <Alert severity='info' sx={{ mt: 4 }}>
-        Sử dụng API Key và Secret này để cấu hình kết nối nhà cung cấp trên site con.
-        Vào <strong>Admin &gt; Cài đặt &gt; Kết nối nhà cung cấp</strong> và nhập thông tin trên.
+        Sử dụng API Key này trong header <strong>X-API-Key</strong> để xác thực khi gọi API mua proxy.
       </Alert>
-    </div>
-  )
-}
-
-function CredentialField({ label, value, copied, onCopy }: {
-  label: string
-  value: string
-  copied: boolean
-  onCopy: () => void
-}) {
-  return (
-    <div>
-      <Typography variant='body2' color='text.secondary' sx={{ mb: 0.5, fontWeight: 500 }}>
-        {label}
-      </Typography>
-      <div className='flex items-center gap-2 bg-gray-50 rounded-lg px-4 py-3 border border-gray-200'>
-        <code className='flex-1 text-sm text-gray-800 font-mono break-all'>{value}</code>
-        <button
-          onClick={onCopy}
-          className='p-1.5 rounded-md hover:bg-gray-200 transition-colors text-gray-500'
-          title='Copy'
-        >
-          {copied ? <Check size={16} className='text-green-600' /> : <Copy size={16} />}
-        </button>
-      </div>
-    </div>
-  )
-}
-
-function InfoField({ label, value }: { label: string; value: string }) {
-  return (
-    <div>
-      <Typography variant='body2' color='text.secondary' sx={{ mb: 0.5, fontWeight: 500 }}>
-        {label}
-      </Typography>
-      <div className='bg-gray-50 rounded-lg px-4 py-3 border border-gray-200 text-sm text-gray-800'>
-        {value}
-      </div>
     </div>
   )
 }

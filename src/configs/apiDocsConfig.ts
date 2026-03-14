@@ -13,7 +13,7 @@ export interface ApiEndpoint {
   endpoint: string
   description: string
   category: 'proxy' | 'order' | 'account'
-  auth: 'api_key' | 'bearer' | 'none'
+  auth: 'x_api_key' | 'none'
   parameters?: ApiParam[]
   requestBody?: string
   responses: {
@@ -29,13 +29,9 @@ export const categoryLabels: Record<string, string> = {
 }
 
 export const authLabels: Record<string, { label: string; description: string }> = {
-  api_key: {
-    label: 'API Key',
-    description: 'Truyền api_key qua query parameter hoặc request body. Lấy key tại trang Danh sách đơn hàng.'
-  },
-  bearer: {
-    label: 'Bearer Token',
-    description: 'Gửi header Authorization: Bearer <access_token>. Lấy token từ API đăng nhập.'
+  x_api_key: {
+    label: 'X-API-Key',
+    description: 'Gửi header X-API-Key. Lấy API Key tại Profile → API Key.'
   },
   none: {
     label: 'Không cần',
@@ -47,16 +43,16 @@ const BASE = process.env.NEXT_PUBLIC_API_DOCS_URL || process.env.NEXT_PUBLIC_API
 
 export const apiEndpoints: ApiEndpoint[] = [
   // ═══════════════════════════════════════
-  // PROXY — Thao tác proxy (dùng API Key)
+  // PROXY — Thao tác proxy
   // ═══════════════════════════════════════
   {
     id: 'get-new-proxy',
     title: 'Lấy Proxy Xoay Mới',
     method: 'GET',
     endpoint: `${BASE}/proxies/new`,
-    description: 'Lấy proxy xoay mới. Mỗi lần gọi sẽ trả proxy IP mới (nếu hết cooldown). Hỗ trợ cả GET và POST.',
+    description: 'Lấy proxy xoay mới. Mỗi lần gọi sẽ trả proxy IP mới (nếu hết cooldown).',
     category: 'proxy',
-    auth: 'api_key',
+    auth: 'x_api_key',
     parameters: [
       { name: 'key', type: 'string', required: true, description: 'API Key của đơn hàng proxy xoay', example: 'G5aTZVGtrHPRL1YUhBUSfPx' }
     ],
@@ -100,7 +96,7 @@ export const apiEndpoints: ApiEndpoint[] = [
     endpoint: `${BASE}/proxies/current`,
     description: 'Lấy thông tin proxy xoay đang active. Không tạo proxy mới, chỉ trả proxy hiện tại và thời gian còn lại.',
     category: 'proxy',
-    auth: 'api_key',
+    auth: 'x_api_key',
     parameters: [
       { name: 'key', type: 'string', required: true, description: 'API Key của đơn hàng proxy xoay', example: 'G5aTZVGtrHPRL1YUhBUSfPx' }
     ],
@@ -114,7 +110,7 @@ export const apiEndpoints: ApiEndpoint[] = [
     "http": "42.119.124.219:16847:kh1jtlNj3Kd:rdkm3hbjq45d",
     "socks5": "42.119.124.219:26847:kh1jtlNj3Kd:rdkm3hbjq45d",
     "httpPort": "16847",
-    "socksPort": "26847",
+    "socks5Port": "26847",
     "host": "42.119.124.219",
     "user": "kh1jtlNj3Kd",
     "pass": "rdkm3hbjq45d",
@@ -145,9 +141,9 @@ export const apiEndpoints: ApiEndpoint[] = [
     title: 'Xoay IP Proxy',
     method: 'GET',
     endpoint: `${BASE}/proxies/rotate-ip`,
-    description: 'Xoay IP proxy ngay lập tức. Cooldown 60 giây giữa các lần xoay. Hỗ trợ cả GET và POST.',
+    description: 'Xoay IP proxy ngay lập tức. Cooldown 60 giây giữa các lần xoay.',
     category: 'proxy',
-    auth: 'api_key',
+    auth: 'x_api_key',
     parameters: [
       { name: 'api_key', type: 'string', required: true, description: 'API Key của đơn hàng proxy', example: 'G5aTZVGtrHPRL1YUhBUSfPx' }
     ],
@@ -184,128 +180,160 @@ export const apiEndpoints: ApiEndpoint[] = [
   },
 
   // ═══════════════════════════════════════
-  // ORDER — Mua proxy & quản lý đơn hàng (dùng Bearer Token)
+  // ORDER — Mua proxy & quản lý đơn hàng
   // ═══════════════════════════════════════
   {
-    id: 'buy-proxy-rotating',
-    title: 'Mua Proxy Xoay',
-    method: 'POST',
-    endpoint: `${BASE}/buy/proxy-rotating`,
-    description: 'Tạo đơn hàng mua proxy xoay. Tiền sẽ trừ từ số dư tài khoản. Sau khi mua thành công, dùng API "Kiểm Tra Đơn Hàng" để lấy API Key.',
+    id: 'get-products',
+    title: 'Danh Sách Sản Phẩm',
+    method: 'GET',
+    endpoint: `${BASE}/products`,
+    description: 'Lấy danh sách sản phẩm proxy có thể mua kèm giá.',
     category: 'order',
-    auth: 'bearer',
-    requestBody: `{
-  "key_time": "month",
-  "quantity": 1,
-  "time": 1
-}`,
-    parameters: [
-      { name: 'key_time', type: 'string', required: true, description: 'Chu kỳ: "day" (1 ngày), "week" (7 ngày), "month" (30 ngày). Giá trị này quyết định thời hạn đơn hàng.', example: 'month' },
-      { name: 'quantity', type: 'integer', required: true, description: 'Số lượng proxy cần mua (tối thiểu 1)', example: '1' },
-      { name: 'time', type: 'integer', required: true, description: 'Thời gian (được map tự động từ key_time: day→1, week→7, month→30)', example: '1' }
-    ],
+    auth: 'x_api_key',
     responses: {
       '200 OK': `{
-  "success": true,
-  "message": "Mua proxy xoay thành công"
-}`,
-      '422 ERROR': `{
-  "success": false,
-  "message": "Số dư không đủ để mua proxy",
-  "errors": {
-    "quantity": ["Quantity phải lớn hơn 0"],
-    "key_time": ["Key time không hợp lệ"]
-  }
+  "status": "success",
+  "data": [
+    {
+      "id": 1,
+      "name": "Proxy Xoay VN",
+      "type": 1,
+      "price_by_duration": [
+        { "days": 1, "price": 5000 },
+        { "days": 7, "price": 25000 },
+        { "days": 30, "price": 80000 }
+      ],
+      "country": "VN"
+    }
+  ]
 }`,
       '401 ERROR': `{
-  "message": "Unauthenticated."
+  "error": "invalid_credentials",
+  "message": "Invalid API key."
 }`
     },
-    statusCodes: ['200 OK', '422 ERROR', '401 ERROR']
+    statusCodes: ['200 OK', '401 ERROR']
   },
 
   {
-    id: 'buy-proxy-static',
-    title: 'Mua Proxy Tĩnh',
+    id: 'buy-proxy',
+    title: 'Mua Proxy',
     method: 'POST',
-    endpoint: `${BASE}/buy/proxy-static`,
-    description: 'Tạo đơn hàng mua proxy tĩnh (IP cố định). Tiền trừ từ số dư tài khoản.',
+    endpoint: `${BASE}/buy-proxy`,
+    description: 'Tạo đơn mua proxy (xoay hoặc tĩnh). Loại proxy được xác định tự động từ service_type_id.',
     category: 'order',
-    auth: 'bearer',
+    auth: 'x_api_key',
     requestBody: `{
-  "quantity": 1,
-  "protocol": "http",
-  "key_time": "month"
+  "service_type_id": 1,
+  "quantity": 5,
+  "duration": 30,
+  "protocol": "http"
 }`,
     parameters: [
-      { name: 'quantity', type: 'integer', required: true, description: 'Số lượng proxy cần mua (tối thiểu 1)', example: '1' },
-      { name: 'protocol', type: 'string', required: true, description: 'Giao thức: "http" hoặc "socks5"', example: 'http' },
-      { name: 'key_time', type: 'string', required: true, description: 'Chu kỳ: "day" (1 ngày), "week" (7 ngày), "month" (30 ngày)', example: 'month' }
+      { name: 'service_type_id', type: 'integer', required: true, description: 'ID sản phẩm (lấy từ GET /products)', example: '1' },
+      { name: 'quantity', type: 'integer', required: true, description: 'Số lượng proxy (1-2000)', example: '5' },
+      { name: 'duration', type: 'integer', required: true, description: 'Số ngày sử dụng', example: '30' },
+      { name: 'protocol', type: 'string', required: false, description: 'Giao thức: "http" hoặc "socks5" (mặc định http)', example: 'http' }
     ],
     responses: {
       '200 OK': `{
-  "success": true,
-  "message": "Mua proxy tĩnh thành công",
-  "data": {
-    "order_id": 123
-  }
+  "status": "success",
+  "order_code": "ORD-ABC123",
+  "message": "Order placed successfully."
 }`,
-      '422 ERROR': `{
-  "success": false,
-  "message": "Số dư không đủ để mua proxy",
-  "errors": {
-    "quantity": ["Quantity phải lớn hơn 0"],
-    "protocol": ["Protocol không hợp lệ"]
-  }
+      '400 ERROR': `{
+  "status": "error",
+  "message": "Số dư không đủ để mua proxy"
+}`,
+      '404 ERROR': `{
+  "error": "product_not_found",
+  "message": "Product not found or not available."
 }`,
       '401 ERROR': `{
-  "message": "Unauthenticated."
+  "error": "invalid_credentials",
+  "message": "Invalid API key."
 }`
     },
-    statusCodes: ['200 OK', '422 ERROR', '401 ERROR']
+    statusCodes: ['200 OK', '400 ERROR', '404 ERROR', '401 ERROR']
   },
 
   {
     id: 'get-orders',
-    title: 'Kiểm Tra Đơn Hàng',
+    title: 'Danh Sách Đơn Hàng',
     method: 'GET',
-    endpoint: `${BASE}/get-order`,
-    description: 'Lấy danh sách tất cả đơn hàng của bạn, bao gồm API Key cho mỗi đơn.',
+    endpoint: `${BASE}/orders`,
+    description: 'Lấy danh sách đơn hàng của bạn (phân trang).',
     category: 'order',
-    auth: 'bearer',
+    auth: 'x_api_key',
+    parameters: [
+      { name: 'status', type: 'string', required: false, description: 'Lọc theo trạng thái: pending, processing, in_use, expired, failed', example: 'in_use' },
+      { name: 'per_page', type: 'integer', required: false, description: 'Số kết quả mỗi trang (mặc định 20)', example: '20' },
+      { name: 'page', type: 'integer', required: false, description: 'Số trang', example: '1' }
+    ],
     responses: {
       '200 OK': `{
-  "success": true,
-  "data": [
-    {
-      "id": 456,
-      "user_id": 1,
-      "type_servi": {
-        "id": 4,
-        "name": "Proxy Xoay VN",
-        "type": 1
-      },
-      "apiKeys": [
-        {
-          "id": 789,
-          "api_key": "G5aTZVGtrHPRL1YUhBUSfPx",
-          "plan_type": "ROTATING",
-          "expired_at": "2025-12-31T23:59:59Z",
-          "status": "ACTIVE"
-        }
-      ],
-      "buy_at": "2025-01-01T10:00:00Z",
-      "quantity": 1,
-      "total_price": 50000
-    }
-  ],
-  "message": "Lấy dữ liệu thành công"
+  "status": "success",
+  "data": {
+    "current_page": 1,
+    "data": [
+      {
+        "order_code": "ORD-ABC123",
+        "status": 4,
+        "quantity": 5,
+        "total_amount": 400000,
+        "created_at": "2026-03-14T10:00:00Z"
+      }
+    ],
+    "last_page": 1,
+    "total": 1
+  }
 }`,
       '401 ERROR': `{
-  "message": "Unauthenticated."
+  "error": "invalid_credentials",
+  "message": "Invalid API key."
 }`
     },
     statusCodes: ['200 OK', '401 ERROR']
+  },
+
+  {
+    id: 'get-order-detail',
+    title: 'Chi Tiết Đơn Hàng',
+    method: 'GET',
+    endpoint: `${BASE}/orders/{order_code}`,
+    description: 'Lấy chi tiết đơn hàng. Khi đơn ở trạng thái in_use, response kèm danh sách proxy.',
+    category: 'order',
+    auth: 'x_api_key',
+    parameters: [
+      { name: 'order_code', type: 'string', required: true, description: 'Mã đơn hàng (path param, truyền trên URL)', example: 'ORD-ABC123' }
+    ],
+    responses: {
+      '200 OK': `{
+  "status": "success",
+  "data": {
+    "order_code": "ORD-ABC123",
+    "status": "in_use",
+    "quantity": 5,
+    "delivered_quantity": 5,
+    "price_per_unit": 80000,
+    "total_amount": 400000,
+    "created_at": "2026-03-14T10:00:00Z",
+    "proxies": [
+      {
+        "api_key": "G5aTZVGtrHPRL1YUhBUSfPx",
+        "proxy": "27.66.201.201:20814:user:pass",
+        "expired_at": "2026-04-13T10:00:00Z",
+        "status": "active"
+      }
+    ]
+  }
+}`,
+      '404 ERROR': `{
+  "error": "order_not_found",
+  "message": "Order not found."
+}`
+    },
+    statusCodes: ['200 OK', '404 ERROR']
   },
 
   // ═══════════════════════════════════════
@@ -314,22 +342,56 @@ export const apiEndpoints: ApiEndpoint[] = [
   {
     id: 'check-balance',
     title: 'Kiểm Tra Số Dư',
-    method: 'POST',
-    endpoint: `${BASE}/me`,
-    description: 'Lấy thông tin tài khoản và số dư hiện tại.',
+    method: 'GET',
+    endpoint: `${BASE}/balance`,
+    description: 'Lấy số dư tài khoản hiện tại.',
     category: 'account',
-    auth: 'bearer',
+    auth: 'x_api_key',
     responses: {
       '200 OK': `{
-  "id": 1,
-  "name": "Nguyen Van A",
-  "email": "user@example.com",
-  "sodu": 1500000,
-  "role": 1,
-  "created_at": "2024-06-01T08:00:00Z"
+  "status": "success",
+  "balance": 1500000
 }`,
       '401 ERROR': `{
-  "message": "Unauthenticated."
+  "error": "invalid_credentials",
+  "message": "Invalid API key."
+}`
+    },
+    statusCodes: ['200 OK', '401 ERROR']
+  },
+
+  {
+    id: 'get-transactions',
+    title: 'Lịch Sử Giao Dịch',
+    method: 'GET',
+    endpoint: `${BASE}/transactions`,
+    description: 'Lấy lịch sử giao dịch (nạp tiền, thanh toán, hoàn tiền...).',
+    category: 'account',
+    auth: 'x_api_key',
+    parameters: [
+      { name: 'type', type: 'string', required: false, description: 'Lọc theo loại giao dịch', example: 'THANHTOAN' },
+      { name: 'per_page', type: 'integer', required: false, description: 'Số kết quả mỗi trang (mặc định 20)', example: '20' }
+    ],
+    responses: {
+      '200 OK': `{
+  "status": "success",
+  "data": {
+    "current_page": 1,
+    "data": [
+      {
+        "id": 1,
+        "type": "THANHTOAN",
+        "noidung": "Mua proxy: Proxy Xoay VN x5 (30 ngày)",
+        "sotienthaydoi": -400000,
+        "sotiensau": 1100000,
+        "thoigian": "2026-03-14T10:00:00Z"
+      }
+    ]
+  }
+}`,
+      '401 ERROR': `{
+  "error": "invalid_credentials",
+  "message": "Invalid API key."
 }`
     },
     statusCodes: ['200 OK', '401 ERROR']
