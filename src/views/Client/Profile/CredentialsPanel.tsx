@@ -4,6 +4,7 @@ import { useState } from 'react'
 
 import { Copy, Check, RefreshCw, Plus } from 'lucide-react'
 import { toast } from 'react-toastify'
+import { useSession } from 'next-auth/react'
 
 import Button from '@mui/material/Button'
 import Alert from '@mui/material/Alert'
@@ -13,6 +14,7 @@ import Typography from '@mui/material/Typography'
 import { useMyCredentials, useRegenerateMyCredentials } from '@/hooks/apis/useMyCredentials'
 
 export default function CredentialsPanel() {
+  const { update: updateSession } = useSession()
   const { data, isLoading, error } = useMyCredentials()
   const regenerateMutation = useRegenerateMyCredentials()
   const [copiedField, setCopiedField] = useState<string | null>(null)
@@ -30,6 +32,7 @@ export default function CredentialsPanel() {
       onSuccess: () => {
         toast.success('Đã tạo API Key')
         setConfirmRegenerate(false)
+        updateSession() // Sync session với api_key mới
       },
       onError: (err: any) => {
         toast.error(err?.response?.data?.message || 'Có lỗi xảy ra')
@@ -42,6 +45,7 @@ export default function CredentialsPanel() {
       onSuccess: () => {
         toast.success('Đã tạo API Key mới')
         setConfirmRegenerate(false)
+        updateSession() // Sync session với api_key mới
       },
       onError: (err: any) => {
         toast.error(err?.response?.data?.message || 'Có lỗi xảy ra')

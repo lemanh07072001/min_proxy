@@ -151,7 +151,7 @@ export const authOptions = {
   },
 
   callbacks: {
-    async jwt({ token, user, account }: any) {
+    async jwt({ token, user, account, trigger }: any) {
       if (user && account) {
         return {
           ...token,
@@ -161,6 +161,32 @@ export const authOptions = {
           role: (user as any).role,
           userData: (user as any).userData
         }
+      }
+
+      // Khi client gọi session.update() → fetch /me để sync userData mới nhất
+      if (trigger === 'update') {
+        try {
+          const meRes = await fetch(`${process.env.API_URL}/me`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token.access_token}`
+            }
+          })
+
+          if (meRes.ok) {
+            const meData = await meRes.json()
+
+            if (meData?.id) {
+              token.role = meData.role || token.role
+              token.userData = meData
+            }
+          }
+        } catch {
+          // Giữ nguyên data cũ nếu /me lỗi
+        }
+
+        return token
       }
 
       // Buffer 60s - refresh sớm để tránh token hết hạn giữa chừng

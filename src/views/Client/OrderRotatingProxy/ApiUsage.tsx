@@ -1,7 +1,8 @@
 import React, { useState, useMemo } from 'react'
 
-import { useSession } from 'next-auth/react'
 import { Copy, Check, Play, Loader2, Terminal } from 'lucide-react'
+
+import { useMyCredentials } from '@/hooks/apis/useMyCredentials'
 
 import { apiEndpoints, categoryLabels, type ApiEndpoint } from '@/configs/apiDocsConfig'
 
@@ -263,8 +264,8 @@ interface ApiUsageProps { endpoints?: ApiEndpoint[] }
 
 export default function ApiUsage({ endpoints }: ApiUsageProps) {
   const data = endpoints || apiEndpoints
-  const { data: session } = useSession()
-  const userApiKey = (session?.user as any)?.api_key || ''
+  const { data: credentials } = useMyCredentials()
+  const userApiKey = credentials?.api_key || ''
 
   const [selectedApi, setSelectedApi] = useState<string | null>(null)
   const [selectedLang, setSelectedLang] = useState<string>('cURL')
