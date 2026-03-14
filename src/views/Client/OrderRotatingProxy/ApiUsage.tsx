@@ -131,6 +131,133 @@ return (
   )
 }
 
+// ─── Getting Started Panel ───────────────────────────────────
+
+function GettingStarted({ apiKey, docsBase }: { apiKey: string; docsBase: string }) {
+  const k = apiKey || 'YOUR_API_KEY'
+
+  return (
+    <div className='flex-1 overflow-y-auto'>
+      <div className='max-w-3xl mx-auto p-8 space-y-8'>
+        {/* Hero */}
+        <div>
+          <h1 className='text-2xl font-bold text-gray-900 m-0'>API Documentation</h1>
+          <p className='text-sm text-gray-500 mt-1 mb-0'>Tích hợp mua và quản lý proxy qua REST API</p>
+        </div>
+
+        {/* Base URL */}
+        <div className='bg-gray-900 rounded-lg overflow-hidden'>
+          <div className='flex items-center gap-2 px-4 py-2 bg-gray-800 border-b border-gray-700'>
+            <span className='text-gray-400 text-xs font-semibold'>BASE URL</span>
+          </div>
+          <div className='px-4 py-3'>
+            <code className='text-green-400 font-mono text-sm'>{docsBase}</code>
+          </div>
+        </div>
+
+        {/* Authentication */}
+        <div className='space-y-3'>
+          <h2 className='text-base font-bold text-gray-900 m-0'>Xác thực</h2>
+          <p className='text-sm text-gray-600 m-0'>
+            Tất cả API yêu cầu header <code className='bg-gray-100 px-1.5 py-0.5 rounded text-xs font-mono text-rose-600'>X-API-Key</code> chứa API Key của bạn.
+          </p>
+          <div className='bg-gray-900 rounded-lg px-4 py-3'>
+            <code className='text-gray-300 font-mono text-sm'>X-API-Key: {k}</code>
+          </div>
+          {apiKey ? (
+            <div className='flex items-center gap-2 bg-green-50 border border-green-200 rounded-lg px-4 py-2.5'>
+              <Check size={14} className='text-green-600 flex-shrink-0' />
+              <span className='text-sm text-green-700'>API Key của bạn: <code className='font-mono text-xs bg-green-100 px-1.5 py-0.5 rounded'>{apiKey.slice(0, 16)}...{apiKey.slice(-6)}</code></span>
+              <CopyBtn text={apiKey} />
+            </div>
+          ) : (
+            <div className='bg-amber-50 border border-amber-200 rounded-lg px-4 py-2.5 text-sm text-amber-700'>
+              Chưa có API Key — vào <strong>Profile</strong> để tạo hoặc xem API Key của bạn.
+            </div>
+          )}
+        </div>
+
+        {/* Quick Start Flow */}
+        <div className='space-y-3'>
+          <h2 className='text-base font-bold text-gray-900 m-0'>Quy trình sử dụng</h2>
+          <div className='space-y-3'>
+            {[
+              { step: '1', title: 'Xem sản phẩm', desc: 'Gọi GET /products để lấy danh sách proxy và giá.', api: 'GET /products' },
+              { step: '2', title: 'Mua proxy', desc: 'Gọi POST /buy-proxy với service_type_id, quantity, duration.', api: 'POST /buy-proxy' },
+              { step: '3', title: 'Kiểm tra đơn hàng', desc: 'Gọi GET /orders/{order_code} để xem trạng thái và nhận proxy.', api: 'GET /orders/{order_code}' },
+              { step: '4', title: 'Sử dụng proxy', desc: 'Dùng proxy key từ đơn hàng để lấy/xoay IP.', api: 'GET /proxies/new?key=xxx' },
+            ].map(s => (
+              <div key={s.step} className='flex gap-3 items-start'>
+                <div className='w-7 h-7 rounded-full bg-orange-500 text-white text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5'>{s.step}</div>
+                <div className='flex-1'>
+                  <div className='text-sm font-semibold text-gray-900'>{s.title}</div>
+                  <div className='text-xs text-gray-500 mt-0.5'>{s.desc}</div>
+                  <code className='text-[11px] font-mono text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded mt-1 inline-block'>{s.api}</code>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Quick Example */}
+        <div className='space-y-3'>
+          <h2 className='text-base font-bold text-gray-900 m-0'>Ví dụ nhanh — Mua proxy</h2>
+          <div className='bg-gray-900 rounded-lg overflow-hidden'>
+            <div className='flex items-center justify-between px-4 py-2 bg-gray-800 border-b border-gray-700'>
+              <span className='text-gray-400 text-xs'>cURL</span>
+              <CopyBtn text={`curl -X POST \\\n  -H "X-API-Key: ${k}" \\\n  -H "Content-Type: application/json" \\\n  -d '{"service_type_id": 1, "quantity": 1, "duration": 1, "protocol": "http"}' \\\n  "${docsBase}/buy-proxy"`} />
+            </div>
+            <pre className='p-4 overflow-x-auto text-[13px] leading-relaxed m-0'><code className='text-gray-300 font-mono'>{
+`curl -X POST \\
+  -H "X-API-Key: ${k}" \\
+  -H "Content-Type: application/json" \\
+  -d '{"service_type_id": 1, "quantity": 1, "duration": 1, "protocol": "http"}' \\
+  "${docsBase}/buy-proxy"`
+            }</code></pre>
+          </div>
+        </div>
+
+        {/* Defaults table */}
+        <div className='space-y-3'>
+          <h2 className='text-base font-bold text-gray-900 m-0'>Giá trị mặc định</h2>
+          <div className='rounded-lg border border-gray-200 overflow-hidden'>
+            <table className='w-full text-sm'>
+              <thead>
+                <tr className='bg-gray-50'>
+                  <th className='text-left px-4 py-2 font-semibold text-gray-600 text-xs'>Tham số</th>
+                  <th className='text-left px-4 py-2 font-semibold text-gray-600 text-xs'>Mặc định</th>
+                  <th className='text-left px-4 py-2 font-semibold text-gray-600 text-xs'>Giá trị hợp lệ</th>
+                </tr>
+              </thead>
+              <tbody className='divide-y divide-gray-100'>
+                <tr>
+                  <td className='px-4 py-2.5'><code className='font-mono bg-gray-100 px-1.5 py-0.5 rounded text-rose-600 text-xs'>quantity</code></td>
+                  <td className='px-4 py-2.5 text-gray-700 text-xs font-medium'>1</td>
+                  <td className='px-4 py-2.5 text-gray-500 text-xs'>1 — 2000</td>
+                </tr>
+                <tr>
+                  <td className='px-4 py-2.5'><code className='font-mono bg-gray-100 px-1.5 py-0.5 rounded text-rose-600 text-xs'>duration</code></td>
+                  <td className='px-4 py-2.5 text-gray-700 text-xs font-medium'>1</td>
+                  <td className='px-4 py-2.5 text-gray-500 text-xs'>1, 7, 30 (ngày)</td>
+                </tr>
+                <tr>
+                  <td className='px-4 py-2.5'><code className='font-mono bg-gray-100 px-1.5 py-0.5 rounded text-rose-600 text-xs'>protocol</code></td>
+                  <td className='px-4 py-2.5 text-gray-700 text-xs font-medium'>http</td>
+                  <td className='px-4 py-2.5 text-gray-500 text-xs'>http, socks5</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div className='text-xs text-gray-400 pt-4 border-t border-gray-100'>
+          Chọn một endpoint ở sidebar bên trái để xem chi tiết và chạy thử.
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ─── Main Component ──────────────────────────────────────────
 
 interface ApiUsageProps { endpoints?: ApiEndpoint[] }
@@ -140,20 +267,20 @@ export default function ApiUsage({ endpoints }: ApiUsageProps) {
   const { data: session } = useSession()
   const userApiKey = (session?.user as any)?.api_key || ''
 
-  const [selectedApi, setSelectedApi] = useState(data[0]?.id || '')
+  const [selectedApi, setSelectedApi] = useState<string | null>(null)
   const [selectedLang, setSelectedLang] = useState<string>('cURL')
   const [selectedStatus, setSelectedStatus] = useState('200 OK')
   const [liveRes, setLiveRes] = useState<string | null>(null)
   const [liveStatus, setLiveStatus] = useState<number | null>(null)
   const [loading, setLoading] = useState(false)
 
-  const ep = data.find(a => a.id === selectedApi) || data[0]
+  const ep = selectedApi ? (data.find(a => a.id === selectedApi) || data[0]) : null
 
   const grouped = useMemo(() => {
     const g: Record<string, ApiEndpoint[]> = {}
 
     data.forEach(a => { if (!g[a.category]) g[a.category] = []; g[a.category].push(a) })
-    
+
 return g
   }, [data])
 
@@ -172,7 +299,7 @@ return 'bg-gray-600'
   }
 
   const tryIt = async () => {
-    if (!userApiKey) return
+    if (!userApiKey || !ep) return
     setLoading(true); setLiveRes(null); setLiveStatus(null)
 
     try {
@@ -195,39 +322,61 @@ return 'bg-gray-600'
     } finally { setLoading(false) }
   }
 
-  const code = genCode(ep, selectedLang, userApiKey)
+  const code = ep ? genCode(ep, selectedLang, userApiKey) : ''
+
+  // ─── Sidebar (shared) ───
+  const sidebar = (
+    <div className='w-64 bg-gray-50 border-r border-gray-200 flex flex-col flex-shrink-0'>
+      {/* Getting Started link */}
+      <div onClick={() => { setSelectedApi(null); setLiveRes(null); setLiveStatus(null) }}
+        className={`px-4 py-3 cursor-pointer transition-all border-b border-gray-200 ${
+          !selectedApi ? 'bg-white border-l-[3px] border-l-orange-500 shadow-sm' : 'border-l-[3px] border-l-transparent hover:bg-white/60'
+        }`}>
+        <span className={`text-sm ${!selectedApi ? 'font-semibold text-gray-900' : 'text-gray-600'}`}>Bắt đầu</span>
+      </div>
+      {/* Endpoint list */}
+      <div className='flex-1 overflow-y-auto'>
+        {Object.entries(grouped).map(([cat, apis]) => (
+          <div key={cat}>
+            <div className='px-4 pt-4 pb-2'>
+              <span className='text-[11px] font-bold text-gray-400 uppercase tracking-wider'>{categoryLabels[cat] || cat}</span>
+            </div>
+            {apis.map(a => (
+              <div key={a.id} onClick={() => selectApi(a.id)}
+                className={`group px-4 py-3 cursor-pointer transition-all ${
+                  selectedApi === a.id
+                    ? 'bg-white border-l-[3px] border-l-orange-500 shadow-sm'
+                    : 'border-l-[3px] border-l-transparent hover:bg-white/60'
+                }`}>
+                <div className='flex items-center gap-2'>
+                  <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold text-white ${methodColor(a.method)} flex-shrink-0`}>
+                    {a.method}
+                  </span>
+                  <span className={`text-sm ${selectedApi === a.id ? 'font-semibold text-gray-900' : 'text-gray-600'}`}>{a.title}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+
+  // ─── Getting Started view ───
+  if (!ep) {
+    return (
+      <div className='flex rounded-xl overflow-hidden border border-gray-200 bg-white flex-1 min-h-0'>
+        {sidebar}
+        <GettingStarted apiKey={userApiKey} docsBase={DOCS_BASE} />
+      </div>
+    )
+  }
 
   return (
     <div className='flex rounded-xl overflow-hidden border border-gray-200 bg-white flex-1 min-h-0'>
 
       {/* ─── Sidebar ─── */}
-      <div className='w-64 bg-gray-50 border-r border-gray-200 flex flex-col flex-shrink-0'>
-        {/* Endpoint list */}
-        <div className='flex-1 overflow-y-auto'>
-          {Object.entries(grouped).map(([cat, apis]) => (
-            <div key={cat}>
-              <div className='px-4 pt-4 pb-2'>
-                <span className='text-[11px] font-bold text-gray-400 uppercase tracking-wider'>{categoryLabels[cat] || cat}</span>
-              </div>
-              {apis.map(a => (
-                <div key={a.id} onClick={() => selectApi(a.id)}
-                  className={`group px-4 py-3 cursor-pointer transition-all ${
-                    selectedApi === a.id
-                      ? 'bg-white border-l-[3px] border-l-orange-500 shadow-sm'
-                      : 'border-l-[3px] border-l-transparent hover:bg-white/60'
-                  }`}>
-                  <div className='flex items-center gap-2'>
-                    <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold text-white ${methodColor(a.method)} flex-shrink-0`}>
-                      {a.method}
-                    </span>
-                    <span className={`text-sm ${selectedApi === a.id ? 'font-semibold text-gray-900' : 'text-gray-600'}`}>{a.title}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ))}
-        </div>
-      </div>
+      {sidebar}
 
       {/* ─── Main Content ─── */}
       <div className='flex-1 flex flex-col overflow-hidden'>
