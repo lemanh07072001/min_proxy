@@ -303,7 +303,7 @@ return 'bg-gray-600'
     setLoading(true); setLiveRes(null); setLiveStatus(null)
 
     try {
-      const url = buildUrl(ep).replace(API_BASE, API_BASE)
+      const url = buildUrl(ep)
       const headers: Record<string, string> = { 'X-API-Key': userApiKey }
       const opts: RequestInit = { method: ep.method, headers }
 

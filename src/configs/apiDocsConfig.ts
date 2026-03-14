@@ -39,7 +39,8 @@ export const authLabels: Record<string, { label: string; description: string }> 
   }
 }
 
-const BASE = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8002/api'
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8002/api'
+const PROXY_BASE = process.env.NEXT_PUBLIC_API_DOCS_URL || API_BASE
 
 export const apiEndpoints: ApiEndpoint[] = [
   // ═══════════════════════════════════════
@@ -49,7 +50,7 @@ export const apiEndpoints: ApiEndpoint[] = [
     id: 'get-new-proxy',
     title: 'Lấy Proxy Xoay Mới',
     method: 'GET',
-    endpoint: `${BASE}/proxies/new`,
+    endpoint: `${PROXY_BASE}/proxies/new`,
     description: 'Lấy proxy xoay mới. Mỗi lần gọi sẽ trả proxy IP mới (nếu hết cooldown).',
     category: 'proxy',
     auth: 'x_api_key',
@@ -93,7 +94,7 @@ export const apiEndpoints: ApiEndpoint[] = [
     id: 'get-current-proxy',
     title: 'Lấy Proxy Hiện Tại',
     method: 'GET',
-    endpoint: `${BASE}/proxies/current`,
+    endpoint: `${PROXY_BASE}/proxies/current`,
     description: 'Lấy thông tin proxy xoay đang active. Không tạo proxy mới, chỉ trả proxy hiện tại và thời gian còn lại.',
     category: 'proxy',
     auth: 'x_api_key',
@@ -140,7 +141,7 @@ export const apiEndpoints: ApiEndpoint[] = [
     id: 'rotate-ip',
     title: 'Xoay IP Proxy',
     method: 'GET',
-    endpoint: `${BASE}/proxies/rotate-ip`,
+    endpoint: `${PROXY_BASE}/proxies/rotate-ip`,
     description: 'Xoay IP proxy ngay lập tức. Cooldown 60 giây giữa các lần xoay.',
     category: 'proxy',
     auth: 'x_api_key',
@@ -186,7 +187,7 @@ export const apiEndpoints: ApiEndpoint[] = [
     id: 'get-products',
     title: 'Danh Sách Sản Phẩm',
     method: 'GET',
-    endpoint: `${BASE}/products`,
+    endpoint: `${API_BASE}/products`,
     description: 'Lấy danh sách sản phẩm proxy có thể mua kèm giá.',
     category: 'order',
     auth: 'x_api_key',
@@ -219,7 +220,7 @@ export const apiEndpoints: ApiEndpoint[] = [
     id: 'buy-proxy',
     title: 'Mua Proxy',
     method: 'POST',
-    endpoint: `${BASE}/buy-proxy`,
+    endpoint: `${API_BASE}/buy-proxy`,
     description: 'Tạo đơn mua proxy (xoay hoặc tĩnh). Loại proxy được xác định tự động từ service_type_id.',
     category: 'order',
     auth: 'x_api_key',
@@ -261,7 +262,7 @@ export const apiEndpoints: ApiEndpoint[] = [
     id: 'get-orders',
     title: 'Danh Sách Đơn Hàng',
     method: 'GET',
-    endpoint: `${BASE}/orders`,
+    endpoint: `${API_BASE}/orders`,
     description: 'Lấy danh sách đơn hàng của bạn (phân trang).',
     category: 'order',
     auth: 'x_api_key',
@@ -300,7 +301,7 @@ export const apiEndpoints: ApiEndpoint[] = [
     id: 'get-order-detail',
     title: 'Chi Tiết Đơn Hàng',
     method: 'GET',
-    endpoint: `${BASE}/orders/{order_code}`,
+    endpoint: `${API_BASE}/orders/{order_code}`,
     description: 'Lấy chi tiết đơn hàng. Khi đơn ở trạng thái in_use, response kèm danh sách proxy.',
     category: 'order',
     auth: 'x_api_key',
@@ -343,7 +344,7 @@ export const apiEndpoints: ApiEndpoint[] = [
     id: 'check-balance',
     title: 'Kiểm Tra Số Dư',
     method: 'GET',
-    endpoint: `${BASE}/balance`,
+    endpoint: `${API_BASE}/balance`,
     description: 'Lấy số dư tài khoản hiện tại.',
     category: 'account',
     auth: 'x_api_key',
@@ -364,7 +365,7 @@ export const apiEndpoints: ApiEndpoint[] = [
     id: 'get-transactions',
     title: 'Lịch Sử Giao Dịch',
     method: 'GET',
-    endpoint: `${BASE}/transactions`,
+    endpoint: `${API_BASE}/transactions`,
     description: 'Lấy lịch sử giao dịch (nạp tiền, thanh toán, hoàn tiền...).',
     category: 'account',
     auth: 'x_api_key',
