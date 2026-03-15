@@ -6,6 +6,7 @@ import { useBranding } from '@/app/contexts/BrandingContext'
 
 export default function SuccessPage() {
   const { name } = useBranding()
+
   return (
     <div className='bg-gradient-to-br flex items-center h-100 justify-center p-4'>
       <div className='max-w-md w-full'>

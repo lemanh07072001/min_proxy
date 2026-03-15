@@ -10,6 +10,7 @@ export interface SupplierProduct {
   protocols: string[]
   supplier_prices: Record<string, number>
   country: string | null
+
   // Nếu đã import
   local_id?: number
   local_name?: string

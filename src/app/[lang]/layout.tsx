@@ -80,6 +80,7 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
   const seoLang = branding.seo_meta?.[lang]
   const seoTitle = seoLang?.title || (siteName && siteDesc ? `${siteName} - ${siteDesc}` : siteName || siteDesc || 'Proxy Service')
   const seoDescription = seoLang?.description || siteDesc || ''
+
   const seoKeywords = seoLang?.keywords
     ? seoLang.keywords.split(',').map((k: string) => k.trim())
     : siteName ? ['proxy', siteName] : ['proxy']

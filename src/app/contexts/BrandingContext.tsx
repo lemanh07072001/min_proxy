@@ -31,6 +31,7 @@ const defaultBranding: BrandingContextValue = {
   isParent: false,
   isChild: true,
   isLoading: false,
+
   // New fields defaults
   site_name: null,
   site_description: null,
@@ -87,6 +88,7 @@ export function BrandingProvider({ children }: { children: React.ReactNode }) {
     isParent: siteMode === 'parent',
     isChild: siteMode === 'child',
     isLoading,
+
     // All raw fields from API
     site_name: data?.site_name ?? null,
     site_description: data?.site_description ?? null,

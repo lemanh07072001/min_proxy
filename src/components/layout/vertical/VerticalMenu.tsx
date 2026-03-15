@@ -107,6 +107,7 @@ const activeMenuItemStyles = {
       opacity: 0.9,
       color: `${colors.textActive} !important`
     },
+
     // Ẩn ripple/shadow mặc định MUI
     '&::after, &::before': {
       display: 'none !important',

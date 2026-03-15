@@ -9,9 +9,9 @@ import Box from '@mui/material/Box'
 
 import { SessionContext, useSession } from 'next-auth/react'
 
-import { useBranding } from '@/app/contexts/BrandingContext'
-
 import { User } from 'lucide-react'
+
+import { useBranding } from '@/app/contexts/BrandingContext'
 
 import MenuDesktop from './menus/MenuDesktop'
 import MenuMobile from './menus/MenuMobile'

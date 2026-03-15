@@ -774,6 +774,7 @@ export default function SiteSettingsForm() {
 
                     return `#${(r << 16 | g << 8 | b).toString(16).padStart(6, '0')}`
                   }
+
                   const lighten = (hex: string, pct: number) => {
                     const n = parseInt(hex.replace('#', ''), 16)
                     const r = Math.min(255, Math.round(((n >> 16) & 0xFF) + (255 - ((n >> 16) & 0xFF)) * pct))
@@ -908,8 +909,8 @@ export default function SiteSettingsForm() {
                   <div style={{ padding: 12 }}>
                     <div
                       style={{ border: '1px solid #e2e8f0', borderRadius: 10, padding: 10, cursor: 'pointer', transition: 'all 0.2s ease' }}
-                      onMouseEnter={e => { const el = e.currentTarget; el.style.borderColor = `color-mix(in srgb, ${ph} 40%, transparent)`; el.style.transform = 'translateY(-2px)'; el.style.boxShadow = '0 4px 12px rgba(0,0,0,0.08)' }}
-                      onMouseLeave={e => { const el = e.currentTarget; el.style.borderColor = '#e2e8f0'; el.style.transform = 'none'; el.style.boxShadow = 'none' }}
+                      onMouseEnter={e => { e.currentTarget.style.borderColor = `color-mix(in srgb, ${ph} 40%, transparent)`; e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.08)' }}
+                      onMouseLeave={e => { e.currentTarget.style.borderColor = '#e2e8f0'; e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none' }}
                     >
                       <div style={{ fontSize: '13px', fontWeight: 700, color: '#1e293b', marginBottom: 6 }}>IPv4 Residential VN</div>
                       <div style={{ fontSize: '11px', color: '#94a3b8', marginBottom: 8 }}>Loại IP: Static V4 — VN</div>
@@ -917,8 +918,8 @@ export default function SiteSettingsForm() {
                         <span style={{ fontSize: '15px', fontWeight: 700, color: ph }}>50,000đ</span>
                         <span
                           style={{ padding: '5px 12px', borderRadius: 7, fontSize: '11px', fontWeight: 600, cursor: 'pointer', transition: 'all 0.15s ease', background: `color-mix(in srgb, ${ph} 12%, white)`, color: ph, border: `1px solid color-mix(in srgb, ${ph} 30%, transparent)` }}
-                          onMouseEnter={e => { const el = e.target as HTMLElement; el.style.background = ph; el.style.color = '#fff'; el.style.borderColor = ph }}
-                          onMouseLeave={e => { const el = e.target as HTMLElement; el.style.background = `color-mix(in srgb, ${ph} 12%, white)`; el.style.color = ph; el.style.borderColor = `color-mix(in srgb, ${ph} 30%, transparent)` }}
+                          onMouseEnter={e => { (e.target as HTMLElement).style.background = ph; (e.target as HTMLElement).style.color = '#fff'; (e.target as HTMLElement).style.borderColor = ph }}
+                          onMouseLeave={e => { (e.target as HTMLElement).style.background = `color-mix(in srgb, ${ph} 12%, white)`; (e.target as HTMLElement).style.color = ph; (e.target as HTMLElement).style.borderColor = `color-mix(in srgb, ${ph} 30%, transparent)` }}
                         >Mua ngay</span>
                       </div>
                     </div>
@@ -962,7 +963,7 @@ export default function SiteSettingsForm() {
                     >Nút chính</span>
                     <span
                       style={{ padding: '7px 16px', borderRadius: 8, background: 'transparent', color: ph, border: `1px solid ${ph}`, fontSize: '12px', fontWeight: 600, cursor: 'pointer', transition: 'all 0.15s ease' }}
-                      onMouseEnter={e => { const el = e.target as HTMLElement; el.style.background = `color-mix(in srgb, ${ph} 8%, transparent)` }}
+                      onMouseEnter={e => { (e.target as HTMLElement).style.background = `color-mix(in srgb, ${ph} 8%, transparent)` }}
                       onMouseLeave={e => { (e.target as HTMLElement).style.background = 'transparent' }}
                     >Nạp tiền</span>
                     <span
@@ -1451,8 +1452,10 @@ export default function SiteSettingsForm() {
                 onClick={() => {
                   if (!bank.bank_name || !bank.bank_number || !bank.bank_account) {
                     toast.error('Vui lòng nhập đầy đủ tên ngân hàng, số tài khoản và chủ tài khoản')
+
                     return
                   }
+
                   updateBankMutation.mutate(bank, {
                     onSuccess: () => toast.success('Cập nhật ngân hàng thành công'),
                     onError: (error: any) => toast.error(error?.response?.data?.message || 'Có lỗi xảy ra'),

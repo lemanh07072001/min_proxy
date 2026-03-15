@@ -76,6 +76,39 @@ export const useUpdatePartner = (partnerId?: number) => {
 }
 
 /**
+ * Tạo QR code nạp tiền
+ */
+export const useGenerateQrCode = () => {
+  const axiosAuth = useAxiosAuth()
+
+  return useMutation({
+    mutationFn: async (data: { partner_code: string; amount: string }) => {
+      const res = await axiosAuth.post('/generate-qr-code', data)
+
+      return res?.data
+    },
+  })
+}
+
+/**
+ * Lấy lịch sử giao dịch đối tác
+ */
+export const usePartnerTransactions = (partnerId?: number | string, enabled = true) => {
+  const axiosAuth = useAxiosAuth()
+
+  return useQuery({
+    queryKey: ['partner-transactions', partnerId],
+    queryFn: async () => {
+      const res = await axiosAuth.get(`/get-topup-history?partner_id=${partnerId}`)
+
+      return (res?.data?.data ?? []) as any[]
+    },
+    enabled: !!partnerId && enabled,
+    refetchOnWindowFocus: false,
+  })
+}
+
+/**
  * Xóa đối tác
  */
 export const useDeletePartner = () => {

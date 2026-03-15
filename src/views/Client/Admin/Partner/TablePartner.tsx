@@ -67,6 +67,7 @@ export default function TablePartner({ onOpenModal }: TablePartnerProps) {
   const handleOpenEdit = useCallback(
     (id: number) => {
       const partner = dataPartners.find((p: any) => p.id === id)
+
       if (partner) onOpenModal?.('edit', partner)
     },
     [onOpenModal, dataPartners]
@@ -94,6 +95,7 @@ export default function TablePartner({ onOpenModal }: TablePartnerProps) {
         header: 'Logo',
         cell: ({ row }: { row: any }) => {
           const logoUrl = row.original?.logo_url
+
           return logoUrl ? (
             <Image src={logoUrl} alt='' width={60} height={30} style={{ objectFit: 'contain' }} />
           ) : (

@@ -18,11 +18,11 @@ import Button from '@mui/material/Button'
 
 import { Clock, Wallet } from 'lucide-react'
 
-import { useBranding } from '@/app/contexts/BrandingContext'
-
 import Box from '@mui/material/Box'
 
 import Typography from '@mui/material/Typography'
+
+import { useBranding } from '@/app/contexts/BrandingContext'
 
 import NavToggle from './NavToggle'
 import ModeDropdown from '@components/layout/shared/ModeDropdown'

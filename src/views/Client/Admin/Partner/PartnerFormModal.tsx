@@ -73,9 +73,12 @@ export default function PartnerFormModal({ open, onClose, type, partnerData }: P
 
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null
+
     setLogoFile(file)
+
     if (file) {
       const reader = new FileReader()
+
       reader.onloadend = () => setLogoPreview(reader.result as string)
       reader.readAsDataURL(file)
     } else {
@@ -85,6 +88,7 @@ export default function PartnerFormModal({ open, onClose, type, partnerData }: P
 
   const onSubmit = (data: any) => {
     const formData = new FormData()
+
     formData.append('name', data.name)
     formData.append('subtitle', data.subtitle || '')
     if (data.link) formData.append('link', data.link)
@@ -92,6 +96,7 @@ export default function PartnerFormModal({ open, onClose, type, partnerData }: P
     formData.append('status', data.status)
 
     const filteredDescs = descriptions.filter(d => d.trim())
+
     filteredDescs.forEach((desc, i) => {
       formData.append(`description[${i}]`, desc)
     })
@@ -177,6 +182,7 @@ export default function PartnerFormModal({ open, onClose, type, partnerData }: P
                     value={desc}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                       const newDescs = [...descriptions]
+
                       newDescs[index] = e.target.value
                       setDescriptions(newDescs)
                     }}

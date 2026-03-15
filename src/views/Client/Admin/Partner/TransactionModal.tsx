@@ -70,8 +70,7 @@ export default function TransactionModal({ open, onClose, partnerId, partnerName
           const amount = row.original?.amount || 0
           const isPositive = amount >= 0
 
-          
-return (
+          return (
             <div>
               <span className={`text-sm font-bold ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
                 {isPositive ? '+' : ''}{formatter.format(amount)}
@@ -94,8 +93,7 @@ return (
             return <Chip label='Thất bại' size='small' color='error' />
           }
 
-          
-return <Chip label={status || 'Không xác định'} size='small' color='default' />
+          return <Chip label={status || 'Không xác định'} size='small' color='default' />
         },
         size: 150
       },
@@ -104,8 +102,7 @@ return <Chip label={status || 'Không xác định'} size='small' color='default
         cell: ({ row }: { row: any }) => {
           const dateStr = row.original?.created_at
 
-          
-return (
+          return (
             <div className='d-flex align-items-center gap-1'>
               <Clock3 size={14} />
               <div style={{ marginTop: '2px' }}>{dateStr ? formatDateTimeLocal(dateStr) : '-'}</div>
