@@ -1437,15 +1437,6 @@ export default function SiteSettingsForm() {
                   helperText='Viết IN HOA, không dấu — đúng như trên thẻ ngân hàng'
                 />
               </div>
-              <TextField
-                size='small'
-                label='Nội dung chuyển khoản mẫu'
-                value={bank.format_chuyentien}
-                onChange={e => setBank(prev => ({ ...prev, format_chuyentien: e.target.value }))}
-                placeholder='NAP {user_id}'
-                fullWidth
-                helperText='Định dạng nội dung chuyển khoản. {user_id} sẽ được thay bằng ID người dùng.'
-              />
               <Button
                 size='small'
                 variant='contained'
