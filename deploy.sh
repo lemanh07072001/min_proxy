@@ -20,7 +20,7 @@ echo "📦 Pulling code..."
 git pull
 
 echo "📚 Installing deps..."
-npm ci --production=false
+NODE_OPTIONS="--max-old-space-size=512" npm ci
 
 echo "🔨 Building..."
 
@@ -31,7 +31,7 @@ if [ -d ".next" ]; then
   echo "✅ Backed up .next"
 fi
 
-if npm run build; then
+if NODE_OPTIONS="--max-old-space-size=1024" npm run build; then
   echo "🚀 Restarting PM2..."
   pm2 reload "$PM2_NAME" --update-env
   rm -rf .next.backup

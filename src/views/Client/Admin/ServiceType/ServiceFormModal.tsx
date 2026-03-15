@@ -100,6 +100,8 @@ return true
     .nullable()
     .transform(value => (value ? value.trim() : value)),
   is_purchasable: yup.boolean().default(true),
+  min_quantity: yup.number().nullable().min(1).default(1),
+  max_quantity: yup.number().nullable().min(1).default(100),
   auth_type: yup.string().nullable(),
   bandwidth: yup.string().nullable(),
   rotation_type: yup.string().nullable(),
@@ -244,6 +246,8 @@ return { values: {}, errors: formattedErrors }
       note: '',
       tag: '',
       is_purchasable: true,
+      min_quantity: 1,
+      max_quantity: 100,
       auth_type: '',
       bandwidth: '',
       rotation_type: '',
@@ -319,6 +323,8 @@ return { values: {}, errors: formattedErrors }
         note: serviceData.note || '',
         tag: serviceData.tag || '',
         is_purchasable: serviceData.is_purchasable !== false,
+        min_quantity: serviceData.min_quantity ?? 1,
+        max_quantity: serviceData.max_quantity ?? 100,
         auth_type: serviceData.auth_type || '',
         bandwidth: serviceData.bandwidth || '',
         rotation_type: serviceData.rotation_type || '',
@@ -349,6 +355,8 @@ return { values: {}, errors: formattedErrors }
         note: '',
         tag: '',
         is_purchasable: true,
+      min_quantity: 1,
+      max_quantity: 100,
         auth_type: '',
         bandwidth: '',
         rotation_type: '',
@@ -388,12 +396,17 @@ return { values: {}, errors: formattedErrors }
     // Clean empty Tiptap content to null
     const cleanNote = data.note && data.note !== '<p></p>' ? data.note : null
 
+    // Auto-tính cost_price từ min(price_by_duration[].cost)
+    const costs = formattedPriceFields.map((p: any) => parseInt(p.cost) || 0).filter((c: number) => c > 0)
+    const autoCostPrice = costs.length > 0 ? Math.min(...costs) : data.cost_price || 0
+
     const submitData = {
       ...data,
       note: cleanNote,
       api_type: 'buy_api',
       multi_inputs: multiInputFields,
-      price_by_duration: formattedPriceFields
+      price_by_duration: formattedPriceFields,
+      cost_price: autoCostPrice,
     }
 
     const mutation = isEditMode ? updateMutation : createMutation
@@ -783,6 +796,44 @@ return <Chip key={val} label={p?.label || val} size='small' />
                   </div>
                 </Grid2>
 
+                {/* Min/Max số lượng proxy */}
+                <Grid2 size={{ xs: 6, sm: 3 }}>
+                  <Controller
+                    name='min_quantity'
+                    control={control}
+                    render={({ field }) => (
+                      <CustomTextField
+                        {...field}
+                        value={field.value ?? 1}
+                        onChange={e => field.onChange(e.target.value === '' ? null : Number(e.target.value))}
+                        fullWidth
+                        type='number'
+                        label='Tối thiểu'
+                        helperText='Số proxy tối thiểu mỗi lần mua'
+                        slotProps={{ input: { inputProps: { min: 1 } } }}
+                      />
+                    )}
+                  />
+                </Grid2>
+                <Grid2 size={{ xs: 6, sm: 3 }}>
+                  <Controller
+                    name='max_quantity'
+                    control={control}
+                    render={({ field }) => (
+                      <CustomTextField
+                        {...field}
+                        value={field.value ?? 100}
+                        onChange={e => field.onChange(e.target.value === '' ? null : Number(e.target.value))}
+                        fullWidth
+                        type='number'
+                        label='Tối đa'
+                        helperText='Số proxy tối đa mỗi lần mua'
+                        slotProps={{ input: { inputProps: { min: 1 } } }}
+                      />
+                    )}
+                  />
+                </Grid2>
+
                 {/* Mô tả ngắn */}
                 <Grid2 size={{ xs: 12 }}>
                   <Controller
@@ -976,33 +1027,7 @@ return <Chip key={val} label={p?.label || val} size='small' />
                       />
                     </Grid2>
 
-                    <Grid2 size={{ xs: 6, sm: 2 }}>
-                      <Controller
-                        name='cost_price'
-                        control={control}
-                        render={({ field }) => (
-                          <CustomTextField
-                            {...field}
-                            value={field.value}
-                            onChange={e => { field.onChange(e.target.value === '' ? null : Number(e.target.value)) }}
-                            fullWidth
-                            type='number'
-                            label='Giá nhập'
-                            placeholder='0'
-                          />
-                        )}
-                      />
-                    </Grid2>
-
-                    <Grid2 size={{ xs: 6, sm: 2 }}>
-                      <Controller
-                        name='code'
-                        control={control}
-                        render={({ field }) => (
-                          <CustomTextField {...field} fullWidth label='Code' placeholder='Mã' />
-                        )}
-                      />
-                    </Grid2>
+                    {/* cost_price tự tính từ min(price_by_duration[].cost), code ít dùng — ẩn cả 2 */}
 
                     <Grid2 size={{ xs: 12 }}>
                       <Controller

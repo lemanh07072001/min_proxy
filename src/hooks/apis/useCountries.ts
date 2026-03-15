@@ -54,7 +54,10 @@ export const useCountries = () => {
 
         const data = res?.data?.data
 
-        return data && data.length > 0 ? data : POPULAR_COUNTRIES
+        // Nếu API trả ít hơn 5 → merge với POPULAR_COUNTRIES
+        if (!data || data.length < 5) return POPULAR_COUNTRIES
+
+        return data
       } catch {
         return POPULAR_COUNTRIES
       }

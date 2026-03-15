@@ -1,6 +1,16 @@
-/* Toast luôn hiện trên Dialog/Modal — MUI Dialog z-index = 1300 */
+/* Toast luôn hiện trên MUI Dialog/Modal (z-index 1300) */
+.Toastify {
+  position: fixed !important;
+  z-index: 99999 !important;
+  top: 0;
+  left: 0;
+  width: 100%;
+  pointer-events: none;
+}
+
 .Toastify__toast-container {
   z-index: 99999 !important;
+  pointer-events: auto;
 }
 
 /* --- CÀI ĐẶT NỀN TẢNG --- */

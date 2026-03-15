@@ -80,6 +80,8 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
       note: '',
       tag: '',
       is_purchasable: true,
+      min_quantity: 1,
+      max_quantity: 100,
       auth_type: '',
       bandwidth: '',
       rotation_type: '',
@@ -134,6 +136,8 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
         note: serviceData.note || '',
         tag: serviceData.tag || '',
         is_purchasable: serviceData.is_purchasable !== false,
+        min_quantity: serviceData.min_quantity ?? 1,
+        max_quantity: serviceData.max_quantity ?? 100,
         auth_type: serviceData.auth_type || '',
         bandwidth: serviceData.bandwidth || '',
         rotation_type: serviceData.rotation_type || '',
@@ -273,6 +277,8 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
       pool_size: data.pool_size || '',
       request_limit: data.request_limit || '',
       concurrent_connections: data.concurrent_connections ? parseInt(data.concurrent_connections) : null,
+      min_quantity: data.min_quantity || 1,
+      max_quantity: data.max_quantity || 100,
     }
 
     // Nếu tạo mới — thêm metadata với supplier_product_id
@@ -647,17 +653,51 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
                 <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: 4 }}>Nhấn để chọn/bỏ chọn. Có thể chọn nhiều tag.</div>
               </div>
 
-              {/* Cho phép mua */}
-              <Controller
-                name='is_purchasable'
-                control={control}
-                render={({ field }) => (
-                  <FormControlLabel
-                    control={<Switch checked={field.value} onChange={e => field.onChange(e.target.checked)} color='success' />}
-                    label='Cho phép mua'
+              {/* Cho phép mua + Min/Max */}
+              <Grid2 container spacing={1.5} alignItems='center'>
+                <Grid2 size={{ xs: 4 }}>
+                  <Controller
+                    name='is_purchasable'
+                    control={control}
+                    render={({ field }) => (
+                      <FormControlLabel
+                        control={<Switch checked={field.value} onChange={e => field.onChange(e.target.checked)} color='success' />}
+                        label='Cho phép mua'
+                      />
+                    )}
                   />
-                )}
-              />
+                </Grid2>
+                <Grid2 size={{ xs: 4 }}>
+                  <Controller
+                    name='min_quantity'
+                    control={control}
+                    render={({ field }) => (
+                      <CustomTextField
+                        {...field}
+                        value={field.value ?? 1}
+                        onChange={e => field.onChange(e.target.value === '' ? null : Number(e.target.value))}
+                        fullWidth type='number' label='SL tối thiểu'
+                        slotProps={{ input: { inputProps: { min: 1 } } }}
+                      />
+                    )}
+                  />
+                </Grid2>
+                <Grid2 size={{ xs: 4 }}>
+                  <Controller
+                    name='max_quantity'
+                    control={control}
+                    render={({ field }) => (
+                      <CustomTextField
+                        {...field}
+                        value={field.value ?? 100}
+                        onChange={e => field.onChange(e.target.value === '' ? null : Number(e.target.value))}
+                        fullWidth type='number' label='SL tối đa'
+                        slotProps={{ input: { inputProps: { min: 1 } } }}
+                      />
+                    )}
+                  />
+                </Grid2>
+              </Grid2>
 
               <Controller
                 name='note'
