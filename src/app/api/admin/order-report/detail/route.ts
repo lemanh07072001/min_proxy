@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
       params: {
         start: searchParams.get('start'),
         end: searchParams.get('end'),
-        partner_id: searchParams.get('partner_id'),
+        provider_id: searchParams.get('provider_id'),
         status: searchParams.get('status'),
         page: searchParams.get('page'),
         per_page: searchParams.get('per_page'),

@@ -10,7 +10,7 @@ export interface OrderLog {
   action: string
   from_status: number | null
   to_status: number | null
-  partner_code: string | null
+  provider_code: string | null
   proxy_type: string | null
   retry_count: number | null
   message: string | null

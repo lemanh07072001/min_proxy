@@ -27,7 +27,7 @@ export default function ModalForm({ open, onClose, mode, onSubmit, initialData }
     cost_price: '',
     price: '',
     status: 'active',
-    partner_id: '',
+    provider_id: '',
     type: '',
     ip_version: ''
   })
@@ -39,7 +39,7 @@ export default function ModalForm({ open, onClose, mode, onSubmit, initialData }
         cost_price: initialData.cost_price || '',
         price: initialData.price || '',
         status: initialData.status || 'active',
-        partner_id: initialData.partner_id || '',
+        provider_id: initialData.provider_id || '',
         type: initialData.type || '',
         ip_version: initialData.ip_version || ''
       })
@@ -49,7 +49,7 @@ export default function ModalForm({ open, onClose, mode, onSubmit, initialData }
         cost_price: '',
         price: '',
         status: 'active',
-        partner_id: '',
+        provider_id: '',
         type: '',
         ip_version: ''
       })
@@ -118,10 +118,10 @@ export default function ModalForm({ open, onClose, mode, onSubmit, initialData }
           <Grid item xs={12} sm={6}>
             <TextField
               fullWidth
-              label='Partner ID'
+              label='Provider ID'
               type='number'
-              value={formData.partner_id}
-              onChange={e => handleChange('partner_id', e.target.value)}
+              value={formData.provider_id}
+              onChange={e => handleChange('provider_id', e.target.value)}
             />
           </Grid>
 

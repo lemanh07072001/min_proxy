@@ -27,27 +27,24 @@ export default function DetailUserModal({
       PaperProps={{ sx: { overflow: 'visible' } }}
     >
       <div className='relative bg-white rounded-lg shadow-2xl  w-full max-h-[90vh] overflow-hidden animate-slideUp mx-auto'>
-        <div className='relative bg-gradient-to-r from-orange-500 to-orange-600 px-4 sm:px-4 py-4 sm:py-4 flex items-center justify-between'>
-          <div className='flex items-center gap-2 sm:gap-3'>
-            <div className='w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-white/20 flex items-center justify-center'>
-              <User className='text-white' size={20} />
+        <div className='flex items-center justify-between px-4 py-3 border-b border-gray-200'>
+          <div className='flex items-center gap-2'>
+            <div className='w-8 h-8 rounded-lg flex items-center justify-center' style={{ background: 'color-mix(in srgb, var(--primary-hover, #6366f1) 12%, white)' }}>
+              <User size={16} style={{ color: 'var(--primary-hover, #6366f1)' }} />
             </div>
-            <div>
-              <h2 className='text-lg sm:text-xl font-bold text-white'>Thông tin người dùng</h2>
-              <p className='text-orange-100 text-xs sm:text-sm hidden sm:block'>Chi tiết tài khoản và hoạt động</p>
-            </div>
+            <h2 className='text-sm font-semibold text-gray-800'>Thông tin người dùng</h2>
           </div>
           <button
             onClick={onClose}
-            className='p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors'
+            className='p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors'
           >
-            <X size={20} />
+            <X size={18} />
           </button>
         </div>
 
         {isLoading ? (
           <div className='p-4 sm:p-6 flex flex-col items-center justify-center min-h-[300px] sm:min-h-[400px]'>
-            <Loader2 className='w-10 h-10 sm:w-12 sm:h-12 text-orange-500 animate-spin mb-4' />
+            <Loader2 className='w-10 h-10 sm:w-12 sm:h-12 animate-spin mb-4' style={{ color: 'var(--primary-hover, #f97316)' }} />
             <p className='text-gray-600 font-medium text-sm sm:text-base text-center'>
               Đang tải thông tin người dùng...
             </p>
@@ -57,7 +54,7 @@ export default function DetailUserModal({
           <div className='p-4 sm:p-6 overflow-y-auto max-h-[calc(90vh-80px)]'>
             <div className='grid md:grid-cols-2 gap-4 sm:gap-6 mb-4 sm:mb-6'>
               <div className='md:col-span-2 flex flex-col sm:flex-row items-center sm:items-start gap-3 sm:gap-4 p-4 bg-gray-50 rounded-lg'>
-                <div className='w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-white text-xl sm:text-2xl font-bold shadow-lg'>
+                <div className='w-16 h-16 sm:w-20 sm:h-20 rounded-full flex items-center justify-center text-white text-xl sm:text-2xl font-bold shadow-lg' style={{ background: 'var(--primary-gradient, linear-gradient(to bottom right, #fb923c, #ea580c))' }}>
                   {(data?.user?.name ?? '').substring(0, 2).toUpperCase()}
                 </div>
                 <div className='flex-1 text-center sm:text-left'>
@@ -74,13 +71,13 @@ export default function DetailUserModal({
                 </div>
               </div>
 
-              <div className='bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg p-3 sm:p-4 border border-orange-200'>
+              <div className='rounded-lg p-3 sm:p-4' style={{ background: 'color-mix(in srgb, var(--primary-hover, #f97316) 8%, white)', border: '1px solid color-mix(in srgb, var(--primary-hover, #f97316) 20%, white)' }}>
                 <div className='flex items-center justify-between mb-2'>
-                  <span className='text-xs sm:text-sm text-orange-700 font-medium'>Tổng đơn hàng</span>
-                  <CreditCard size={18} className='text-orange-500' />
+                  <span className='text-xs sm:text-sm font-medium' style={{ color: 'var(--primary-hover, #f97316)' }}>Tổng đơn hàng</span>
+                  <CreditCard size={18} style={{ color: 'var(--primary-hover, #f97316)' }} />
                 </div>
-                <div className='text-2xl sm:text-3xl font-bold text-orange-900'>{data.order_count ?? 0}</div>
-                <div className='text-xs text-orange-600 mt-1'>Đơn hàng đã mua</div>
+                <div className='text-2xl sm:text-3xl font-bold' style={{ color: 'color-mix(in srgb, var(--primary-hover, #f97316) 90%, black)' }}>{data.order_count ?? 0}</div>
+                <div className='text-xs mt-1' style={{ color: 'var(--primary-hover, #f97316)' }}>Đơn hàng đã mua</div>
               </div>
 
               <div className='bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-3 sm:p-4 border border-green-200'>

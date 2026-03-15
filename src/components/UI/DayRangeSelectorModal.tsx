@@ -57,7 +57,7 @@ export default function DayRangeSelectorModal({
     <Dialog open={open} onClose={onClose} maxWidth='sm' fullWidth>
       <DialogTitle>
         <div className='flex items-center gap-2'>
-          <Calendar size={20} className='text-[#f97316]' />
+          <Calendar size={20} style={{ color: 'var(--primary-hover, #f97316)' }} />
           <span>{title}</span>
         </div>
       </DialogTitle>
@@ -73,9 +73,9 @@ export default function DayRangeSelectorModal({
                   sx={{
                     borderRadius: 1,
                     '&.Mui-selected': {
-                      backgroundColor: 'rgba(249, 115, 22, 0.1)',
+                      backgroundColor: 'color-mix(in srgb, var(--primary-hover, #f97316) 10%, white)',
                       '&:hover': {
-                        backgroundColor: 'rgba(249, 115, 22, 0.15)'
+                        backgroundColor: 'color-mix(in srgb, var(--primary-hover, #f97316) 15%, white)'
                       }
                     }
                   }}

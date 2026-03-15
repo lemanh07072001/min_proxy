@@ -100,7 +100,8 @@ export default function GetToken() {
             <button
               onClick={handleReload}
               disabled={!token || isLoading}
-              className='px-6 py-3 bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-semibold rounded-xl transition-all transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2 shadow-lg shadow-orange-500/20 whitespace-nowrap'
+              className='px-6 py-3 text-white font-semibold rounded-xl transition-all transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2 shadow-lg whitespace-nowrap'
+              style={{ background: 'var(--primary-gradient, linear-gradient(to right, #f97316, #ea580c))' }}
             >
               <RefreshCw className={`w-5 h-5 ${isLoading ? 'animate-spin' : ''}`} />
               {isLoading ? 'Đang xử lý...' : 'Reload'}

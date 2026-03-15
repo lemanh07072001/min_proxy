@@ -12,12 +12,16 @@
   }
 }
 
-.proxy-card-column:hover,
+.proxy-card-column:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  border-color: color-mix(in srgb, var(--primary-hover, #e07c50) 40%, transparent);
+}
+
 .proxy-card-column.active {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(224, 124, 80, 0.15), 0 4px 12px rgba(0, 0, 0, 0.08);
-  border-color: rgba(224, 124, 80, 0.6);
-  border-width: 2px;
+  transform: translateY(-3px);
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--primary-hover, #e07c50) 20%, transparent);
+  border-color: var(--primary-hover, #e07c50);
 }
 
 .proxy-card-column .card-header-column {
@@ -36,20 +40,36 @@
 .proxy-card-column .price-amount {
   font-size: 18px;
   font-weight: 700;
-  color: #e53e3e;
+  color: var(--primary-hover, #e53e3e);
   white-space: nowrap;
+}
+
+/* Footer: giá trái + button phải — cùng 1 hàng */
+.proxy-card-column .card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid #f1f5f9;
 }
 
 .proxy-card-column .buy-button {
   margin-block-end: 0;
+  flex-shrink: 0;
+  inline-size: auto;
+  white-space: nowrap;
 }
 
-.proxy-card-column:hover .buy-button,
+.proxy-card-column:hover .buy-button {
+  opacity: 0.9;
+}
+
 .proxy-card-column.active .buy-button {
-  background: #f0944e;
-  color: white;
-  border-color: #f0944e;
-  box-shadow: 0 3px 12px rgba(240, 148, 78, 0.3);
+  background: var(--primary-gradient, linear-gradient(45deg, #FC4336, #F88A4B));
+  color: var(--primary-contrast, #fff);
+  border-color: transparent;
 }
 
 .proxy-card-column .total-label {
@@ -61,38 +81,10 @@
 .proxy-card-column .total-price {
   font-size: 16px;
   font-weight: 700;
-  color: #e53e3e;
+  color: var(--primary-hover, #e53e3e);
 }
 
-.proxy-card-column.viettel-theme::before {
-  content: '';
-  position: absolute;
-  inset-block-start: 0;
-  inset-inline: 0;
-  block-size: 4px;
-  background: linear-gradient(90deg, #e53e3e, #ff6b6b);
-  border-radius: 12px 12px 0 0;
-}
-
-.proxy-card-column.vnpt-theme::before {
-  content: '';
-  position: absolute;
-  inset-block-start: 0;
-  inset-inline: 0;
-  block-size: 4px;
-  background: linear-gradient(90deg, #3182ce, #4299e1);
-  border-radius: 12px 12px 0 0;
-}
-
-.proxy-card-column.fpt-theme::before {
-  content: '';
-  position: absolute;
-  inset-block-start: 0;
-  inset-inline: 0;
-  block-size: 4px;
-  background: linear-gradient(90deg, #d69e2e, #f6e05e);
-  border-radius: 12px 12px 0 0;
-}
+/* Không cần top color bar — tag inline đã thay thế */
 
 /* Feature rows (product info) */
 .proxy-card-column .feature-row {

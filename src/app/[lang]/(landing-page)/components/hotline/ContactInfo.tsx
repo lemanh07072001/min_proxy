@@ -9,12 +9,21 @@ import { Phone, Mail, MapPin, Globe, Send, CheckCircle, Menu, X } from 'lucide-r
 import { useTranslation } from 'react-i18next'
 
 import { useLanguageSync } from '@/hooks/useLanguageSync'
+import { useBranding } from '@/app/contexts/BrandingContext'
 
 const ContactInfo = () => {
   const { t } = useTranslation()
+  const branding = useBranding()
 
   useLanguageSync()
   const [isSubmitted, setIsSubmitted] = useState(false)
+
+  // Use branding values with translation fallbacks
+  const phone = branding.organization_phone || t('landing.hotline.contactInfo.hotline.phone')
+  const email = branding.organization_email || t('landing.hotline.contactInfo.email.address')
+  const address = branding.organization_address || t('landing.hotline.contactInfo.address.location')
+  const websiteUrl = branding.website_url || t('landing.hotline.contactInfo.website.url')
+  const appName = branding.name
 
   return (
     <main className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-16'>
@@ -41,10 +50,11 @@ const ContactInfo = () => {
                   {t('landing.hotline.contactInfo.hotline.title')}
                 </h3>
                 <a
-                  href={`tel:${t('landing.hotline.contactInfo.hotline.phone')}`}
-                  className='text-xl font-bold text-red-500 hover:text-red-600 transition-colors block'
+                  href={`tel:${phone}`}
+                  className='text-xl font-bold transition-colors block'
+                  style={{ color: 'var(--primary-hover, #ef4444)' }}
                 >
-                  {t('landing.hotline.contactInfo.hotline.phone')}
+                  {phone}
                 </a>
                 <p className='text-sm text-gray-500 mt-1'>{t('landing.hotline.contactInfo.hotline.description')}</p>
               </div>
@@ -62,10 +72,11 @@ const ContactInfo = () => {
                   {t('landing.hotline.contactInfo.email.title')}
                 </h3>
                 <a
-                  href={`mailto:${t('landing.hotline.contactInfo.email.address')}`}
-                  className='text-lg font-medium text-red-500 hover:text-red-600 transition-colors break-all'
+                  href={`mailto:${email}`}
+                  className='text-lg font-medium transition-colors break-all'
+                  style={{ color: 'var(--primary-hover, #ef4444)' }}
                 >
-                  {t('landing.hotline.contactInfo.email.address')}
+                  {email}
                 </a>
                 <p className='text-sm text-gray-500 mt-1'>{t('landing.hotline.contactInfo.email.description')}</p>
               </div>
@@ -83,7 +94,7 @@ const ContactInfo = () => {
                   {t('landing.hotline.contactInfo.address.title')}
                 </h3>
                 <p className='text-gray-700 font-medium leading-relaxed'>
-                  {t('landing.hotline.contactInfo.address.location')}
+                  {address}
                 </p>
                 <p className='text-sm text-gray-500 mt-1'>{t('landing.hotline.contactInfo.address.description')}</p>
               </div>
@@ -101,12 +112,13 @@ const ContactInfo = () => {
                   {t('landing.hotline.contactInfo.website.title')}
                 </h3>
                 <a
-                  href={t('landing.hotline.contactInfo.website.url')}
+                  href={websiteUrl}
                   target='_blank'
                   rel='noopener noreferrer'
-                  className='text-lg font-medium text-red-500 hover:text-red-600 transition-colors'
+                  className='text-lg font-medium transition-colors'
+                  style={{ color: 'var(--primary-hover, #ef4444)' }}
                 >
-                  {t('landing.hotline.contactInfo.website.url')}
+                  {websiteUrl}
                 </a>
                 <p className='text-sm text-gray-500 mt-1'>{t('landing.hotline.contactInfo.website.description')}</p>
               </div>
@@ -138,7 +150,7 @@ const ContactInfo = () => {
                       type='text'
                       name='name'
                       required
-                      className='w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-colors outline-none bg-gray-50 focus:bg-white'
+                      className='w-full px-4 py-3 border border-gray-200 rounded-xl input-brand-focus transition-colors outline-none bg-gray-50 focus:bg-white'
                       placeholder={t('landing.hotline.contactForm.fields.name')}
                     />
                   </div>
@@ -148,7 +160,7 @@ const ContactInfo = () => {
                       type='email'
                       name='email'
                       required
-                      className='w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-colors outline-none bg-gray-50 focus:bg-white'
+                      className='w-full px-4 py-3 border border-gray-200 rounded-xl input-brand-focus transition-colors outline-none bg-gray-50 focus:bg-white'
                       placeholder={t('landing.hotline.contactForm.fields.email')}
                     />
                   </div>
@@ -159,7 +171,7 @@ const ContactInfo = () => {
                     type='tel'
                     name='phone'
                     required
-                    className='w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-colors outline-none bg-gray-50 focus:bg-white'
+                    className='w-full px-4 py-3 border border-gray-200 rounded-xl input-brand-focus transition-colors outline-none bg-gray-50 focus:bg-white'
                     placeholder={t('landing.hotline.contactForm.fields.phone')}
                   />
                 </div>
@@ -169,7 +181,7 @@ const ContactInfo = () => {
                     name='message'
                     required
                     rows={5}
-                    className='w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-colors outline-none resize-vertical bg-gray-50 focus:bg-white'
+                    className='w-full px-4 py-3 border border-gray-200 rounded-xl input-brand-focus transition-colors outline-none resize-vertical bg-gray-50 focus:bg-white'
                     placeholder={t('landing.hotline.contactForm.fields.message')}
                   />
                 </div>
@@ -177,7 +189,8 @@ const ContactInfo = () => {
                 <div className='flex justify-start'>
                   <button
                     type='submit'
-                    className='bg-red-500 hover:bg-red-600 text-white font-semibold py-3 px-8 rounded-xl transition-all duration-200 flex items-center space-x-2 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5'
+                    className='text-white font-semibold py-3 px-8 rounded-xl transition-all duration-200 flex items-center space-x-2 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5'
+                    style={{ background: 'var(--primary-hover, #ef4444)' }}
                   >
                     <span>{t('landing.hotline.contactForm.submit')}</span>
                   </button>
@@ -192,7 +205,7 @@ const ContactInfo = () => {
       <div className='mt-16 bg-white rounded-2xl p-8 shadow-sm'>
         <div className='text-center mb-8'>
           <h3 className='text-2xl font-bold text-gray-900 mb-4'>
-            {t('landing.hotline.features.title', { appName: process.env.NEXT_PUBLIC_APP_NAME })}
+            {t('landing.hotline.features.title', { appName })}
           </h3>
           <p className='text-gray-600 max-w-2xl mx-auto'>{t('landing.hotline.features.subtitle')}</p>
         </div>

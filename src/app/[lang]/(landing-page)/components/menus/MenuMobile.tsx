@@ -5,6 +5,7 @@ import { useParams, usePathname } from 'next/navigation'
 import useMenuLandingPage from '@/app/data/MenuLandingPage'
 import Link from '@components/Link'
 import { useModalContext } from '@/app/contexts/ModalContext'
+import { useBranding } from '@/app/contexts/BrandingContext'
 
 interface MenuMobileProps {
   onClose?: () => void
@@ -12,6 +13,7 @@ interface MenuMobileProps {
 
 export default function MenuMobile({ onClose }: MenuMobileProps) {
   const { openAuthModal } = useModalContext()
+  const { logo, name } = useBranding()
   const MenuLandingPage = useMenuLandingPage()
 
   const pathname = usePathname()
@@ -23,13 +25,11 @@ export default function MenuMobile({ onClose }: MenuMobileProps) {
     <div className='menu-container'>
       <div className='mobile-header'>
         <div className='mobile-logo'>
-          <img
-            src='/images/logo/Logo_MKT_Proxy.png'
-            alt='Logo_MKT_Proxy'
-            width={180}
-            height={50}
-            style={{ maxWidth: '100%', height: 'auto' }}
-          />
+          {logo ? (
+            <img src={logo} alt={name} width={180} height={50} style={{ maxWidth: '100%', height: 'auto', maxHeight: 50 }} />
+          ) : (
+            <span style={{ fontSize: '18px', fontWeight: 700, color: '#1e293b' }}>{name}</span>
+          )}
         </div>
         {/* Close Button */}
         <button className='btn-close-menu' onClick={onClose} aria-label='Đóng menu'>

@@ -25,6 +25,7 @@ import type { Locale } from '@/configs/configi18n'
 // Hook Imports
 import { useSettings } from '@core/hooks/useSettings'
 import { useLanguageSync } from '@/hooks/useLanguageSync'
+import { useBranding } from '@/app/contexts/BrandingContext'
 
 // Flags
 import flagEn from '@/../public/images/flags/united-states-of-america.png'
@@ -79,6 +80,7 @@ const LanguageDropdown = () => {
   
   // Sync i18n với URL language
   useLanguageSync()
+  const { primaryHover } = useBranding()
 
   const handleClose = () => {
     setOpen(false)
@@ -97,7 +99,7 @@ const LanguageDropdown = () => {
         onClick={handleToggle}
         sx={{
           borderRadius: '8px',
-          border: '1px solid #F88A4B',
+          border: `1px solid ${primaryHover}`,
           padding: '6px 12px',
           '&:hover': {
             borderRadius: '5px'

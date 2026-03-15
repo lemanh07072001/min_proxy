@@ -80,8 +80,8 @@ const colors = {
   textHover: 'var(--mui-palette-primary-main, #FC4336)',
   textMuted: '#a0aec0',
   bgHover: 'var(--mui-palette-action-hover, rgba(0,0,0,0.04))',
-  iconHoverSpecial: '#FC4336',
-  textActive: '#ffffff',
+  iconHoverSpecial: 'var(--mui-palette-primary-main, #FC4336)',
+  textActive: 'var(--primary-contrast, #ffffff)',
   bgActive: 'var(--primary-gradient)'
 }
 
@@ -94,16 +94,27 @@ const activeMenuItemStyles = {
   ['.' + menuClasses.button]: {
     background: `${colors.bgActive} !important`,
     color: `${colors.textActive} !important`,
+    borderRadius: '10px !important',
+    overflow: 'hidden',
 
     [`&.${menuClasses.active}`]: {
       background: `${colors.bgActive} !important`,
-      color: `${colors.textActive} !important`
+      color: `${colors.textActive} !important`,
+      borderRadius: '10px !important',
     },
     '&:hover': {
       background: `${colors.bgActive} !important`,
       opacity: 0.9,
       color: `${colors.textActive} !important`
-    }
+    },
+    // Ẩn ripple/shadow mặc định MUI
+    '&::after, &::before': {
+      display: 'none !important',
+    },
+    '& .MuiTouchRipple-root': {
+      display: 'none',
+    },
+    boxShadow: 'none !important',
   },
   ['.' + menuClasses.icon]: {
     color: `${colors.textActive} !important`
@@ -111,7 +122,8 @@ const activeMenuItemStyles = {
 
   [`&:not(.${menuClasses.subMenuRoot}) > .${menuClasses.button}.${menuClasses.active}`]: {
     background: `${colors.bgActive} !important`,
-    color: `${colors.textActive} !important`
+    color: `${colors.textActive} !important`,
+    borderRadius: '10px !important',
   },
   [`&:not(.${menuClasses.subMenuRoot}) > .${menuClasses.button}.${menuClasses.active} .${menuClasses.icon}`]: {
     color: `${colors.textActive} !important`
@@ -172,7 +184,7 @@ const VerticalMenu = ({ scrollMenu, dictionary }: Props) => {
       'home', 'recharge', 'proxy-tinh', 'proxy-xoay', 'check-proxy', 'history-order', 'affiliate',
       'transaction-history', 'contact', 'profile', 'history-login',
       'admin/dashboard', 'admin/transaction-history',
-      'admin/users', 'admin/service-type', 'admin/partner', 'admin/resellers', 'admin/announcements', 'admin/site-settings',
+      'admin/users', 'admin/service-type', 'admin/providers', 'admin/partners', 'admin/resellers', 'admin/announcements', 'admin/site-settings',
       'admin/transaction-bank', 'admin/support-tickets'
     ]
 
@@ -449,16 +461,25 @@ const VerticalMenu = ({ scrollMenu, dictionary }: Props) => {
                 Quản lý sản phẩm
               </MenuItem>
             )}
-            {hasPermission('admin.partner') && !isChild && (
+            {hasPermission('admin.provider') && !isChild && (
               <MenuItem
                 icon={<Handshake size={20} strokeWidth={1.5} />}
-                {...nav('admin/partner')}
-                href={`/${locale}/admin/partner`}
+                {...nav('admin/providers')}
+                href={`/${locale}/admin/providers`}
+              >
+                Nhà cung cấp
+              </MenuItem>
+            )}
+            {hasPermission('admin.provider') && (
+              <MenuItem
+                icon={<Handshake size={20} strokeWidth={1.5} />}
+                {...nav('admin/partners')}
+                href={`/${locale}/admin/partners`}
               >
                 Đối tác
               </MenuItem>
             )}
-            {hasPermission('admin.partner') && !isChild && (
+            {hasPermission('admin.provider') && !isChild && (
               <MenuItem
                 icon={<Users size={20} strokeWidth={1.5} />}
                 {...nav('admin/resellers')}
@@ -533,7 +554,7 @@ const VerticalMenu = ({ scrollMenu, dictionary }: Props) => {
                 {...nav('admin/site-settings')}
                 href={`/${locale}/admin/site-settings`}
               >
-                Cấu hình trang chủ
+                Cài đặt chung
               </MenuItem>
             )}
           </MenuSection>

@@ -56,7 +56,7 @@ import { formatDateTimeLocal } from '@/utils/formatDate'
 
 import { useAdminOrders } from '@/hooks/apis/useOrderReport'
 import { useCancelOrder, useResendOrder } from '@/hooks/apis/useOrders'
-import { usePartners } from '@/hooks/apis/usePartners'
+import { useProviders } from '@/hooks/apis/useProviders'
 import { useRetryPartial, useRefundPartial } from '@/hooks/apis/useTickets'
 import OrderDetailModal from '@/views/Client/Admin/TransactionHistory/OrderDetailModal'
 import FillProxiesDialog from '@/views/Client/Admin/Orders/FillProxiesDialog'
@@ -74,7 +74,7 @@ const STATUS_CONFIG: Record<number, { label: string; color: string }> = {
   7: { label: 'Chờ hoàn tiền', color: '#A855F7' },
   8: { label: 'Đã hoàn toàn bộ', color: '#EC4899' },
   9: { label: 'Đang mua bù', color: '#14B8A6' },
-  10: { label: 'Chờ đối tác', color: '#0EA5E9' }
+  10: { label: 'Chờ nhà cung cấp', color: '#0EA5E9' }
 }
 
 function StatCard({ title, value, icon: Icon, color }: { title: string; value: string | number; icon: any; color: string }) {
@@ -140,7 +140,7 @@ export default function AdminOrdersPage() {
   const [startInput, setStartInput] = useState(toInputDate(defaults.start))
   const [endInput, setEndInput] = useState(toInputDate(defaults.end))
   const [statusInput, setStatusInput] = useState<string>('')
-  const [partnerInput, setPartnerInput] = useState<string>('')
+  const [providerInput, setProviderInput] = useState<string>('')
   const [orderTypeInput, setOrderTypeInput] = useState<string>('')
 
   // Applied filters
@@ -148,7 +148,7 @@ export default function AdminOrdersPage() {
   const [startDate, setStartDate] = useState(defaults.start)
   const [endDate, setEndDate] = useState(defaults.end)
   const [statusFilter, setStatusFilter] = useState<number | null>(null)
-  const [partnerFilter, setPartnerFilter] = useState<number | null>(null)
+  const [providerFilter, setProviderFilter] = useState<number | null>(null)
   const [orderTypeFilter, setOrderTypeFilter] = useState<number | null>(null)
   const [displayPerPage, setDisplayPerPage] = useState(20)
   const [apiLimit, setApiLimit] = useState(100)
@@ -177,7 +177,7 @@ export default function AdminOrdersPage() {
       page: 1,
       per_page: apiLimit,
       status: statusFilter,
-      partner_id: partnerFilter,
+      provider_id: providerFilter,
       order_type: orderTypeFilter,
       sort_by: sortBy,
       sort_order: sortOrder
@@ -188,7 +188,7 @@ export default function AdminOrdersPage() {
   const retryMutation = useRetryPartial()
   const refundMutation = useRefundPartial()
 
-  const { data: partners = [] } = usePartners()
+  const { data: providers = [] } = useProviders()
   const cancelMutation = useCancelOrder()
   const resendMutation = useResendOrder()
 
@@ -241,13 +241,13 @@ return {
     setStartDate(fromInputDate(startInput))
     setEndDate(fromInputDate(endInput))
     setStatusFilter(statusInput !== '' ? Number(statusInput) : null)
-    setPartnerFilter(partnerInput !== '' ? Number(partnerInput) : null)
+    setProviderFilter(providerInput !== '' ? Number(providerInput) : null)
     setOrderTypeFilter(orderTypeInput !== '' ? Number(orderTypeInput) : null)
     setSearchQuery(searchInput.trim())
 
     // Invalidate cache để luôn fetch data mới nhất khi click Tìm kiếm
     queryClient.invalidateQueries({ queryKey: ['adminOrders'] })
-  }, [startInput, endInput, statusInput, partnerInput, orderTypeInput, searchInput, queryClient])
+  }, [startInput, endInput, statusInput, providerInput, orderTypeInput, searchInput, queryClient])
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => { if (e.key === 'Enter') handleApplyFilters() },
@@ -369,10 +369,10 @@ return {
         )
       },
       {
-        header: 'Đối tác',
+        header: 'Nhà cung cấp',
         size: 110,
         cell: ({ row }: { row: any }) => (
-          <span style={{ fontSize: '13px' }}>{row.original.partner_name || '-'}</span>
+          <span style={{ fontSize: '13px' }}>{row.original.provider_name || '-'}</span>
         )
       },
       {
@@ -642,15 +642,15 @@ return (
                   <CustomTextField
                     select
                     size='small'
-                    value={partnerInput}
-                    onChange={e => setPartnerInput(e.target.value)}
+                    value={providerInput}
+                    onChange={e => setProviderInput(e.target.value)}
                     sx={{ minWidth: 130, ...inputSx }}
                     slotProps={{ select: { displayEmpty: true } }}
                   >
                     <MenuItem value=''>
-                      <em>Tất cả đối tác</em>
+                      <em>Tất cả nhà cung cấp</em>
                     </MenuItem>
-                    {partners.map((p: any) => (
+                    {providers.map((p: any) => (
                       <MenuItem key={p.id} value={String(p.id)}>
                         {p.name}
                       </MenuItem>

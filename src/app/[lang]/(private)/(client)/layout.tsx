@@ -18,6 +18,7 @@ import ThemeProvider from '@components/theme'
 
 import AuthGuard from '@/hocs/AuthGuard'
 import PageTransition from '@/components/PageTransition'
+import BrandingThemeSync from '@/components/BrandingThemeSync'
 
 // Context Imports — chỉ 3 providers mà root layout CHƯA cung cấp
 // (NextAuthProvider + ModalContextProvider đã có ở root layout [lang]/layout.tsx)
@@ -51,6 +52,7 @@ const Layout = async (props: ChildrenType & { params: Promise<{ lang: string }> 
   return (
     <VerticalNavProvider>
       <SettingsProvider settingsCookie={settingsCookie} mode={mode}>
+        <BrandingThemeSync />
         <ThemeProvider direction='ltr' systemMode={systemMode}>
           <LayoutProvider>
             <LanguageSyncWrapper>

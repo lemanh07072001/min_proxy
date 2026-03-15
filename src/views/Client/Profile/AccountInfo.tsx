@@ -126,7 +126,8 @@ const AccountInfo = ({ dataUser }: ProfileProps) => {
           {!isEditing ? (
             <button
               onClick={() => setIsEditing(true)}
-              className='flex items-center space-x-2 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors'
+              className='flex items-center space-x-2 px-4 py-2 text-white rounded-lg transition-colors'
+              style={{ background: 'var(--primary-hover, #f97316)' }}
             >
               <Edit2 className='w-4 h-4' />
               <span>Chỉnh sửa</span>
@@ -144,7 +145,8 @@ const AccountInfo = ({ dataUser }: ProfileProps) => {
                 type='submit'
                 form='profile-form'
                 disabled={isPending}
-                className='flex items-center space-x-2 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors'
+                className='flex items-center space-x-2 px-4 py-2 text-white rounded-lg transition-colors'
+                style={{ background: 'var(--primary-hover, #f97316)' }}
               >
                 <Save className='w-4 h-4' />
                 <span>Lưu</span>
@@ -267,7 +269,7 @@ const AccountInfo = ({ dataUser }: ProfileProps) => {
             />
           </div>
 
-          <div className='mt-8 p-4 bg-gradient-to-r from-orange-50 to-orange-100 rounded-xl border border-orange-200'>
+          <div className='mt-8 p-4 rounded-xl' style={{ background: 'color-mix(in srgb, var(--primary-hover, #f97316) 10%, white)', border: '1px solid color-mix(in srgb, var(--primary-hover, #f97316) 20%, white)' }}>
             <h3 className='font-semibold text-gray-900 mb-2'>Thông tin tài khoản</h3>
             <div className='grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm'>
               <div>

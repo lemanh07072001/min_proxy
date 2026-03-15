@@ -7,9 +7,11 @@ import { Users, Target, Heart } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 import { useLanguageSync } from '@/hooks/useLanguageSync'
+import { useBranding } from '@/app/contexts/BrandingContext'
 
 const About = () => {
   const { t } = useTranslation()
+  const branding = useBranding()
 
   useLanguageSync()
   
@@ -51,7 +53,7 @@ const About = () => {
                     <Users className='w-8 h-8 text-red-600' />
                   </div>
                 </div>
-                <div className='text-4xl font-bold text-red-600'>{process.env.NEXT_PUBLIC_APP_NAME}</div>
+                <div className='text-4xl font-bold' style={{ color: 'var(--primary-hover, #ef4444)' }}>{branding.name}</div>
               </div>
             </div>
 

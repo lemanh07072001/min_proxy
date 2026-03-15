@@ -1,6 +1,11 @@
+'use client'
+
 import { CheckCircle } from 'lucide-react'
 
+import { useBranding } from '@/app/contexts/BrandingContext'
+
 export default function SuccessPage() {
+  const { name } = useBranding()
   return (
     <div className='bg-gradient-to-br flex items-center h-100 justify-center p-4'>
       <div className='max-w-md w-full'>
@@ -23,7 +28,7 @@ export default function SuccessPage() {
 
           <div className='bg-emerald-50 rounded-xl p-4 border border-emerald-100'>
             <div className='flex items-center justify-center gap-3 text-emerald-800'>
-              <p className='text-sm font-medium'>Chào mừng bạn đến với {process.env.NEXT_PUBLIC_APP_NAME}</p>
+              <p className='text-sm font-medium'>Chào mừng bạn đến với {name}</p>
             </div>
           </div>
 

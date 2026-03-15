@@ -30,7 +30,7 @@ const navLinkBase: React.CSSProperties = {
 
 const navLinkActive: React.CSSProperties = {
   ...navLinkBase,
-  color: '#ef4444',
+  color: 'var(--primary-hover, #ef4444)',
   fontWeight: 600
 }
 
@@ -39,7 +39,7 @@ const ctaPillStyle: React.CSSProperties = {
   alignItems: 'center',
   gap: 6,
   textDecoration: 'none',
-  background: 'linear-gradient(135deg, #ef4444, #f97316)',
+  background: 'var(--primary-gradient, linear-gradient(135deg, #ef4444, #f97316))',
   color: 'white',
   padding: '8px 22px',
   borderRadius: 50,
@@ -150,7 +150,7 @@ export default function MenuDesktop() {
               style={ctaPillStyle}
               onMouseEnter={e => {
                 ;(e.target as HTMLElement).style.transform = 'translateY(-1px)'
-                ;(e.target as HTMLElement).style.boxShadow = '0 4px 14px rgba(239, 68, 68, 0.35)'
+                ;(e.target as HTMLElement).style.boxShadow = '0 4px 14px rgba(0, 0, 0, 0.2)'
               }}
               onMouseLeave={e => {
                 ;(e.target as HTMLElement).style.transform = 'translateY(0)'

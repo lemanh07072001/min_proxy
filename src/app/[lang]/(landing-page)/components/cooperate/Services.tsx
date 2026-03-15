@@ -7,9 +7,11 @@ import { Shield, Globe, Zap, Check } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 import { useLanguageSync } from '@/hooks/useLanguageSync'
+import { useBranding } from '@/app/contexts/BrandingContext'
 
 const Services = () => {
   const { t } = useTranslation()
+  const branding = useBranding()
 
   useLanguageSync()
 
@@ -19,7 +21,7 @@ const Services = () => {
       icon: Shield,
       title: t('landing.cooperate.services.cards.ipv4.title'),
       description: t('landing.cooperate.services.cards.ipv4.description', {
-        appName: process.env.NEXT_PUBLIC_APP_NAME
+        appName: branding.name
       }),
       features: t('landing.cooperate.services.cards.ipv4.features', { returnObjects: true }) as string[],
       color: 'red'
@@ -29,7 +31,7 @@ const Services = () => {
       icon: Globe,
       title: t('landing.cooperate.services.cards.ipv6.title'),
       description: t('landing.cooperate.services.cards.ipv6.description', {
-        appName: process.env.NEXT_PUBLIC_APP_NAME
+        appName: branding.name
       }),
       features: t('landing.cooperate.services.cards.ipv6.features', { returnObjects: true }) as string[],
       color: 'blue'
@@ -39,7 +41,7 @@ const Services = () => {
       icon: Zap,
       title: t('landing.cooperate.services.cards.ipv6Rotating.title'),
       description: t('landing.cooperate.services.cards.ipv6Rotating.description', {
-        appName: process.env.NEXT_PUBLIC_APP_NAME
+        appName: branding.name
       }),
       features: t('landing.cooperate.services.cards.ipv6Rotating.features', { returnObjects: true }) as string[],
       color: 'green'

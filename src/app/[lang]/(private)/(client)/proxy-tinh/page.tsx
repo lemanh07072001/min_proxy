@@ -44,7 +44,7 @@ function ProxyPageSkeleton() {
             {[0, 1].map(j => (
               <div key={j} style={{ width: '100%', height: '40px', borderRadius: '8px', background: '#f8fafc', marginBottom: '10px', animation: 'skeletonPulse 1.5s ease-in-out infinite', animationDelay: `${i * 0.15 + j * 0.08}s` }} />
             ))}
-            <div style={{ width: '100%', height: '40px', borderRadius: '8px', background: '#fee2e2', marginTop: '8px', animation: 'skeletonPulse 1.5s ease-in-out infinite', animationDelay: `${i * 0.15 + 0.2}s` }} />
+            <div style={{ width: '100%', height: '40px', borderRadius: '8px', background: 'color-mix(in srgb, var(--primary-hover, #ef4444) 15%, white)', marginTop: '8px', animation: 'skeletonPulse 1.5s ease-in-out infinite', animationDelay: `${i * 0.15 + 0.2}s` }} />
           </div>
         ))}
       </div>

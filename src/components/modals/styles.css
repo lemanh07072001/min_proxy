@@ -109,7 +109,7 @@
 .login-form-input:focus,
 .register-form-input:focus {
   outline: none;
-  border-color: #ef4444;
+  border-color: var(--primary-hover, #ef4444);
   background: white;
   box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
 }
@@ -171,8 +171,8 @@
 
 .login-checkbox-input:checked + .login-checkbox-custom,
 .register-checkbox-input:checked + .register-checkbox-custom {
-  background: #ef4444;
-  border-color: #ef4444;
+  background: var(--primary-hover, #ef4444);
+  border-color: var(--primary-hover, #ef4444);
 }
 
 .login-checkbox-input:checked + .login-checkbox-custom::after,
@@ -211,7 +211,7 @@
 .login-submit-btn,
 .register-submit-btn {
   inline-size: 100%;
-  background: linear-gradient(135deg, #ef4444, #f97316);
+  background: var(--primary-gradient, linear-gradient(135deg, #ef4444, #f97316));
   color: white;
   border: none;
   padding: 14px;

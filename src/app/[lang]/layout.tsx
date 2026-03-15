@@ -54,6 +54,7 @@ import { NextAuthProvider } from '@/app/contexts/nextAuthProvider'
 import NavigationProgress from '@/components/NavigationProgress'
 
 import { siteConfig } from '@/configs/siteConfig'
+import { getServerBranding } from '@/utils/getServerBranding'
 
 const figtree = Figtree({
   subsets: ['latin'],
@@ -63,33 +64,46 @@ const figtree = Figtree({
 
 export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }): Promise<Metadata> {
   const resolvedParams = await params
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://mktproxy.com'
+  const lang = resolvedParams.lang as string
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || ''
+
+  // Fetch branding từ DB server-side → SEO đúng cho mỗi site
+  const branding = await getServerBranding()
+
+  // Tên site chỉ lấy từ DB — site con chưa setup thì rỗng, không fallback env
+  const siteName = branding.site_name || ''
+  const siteDesc = branding.site_description || ''
+  const faviconUrl = branding.favicon_url || ''
+  const ogImage = branding.og_image_url || ''
+
+  // SEO đa ngôn ngữ — lấy từ DB theo lang
+  const seoLang = branding.seo_meta?.[lang]
+  const seoTitle = seoLang?.title || (siteName && siteDesc ? `${siteName} - ${siteDesc}` : siteName || siteDesc || 'Proxy Service')
+  const seoDescription = seoLang?.description || siteDesc || ''
+  const seoKeywords = seoLang?.keywords
+    ? seoLang.keywords.split(',').map((k: string) => k.trim())
+    : siteName ? ['proxy', siteName] : ['proxy']
+
+  // Google verification
+  const verification = branding.google_verification
+    ? { google: branding.google_verification }
+    : undefined
 
   return {
-    title: `${siteConfig.name} - ${siteConfig.description}`,
-    description:
-      'Dịch vụ proxy bảo mật, tốc độ cao với hỗ trợ đa quốc gia. Giải pháp mạng riêng ảo tin cậy cho doanh nghiệp và cá nhân.',
-    keywords: [
-      'proxy',
-      'vpn',
-      'mạng',
-      'bảo mật',
-      'proxy Việt Nam',
-      'proxy quốc tế',
-      'mạng riêng ảo',
-      'bảo mật internet'
-    ],
-    authors: [{ name: siteConfig.name }],
-    creator: siteConfig.name,
-    publisher: siteConfig.name,
+    title: seoTitle,
+    description: seoDescription,
+    keywords: seoKeywords,
+    authors: [{ name: siteName }],
+    creator: siteName,
+    publisher: siteName,
     formatDetection: {
       email: false,
       address: false,
       telephone: false
     },
-    metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://mktproxy.com'),
+    metadataBase: new URL(baseUrl),
     alternates: {
-      canonical: `/${resolvedParams.lang}`,
+      canonical: `/${lang}`,
       languages: {
         vi: '/vi',
         en: '/en',
@@ -97,29 +111,21 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
         ko: '/ko'
       }
     },
-
+    verification,
     openGraph: {
       type: 'website',
-      locale: resolvedParams.lang === 'vi' ? 'vi_VN' : resolvedParams.lang === 'en' ? 'en_US' : 'vi_VN',
-      url: `${baseUrl}/${resolvedParams.lang}`,
-      title: `${siteConfig.name} - ${siteConfig.description}`,
-      description:
-        'Dịch vụ proxy bảo mật, tốc độ cao với hỗ trợ đa quốc gia. Giải pháp mạng riêng ảo tin cậy cho doanh nghiệp và cá nhân.',
-      siteName: siteConfig.name,
-      images: [
-        {
-          url: '/images/logo/image.png',
-          width: 1200,
-          height: 630,
-          alt: `${siteConfig.name} Logo`
-        }
-      ]
+      locale: lang === 'vi' ? 'vi_VN' : lang === 'en' ? 'en_US' : lang === 'ja' ? 'ja_JP' : lang === 'ko' ? 'ko_KR' : 'vi_VN',
+      url: `${baseUrl}/${lang}`,
+      title: seoTitle,
+      description: seoDescription,
+      siteName,
+      ...(ogImage ? { images: [{ url: ogImage, width: 1200, height: 630, alt: `${siteName} Logo` }] } : {})
     },
     twitter: {
       card: 'summary_large_image',
-      title: `${siteConfig.name} - ${siteConfig.description}`,
-      description: 'Dịch vụ proxy bảo mật, tốc độ cao với hỗ trợ đa quốc gia.',
-      images: ['/images/logo/image.png']
+      title: seoTitle,
+      description: seoDescription,
+      ...(ogImage ? { images: [ogImage] } : {})
     },
     robots: {
       index: true,
@@ -132,11 +138,13 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
         'max-snippet': -1
       }
     },
-    icons: {
-      icon: siteConfig.favicon,
-      shortcut: siteConfig.favicon,
-      apple: siteConfig.favicon
-    },
+    ...(faviconUrl ? {
+      icons: {
+        icon: faviconUrl,
+        shortcut: faviconUrl,
+        apple: faviconUrl
+      },
+    } : {}),
     manifest: '/manifest.json'
   }
 }
@@ -149,10 +157,11 @@ const RootLayout = async (props: ChildrenType & { params: Promise<{ lang: string
   const direction = i18n.langDirection[params.lang as Locale]
 
   // Fetch song song — không còn blocking API call /me
-  const [headersList, systemMode, session] = await Promise.all([
+  const [headersList, systemMode, session, branding] = await Promise.all([
     headers(),
     getSystemMode(),
-    getServerSession(authOptions as any) as any
+    getServerSession(authOptions as any) as any,
+    getServerBranding()
   ])
 
   // Dùng userData từ JWT session — không cần gọi API /me (tiết kiệm ~200-500ms)
@@ -165,13 +174,43 @@ const RootLayout = async (props: ChildrenType & { params: Promise<{ lang: string
           <style
             dangerouslySetInnerHTML={{
               __html: `html:root {
-  --primary-hover: ${siteConfig.primaryHover} !important;
-  --primary-gradient: ${siteConfig.primaryGradient} !important;
+  --primary-hover: ${branding.primary_hover || siteConfig.primaryHover} !important;
+  --primary-gradient: ${branding.primary_gradient || siteConfig.primaryGradient} !important;
+  --primary-color: ${branding.primary_color || siteConfig.primaryColor};
+  --site-logo: ${branding.logo_url ? `url('${branding.logo_url}')` : 'none'};
+  --site-name: '${(branding.site_name || '').replace(/'/g, "\\'")}';
+  --site-favicon: ${branding.favicon_url ? `url('${branding.favicon_url}')` : 'none'};
 }`
             }}
           />
+          {/* GTM — server-side inject để tracking từ đầu */}
+          {branding.gtm_id && (
+            <script
+              dangerouslySetInnerHTML={{
+                __html: `(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','${branding.gtm_id}');`
+              }}
+            />
+          )}
+          {/* Head scripts — server-side inject */}
+          {branding.head_scripts && (
+            <script dangerouslySetInnerHTML={{ __html: branding.head_scripts }} />
+          )}
         </head>
-        <body className='flex is-full min-bs-full flex-auto flex-col'>
+        <body
+          className='flex is-full min-bs-full flex-auto flex-col'
+          data-site-name={branding.site_name || ''}
+          data-site-description={branding.site_description || ''}
+          data-site-mode={branding.site_mode || 'child'}
+          data-footer-text={branding.footer_text || ''}
+          data-support-contact={branding.support_contact || ''}
+          data-org-phone={branding.organization_phone || ''}
+          data-org-email={branding.organization_email || ''}
+          data-org-address={branding.organization_address || ''}
+        >
+          {/* Body scripts — server-side */}
+          {branding.body_scripts && (
+            <script dangerouslySetInnerHTML={{ __html: branding.body_scripts }} />
+          )}
           <NavigationProgress />
           <I18nextProvider locale={params.lang as Locale}>
             <NextAuthProvider

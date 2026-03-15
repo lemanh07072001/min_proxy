@@ -7,6 +7,7 @@ import type { ChildrenType, Direction } from '@core/types'
 import { VerticalNavProvider } from '@menu/contexts/verticalNavContext'
 import { SettingsProvider } from '@core/contexts/settingsContext'
 import ThemeProvider from '@components/theme'
+import BrandingThemeSync from '@/components/BrandingThemeSync'
 import { ModalContextProvider } from '@/app/contexts/ModalContext'
 
 // Util Imports
@@ -34,6 +35,7 @@ const Providers = async (props: Props) => {
       <ModalContextProvider>
         <VerticalNavProvider>
           <SettingsProvider settingsCookie={settingsCookie} mode={mode}>
+            <BrandingThemeSync />
             <ThemeProvider direction={direction} systemMode={systemMode}>
               {children}
             </ThemeProvider>

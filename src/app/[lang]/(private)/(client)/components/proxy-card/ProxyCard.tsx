@@ -126,24 +126,20 @@ return
           ...((!isAvailable) ? { opacity: 0.7 } : {})
         }}
       >
-        {/* Tag badge — trên viền card */}
-        {visibleTags.length > 0 && (
-          <div style={{ position: 'absolute', top: '-12px', right: '14px', zIndex: 2, display: 'flex', gap: '6px' }}>
-            {visibleTags.map((tag: string, i: number) => {
-              const tagDef = getTagStyle(tag)
-
-              
-return <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '5px 14px', fontSize: '11.5px', fontWeight: 700, borderRadius: '20px', background: `linear-gradient(180deg, rgba(255,255,255,0.2) 0%, transparent 50%), ${tagDef.gradient || tagDef.bgColor}`, color: tagDef.textColor, boxShadow: `0 2px 10px ${tagDef.borderColor}55, inset 0 1px 0 rgba(255,255,255,0.2)`, border: '1px solid rgba(255,255,255,0.25)', letterSpacing: '0.3px', lineHeight: 1.2 }}>{tagDef.icon && <span style={{ fontSize: '12px' }}>{tagDef.icon}</span>}{tag.trim()}</span>
-            })}
-          </div>
-        )}
-
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-          {/* Header: title + price */}
+          {/* Header: title (trái) + tags (phải) */}
           <div className='card-header-column'>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <h3 className='provider-title-column'>{provider?.name ?? provider?.code} <span style={{ fontSize: '11px', fontWeight: 500, color: '#94a3b8' }}>#{provider?.id}</span></h3>
-              <div className='price-amount'>{priceOptions.length > 1 && <span style={{ fontSize: '12px', fontWeight: 500, color: '#94a3b8', marginRight: '2px' }}>từ</span>}{headerPrice.toLocaleString('vi-VN')}đ</div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
+              <h3 className='provider-title-column' style={{ flex: 1 }}>{provider?.name ?? provider?.code} <span style={{ fontSize: '11px', fontWeight: 500, color: '#94a3b8' }}>#{provider?.id}</span></h3>
+              {visibleTags.length > 0 && (
+                <div style={{ display: 'flex', gap: '4px', flexShrink: 0 }}>
+                  {visibleTags.map((tag: string, i: number) => {
+                    const tagDef = getTagStyle(tag)
+
+                    return <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: '3px', padding: '3px 10px', fontSize: '10.5px', fontWeight: 700, borderRadius: '6px', background: tagDef.gradient || tagDef.bgColor, color: tagDef.textColor, letterSpacing: '0.3px', lineHeight: 1.3 }}>{tagDef.icon && <span style={{ fontSize: '11px' }}>{tagDef.icon}</span>}{tag.trim()}</span>
+                  })}
+                </div>
+              )}
             </div>
           </div>
 
@@ -215,30 +211,20 @@ return <p style={{ fontSize: '13px', color: '#64748b', margin: '0 0 8px', lineHe
 
         </div>
 
-        {/* Footer: Nút mua */}
-        <div style={{ marginTop: 'auto', paddingTop: '10px' }}>
+        {/* Footer: giá (trái) + button (phải) — cùng 1 hàng */}
+        <div className='card-footer'>
+          <div className='price-amount'>
+            {priceOptions.length > 1 && <span style={{ fontSize: '12px', fontWeight: 500, color: '#94a3b8', marginRight: '2px' }}>từ </span>}
+            {headerPrice.toLocaleString('vi-VN')}đ
+          </div>
           {isAvailable ? (
-            <button type='button' className='buy-button' onClick={handleBuy}>
-              <ShoppingCart size={16} className='mr-2' />
-              Mua Proxy
+            <button type='button' className='buy-button' onClick={handleBuy} style={{ padding: '8px 18px' }}>
+              <ShoppingCart size={14} className='mr-1' />
+              Mua ngay
             </button>
           ) : (
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-                padding: '12px',
-                borderRadius: '8px',
-                backgroundColor: '#f1f5f9',
-                border: '1px solid #e2e8f0',
-                color: '#64748b',
-                fontSize: '14px',
-                fontWeight: 600
-              }}
-            >
-              Tạm ngừng bán
+            <div style={{ padding: '8px 14px', borderRadius: '8px', backgroundColor: '#f1f5f9', border: '1px solid #e2e8f0', color: '#64748b', fontSize: '13px', fontWeight: 600 }}>
+              Tạm ngừng
             </div>
           )}
         </div>

@@ -44,7 +44,7 @@ export function OverviewPage() {
   if (isLoading) {
     return (
       <div className='fixed inset-0 z-50 flex items-center justify-center bg-white'>
-        <div className='animate-spin rounded-full h-16 w-16 border-4 border-gray-300 border-t-orange-500' />
+        <div className='animate-spin rounded-full h-16 w-16 border-4 border-gray-300' style={{ borderTopColor: 'var(--primary-hover, #f97316)' }} />
       </div>
     )
   }
@@ -57,7 +57,7 @@ export function OverviewPage() {
         <div className='grid gap-4 md:grid-cols-3'>
           <div className='bg-card rounded-lg p-6 border' style={{ background: 'white' }}>
             <h3 className='text-sm font-medium text-muted-foreground'>Số dư tài khoản</h3>
-            <p className='text-2xl font-bold text-orange-600'>
+            <p className='text-2xl font-bold' style={{ color: 'var(--primary-hover, #f97316)' }}>
               {' '}
               {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(
                 dataOverview?.total_amount ?? 0

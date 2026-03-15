@@ -1,6 +1,7 @@
 import { Metadata } from 'next'
 
 import type { Locale } from '@/configs/configi18n'
+import { siteConfig } from '@/configs/siteConfig'
 
 interface SEOConfig {
   title: string
@@ -19,7 +20,7 @@ export function generateMetadata(
   locale: Locale = 'vi'
 ): Metadata {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://mktproxy.com'
-  const siteName = 'MKT Proxy'
+  const siteName = siteConfig.name
   
   const title = config.title.includes(siteName) 
     ? config.title 
@@ -34,9 +35,9 @@ export function generateMetadata(
     title,
     description,
     keywords,
-    authors: [{ name: config.author || 'MKT Proxy' }],
-    creator: 'MKT Proxy',
-    publisher: 'MKT Proxy',
+    authors: [{ name: config.author || siteConfig.name }],
+    creator: siteConfig.name,
+    publisher: siteConfig.name,
     metadataBase: new URL(baseUrl),
     alternates: {
       canonical: url,
@@ -112,23 +113,23 @@ export function generateStructuredData(
 // Predefined SEO configs cho các trang phổ biến
 export const seoConfigs = {
   home: {
-    title: 'MKT Proxy - Dịch vụ Proxy Chất Lượng Cao',
+    title: `${siteConfig.name} - Dịch vụ Proxy Chất Lượng Cao`,
     description: 'Dịch vụ proxy bảo mật, tốc độ cao với hỗ trợ đa quốc gia. Giải pháp mạng riêng ảo tin cậy cho doanh nghiệp và cá nhân.',
     keywords: ['proxy', 'vpn', 'mạng', 'bảo mật', 'proxy Việt Nam', 'proxy quốc tế'],
   },
   pricing: {
-    title: 'Bảng Giá Proxy - MKT Proxy',
+    title: `Bảng Giá Proxy - ${siteConfig.name}`,
     description: 'Xem bảng giá proxy cạnh tranh với nhiều gói dịch vụ phù hợp. Hỗ trợ thanh toán linh hoạt, cam kết chất lượng.',
     keywords: ['giá proxy', 'bảng giá', 'proxy giá rẻ', 'gói proxy'],
   },
   about: {
-    title: 'Về Chúng Tôi - MKT Proxy',
-    description: 'Tìm hiểu về MKT Proxy - đơn vị cung cấp dịch vụ proxy uy tín với nhiều năm kinh nghiệm trong lĩnh vực bảo mật mạng.',
+    title: `Về Chúng Tôi - ${siteConfig.name}`,
+    description: `Tìm hiểu về ${siteConfig.name} - đơn vị cung cấp dịch vụ proxy uy tín với nhiều năm kinh nghiệm trong lĩnh vực bảo mật mạng.`,
     keywords: ['về chúng tôi', 'giới thiệu', 'công ty proxy', 'uy tín'],
   },
   contact: {
-    title: 'Liên Hệ - MKT Proxy',
-    description: 'Liên hệ với MKT Proxy để được tư vấn và hỗ trợ. Hotline 24/7, email hỗ trợ nhanh chóng.',
+    title: `Liên Hệ - ${siteConfig.name}`,
+    description: `Liên hệ với ${siteConfig.name} để được tư vấn và hỗ trợ. Hotline 24/7, email hỗ trợ nhanh chóng.`,
     keywords: ['liên hệ', 'hỗ trợ', 'tư vấn', 'hotline'],
   },
 }

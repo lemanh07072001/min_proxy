@@ -217,7 +217,7 @@ return (
           color={Number(failRate) <= 5 ? 'text-green-600' : 'text-red-600'}
         />
         <StatRow
-          icon={<RefreshCw size={14} className='text-orange-500' />}
+          icon={<RefreshCw size={14} style={{ color: 'var(--primary-hover, #f97316)' }} />}
           label='Tỉ lệ hoàn tiền'
           value={`${refundRate}%`}
           sub={`${formatCurrency(revenue.refunded)} / ${formatCurrency(totalConfirmed)}`}

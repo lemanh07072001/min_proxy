@@ -52,7 +52,7 @@ export default function NavigationProgress() {
       <div
         style={{
           height: '100%',
-          background: 'linear-gradient(90deg, #FC4336, #FF6B35, #FC4336)',
+          background: 'var(--primary-gradient, linear-gradient(90deg, #FC4336, #FF6B35, #FC4336))',
           backgroundSize: '200% 100%',
           width: phase === 'finishing' ? '100%' : undefined,
           animation:
@@ -60,7 +60,7 @@ export default function NavigationProgress() {
               ? 'navGrow 4s cubic-bezier(0.1, 0.5, 0.3, 1) forwards, navShimmer 1.5s linear infinite'
               : 'none',
           transition: phase === 'finishing' ? 'width 0.2s ease' : undefined,
-          boxShadow: '0 0 10px rgba(252, 67, 54, 0.5)'
+          boxShadow: '0 0 10px rgba(0, 0, 0, 0.15)'
         }}
       />
       <style>{`

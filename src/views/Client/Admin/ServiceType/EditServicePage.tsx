@@ -34,7 +34,7 @@ import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
 
 import CustomTextField from '@/@core/components/mui/TextField'
-import { usePartners } from '@/hooks/apis/usePartners'
+import { useProviders } from '@/hooks/apis/useProviders'
 import { useServiceType, useUpdateServiceType, useServiceTypes } from '@/hooks/apis/useServiceType'
 import MultiInputModal from '@/views/Client/Admin/ServiceType/MultiInputModal'
 import PriceByDurationModal from '@/views/Client/Admin/ServiceType/PriceByDurationModal'
@@ -63,7 +63,7 @@ const schema = yup.object({
     .nullable()
     .transform(value => (value ? value.trim() : value)),
   status: yup.string().nullable().required('Trạng thái là bắt buộc'),
-  partner_id: yup.string().nullable().required('Đối tác là bắt buộc'),
+  provider_id: yup.string().nullable().required('Nhà cung cấp là bắt buộc'),
   type: yup.string().nullable().required('Loại dịch vụ là bắt buộc'),
   ip_version: yup.string().nullable().required('IP Version là bắt buộc'),
   protocols: yup
@@ -111,8 +111,8 @@ export default function EditServicePage({ serviceId }: EditServicePageProps) {
   const params = useParams()
   const { lang: locale } = params
 
-  // Fetch partners data
-  const { data: partners = [], isLoading: loadingPartners } = usePartners()
+  // Fetch providers data
+  const { data: providers = [], isLoading: loadingProviders } = useProviders()
 
   // React Hook Form
   const {
@@ -150,7 +150,7 @@ return { values: {}, errors: formattedErrors }
       cost_price: undefined,
       code: '',
       status: 'active',
-      partner_id: '',
+      provider_id: '',
       type: '0',
       ip_version: 'ipv4',
       protocols: [],
@@ -254,7 +254,7 @@ return Array.from(allProtocols).map(protocol => ({
         cost_price: serviceData.cost_price || undefined,
         code: serviceData.code || '',
         status: serviceData.status || 'active',
-        partner_id: serviceData.partner_id || '',
+        provider_id: serviceData.provider_id || '',
         type: serviceData.type || '0',
         ip_version: serviceData.ip_version || 'ipv4',
         protocols: serviceData.protocols || [],
@@ -590,7 +590,7 @@ return Array.from(allProtocols).map(protocol => ({
             <Grid2 container spacing={5} className='pb-6 border-b border-slate-200'>
               <Grid2 size={{ xs: 12, sm: 6 }}>
                 <Controller
-                  name='partner_id'
+                  name='provider_id'
                   control={control}
                   render={({ field }) => (
                     <CustomTextField
@@ -598,22 +598,22 @@ return Array.from(allProtocols).map(protocol => ({
                       size='medium'
                       fullWidth
                       select
-                      id='select-partner'
-                      label='Đối tác'
-                      disabled={loadingPartners}
-                      error={!!errors.partner_id}
-                      helperText={errors.partner_id?.message}
+                      id='select-provider'
+                      label='Nhà cung cấp'
+                      disabled={loadingProviders}
+                      error={!!errors.provider_id}
+                      helperText={errors.provider_id?.message}
                       slotProps={{
                         select: { displayEmpty: true },
                         htmlInput: { 'aria-label': 'Without label' }
                       }}
                     >
                       <MenuItem value=''>
-                        <em>{loadingPartners ? 'Đang tải...' : 'Chọn đối tác'}</em>
+                        <em>{loadingProviders ? 'Đang tải...' : 'Chọn nhà cung cấp'}</em>
                       </MenuItem>
-                      {partners?.map((partner: any) => (
-                        <MenuItem key={partner.id} value={partner.id}>
-                          {partner.title || partner.name}
+                      {providers?.map((provider: any) => (
+                        <MenuItem key={provider.id} value={provider.id}>
+                          {provider.title || provider.name}
                         </MenuItem>
                       ))}
                     </CustomTextField>

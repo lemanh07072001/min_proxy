@@ -10,6 +10,7 @@ import { Shield, Facebook, Send } from 'lucide-react'
 
 import { infoConfigs } from '@/configs/infoConfig'
 import Link from '@/components/Link'
+import { useBranding } from '@/app/contexts/BrandingContext'
 
 const companyLinks = [
   { label: 'Giới thiệu', href: '#' },
@@ -64,7 +65,7 @@ const LinkColumn = ({ title, links }: { title: string; links: { label: string; h
 const Footer = () => {
   const params = useParams()
   const locale = params.lang as string
-  const appName = process.env.NEXT_PUBLIC_APP_NAME || 'MKT Proxy'
+  const { name: appName, social_links } = useBranding()
 
   return (
     <footer
@@ -82,7 +83,7 @@ const Footer = () => {
               fontSize: '2.5rem',
               fontWeight: 800,
               marginBottom: 16,
-              background: 'linear-gradient(135deg, #ef4444, #f97316)',
+              background: 'var(--primary-gradient, linear-gradient(135deg, #ef4444, #f97316))',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text'
@@ -99,7 +100,7 @@ const Footer = () => {
               style={{
                 display: 'inline-block',
                 textDecoration: 'none',
-                background: 'linear-gradient(135deg, #ef4444, #f97316)',
+                background: 'var(--primary-gradient, linear-gradient(135deg, #ef4444, #f97316))',
                 color: 'white',
                 padding: '14px 32px',
                 borderRadius: 50,
@@ -160,7 +161,7 @@ const Footer = () => {
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <Shield size={28} color='#ef4444' />
+            <Shield size={28} color='var(--primary-hover, #ef4444)' />
             <span style={{ fontSize: 18, fontWeight: 700 }}>{appName}</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
@@ -260,11 +261,18 @@ const Footer = () => {
           marginBottom: 100
         }}
       >
-        {infoConfigs.map(item => (
-          <Link href={item.link} key={item.key} target='_blank'>
-            <Image src={item.icon} alt={item.title || 'Social Icon'} width={80} height={80} />
-          </Link>
-        ))}
+        {(social_links && social_links.length > 0
+          ? social_links.filter(l => l.url).map((link, i) => (
+            <Link href={link.url} key={i} target='_blank'>
+              <span style={{ fontSize: '14px', color: '#94a3b8' }}>{link.platform}</span>
+            </Link>
+          ))
+          : infoConfigs.map(item => (
+            <Link href={item.link} key={item.key} target='_blank'>
+              <Image src={item.icon} alt={item.title || 'Social Icon'} width={80} height={80} />
+            </Link>
+          ))
+        )}
       </div>
     </footer>
   )

@@ -771,12 +771,12 @@
       "contactInfo": {
         "hotline": {
           "title": "Hotline",
-          "phone": "0563072397",
+          "phone": "",
           "description": "Call now for free consultation"
         },
         "email": {
           "title": "Email",
-          "address": "mktproxy.com@gmail.com",
+          "address": "",
           "description": "Send email for detailed support"
         },
         "address": {
@@ -786,7 +786,7 @@
         },
         "website": {
           "title": "Website",
-          "url": "https://mktproxy.com",
+          "url": "",
           "description": "Visit official website"
         }
       },

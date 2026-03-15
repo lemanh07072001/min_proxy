@@ -379,20 +379,24 @@ export default function CheckProxyForm({ onItemListChange, onCheckedProxy }: Che
           {/* Check Button */}
           <LoadingButton
             variant='contained'
-            color='warning'
             type='submit'
             fullWidth
             loading={isLoading}
             loadingIndicator={<Loader size={25} className='spinning-icon spinning-icon-loading ' />}
             sx={{
-              background: 'var(--mui-palette-customCssVars-bgButtonPrimary)',
+              background: 'var(--primary-gradient, linear-gradient(45deg, #FC4336, #F88A4B))',
+              color: 'var(--primary-contrast, #fff)',
               padding: '16px 24px',
               borderRadius: '12px',
               fontWeight: 600,
               fontSize: '16px',
-              boxShadow: '0 4px 12px rgba(252, 67, 54, 0.3)',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
               marginBottom: '24px',
-              width: '100%'
+              width: '100%',
+              '&:hover': {
+                background: 'var(--primary-gradient, linear-gradient(45deg, #FC4336, #F88A4B))',
+                opacity: 0.9,
+              },
             }}
           >
             Kiểm tra

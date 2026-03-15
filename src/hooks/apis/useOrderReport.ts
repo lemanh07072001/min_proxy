@@ -6,7 +6,7 @@ import useAxiosAuth from '@/hocs/useAxiosAuth'
 interface OrderReportParams {
   start: string // DD-MM-YYYY
   end: string // DD-MM-YYYY
-  partner_id?: number | null
+  provider_id?: number | null
 }
 
 interface OrderDetailParams extends OrderReportParams {
@@ -71,7 +71,7 @@ function generateMockOrders(count = 50) {
     'HomeProxy Rotating 30d', 'ProxyVN Static 7d'
   ]
 
-  const partners = ['MktProxy', 'HomeProxy', 'ProxyVN', 'ZingProxy', 'Upproxy']
+  const providers = ['MktProxy', 'HomeProxy', 'ProxyVN', 'ZingProxy', 'Upproxy']
 
   const statusPool = [
     { s: 4, n: 'expired' }, { s: 2, n: 'in_use' }, { s: 4, n: 'expired' },
@@ -99,7 +99,7 @@ function generateMockOrders(count = 50) {
       order_code: `ORD-${ts}-${userId}-X${i}Y${i + 1}`,
       user_id: userId, user_name: names[i % names.length],
       service_name: services[i % services.length],
-      partner_name: partners[i % partners.length],
+      provider_name: providers[i % providers.length],
       quantity: qty, delivered_quantity: st.s === 5 ? 0 : qty,
       total_amount: qty * price, total_cost: Math.round(qty * price * 0.58),
       status: st.s, status_name: st.n,
@@ -145,13 +145,13 @@ export const useOrderReportSummary = (params: OrderReportParams, enabled = true)
   const axiosAuth = useAxiosAuth()
 
   return useQuery({
-    queryKey: ['orderReportSummary', params.start, params.end, params.partner_id],
+    queryKey: ['orderReportSummary', params.start, params.end, params.provider_id],
     queryFn: async () => {
       const res = await axiosAuth.get('/order-report/summary', {
         params: {
           start: params.start,
           end: params.end,
-          ...(params.partner_id ? { partner_id: params.partner_id } : {})
+          ...(params.provider_id ? { provider_id: params.provider_id } : {})
         }
       })
 
@@ -169,13 +169,13 @@ export const useOrderReportDetail = (params: OrderDetailParams, enabled = true) 
   const axiosAuth = useAxiosAuth()
 
   return useQuery({
-    queryKey: ['orderReportDetail', params.start, params.end, params.partner_id, params.status, params.per_page ?? 100],
+    queryKey: ['orderReportDetail', params.start, params.end, params.provider_id, params.status, params.per_page ?? 100],
     queryFn: async () => {
       const res = await axiosAuth.get('/order-report/detail', {
         params: {
           start: params.start,
           end: params.end,
-          ...(params.partner_id ? { partner_id: params.partner_id } : {}),
+          ...(params.provider_id ? { provider_id: params.provider_id } : {}),
           ...(params.status !== null && params.status !== undefined ? { status: params.status } : {}),
           per_page: params.per_page ?? 100
         }
@@ -200,7 +200,7 @@ export interface AdminOrdersParams {
   page?: number
   per_page?: number
   status?: number | null
-  partner_id?: number | null
+  provider_id?: number | null
   order_type?: number | null
   sort_by?: string
   sort_order?: string
@@ -210,10 +210,10 @@ export const useAdminOrders = (params: AdminOrdersParams, enabled = true) => {
   const { data: session } = useSession() as any
   const axiosAuth = useAxiosAuth()
 
-  const { start, end, page = 1, per_page = 100, status, partner_id, order_type, sort_by = 'created_at', sort_order = 'desc' } = params
+  const { start, end, page = 1, per_page = 100, status, provider_id, order_type, sort_by = 'created_at', sort_order = 'desc' } = params
 
   return useQuery({
-    queryKey: ['adminOrders', start, end, page, per_page, status, partner_id, order_type, sort_by, sort_order],
+    queryKey: ['adminOrders', start, end, page, per_page, status, provider_id, order_type, sort_by, sort_order],
     queryFn: async () => {
       const res = await axiosAuth.get('/order-report/detail', {
         params: {
@@ -224,7 +224,7 @@ export const useAdminOrders = (params: AdminOrdersParams, enabled = true) => {
           sort_by,
           sort_order,
           ...(status !== null && status !== undefined ? { status } : {}),
-          ...(partner_id ? { partner_id } : {}),
+          ...(provider_id ? { provider_id } : {}),
           ...(order_type !== null && order_type !== undefined ? { order_type } : {})
         }
       })

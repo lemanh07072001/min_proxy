@@ -9,6 +9,8 @@ import Box from '@mui/material/Box'
 
 import { SessionContext, useSession } from 'next-auth/react'
 
+import { useBranding } from '@/app/contexts/BrandingContext'
+
 import { User } from 'lucide-react'
 
 import MenuDesktop from './menus/MenuDesktop'
@@ -30,6 +32,7 @@ const MainHeader = () => {
   const { openAuthModal } = useModalContext()
   const sessionContext = useContext(SessionContext)
   const session = useSession()
+  const { logo, name } = useBranding()
 
   // Lightweight scroll listener thay cho framer-motion
   useEffect(() => {
@@ -100,15 +103,17 @@ const MainHeader = () => {
         >
           {/* Logo */}
           <a href='#' style={{ display: 'flex', alignItems: 'center', textDecoration: 'none', flexShrink: 0 }}>
-            <Image
-              src='/images/logo/Logo_MKT_Proxy.png'
-              alt='MKT Proxy'
-              width={150}
-              height={42}
-              priority
-              unoptimized
-              style={{ objectFit: 'contain' }}
-            />
+            {logo ? (
+              <img
+                src={logo}
+                alt={name}
+                width={150}
+                height={42}
+                style={{ objectFit: 'contain', maxWidth: '100%', maxHeight: 42 }}
+              />
+            ) : (
+              <span style={{ fontSize: '18px', fontWeight: 700, color: '#1e293b' }}>{name}</span>
+            )}
           </a>
 
           {/* Mobile: toggle + user actions */}

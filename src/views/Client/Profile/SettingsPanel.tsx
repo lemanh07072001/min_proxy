@@ -184,7 +184,7 @@ const SettingsPanel = () => {
       </div>
 
       <div className='flex justify-end'>
-        <button className='px-8 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg hover:from-orange-600 hover:to-orange-700 transition-all shadow-sm hover:shadow-md font-medium'>
+        <button className='px-8 py-3 text-white rounded-lg transition-all shadow-sm hover:shadow-md font-medium' style={{ background: 'var(--primary-gradient, linear-gradient(to right, #f97316, #ea580c))' }}>
           Lưu tất cả cài đặt
         </button>
       </div>

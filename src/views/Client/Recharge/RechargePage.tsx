@@ -73,7 +73,7 @@ export default function RechargePage() {
   const createBankQr = useCreateBankQr()
   const cancelBankQr = useCancelBankQr()
   const { data: pendingData, refetch: refetchPending } = usePendingBankQr(true, true)
-  const { data: bankInfo } = useBankInfo()
+  const { data: bankInfo, isLoading: loadingBank } = useBankInfo()
   const [, copy] = useCopy()
   const axiosAuth = useAxiosAuth()
 
@@ -230,7 +230,9 @@ return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`
     const addInfo = pendingRecord.note || pendingRecord.transaction_code
 
     
-return `https://img.vietqr.io/image/${bankInfo!.bank_code}-${bankInfo!.account_number}-compact2.png?amount=${pendingRecord.amount}&addInfo=${encodeURIComponent(addInfo)}`
+if (!bankInfo) return ''
+
+return `https://img.vietqr.io/image/${bankInfo.bank_code}-${bankInfo.account_number}-compact2.png?amount=${pendingRecord.amount}&addInfo=${encodeURIComponent(addInfo)}`
   }
 
   const handleCancelPending = async () => {
@@ -249,7 +251,8 @@ return `https://img.vietqr.io/image/${bankInfo!.bank_code}-${bankInfo!.account_n
 
   const handleCopyAll = () => {
     if (!pendingRecord) return
-    const textToCopy = `${bankInfo!.account_number} - ${bankInfo!.account_name} - ${pendingRecord.amount} - ${pendingRecord.note || pendingRecord.transaction_code}`
+    if (!bankInfo) return
+    const textToCopy = `${bankInfo.account_number} - ${bankInfo.account_name} - ${pendingRecord.amount} - ${pendingRecord.note || pendingRecord.transaction_code}`
 
     copy(textToCopy)
   }
@@ -600,9 +603,9 @@ return `https://img.vietqr.io/image/${bankInfo!.bank_code}-${bankInfo!.account_n
                     <Typography sx={{ fontSize: '20px', fontWeight: 'bold', textAlign: 'center', color: 'var(--primary-color)' }}>
                       {formatCurrency(String(pendingRecord.amount))} VNĐ
                     </Typography>
-                    <InfoRow label='Ngân hàng' value={bankInfo!.bank_name} />
-                    <InfoRow label='Số tài khoản' value={bankInfo!.account_number} copy={copy} />
-                    <InfoRow label='Chủ tài khoản' value={bankInfo!.account_name} copy={copy} />
+                    <InfoRow label='Ngân hàng' value={bankInfo?.bank_name || '—'} />
+                    <InfoRow label='Số tài khoản' value={bankInfo?.account_number || '—'} copy={copy} />
+                    <InfoRow label='Chủ tài khoản' value={bankInfo?.account_name || '—'} copy={copy} />
                     <InfoRow
                       label='Nội dung chuyển khoản'
                       value={pendingRecord.note || pendingRecord.transaction_code}
@@ -742,12 +745,12 @@ const BoxAmount = ({
         fontSize: '13px',
         cursor: 'pointer',
         transition: 'all 0.15s ease',
-        backgroundColor: isActive ? 'rgba(252, 67, 54, 0.08)' : '#f8fafc',
+        backgroundColor: isActive ? 'color-mix(in srgb, var(--primary-hover, #f97316) 8%, white)' : '#f8fafc',
         border: isActive ? '1.5px solid var(--primary-color)' : '1.5px solid #e2e8f0',
         color: isActive ? 'var(--primary-color)' : '#475569',
         '&:hover': {
           borderColor: 'var(--primary-color)',
-          backgroundColor: 'rgba(252, 67, 54, 0.05)',
+          backgroundColor: 'color-mix(in srgb, var(--primary-hover, #f97316) 5%, white)',
           color: 'var(--primary-color)'
         }
       }}

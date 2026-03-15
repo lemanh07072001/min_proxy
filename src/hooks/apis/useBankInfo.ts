@@ -9,14 +9,6 @@ export interface BankInfo {
   account_name: string
 }
 
-// Fallback cứng — dùng khi API chưa có data (backward compat)
-const BANK_INFO_FALLBACK: BankInfo = {
-  bank_name: 'Vietcombank',
-  bank_code: '970436',
-  account_number: '1056968673',
-  account_name: 'LUONG VAN THUY',
-}
-
 export const useBankInfo = () => {
   const axiosAuth = useAxiosAuth()
 
@@ -25,12 +17,12 @@ export const useBankInfo = () => {
     queryFn: async () => {
       const res = await axiosAuth.get('/get-bank-info')
 
-      return (res?.data?.data ?? BANK_INFO_FALLBACK) as BankInfo
+      if (!res?.data?.data) return null
+
+      return res.data.data as BankInfo
     },
     staleTime: 10 * 60 * 1000,
     refetchOnWindowFocus: false,
-    placeholderData: BANK_INFO_FALLBACK,
+    retry: 1,
   })
 }
-
-export { BANK_INFO_FALLBACK }

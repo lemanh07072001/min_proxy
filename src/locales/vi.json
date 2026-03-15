@@ -772,12 +772,12 @@
       "contactInfo": {
         "hotline": {
           "title": "Hotline",
-          "phone": "0563072397",
+          "phone": "",
           "description": "Gọi ngay để được tư vấn miễn phí"
         },
         "email": {
           "title": "Email",
-          "address": "mktproxy.com@gmail.com",
+          "address": "",
           "description": "Gửi email để được hỗ trợ chi tiết"
         },
         "address": {
@@ -787,7 +787,7 @@
         },
         "website": {
           "title": "Website",
-          "url": "https://mktproxy.com",
+          "url": "",
           "description": "Truy cập website chính thức"
         }
       },

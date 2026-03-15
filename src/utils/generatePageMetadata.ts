@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 
 import type { Locale } from '@/configs/configi18n'
+import { siteConfig } from '@/configs/siteConfig'
 
 interface PageMetadataConfig {
   title: string
@@ -20,17 +21,17 @@ export function generatePageMetadata(
   const fullPath = basePath ? `/${lang}${basePath}` : `/${lang}`
   const fullUrl = `${baseUrl}${fullPath}`
   
-  const title = config.title.includes('MKT Proxy') 
-    ? config.title 
-    : `${config.title} | MKT Proxy`
+  const title = config.title.includes(siteConfig.name)
+    ? config.title
+    : `${config.title} | ${siteConfig.name}`
   
   return {
     title,
     description: config.description,
     keywords: config.keywords || ['proxy', 'vpn', 'mạng', 'bảo mật'],
-    authors: [{ name: 'MKT Proxy' }],
-    creator: 'MKT Proxy',
-    publisher: 'MKT Proxy',
+    authors: [{ name: siteConfig.name }],
+    creator: siteConfig.name,
+    publisher: siteConfig.name,
     formatDetection: {
       email: false,
       address: false,
@@ -52,7 +53,7 @@ export function generatePageMetadata(
       url: fullUrl,
       title,
       description: config.description,
-      siteName: 'MKT Proxy',
+      siteName: siteConfig.name,
       images: [
         {
           url: config.image || '/images/logo/MKT_PROXY_2.png',
@@ -91,31 +92,31 @@ export function generatePageMetadata(
 // Predefined metadata configs cho các trang phổ biến
 export const pageMetadataConfigs = {
   home: {
-    title: 'MKT Proxy - Dịch vụ Proxy Chất Lượng Cao',
+    title: `${siteConfig.name} - Dịch vụ Proxy Chất Lượng Cao`,
     description: 'Dịch vụ proxy bảo mật, tốc độ cao với hỗ trợ đa quốc gia. Giải pháp mạng riêng ảo tin cậy cho doanh nghiệp và cá nhân.',
     keywords: ['proxy', 'vpn', 'mạng', 'bảo mật', 'proxy Việt Nam', 'proxy quốc tế'],
   },
   pricing: {
-    title: 'Bảng Giá Proxy - MKT Proxy',
+    title: `Bảng Giá Proxy - ${siteConfig.name}`,
     description: 'Xem bảng giá proxy cạnh tranh với nhiều gói dịch vụ phù hợp. Hỗ trợ thanh toán linh hoạt, cam kết chất lượng.',
     keywords: ['giá proxy', 'bảng giá', 'proxy giá rẻ', 'gói proxy'],
     path: '/pricing',
   },
   about: {
-    title: 'Về Chúng Tôi - MKT Proxy',
-    description: 'Tìm hiểu về MKT Proxy - đơn vị cung cấp dịch vụ proxy uy tín với nhiều năm kinh nghiệm trong lĩnh vực bảo mật mạng.',
+    title: `Về Chúng Tôi - ${siteConfig.name}`,
+    description: `Tìm hiểu về ${siteConfig.name} - đơn vị cung cấp dịch vụ proxy uy tín với nhiều năm kinh nghiệm trong lĩnh vực bảo mật mạng.`,
     keywords: ['về chúng tôi', 'giới thiệu', 'công ty proxy', 'uy tín'],
     path: '/about',
   },
   contact: {
-    title: 'Liên Hệ - MKT Proxy',
-    description: 'Liên hệ với MKT Proxy để được tư vấn và hỗ trợ. Hotline 24/7, email hỗ trợ nhanh chóng.',
+    title: `Liên Hệ - ${siteConfig.name}`,
+    description: `Liên hệ với ${siteConfig.name} để được tư vấn và hỗ trợ. Hotline 24/7, email hỗ trợ nhanh chóng.`,
     keywords: ['liên hệ', 'hỗ trợ', 'tư vấn', 'hotline'],
     path: '/contact',
   },
   features: {
-    title: 'Tính Năng - MKT Proxy',
-    description: 'Khám phá các tính năng nổi bật của dịch vụ proxy MKT: tốc độ cao, bảo mật tuyệt đối, hỗ trợ đa giao thức.',
+    title: `Tính Năng - ${siteConfig.name}`,
+    description: 'Khám phá các tính năng nổi bật của dịch vụ proxy: tốc độ cao, bảo mật tuyệt đối, hỗ trợ đa giao thức.',
     keywords: ['tính năng', 'proxy features', 'bảo mật', 'tốc độ'],
     path: '/features',
   },

@@ -97,7 +97,7 @@
   border-radius: 6px;
   word-break: break-all;
   flex: 1;
-  border: 1px solid rgba(252, 67, 54, 0.2);
+  border: 1px solid color-mix(in srgb, var(--primary-hover, #f97316) 20%, transparent);
 }
 
 .copy-btn-small {
@@ -313,7 +313,7 @@
 .status-select:focus {
   outline: none;
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(252, 67, 54, 0.1);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-hover, #f97316) 10%, transparent);
 }
 
 /* Type Filter */

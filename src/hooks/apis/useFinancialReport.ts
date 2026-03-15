@@ -21,9 +21,9 @@ export interface OrderStatusItem {
   total_amount: number
 }
 
-export interface PartnerBreakdownItem {
-  partner_id: number
-  partner_name: string
+export interface ProviderBreakdownItem {
+  provider_id: number
+  provider_name: string
   order_count: number
   total_amount: number
   cost_actual: number
@@ -76,7 +76,7 @@ export interface FinancialReportData {
     buy: number
     renewal: number
   }
-  partner_breakdown: PartnerBreakdownItem[]
+  provider_breakdown: ProviderBreakdownItem[]
   daily_trend: DailyTrendItem[]
 }
 
@@ -143,7 +143,7 @@ function generateMockTrend(): DailyTrendItem[] {
  * Quyết định chiến lược dựa trên data:
  * - Margin >35%: có room cho marketing spend
  * - Renewal 22%: cần chương trình giữ chân (loyalty, discount gia hạn)
- * - Partner margin <25%: negotiate giá hoặc chuyển traffic
+ * - Provider margin <25%: negotiate giá hoặc chuyển traffic
  * - Trend tăng: đang phát triển, duy trì momentum
  */
 export const MOCK_FINANCIAL: FinancialReportData = {
@@ -195,12 +195,12 @@ export const MOCK_FINANCIAL: FinancialReportData = {
     renewal: 218
   },
 
-  // Hiệu suất partner — sắp xếp theo profit giảm dần
+  // Hiệu suất provider — sắp xếp theo profit giảm dần
   // Manager dùng để quyết định phân bổ traffic + negotiate giá
-  partner_breakdown: [
+  provider_breakdown: [
     {
-      partner_id: 1,
-      partner_name: 'MktProxy',
+      provider_id: 1,
+      provider_name: 'MktProxy',
       order_count: 390,
       total_amount: 54_200_000,
       cost_actual: 23_800_000,
@@ -208,8 +208,8 @@ export const MOCK_FINANCIAL: FinancialReportData = {
       margin_percent: 53.2
     },
     {
-      partner_id: 2,
-      partner_name: 'HomeProxy',
+      provider_id: 2,
+      provider_name: 'HomeProxy',
       order_count: 245,
       total_amount: 37_500_000,
       cost_actual: 19_200_000,
@@ -217,8 +217,8 @@ export const MOCK_FINANCIAL: FinancialReportData = {
       margin_percent: 44.3
     },
     {
-      partner_id: 3,
-      partner_name: 'ProxyVN',
+      provider_id: 3,
+      provider_name: 'ProxyVN',
       order_count: 185,
       total_amount: 24_300_000,
       cost_actual: 14_500_000,
@@ -226,8 +226,8 @@ export const MOCK_FINANCIAL: FinancialReportData = {
       margin_percent: 37.0
     },
     {
-      partner_id: 4,
-      partner_name: 'ZingProxy',
+      provider_id: 4,
+      provider_name: 'ZingProxy',
       order_count: 102,
       total_amount: 14_800_000,
       cost_actual: 9_800_000,
@@ -235,8 +235,8 @@ export const MOCK_FINANCIAL: FinancialReportData = {
       margin_percent: 29.6
     },
     {
-      partner_id: 5,
-      partner_name: 'Upproxy',
+      provider_id: 5,
+      provider_name: 'Upproxy',
       order_count: 64,
       total_amount: 11_200_000,
       cost_actual: 8_100_000,

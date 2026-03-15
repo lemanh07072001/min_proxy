@@ -188,7 +188,7 @@ function GettingStarted({ apiKey, docsBase }: { apiKey: string; docsBase: string
               { step: '4', title: 'Sử dụng proxy', desc: 'Dùng proxy key từ đơn hàng để lấy/xoay IP.', api: 'GET /proxies/new?key=xxx' },
             ].map(s => (
               <div key={s.step} className='flex gap-3 items-start'>
-                <div className='w-7 h-7 rounded-full bg-orange-500 text-white text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5'>{s.step}</div>
+                <div className='w-7 h-7 rounded-full text-white text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5' style={{ background: 'var(--primary-hover, #f97316)' }}>{s.step}</div>
                 <div className='flex-1'>
                   <div className='text-sm font-semibold text-gray-900'>{s.title}</div>
                   <div className='text-xs text-gray-500 mt-0.5'>{s.desc}</div>

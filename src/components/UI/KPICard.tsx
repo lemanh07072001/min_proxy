@@ -48,12 +48,12 @@ export default function KPICard({ label, value, icon, delta, format = 'currency'
   const formattedValue = format === 'currency' ? formatCurrency(displayValue) : formatNumber(displayValue)
 
   return (
-    <div className='bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-300 p-4 cursor-pointer border border-gray-200 hover:border-[#f97316]/30 group'>
+    <div className='kpi-card bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-300 p-4 cursor-pointer border border-gray-200 group'>
       <div className='flex items-center justify-between mb-2'>
         <div>
           <p className='text-xs text-gray-600 font-semibold uppercase tracking-wide mb-2' >{label}</p>
-        
-          <h3 className='text-xl font-bold text-gray-900 group-hover:text-[#f97316] transition-colors mb-0'>
+
+          <h3 className='kpi-card-value text-xl font-bold text-gray-900 transition-colors mb-0'>
             {formattedValue} 
           </h3>
         </div>

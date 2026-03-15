@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 
-import ModalAddPartner from '@/views/Client/Admin/Partner/ModalAddPartner'
+import PartnerFormModal from '@/views/Client/Admin/Partner/PartnerFormModal'
 import TablePartner from '@/views/Client/Admin/Partner/TablePartner'
 
 export default function AdminPartnerPage() {
@@ -24,7 +24,7 @@ export default function AdminPartnerPage() {
   return (
     <>
       <TablePartner onOpenModal={handleOpenModal} />
-      <ModalAddPartner open={open} onClose={handleCloseModal} type={type} partnerData={partnerData} />
+      <PartnerFormModal open={open} onClose={handleCloseModal} type={type} partnerData={partnerData} />
     </>
   )
 }

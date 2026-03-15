@@ -251,13 +251,13 @@ export default function TableAnnouncements() {
               size='small'
               startIcon={<SquarePlus size={16} />}
               sx={{
-                background: 'linear-gradient(45deg, #fc4336, #f88a4b)',
+                background: 'var(--primary-gradient, linear-gradient(45deg, #fc4336, #f88a4b))',
                 color: '#fff',
-                boxShadow: '0 4px 12px rgba(252, 67, 54, 0.3)',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
                 fontWeight: 600,
                 fontSize: '13px',
                 textTransform: 'none',
-                '&:hover': { background: 'linear-gradient(45deg, #e53e2f, #e07840)', boxShadow: '0 6px 16px rgba(252, 67, 54, 0.4)' }
+                '&:hover': { opacity: 0.9, boxShadow: '0 6px 16px rgba(0, 0, 0, 0.2)' }
               }}
             >
               Thêm thông báo

@@ -18,6 +18,8 @@ import Button from '@mui/material/Button'
 
 import { Clock, Wallet } from 'lucide-react'
 
+import { useBranding } from '@/app/contexts/BrandingContext'
+
 import Box from '@mui/material/Box'
 
 import Typography from '@mui/material/Typography'
@@ -43,6 +45,7 @@ const NavbarContent = () => {
   const locale = params.lang || 'vi'
 
   const { openAuthModal } = useModalContext()
+  const { primaryHover } = useBranding()
 
   const isAuthenticated = session.status === 'authenticated'
   const { data: pendingData } = usePendingBankQr(isAuthenticated)
@@ -116,7 +119,13 @@ const NavbarContent = () => {
               padding: '7px 10px',
               fontSize: '0.875rem',
               display: 'flex',
-              gap: '10px'
+              gap: '10px',
+              borderColor: primaryHover,
+              color: primaryHover,
+              '&:hover': {
+                borderColor: primaryHover,
+                backgroundColor: `${primaryHover}14`,
+              }
             }}
           >
             <Wallet size={16} />

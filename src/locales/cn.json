@@ -770,12 +770,12 @@
       "contactInfo": {
         "hotline": {
           "title": "热线电话",
-          "phone": "0563072397",
+          "phone": "",
           "description": "立即致电免费咨询"
         },
         "email": {
           "title": "邮箱",
-          "address": "mktproxy.com@gmail.com",
+          "address": "",
           "description": "发送邮件获得详细支持"
         },
         "address": {
@@ -785,7 +785,7 @@
         },
         "website": {
           "title": "网站",
-          "url": "https://mktproxy.com",
+          "url": "",
           "description": "访问官方网站"
         }
       },

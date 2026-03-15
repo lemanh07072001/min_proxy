@@ -12,7 +12,7 @@ const BackgroundPattern = () => {
             <polygon
               points="30,2 50,15 50,37 30,50 10,37 10,15"
               fill="none"
-              stroke="#ef4444"
+              stroke="var(--primary-hover, #ef4444)"
               strokeWidth="1"
               opacity="0.3"
             />

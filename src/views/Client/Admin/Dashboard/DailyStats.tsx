@@ -64,9 +64,9 @@ export default function DailyStats() {
 
       <div className='space-y-6'>
         {/* Date Picker */}
-        <div className='bg-white/80 backdrop-blur-sm rounded-xl shadow-lg p-4 border-t-4 border-[#f97316] relative z-[100]'>
+        <div className='bg-white/80 backdrop-blur-sm rounded-xl shadow-lg p-4 relative z-[100]' style={{ borderTop: '4px solid var(--primary-hover, #f97316)' }}>
           <div className='flex items-center gap-2 mb-2'>
-            <Calendar size={20} className='text-[#f97316]' />
+            <Calendar size={20} style={{ color: 'var(--primary-hover, #f97316)' }} />
             <h3 className='text-sm font-semibold text-gray-900 mb-0'>Chọn Ngày</h3>
           </div>
           <div className='flex items-center gap-4'>
@@ -83,7 +83,7 @@ export default function DailyStats() {
         </div>
 
         {/* Key Metrics */}
-        <div className='bg-white/80 backdrop-blur-sm rounded-xl p-6 border-t-4 border-[#f97316] shadow-lg z-0'>
+        <div className='bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-lg z-0' style={{ borderTop: '4px solid var(--primary-hover, #f97316)' }}>
           <h3 className='text-sm font-semibold text-gray-700 uppercase tracking-wide mb-4'>Chỉ Số Chính</h3>
           <div className='grid sm:grid-cols-2 gap-4'>
             <KPICard

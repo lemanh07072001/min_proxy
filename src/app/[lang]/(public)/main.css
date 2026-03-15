@@ -516,7 +516,7 @@ body {
   content: '';
   position: absolute;
   inset: -5px;
-  border: 2px solid #ef4444;
+  border: 2px solid var(--primary-hover, #ef4444);
   border-radius: 50%;
   animation: ripple 2s infinite;
 }
@@ -664,7 +664,7 @@ body {
 }
 
 .product-card-modern.popular {
-  border: 2px solid #ef4444;
+  border: 2px solid var(--primary-hover, #ef4444);
   transform: scale(1.05);
 }
 
@@ -775,9 +775,9 @@ body {
 
 .buy-button {
   inline-size: 100%;
-  background: #fff5ed;
-  color: #d06830;
-  border: 1px solid #f0c4a0;
+  background: color-mix(in srgb, var(--primary-hover, #d06830) 12%, white);
+  color: var(--primary-hover, #d06830);
+  border: 1px solid color-mix(in srgb, var(--primary-hover, #d06830) 30%, transparent);
   padding: 8px;
   border-radius: 10px;
   font-weight: 600;
@@ -792,19 +792,19 @@ body {
 }
 
 .buy-button:hover {
-  background: #f0944e;
-  color: white;
-  border-color: #f0944e;
+  background: var(--primary-hover, #f0944e);
+  color: var(--primary-contrast, white);
+  border-color: var(--primary-hover, #f0944e);
   transform: translateY(-1px);
-  box-shadow: 0 3px 12px rgba(240, 148, 78, 0.3);
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.15);
 }
 
 .buy-button:active {
-  background: #dc8040;
-  color: white;
-  border-color: #dc8040;
+  background: var(--primary-hover, #dc8040);
+  color: var(--primary-contrast, white);
+  border-color: var(--primary-hover, #dc8040);
   transform: scale(0.98);
-  box-shadow: 0 1px 4px rgba(220, 128, 64, 0.2);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
 }
 
 .buy-button:focus-visible {
@@ -3228,7 +3228,7 @@ body {
 }
 
 .btn-secondary-modern:hover {
-  border-color: #ef4444;
+  border-color: var(--primary-hover, #ef4444);
   background: rgba(239, 68, 68, 0.1);
 }
 
@@ -3663,7 +3663,7 @@ body {
 
 .team-member:hover {
   transform: scale(1.1);
-  border-color: #ef4444;
+  border-color: var(--primary-hover, #ef4444);
   box-shadow: 0 6px 20px rgba(239, 68, 68, 0.3);
 }
 
@@ -4148,7 +4148,7 @@ body {
 .form-group-modern select:focus,
 .form-group-modern textarea:focus {
   outline: none;
-  border-color: #ef4444;
+  border-color: var(--primary-hover, #ef4444);
   box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
 }
 

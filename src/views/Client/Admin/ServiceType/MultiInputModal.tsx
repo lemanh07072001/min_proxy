@@ -18,9 +18,10 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
-  DialogActions
+  DialogActions,
+  IconButton
 } from '@mui/material'
-import { Plus, X } from 'lucide-react'
+import { FileText, Plus, X } from 'lucide-react'
 import { toast } from 'react-toastify'
 
 import CustomTextField from '@/@core/components/mui/TextField'
@@ -92,14 +93,16 @@ return
 
   return (
     <Dialog open={isOpen} onClose={handleClose} maxWidth='md' fullWidth>
-      <DialogTitle className='bg-gradient-to-r from-orange-500 to-orange-600 text-white flex items-center justify-between'>
-        <div className='text-xl text-white font-semibold '>Thông tin mô tả</div>
-        <button
-          onClick={handleClose}
-          className='text-white/80 hover:text-white bg-white/10 hover:bg-white/20 rounded-lg p-1 transition-all'
-        >
-          <X size={20} />
-        </button>
+      <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', py: 1.5, px: 2, borderBottom: '1px solid #e5e7eb' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'color-mix(in srgb, var(--primary-hover, #6366f1) 12%, white)' }}>
+            <FileText size={16} style={{ color: 'var(--primary-hover, #6366f1)' }} />
+          </div>
+          <span style={{ fontSize: '14px', fontWeight: 600, color: '#1f2937' }}>Thông tin mô tả</span>
+        </div>
+        <IconButton onClick={handleClose} size='small' sx={{ color: '#9ca3af' }}>
+          <X size={18} />
+        </IconButton>
       </DialogTitle>
       <DialogContent className='mt-4'>
         <div className='space-y-4'>

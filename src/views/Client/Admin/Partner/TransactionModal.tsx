@@ -159,29 +159,24 @@ return (
       PaperProps={{ sx: { overflow: 'visible' } }}
     >
       <div className='relative bg-white rounded-lg shadow-2xl w-full max-h-[90vh] overflow-hidden animate-slideUp mx-auto'>
-        <div className='relative bg-gradient-to-r from-orange-500 to-orange-600 px-4 sm:px-4 py-4 sm:py-4 flex items-center justify-between'>
-          <div className='flex items-center gap-2 sm:gap-3'>
-            <div className='w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-white/20 flex items-center justify-center'>
-              <List className='text-white' size={20} />
+        <div className='flex items-center justify-between px-4 py-3 border-b border-gray-200'>
+          <div className='flex items-center gap-2'>
+            <div className='w-8 h-8 rounded-lg flex items-center justify-center' style={{ background: 'color-mix(in srgb, var(--primary-hover, #6366f1) 12%, white)' }}>
+              <List size={16} style={{ color: 'var(--primary-hover, #6366f1)' }} />
             </div>
-            <div>
-              <h2 className='text-lg sm:text-xl font-bold text-white'>Lịch sử giao dịch</h2>
-              <p className='text-orange-100 text-xs sm:text-sm hidden sm:block'>
-                {partnerName || 'Đối tác'} - Chi tiết giao dịch nạp tiền
-              </p>
-            </div>
+            <h2 className='text-sm font-semibold text-gray-800'>Lịch sử giao dịch</h2>
           </div>
           <button
             onClick={onClose}
-            className='p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors'
+            className='p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors'
           >
-            <X size={20} />
+            <X size={18} />
           </button>
         </div>
 
         {isLoading ? (
           <div className='p-4 sm:p-6 flex flex-col items-center justify-center min-h-[300px] sm:min-h-[400px]'>
-            <Loader2 className='w-10 h-10 sm:w-12 sm:h-12 text-orange-500 animate-spin mb-4' />
+            <Loader2 className='w-10 h-10 sm:w-12 sm:h-12 animate-spin mb-4' style={{ color: 'var(--primary-hover, #f97316)' }} />
             <p className='text-gray-600 font-medium text-sm sm:text-base text-center'>
               Đang tải dữ liệu giao dịch...
             </p>

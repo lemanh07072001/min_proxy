@@ -2,9 +2,7 @@ import { useMemo, useState } from 'react'
 
 import Image from 'next/image'
 
-import { FormControlLabel } from '@mui/material'
-import Checkbox from '@mui/material/Checkbox'
-import { BadgeCheck, BadgeMinus, CircleQuestionMark, Clock, Clock3, Copy, TriangleAlert } from 'lucide-react'
+import { BadgeCheck, CircleQuestionMark, Clock3, TriangleAlert } from 'lucide-react'
 
 import {
   flexRender,
@@ -20,14 +18,13 @@ import Pagination from '@mui/material/Pagination'
 import { useQuery } from '@tanstack/react-query'
 
 import Chip from '@mui/material/Chip'
-import { useSession } from 'next-auth/react'
 
 import useAxiosAuth from '@/hocs/useAxiosAuth'
 import { formatDateTimeLocal } from '@/utils/formatDate'
 
 export default function UserWithdrawalTable() {
   const [columnFilters, setColumnFilters] = useState([])
-  const [rowSelection, setRowSelection] = useState({}) // State để lưu các hàng được chọn
+  const [rowSelection, setRowSelection] = useState({})
   const [sorting, setSorting] = useState([])
 
   const [pagination, setPagination] = useState({
@@ -36,7 +33,6 @@ export default function UserWithdrawalTable() {
   })
 
   const axiosAuth = useAxiosAuth()
-  const { data: session, status } = useSession()
 
   const { data: dataWithdrawal, isLoading } = useQuery({
     queryKey: ['withdrawal-user'],
@@ -47,12 +43,14 @@ export default function UserWithdrawalTable() {
     }
   })
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
+  const getStatusBadge = (status: number | string) => {
+    const s = Number(status)
+
+    switch (s) {
       case 1:
         return <Chip label='Đã thanh toán' size='small' icon={<BadgeCheck />} color='success' />
       case 0:
-        return <Chip label='Chưa thành toán' size='small' icon={<TriangleAlert />} color='error' />
+        return <Chip label='Chưa thanh toán' size='small' icon={<TriangleAlert />} color='error' />
       default:
         return <Chip label='Không xác định' size='small' icon={<CircleQuestionMark />} color='secondary' />
     }
@@ -63,68 +61,38 @@ export default function UserWithdrawalTable() {
       {
         accessorKey: 'created_at',
         header: 'Ngày',
-        cell: ({ row }) => {
-          return (
-            <>
-              <div className='d-flex align-items-center  gap-1 '>
-                <Clock3 size={14} />
-                <div style={{ marginTop: '2px' }}>{formatDateTimeLocal(row.original?.created_at)}</div>
-              </div>
-            </>
-          )
-        },
-        size: 10
+        cell: ({ row }: { row: any }) => (
+          <div className='d-flex align-items-center gap-1'>
+            <Clock3 size={14} />
+            <span style={{ marginTop: '2px' }}>{formatDateTimeLocal(row.original?.created_at)}</span>
+          </div>
+        ),
+        size: 160
       },
       {
         accessorKey: 'email',
         header: 'Email',
-        cell: ({ row }) => {
-          return row.original.email
-        },
-        size: 60
+        cell: ({ row }: { row: any }) => row.original.email,
+        size: 200
       },
       {
         header: 'Tổng số tiền nạp',
-        cell: ({ row }) => {
-          return (
-            <span className='text-red'>
-              {new Intl.NumberFormat('vi-VN').format(row.original.tong_don_hang) + ' đ' ?? 0}
-            </span>
-          )
-        },
-        size: 10
+        cell: ({ row }: { row: any }) => (
+          <span style={{ color: 'var(--primary-hover, #e53e3e)', fontWeight: 600 }}>
+            {new Intl.NumberFormat('vi-VN').format(row.original.tong_don_hang ?? 0)} đ
+          </span>
+        ),
+        size: 140
       },
       {
         header: 'Tổng số giao dịch',
-        cell: ({ row }) => {
-          return <span className='text-red'>{row.original.tong_don}</span>
-        },
-        size: 10
+        cell: ({ row }: { row: any }) => (
+          <span style={{ fontWeight: 600 }}>{row.original.tong_don ?? 0}</span>
+        ),
+        size: 120
       }
-
-      // {
-      //   header: 'Thu nhập',
-      //   cell: ({ row }) => {
-      //     // 1. Tính toán giá trị cần hiển thị (phần trăm hoa hồng)
-      //     const incomeValue = (row.original?.sotienthaydoi * session.user.affiliate_percent) / 100
-
-      //     // 2. Định dạng số theo chuẩn Việt Nam (ví dụ: 100.000)
-      //     const formattedValue = new Intl.NumberFormat('vi-VN').format(incomeValue)
-
-      //     // 3. Hiển thị kết quả bằng cách nối chuỗi đơn vị tiền tệ
-      //     return <span className='text-red'>{formattedValue} đ</span>
-      //   },
-      //   size: 10
-      // },
-
-      // {
-      //   header: 'Trạng thái',
-      //   cell: ({ row }) => {
-      //     return getStatusBadge(row.original?.is_payment_affiliate)
-      //   },
-      //   size: 10
-      // }
     ],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   )
 
@@ -137,14 +105,14 @@ export default function UserWithdrawalTable() {
       columnFilters,
       sorting
     },
-    enableRowSelection: true, // Bật tính năng chọn hàng
-    onRowSelectionChange: setRowSelection, // Cập nhật state khi có thay đổi
+    enableRowSelection: true,
+    onRowSelectionChange: setRowSelection,
     onPaginationChange: setPagination,
     onColumnFiltersChange: setColumnFilters,
     onSortingChange: setSorting,
 
     getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(), // Tùy chọn: cần thiết nếu có bộ lọc
+    getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getFacetedRowModel: getFacetedRowModel(),
@@ -158,9 +126,8 @@ export default function UserWithdrawalTable() {
 
   return (
     <div className='table-container' style={{ boxShadow: 'none' }}>
-      {/* Table */}
       <div className='table-wrapper'>
-        <table className='data-table' style={isLoading || dataWithdrawal.length === 0 ? { height: '100%' } : {}}>
+        <table className='data-table' style={isLoading || !dataWithdrawal?.length ? { height: '100%' } : {}}>
           <thead className='table-header'>
             {table.getHeaderGroups().map(headerGroup => (
               <tr key={headerGroup.id}>
@@ -210,7 +177,6 @@ export default function UserWithdrawalTable() {
         </table>
       </div>
 
-      {/* Pagination */}
       <div className='pagination-container'>
         <div className='pagination-wrapper flex justify-content-end'>
           <div className='pagination-buttons'>

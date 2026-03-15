@@ -23,7 +23,7 @@
 
 .language-toggle:hover {
     background: rgba(255, 255, 255, 0.15);
-    border-color: rgba(239, 68, 68, 0.3);
+    border-color: var(--primary-hover, #ef4444);
     transform: translateY(-1px);
 }
 
@@ -88,12 +88,26 @@
 }
 
 .language-option:hover {
-    background: rgba(239, 68, 68, 0.05);
-    color: #ef4444;
+    background: color-mix(in srgb, var(--primary-hover, #ef4444) 8%, transparent);
+    color: var(--primary-hover, #ef4444);
 }
 
 .language-option.active {
-    background: rgba(239, 68, 68, 0.1);
-    color: #ef4444;
+    background: color-mix(in srgb, var(--primary-hover, #ef4444) 12%, transparent);
+    color: var(--primary-hover, #ef4444);
     font-weight: 500;
+}
+
+.language-option .check-icon {
+    margin-left: auto;
+    color: var(--primary-hover, #ef4444);
+}
+
+.option-flag {
+    font-size: 18px;
+    line-height: 1;
+}
+
+.option-name {
+    flex: 1;
 }

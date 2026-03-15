@@ -2,17 +2,28 @@
 
 import { useState, useEffect, useRef } from 'react'
 
-import { Button, TextField, IconButton, Tooltip } from '@mui/material'
-import { Settings, Plus, Trash2, Save, Loader2, Upload, Palette } from 'lucide-react'
+import {
+  Button, TextField, IconButton, Tooltip, Tabs, Tab, Box, Alert,
+  MenuItem, Select, FormControl, InputLabel
+} from '@mui/material'
+import {
+  Settings, Plus, Trash2, Save, Loader2, Upload, Palette,
+  Search, Code, PanelLeft, Truck, Globe, Info, Eye, ShoppingCart, CreditCard
+} from 'lucide-react'
 import { toast } from 'react-toastify'
 
 import { useSidebarSettings, useUpdateSidebarSettings } from '@/hooks/apis/useSidebarSettings'
 import type { SupportLink, YoutubeVideo } from '@/hooks/apis/useSidebarSettings'
 import { useBrandingSettings, useUpdateBrandingSettings } from '@/hooks/apis/useBrandingSettings'
-import type { BrandingSettings } from '@/hooks/apis/useBrandingSettings'
+import type { BrandingSettings, SocialLink, SeoMeta } from '@/hooks/apis/useBrandingSettings'
 import { useSupplierSettings, useUpdateSupplierSettings } from '@/hooks/apis/useSupplierSettings'
+import { useBankSettings, useUpdateBankSettings } from '@/hooks/apis/useBankSettings'
+import type { BankSettings } from '@/hooks/apis/useBankSettings'
 import { useBranding } from '@/app/contexts/BrandingContext'
+import { siteConfig } from '@/configs/siteConfig'
 import useAxiosAuth from '@/hocs/useAxiosAuth'
+
+// ─── Constants ───────────────────────────────────────────────────────────────
 
 const ICON_OPTIONS = [
   { value: 'zalo', label: 'Zalo' },
@@ -22,18 +33,169 @@ const ICON_OPTIONS = [
   { value: 'other', label: 'Khác' }
 ]
 
+const SOCIAL_PLATFORM_OPTIONS = [
+  { value: 'facebook', label: 'Facebook' },
+  { value: 'telegram', label: 'Telegram' },
+  { value: 'zalo', label: 'Zalo' },
+  { value: 'tiktok', label: 'TikTok' },
+  { value: 'youtube', label: 'YouTube' },
+]
+
+const SEO_LANGUAGES = [
+  { code: 'vi', label: 'Tiếng Việt' },
+  { code: 'en', label: 'English' },
+  { code: 'ja', label: '日本語' },
+  { code: 'ko', label: '한국어' },
+]
+
+const SEO_PLACEHOLDERS: Record<string, { title: string; description: string; keywords: string }> = {
+  vi: {
+    title: `${siteConfig.name} - Dịch vụ Proxy Chất Lượng Cao`,
+    description: 'Cung cấp proxy residential, datacenter chất lượng cao cho mọi nhu cầu',
+    keywords: 'proxy, mua proxy, proxy việt nam, residential proxy',
+  },
+  en: {
+    title: `${siteConfig.name} - High Quality Proxy Service`,
+    description: 'Premium residential and datacenter proxies for all your needs',
+    keywords: 'proxy, buy proxy, residential proxy, datacenter proxy',
+  },
+  ja: {
+    title: `${siteConfig.name} - 高品質プロキシサービス`,
+    description: '高品質なレジデンシャルプロキシとデータセンタープロキシを提供',
+    keywords: 'プロキシ, proxy, レジデンシャルプロキシ',
+  },
+  ko: {
+    title: `${siteConfig.name} - 고품질 프록시 서비스`,
+    description: '모든 요구에 맞는 프리미엄 주거용 및 데이터센터 프록시',
+    keywords: '프록시, proxy, 레지덴셜 프록시',
+  },
+}
+
+const COLOR_PRESETS = [
+  {
+    name: 'Đỏ cam',
+    primary: '#FC4336',
+    hover: '#e63946',
+    gradient: 'linear-gradient(45deg, #FC4336, #F88A4B)',
+  },
+  {
+    name: 'Xanh dương',
+    primary: '#2092EC',
+    hover: '#1a7ad4',
+    gradient: 'linear-gradient(45deg, #2092EC, #5CAFF1)',
+  },
+  {
+    name: 'Xanh lá',
+    primary: '#0D9394',
+    hover: '#096B6C',
+    gradient: 'linear-gradient(45deg, #0D9394, #4EB0B1)',
+  },
+  {
+    name: 'Tím',
+    primary: '#7C3AED',
+    hover: '#6D28D9',
+    gradient: 'linear-gradient(45deg, #7C3AED, #A78BFA)',
+  },
+  {
+    name: 'Hồng',
+    primary: '#EC4899',
+    hover: '#DB2777',
+    gradient: 'linear-gradient(45deg, #EC4899, #F472B6)',
+  },
+]
+
+const BANK_LIST = [
+  { code: '970436', name: 'Vietcombank', shortName: 'VCB' },
+  { code: '970415', name: 'VietinBank', shortName: 'CTG' },
+  { code: '970418', name: 'BIDV', shortName: 'BIDV' },
+  { code: '970422', name: 'MB Bank', shortName: 'MB' },
+  { code: '970416', name: 'ACB', shortName: 'ACB' },
+  { code: '970407', name: 'Techcombank', shortName: 'TCB' },
+  { code: '970423', name: 'TPBank', shortName: 'TPB' },
+  { code: '970432', name: 'VPBank', shortName: 'VPB' },
+  { code: '970448', name: 'OCB', shortName: 'OCB' },
+  { code: '970405', name: 'Agribank', shortName: 'AGR' },
+  { code: '970403', name: 'Sacombank', shortName: 'STB' },
+  { code: '970406', name: 'DongA Bank', shortName: 'DAB' },
+  { code: '970441', name: 'VIB', shortName: 'VIB' },
+  { code: '970443', name: 'SHB', shortName: 'SHB' },
+  { code: '970431', name: 'Eximbank', shortName: 'EIB' },
+  { code: '970426', name: 'MSB', shortName: 'MSB' },
+  { code: '970454', name: 'Viet Capital Bank', shortName: 'BVB' },
+  { code: '970449', name: 'LienVietPostBank', shortName: 'LPB' },
+  { code: '970412', name: 'PVcomBank', shortName: 'PVC' },
+  { code: '970429', name: 'SeABank', shortName: 'SSB' },
+  { code: '970427', name: 'VietA Bank', shortName: 'VAB' },
+  { code: '970433', name: 'VietBank', shortName: 'VBB' },
+  { code: '970440', name: 'Nam A Bank', shortName: 'NAB' },
+  { code: '970437', name: 'HDBank', shortName: 'HDB' },
+  { code: '970424', name: 'Shinhan Bank', shortName: 'SHN' },
+  { code: '970425', name: 'ABBANK', shortName: 'ABB' },
+  { code: '970452', name: 'KienLong Bank', shortName: 'KLB' },
+]
+
 const emptySupportLink: SupportLink = { label: '', url: '', icon: 'other', color: '#3b82f6' }
 const emptyVideo: YoutubeVideo = { title: '', url: '' }
+const emptySocialLink: SocialLink = { platform: 'facebook', url: '' }
 
 const defaultBranding: BrandingSettings = {
   site_name: '',
   site_description: '',
   logo_url: '',
   favicon_url: '',
+  og_image_url: '',
   primary_color: '#FC4336',
   primary_hover: '#e63946',
   primary_gradient: 'linear-gradient(45deg, #FC4336, #F88A4B)',
+  seo_meta: null,
+  google_verification: '',
+  gtm_id: '',
+  organization_name: '',
+  organization_phone: '',
+  organization_email: '',
+  organization_address: '',
+  website_url: '',
+  working_hours: '',
+  tax_id: '',
+  social_links: [],
+  sidebar_description: '',
+  footer_text: '',
+  support_contact: '',
+  head_scripts: '',
+  body_scripts: '',
+  pay2s_webhook_token: '',
+  telegram_bot_token_system: '',
+  telegram_chat_id_system: '',
+  telegram_bot_token_deposit: '',
+  telegram_chat_id_deposit: '',
+  telegram_bot_token_error: '',
+  telegram_chat_id_error: '',
+  site_mode: null,
 }
+
+const defaultBank: BankSettings = {
+  bank_name: '',
+  bank_code: '',
+  bank_number: '',
+  bank_account: '',
+  format_chuyentien: '',
+}
+
+// ─── Styles ──────────────────────────────────────────────────────────────────
+
+const sectionTitleSx = { fontSize: '14px', fontWeight: 600, color: '#1e293b', margin: 0 }
+const sectionDescSx = { fontSize: '12px', color: '#94a3b8', margin: 0, marginTop: 2 }
+const fieldLabelSx = { fontSize: '12px', fontWeight: 600, color: '#475569', marginBottom: '6px' }
+
+const tabSx = {
+  textTransform: 'none' as const,
+  fontWeight: 500,
+  fontSize: '13px',
+  minHeight: 44,
+  gap: '6px',
+}
+
+// ─── Component ───────────────────────────────────────────────────────────────
 
 export default function SiteSettingsForm() {
   const axiosAuth = useAxiosAuth()
@@ -43,11 +205,18 @@ export default function SiteSettingsForm() {
   const updateSidebarMutation = useUpdateSidebarSettings()
   const updateBrandingMutation = useUpdateBrandingSettings()
 
-  // Supplier settings (chỉ site con)
   const { data: supplierData } = useSupplierSettings()
   const updateSupplierMutation = useUpdateSupplierSettings()
   const [supplier, setSupplier] = useState({ supplier_api_url: '', supplier_api_key: '' })
   const [supplierTestResult, setSupplierTestResult] = useState<any>(null)
+
+  const { data: bankData } = useBankSettings()
+  const updateBankMutation = useUpdateBankSettings()
+  const [bank, setBank] = useState<BankSettings>({ ...defaultBank })
+
+  const [activeTab, setActiveTab] = useState(0)
+  const [colorMode, setColorMode] = useState<'preset' | 'custom'>('preset')
+  const [seoLangTab, setSeoLangTab] = useState(0)
 
   const [supportLinks, setSupportLinks] = useState<SupportLink[]>([])
   const [youtubeVideos, setYoutubeVideos] = useState<YoutubeVideo[]>([])
@@ -55,11 +224,14 @@ export default function SiteSettingsForm() {
 
   const logoInputRef = useRef<HTMLInputElement>(null)
   const faviconInputRef = useRef<HTMLInputElement>(null)
+  const ogImageInputRef = useRef<HTMLInputElement>(null)
+
+  // ─── Effects ─────────────────────────────────────────────────────────────
 
   useEffect(() => {
     if (sidebarData) {
-      setSupportLinks(sidebarData.support_links.length > 0 ? sidebarData.support_links : [{ ...emptySupportLink }])
-      setYoutubeVideos(sidebarData.youtube_videos.length > 0 ? sidebarData.youtube_videos : [{ ...emptyVideo }])
+      setSupportLinks(sidebarData.support_links || [])
+      setYoutubeVideos(sidebarData.youtube_videos || [])
     }
   }, [sidebarData])
 
@@ -70,9 +242,34 @@ export default function SiteSettingsForm() {
         site_description: brandingData.site_description || '',
         logo_url: brandingData.logo_url || '',
         favicon_url: brandingData.favicon_url || '',
+        og_image_url: brandingData.og_image_url || '',
         primary_color: brandingData.primary_color || '#FC4336',
         primary_hover: brandingData.primary_hover || '#e63946',
         primary_gradient: brandingData.primary_gradient || 'linear-gradient(45deg, #FC4336, #F88A4B)',
+        seo_meta: brandingData.seo_meta || {},
+        google_verification: brandingData.google_verification || '',
+        gtm_id: brandingData.gtm_id || '',
+        organization_name: brandingData.organization_name || '',
+        organization_phone: brandingData.organization_phone || '',
+        organization_email: brandingData.organization_email || '',
+        organization_address: brandingData.organization_address || '',
+        website_url: brandingData.website_url || '',
+        working_hours: brandingData.working_hours || '',
+        tax_id: brandingData.tax_id || '',
+        social_links: brandingData.social_links || [],
+        sidebar_description: brandingData.sidebar_description || '',
+        footer_text: brandingData.footer_text || '',
+        support_contact: brandingData.support_contact || '',
+        head_scripts: brandingData.head_scripts || '',
+        body_scripts: brandingData.body_scripts || '',
+        pay2s_webhook_token: brandingData.pay2s_webhook_token || '',
+        telegram_bot_token_system: brandingData.telegram_bot_token_system || '',
+        telegram_chat_id_system: brandingData.telegram_chat_id_system || '',
+        telegram_bot_token_deposit: brandingData.telegram_bot_token_deposit || '',
+        telegram_chat_id_deposit: brandingData.telegram_chat_id_deposit || '',
+        telegram_bot_token_error: brandingData.telegram_bot_token_error || '',
+        telegram_chat_id_error: brandingData.telegram_chat_id_error || '',
+        site_mode: brandingData.site_mode || null,
       })
     }
   }, [brandingData])
@@ -86,11 +283,30 @@ export default function SiteSettingsForm() {
     }
   }, [supplierData])
 
-  const handleImageUpload = async (file: File, field: 'logo_url' | 'favicon_url') => {
+  useEffect(() => {
+    if (bankData) {
+      setBank({
+        bank_name: bankData.bank_name || '',
+        bank_code: bankData.bank_code || '',
+        bank_number: bankData.bank_number || '',
+        bank_account: bankData.bank_account || '',
+        format_chuyentien: bankData.format_chuyentien || '',
+      })
+    }
+  }, [bankData])
+
+  // ─── Handlers ────────────────────────────────────────────────────────────
+
+  const handleImageUpload = async (file: File, field: 'logo_url' | 'favicon_url' | 'og_image_url') => {
     const formData = new FormData()
 
     formData.append('image', file)
     formData.append('folder', 'branding')
+
+    // Gửi URL ảnh cũ để BE xóa file cũ, giảm tải server
+    const oldUrl = branding[field]
+
+    if (oldUrl) formData.append('old_url', oldUrl as string)
 
     try {
       const res = await axiosAuth.post('/admin/upload-image', formData, {
@@ -98,8 +314,15 @@ export default function SiteSettingsForm() {
       })
 
       if (res.data.success) {
-        setBranding(prev => ({ ...prev, [field]: res.data.url }))
-        toast.success('Upload thành công')
+        const url = res.data.url
+
+        setBranding(prev => ({ ...prev, [field]: url }))
+
+        // Auto save field ảnh ngay
+        updateBrandingMutation.mutate({ [field]: url } as any, {
+          onSuccess: () => toast.success('Cập nhật thành công'),
+          onError: () => toast.error('Lưu thất bại'),
+        })
       }
     } catch {
       toast.error('Lỗi upload ảnh')
@@ -136,11 +359,65 @@ export default function SiteSettingsForm() {
     setYoutubeVideos(prev => prev.map((item, i) => (i === idx ? { ...item, [field]: value } : item)))
   }
 
-  const updateBrandingField = (field: keyof BrandingSettings, value: string) => {
+  const updateBrandingField = (field: keyof BrandingSettings, value: any) => {
     setBranding(prev => ({ ...prev, [field]: value }))
   }
 
+  // Xóa ảnh → lưu DB ngay (gửi empty string để BE xóa key)
+  const resetImageField = (field: 'logo_url' | 'favicon_url' | 'og_image_url') => {
+    setBranding(prev => ({ ...prev, [field]: '' }))
+    updateBrandingMutation.mutate({ [field]: '' } as any, {
+      onSuccess: () => toast.success('Đã về mặc định'),
+      onError: () => toast.error('Lỗi cập nhật'),
+    })
+  }
+
+  const updateSeoMeta = (lang: string, field: keyof SeoMeta, value: string) => {
+    setBranding(prev => {
+      const seo = { ...(prev.seo_meta || {}) }
+
+      seo[lang] = { ...(seo[lang] || {}), [field]: value }
+
+      return { ...prev, seo_meta: seo }
+    })
+  }
+
+  const updateSocialLink = (idx: number, field: keyof SocialLink, value: string) => {
+    setBranding(prev => {
+      const links = [...(prev.social_links || [])]
+
+      links[idx] = { ...links[idx], [field]: value }
+
+      return { ...prev, social_links: links }
+    })
+  }
+
+  const addSocialLink = () => {
+    setBranding(prev => ({
+      ...prev,
+      social_links: [...(prev.social_links || []), { ...emptySocialLink }]
+    }))
+  }
+
+  const removeSocialLink = (idx: number) => {
+    setBranding(prev => ({
+      ...prev,
+      social_links: (prev.social_links || []).filter((_, i) => i !== idx)
+    }))
+  }
+
+  const applyColorPreset = (preset: typeof COLOR_PRESETS[0]) => {
+    setBranding(prev => ({
+      ...prev,
+      primary_color: preset.primary,
+      primary_hover: preset.hover,
+      primary_gradient: preset.gradient,
+    }))
+  }
+
   const isPending = updateSidebarMutation.isPending || updateBrandingMutation.isPending
+
+  // ─── Loading ─────────────────────────────────────────────────────────────
 
   if (loadingSidebar || loadingBranding) {
     return (
@@ -152,15 +429,30 @@ export default function SiteSettingsForm() {
     )
   }
 
+  // ─── Tab panels ──────────────────────────────────────────────────────────
+
+  const availableTabs = [
+    { label: 'Thương hiệu', icon: <Palette size={16} /> },
+    { label: 'Màu sắc', icon: <Palette size={16} /> },
+    { label: 'SEO', icon: <Search size={16} /> },
+    { label: 'Nâng cao', icon: <Code size={16} /> },
+    { label: 'Sidebar', icon: <PanelLeft size={16} /> },
+    { label: 'Thanh toán', icon: <CreditCard size={16} /> },
+    ...(isChild ? [{ label: 'Nhà cung cấp', icon: <Truck size={16} /> }] : []),
+  ]
+
+  // ─── Render ──────────────────────────────────────────────────────────────
+
   return (
     <div className='orders-content'>
       <div className='table-container'>
+        {/* Header toolbar */}
         <div className='table-toolbar'>
           <div className='header-left'>
             <div className='page-icon'>
               <Settings size={17} />
             </div>
-            <h5 style={{ margin: 0, fontWeight: 600, fontSize: '15px', color: '#1e293b' }}>Cấu hình trang chủ</h5>
+            <h5 style={{ margin: 0, fontWeight: 600, fontSize: '15px', color: '#1e293b' }}>Cài đặt chung</h5>
           </div>
           <div className='header-right'>
             <Button
@@ -170,16 +462,13 @@ export default function SiteSettingsForm() {
               startIcon={isPending ? <Loader2 size={16} className='animate-spin' /> : <Save size={16} />}
               disabled={isPending}
               sx={{
-                background: 'linear-gradient(45deg, #fc4336, #f88a4b)',
+                background: 'var(--primary-gradient, linear-gradient(45deg, #fc4336, #f88a4b))',
                 color: '#fff',
-                boxShadow: '0 4px 12px rgba(252, 67, 54, 0.3)',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
                 fontWeight: 600,
                 fontSize: '13px',
                 textTransform: 'none',
-                '&:hover': {
-                  background: 'linear-gradient(45deg, #e53e2f, #e07840)',
-                  boxShadow: '0 6px 16px rgba(252, 67, 54, 0.4)'
-                }
+                '&:hover': { opacity: 0.9, boxShadow: '0 6px 16px rgba(0, 0, 0, 0.2)' }
               }}
             >
               {isPending ? 'Đang lưu...' : 'Lưu cấu hình'}
@@ -187,26 +476,44 @@ export default function SiteSettingsForm() {
           </div>
         </div>
 
-        <div style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 32 }}>
-          {/* ========== Branding Section ========== */}
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-              <Palette size={18} style={{ color: '#6366f1' }} />
-              <h6 style={{ fontSize: '14px', fontWeight: 600, color: '#1e293b', margin: 0 }}>
-                Thương hiệu
-              </h6>
-              <span style={{ fontSize: '12px', color: '#94a3b8' }}>— Thay đổi tên, logo, màu sắc site</span>
-            </div>
+        {/* Tabs */}
+        <Box sx={{ borderBottom: 1, borderColor: 'divider', px: 2 }}>
+          <Tabs
+            value={activeTab}
+            onChange={(_, v) => setActiveTab(v)}
+            variant='scrollable'
+            scrollButtons='auto'
+            sx={{
+              minHeight: 44,
+              '& .MuiTab-root': { minHeight: 44 },
+              '& .MuiTabs-indicator': { height: 2.5, borderRadius: 2 },
+            }}
+          >
+            {availableTabs.map((t, i) => (
+              <Tab key={i} icon={t.icon} iconPosition='start' label={t.label} sx={tabSx} />
+            ))}
+          </Tabs>
+        </Box>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-              {/* Row 1: Name + Description */}
+        {/* Tab content */}
+        <div style={{ padding: 20 }}>
+
+          {/* ═══════════════ Tab 0: Thương hiệu ═══════════════ */}
+          {activeTab === 0 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+              <div>
+                <h6 style={sectionTitleSx}>Thông tin cơ bản</h6>
+                <p style={sectionDescSx}>Hiển thị ở: tab trình duyệt, header trang, kết quả tìm kiếm Google, khi chia sẻ link trên Zalo/Facebook</p>
+              </div>
+
+              {/* Name + Description */}
               <div style={{ display: 'flex', gap: 12 }}>
                 <TextField
                   size='small'
                   label='Tên site'
                   value={branding.site_name}
                   onChange={e => updateBrandingField('site_name', e.target.value)}
-                  placeholder='VD: MKT Proxy'
+                  placeholder={`VD: ${siteConfig.name}`}
                   sx={{ flex: 1 }}
                 />
                 <TextField
@@ -219,17 +526,26 @@ export default function SiteSettingsForm() {
                 />
               </div>
 
-              {/* Row 2: Logo + Favicon */}
+              {/* Logo + Favicon + OG Image */}
+              <div>
+                <h6 style={sectionTitleSx}>Hình ảnh</h6>
+                <p style={sectionDescSx}>Upload ảnh xong tự động lưu. Xóa ảnh sẽ về hình mặc định của hệ thống.</p>
+              </div>
               <div style={{ display: 'flex', gap: 24 }}>
+                {/* Logo */}
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: '12px', fontWeight: 600, color: '#475569', marginBottom: 6 }}>Logo</div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                    {branding.logo_url && (
+                  <div style={fieldLabelSx}>Logo <span style={{ fontWeight: 400, color: '#94a3b8' }}>— Hiển thị ở sidebar + header. PNG/SVG nền trong suốt, 360x100px</span></div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    {branding.logo_url ? (
                       <img
                         src={branding.logo_url}
                         alt='Logo'
                         style={{ maxHeight: 40, maxWidth: 160, objectFit: 'contain', border: '1px solid #e2e8f0', borderRadius: 6, padding: 4 }}
                       />
+                    ) : (
+                      <div style={{ height: 40, padding: '0 12px', display: 'flex', alignItems: 'center', border: '1px dashed #cbd5e1', borderRadius: 6, color: '#94a3b8', fontSize: '12px' }}>
+                        Đang dùng logo mặc định
+                      </div>
                     )}
                     <Button
                       variant='outlined'
@@ -238,13 +554,20 @@ export default function SiteSettingsForm() {
                       onClick={() => logoInputRef.current?.click()}
                       sx={{ textTransform: 'none', fontSize: '12px' }}
                     >
-                      {branding.logo_url ? 'Thay logo' : 'Upload logo'}
+                      {branding.logo_url ? 'Thay' : 'Tải lên'}
                     </Button>
+                    {branding.logo_url && (
+                      <Tooltip title='Về logo mặc định'>
+                        <IconButton size='small' onClick={() => resetImageField('logo_url')} sx={{ color: '#94a3b8', '&:hover': { color: '#ef4444' } }}>
+                          <Trash2 size={14} />
+                        </IconButton>
+                      </Tooltip>
+                    )}
                     <input
                       ref={logoInputRef}
                       type='file'
                       hidden
-                      accept='image/*'
+                      accept='image/png,image/svg+xml,image/webp'
                       onChange={e => {
                         const file = e.target.files?.[0]
 
@@ -254,15 +577,21 @@ export default function SiteSettingsForm() {
                     />
                   </div>
                 </div>
+
+                {/* Favicon */}
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: '12px', fontWeight: 600, color: '#475569', marginBottom: 6 }}>Favicon</div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                    {branding.favicon_url && (
+                  <div style={fieldLabelSx}>Favicon <span style={{ fontWeight: 400, color: '#94a3b8' }}>— Icon nhỏ trên tab trình duyệt. PNG/ICO vuông 32x32px</span></div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    {branding.favicon_url ? (
                       <img
                         src={branding.favicon_url}
                         alt='Favicon'
                         style={{ width: 32, height: 32, objectFit: 'contain', border: '1px solid #e2e8f0', borderRadius: 6, padding: 2 }}
                       />
+                    ) : (
+                      <div style={{ width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px dashed #cbd5e1', borderRadius: 6, color: '#cbd5e1', fontSize: '10px' }}>
+                        ?
+                      </div>
                     )}
                     <Button
                       variant='outlined'
@@ -271,13 +600,20 @@ export default function SiteSettingsForm() {
                       onClick={() => faviconInputRef.current?.click()}
                       sx={{ textTransform: 'none', fontSize: '12px' }}
                     >
-                      {branding.favicon_url ? 'Thay favicon' : 'Upload favicon'}
+                      {branding.favicon_url ? 'Thay' : 'Tải lên'}
                     </Button>
+                    {branding.favicon_url && (
+                      <Tooltip title='Về favicon mặc định'>
+                        <IconButton size='small' onClick={() => resetImageField('favicon_url')} sx={{ color: '#94a3b8', '&:hover': { color: '#ef4444' } }}>
+                          <Trash2 size={14} />
+                        </IconButton>
+                      </Tooltip>
+                    )}
                     <input
                       ref={faviconInputRef}
                       type='file'
                       hidden
-                      accept='image/*'
+                      accept='image/png,image/x-icon,image/svg+xml'
                       onChange={e => {
                         const file = e.target.files?.[0]
 
@@ -287,254 +623,1028 @@ export default function SiteSettingsForm() {
                     />
                   </div>
                 </div>
+
+                {/* OG Image */}
+                <div style={{ flex: 1 }}>
+                  <div style={fieldLabelSx}>OG Image <span style={{ fontWeight: 400, color: '#94a3b8' }}>— Ảnh hiện khi chia sẻ link lên Facebook/Zalo. 1200x630px</span></div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    {branding.og_image_url ? (
+                      <img
+                        src={branding.og_image_url}
+                        alt='OG Image'
+                        style={{ maxHeight: 40, maxWidth: 80, objectFit: 'cover', border: '1px solid #e2e8f0', borderRadius: 6, padding: 2 }}
+                      />
+                    ) : (
+                      <div style={{ height: 40, padding: '0 12px', display: 'flex', alignItems: 'center', border: '1px dashed #cbd5e1', borderRadius: 6, color: '#94a3b8', fontSize: '12px' }}>
+                        Chưa có
+                      </div>
+                    )}
+                    <Button
+                      variant='outlined'
+                      size='small'
+                      startIcon={<Upload size={14} />}
+                      onClick={() => ogImageInputRef.current?.click()}
+                      sx={{ textTransform: 'none', fontSize: '12px' }}
+                    >
+                      {branding.og_image_url ? 'Thay' : 'Tải lên'}
+                    </Button>
+                    {branding.og_image_url && (
+                      <Tooltip title='Xóa OG image'>
+                        <IconButton size='small' onClick={() => resetImageField('og_image_url')} sx={{ color: '#94a3b8', '&:hover': { color: '#ef4444' } }}>
+                          <Trash2 size={14} />
+                        </IconButton>
+                      </Tooltip>
+                    )}
+                    <input
+                      ref={ogImageInputRef}
+                      type='file'
+                      hidden
+                      accept='image/*'
+                      onChange={e => {
+                        const file = e.target.files?.[0]
+
+                        if (file) handleImageUpload(file, 'og_image_url')
+                        e.target.value = ''
+                      }}
+                    />
+                  </div>
+                </div>
               </div>
 
-              {/* Row 3: Colors */}
-              <div style={{ display: 'flex', gap: 12, alignItems: 'flex-end' }}>
-                <div>
-                  <div style={{ fontSize: '12px', fontWeight: 600, color: '#475569', marginBottom: 6 }}>Màu chủ đạo</div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <input
-                      type='color'
-                      value={branding.primary_color || '#FC4336'}
-                      onChange={e => updateBrandingField('primary_color', e.target.value)}
-                      style={{ width: 36, height: 36, border: '1px solid #e2e8f0', borderRadius: 6, cursor: 'pointer', padding: 2 }}
-                    />
-                    <TextField
-                      size='small'
-                      value={branding.primary_color}
-                      onChange={e => updateBrandingField('primary_color', e.target.value)}
-                      sx={{ width: 100 }}
-                      slotProps={{ input: { style: { fontSize: '13px' } } }}
-                    />
-                  </div>
-                </div>
-                <div>
-                  <div style={{ fontSize: '12px', fontWeight: 600, color: '#475569', marginBottom: 6 }}>Màu hover</div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <input
-                      type='color'
-                      value={branding.primary_hover || '#e63946'}
-                      onChange={e => updateBrandingField('primary_hover', e.target.value)}
-                      style={{ width: 36, height: 36, border: '1px solid #e2e8f0', borderRadius: 6, cursor: 'pointer', padding: 2 }}
-                    />
-                    <TextField
-                      size='small'
-                      value={branding.primary_hover}
-                      onChange={e => updateBrandingField('primary_hover', e.target.value)}
-                      sx={{ width: 100 }}
-                      slotProps={{ input: { style: { fontSize: '13px' } } }}
-                    />
-                  </div>
-                </div>
-                <TextField
-                  size='small'
-                  label='Gradient'
-                  value={branding.primary_gradient}
-                  onChange={e => updateBrandingField('primary_gradient', e.target.value)}
-                  placeholder='linear-gradient(45deg, #FC4336, #F88A4B)'
-                  sx={{ flex: 1 }}
-                  slotProps={{ input: { style: { fontSize: '13px' } } }}
-                />
-                {/* Live preview */}
+              {/* Sidebar description, footer, support contact */}
+              <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: 20 }}>
+                <h6 style={sectionTitleSx}>Nội dung hiển thị</h6>
+                <p style={sectionDescSx}>Các thông tin này không bắt buộc — chỉ điền khi muốn hiển thị</p>
+              </div>
+              <TextField
+                size='small'
+                label='Mô tả sidebar'
+                value={branding.sidebar_description}
+                onChange={e => updateBrandingField('sidebar_description', e.target.value)}
+                placeholder='VD: Proxy tốc độ cao, hỗ trợ 24/7'
+                helperText='Hiển thị dưới logo trong menu bên trái. Để trống nếu không cần.'
+                multiline
+                minRows={2}
+                maxRows={4}
+                fullWidth
+              />
+              <TextField
+                size='small'
+                label='Nội dung footer'
+                value={branding.footer_text}
+                onChange={e => updateBrandingField('footer_text', e.target.value)}
+                placeholder={`VD: © 2024 ${siteConfig.name}. All rights reserved.`}
+                helperText='Hiển thị ở cuối trang. Để trống sẽ dùng tên site mặc định.'
+                multiline
+                minRows={2}
+                maxRows={4}
+                fullWidth
+              />
+              <TextField
+                size='small'
+                label='Liên hệ hỗ trợ'
+                value={branding.support_contact}
+                onChange={e => updateBrandingField('support_contact', e.target.value)}
+                placeholder='VD: Zalo: 0123456789, Telegram: @mktproxy'
+                helperText='Hiển thị ở sidebar hoặc footer để khách liên hệ. Để trống nếu không cần.'
+                fullWidth
+              />
+            </div>
+          )}
+
+          {/* ═══════════════ Tab 1: Màu sắc ═══════════════ */}
+          {activeTab === 1 && (() => {
+            const pc = branding.primary_color || '#FC4336'
+            const ph = branding.primary_hover || '#e63946'
+            const pg = branding.primary_gradient || 'linear-gradient(45deg, #FC4336, #F88A4B)'
+            const isPreset = COLOR_PRESETS.some(p => branding.primary_color === p.primary && branding.primary_gradient === p.gradient)
+            const currentPresetName = COLOR_PRESETS.find(p => branding.primary_color === p.primary)?.name
+
+            return (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+
+              {/* ── Phần 1: Chọn màu ── */}
+              <div>
+                <h6 style={sectionTitleSx}>Chọn màu cho site của bạn</h6>
+                <p style={sectionDescSx}>Chọn 1 màu bên dưới — toàn bộ nút bấm, menu, viền, đường link trên site sẽ đổi theo. Xem kết quả ngay bên dưới.</p>
+              </div>
+
+              <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                {COLOR_PRESETS.map((preset) => {
+                  const isActive = branding.primary_color === preset.primary && branding.primary_gradient === preset.gradient
+
+                  return (
+                    <div
+                      key={preset.name}
+                      onClick={() => { applyColorPreset(preset); setColorMode('preset') }}
+                      style={{
+                        padding: '10px 22px', borderRadius: 10, cursor: 'pointer',
+                        background: preset.gradient,
+                        border: isActive ? `2px solid ${preset.primary}` : '2px solid transparent',
+                        outline: isActive ? `3px solid ${preset.primary}33` : 'none',
+                        boxShadow: isActive ? `0 0 0 4px ${preset.primary}22` : '0 2px 6px rgba(0,0,0,0.08)',
+                        transition: 'all 0.15s ease',
+                        transform: isActive ? 'scale(1.05)' : 'scale(1)',
+                      }}
+                    >
+                      <span style={{ fontSize: '13px', color: '#fff', fontWeight: 700, textShadow: '0 1px 3px rgba(0,0,0,0.3)', whiteSpace: 'nowrap' }}>
+                        {isActive ? `✓ ${preset.name}` : preset.name}
+                      </span>
+                    </div>
+                  )
+                })}
+              </div>
+
+              {/* Tự chọn màu */}
+              <div>
                 <div
-                  style={{
-                    width: 80,
-                    height: 36,
-                    borderRadius: 8,
-                    background: branding.primary_gradient || 'linear-gradient(45deg, #FC4336, #F88A4B)',
-                    border: '1px solid #e2e8f0',
-                    flexShrink: 0,
+                  onClick={() => setColorMode(colorMode === 'custom' ? 'preset' : 'custom')}
+                  style={{ fontSize: '13px', fontWeight: 600, color: '#64748b', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 0' }}
+                >
+                  {colorMode === 'custom' ? '▾' : '▸'} Không thích màu có sẵn? Tự chọn màu
+                  {!isPreset && <span style={{ fontSize: '11px', color: '#22c55e', fontWeight: 500, marginLeft: 4 }}>✓ Đang dùng</span>}
+                </div>
+
+                {colorMode === 'custom' && (() => {
+                  const darken = (hex: string, pct: number) => {
+                    const n = parseInt(hex.replace('#', ''), 16)
+                    const r = Math.max(0, Math.round(((n >> 16) & 0xFF) * (1 - pct)))
+                    const g = Math.max(0, Math.round(((n >> 8) & 0xFF) * (1 - pct)))
+                    const b = Math.max(0, Math.round((n & 0xFF) * (1 - pct)))
+
+                    return `#${(r << 16 | g << 8 | b).toString(16).padStart(6, '0')}`
+                  }
+                  const lighten = (hex: string, pct: number) => {
+                    const n = parseInt(hex.replace('#', ''), 16)
+                    const r = Math.min(255, Math.round(((n >> 16) & 0xFF) + (255 - ((n >> 16) & 0xFF)) * pct))
+                    const g = Math.min(255, Math.round(((n >> 8) & 0xFF) + (255 - ((n >> 8) & 0xFF)) * pct))
+                    const b = Math.min(255, Math.round((n & 0xFF) + (255 - (n & 0xFF)) * pct))
+
+                    return `#${(r << 16 | g << 8 | b).toString(16).padStart(6, '0')}`
+                  }
+
+                  const applyCustomColor = (c: string) => {
+                    setBranding(prev => ({
+                      ...prev,
+                      primary_color: c,
+                      primary_hover: darken(c, 0.12),
+                      primary_gradient: `linear-gradient(45deg, ${c}, ${lighten(c, 0.25)})`,
+                    }))
+                  }
+
+                  // Các kiểu gradient có sẵn từ màu đã chọn
+                  // Các kiểu hiệu ứng — phải khác biệt rõ ràng
+                  const gradientStyles = [
+                    { name: 'Một màu', value: pc, desc: 'Đơn giản, chuyên nghiệp' },
+                    { name: 'Ấm dần', value: `linear-gradient(135deg, ${pc}, ${lighten(pc, 0.35)})`, desc: 'Đậm sang sáng' },
+                    { name: 'Hoàng hôn', value: `linear-gradient(135deg, ${darken(pc, 0.2)}, ${pc}, ${lighten(pc, 0.4)})`, desc: '3 tông màu mượt' },
+                    { name: 'Ánh kim', value: `linear-gradient(135deg, ${pc}, ${lighten(pc, 0.15)}, ${pc})`, desc: 'Lấp lánh, nổi bật' },
+                    { name: 'Neon', value: `linear-gradient(135deg, ${darken(pc, 0.3)}, ${lighten(pc, 0.5)})`, desc: 'Tương phản mạnh' },
+                  ]
+
+                  return (
+                    <div style={{ padding: 16, marginTop: 8, border: '1px solid #e2e8f0', borderRadius: 12, background: '#fafafa', display: 'flex', flexDirection: 'column', gap: 16 }}>
+
+                      {/* Bước 1: Chọn màu */}
+                      <div>
+                        <div style={{ fontSize: '13px', fontWeight: 600, color: '#1e293b', marginBottom: 8 }}>Bước 1: Chọn màu chính</div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                          <input
+                            type='color'
+                            value={pc}
+                            onChange={e => applyCustomColor(e.target.value)}
+                            style={{ width: 48, height: 48, border: '2px solid #e2e8f0', borderRadius: 10, cursor: 'pointer', padding: 3 }}
+                          />
+                          <div>
+                            <div style={{ fontSize: '13px', fontWeight: 600, color: '#1e293b' }}>{pc}</div>
+                            <div style={{ fontSize: '11px', color: '#94a3b8' }}>Nhấn ô màu bên trái để đổi</div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Bước 2: Chọn kiểu hiệu ứng */}
+                      <div>
+                        <div style={{ fontSize: '13px', fontWeight: 600, color: '#1e293b', marginBottom: 4 }}>Bước 2: Nút bấm và menu trông như thế nào?</div>
+                        <div style={{ fontSize: '11px', color: '#94a3b8', marginBottom: 12 }}>Chọn kiểu bạn thích — nhấn vào để xem thay đổi bên dưới</div>
+                        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                          {gradientStyles.map(gs => {
+                            const isSelected = branding.primary_gradient === gs.value
+
+                            return (
+                              <div
+                                key={gs.name}
+                                onClick={() => updateBrandingField('primary_gradient', gs.value)}
+                                style={{
+                                  cursor: 'pointer', borderRadius: 12, overflow: 'hidden', width: 130,
+                                  border: isSelected ? `2px solid ${pc}` : '2px solid #e2e8f0',
+                                  boxShadow: isSelected ? `0 0 0 3px ${pc}22` : 'none',
+                                  transition: 'all 0.15s ease',
+                                  transform: isSelected ? 'scale(1.03)' : 'scale(1)',
+                                }}
+                              >
+                                {/* Preview: nút mẫu bên trong */}
+                                <div style={{ padding: 10, background: '#fff', display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'center' }}>
+                                  <div style={{ width: '100%', padding: '6px', borderRadius: 6, background: gs.value, color: '#fff', fontSize: '11px', fontWeight: 600, textAlign: 'center' }}>
+                                    Mua ngay
+                                  </div>
+                                  <div style={{ width: '100%', height: 4, borderRadius: 2, background: gs.value }} />
+                                </div>
+                                <div style={{ padding: '5px 8px', textAlign: 'center', background: isSelected ? `${pc}08` : '#f8fafc', borderTop: '1px solid #f1f5f9' }}>
+                                  <div style={{ fontSize: '11px', fontWeight: 600, color: isSelected ? pc : '#475569' }}>
+                                    {isSelected ? `✓ ${gs.name}` : gs.name}
+                                  </div>
+                                  <div style={{ fontSize: '10px', color: '#94a3b8' }}>{gs.desc}</div>
+                                </div>
+                              </div>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })()}
+              </div>
+
+              {/* ── Phần 2: Kết quả preview ── */}
+              <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: 20 }}>
+                <h6 style={sectionTitleSx}>Kết quả — những nơi sẽ thay đổi khi bạn lưu</h6>
+                <p style={sectionDescSx}>Bên dưới là giao diện thực tế khách hàng sẽ nhìn thấy</p>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+
+                {/* Preview: Thanh menu — interactive */}
+                <div style={{ border: '1px solid #e2e8f0', borderRadius: 12, overflow: 'hidden' }}>
+                  <div style={{ background: '#f8fafc', padding: '8px 14px', borderBottom: '1px solid #e2e8f0' }}>
+                    <div style={{ fontSize: '12px', fontWeight: 700, color: '#475569' }}>Thanh menu</div>
+                    <div style={{ fontSize: '11px', color: '#94a3b8' }}>Thử rê chuột vào các mục bên dưới</div>
+                  </div>
+                  <div style={{ padding: 12 }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                      {['Dashboard', 'Mua proxy', 'Đơn hàng'].map((item, i) => (
+                        <div
+                          key={item}
+                          className='preview-menu-item'
+                          style={{
+                            padding: '7px 10px', borderRadius: 8, fontSize: '12px', fontWeight: 600, cursor: 'pointer', transition: 'all 0.15s ease',
+                            ...(i === 0 ? { background: pg, color: '#fff' } : { color: '#64748b' }),
+                          }}
+                          onMouseEnter={e => { if (i !== 0) { (e.target as HTMLElement).style.background = `color-mix(in srgb, ${ph} 10%, transparent)`; (e.target as HTMLElement).style.color = ph } }}
+                          onMouseLeave={e => { if (i !== 0) { (e.target as HTMLElement).style.background = 'transparent'; (e.target as HTMLElement).style.color = '#64748b' } }}
+                        >
+                          {item} {i === 0 && <span style={{ fontSize: '10px', opacity: 0.7 }}>← đang chọn</span>}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Preview: Sản phẩm — interactive hover card */}
+                <div style={{ border: '1px solid #e2e8f0', borderRadius: 12, overflow: 'hidden' }}>
+                  <div style={{ background: '#f8fafc', padding: '8px 14px', borderBottom: '1px solid #e2e8f0' }}>
+                    <div style={{ fontSize: '12px', fontWeight: 700, color: '#475569' }}>Sản phẩm</div>
+                    <div style={{ fontSize: '11px', color: '#94a3b8' }}>Thử rê chuột vào card và nút Mua</div>
+                  </div>
+                  <div style={{ padding: 12 }}>
+                    <div
+                      style={{ border: '1px solid #e2e8f0', borderRadius: 10, padding: 10, cursor: 'pointer', transition: 'all 0.2s ease' }}
+                      onMouseEnter={e => { const el = e.currentTarget; el.style.borderColor = `color-mix(in srgb, ${ph} 40%, transparent)`; el.style.transform = 'translateY(-2px)'; el.style.boxShadow = '0 4px 12px rgba(0,0,0,0.08)' }}
+                      onMouseLeave={e => { const el = e.currentTarget; el.style.borderColor = '#e2e8f0'; el.style.transform = 'none'; el.style.boxShadow = 'none' }}
+                    >
+                      <div style={{ fontSize: '13px', fontWeight: 700, color: '#1e293b', marginBottom: 6 }}>IPv4 Residential VN</div>
+                      <div style={{ fontSize: '11px', color: '#94a3b8', marginBottom: 8 }}>Loại IP: Static V4 — VN</div>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 8, borderTop: '1px solid #f1f5f9' }}>
+                        <span style={{ fontSize: '15px', fontWeight: 700, color: ph }}>50,000đ</span>
+                        <span
+                          style={{ padding: '5px 12px', borderRadius: 7, fontSize: '11px', fontWeight: 600, cursor: 'pointer', transition: 'all 0.15s ease', background: `color-mix(in srgb, ${ph} 12%, white)`, color: ph, border: `1px solid color-mix(in srgb, ${ph} 30%, transparent)` }}
+                          onMouseEnter={e => { const el = e.target as HTMLElement; el.style.background = ph; el.style.color = '#fff'; el.style.borderColor = ph }}
+                          onMouseLeave={e => { const el = e.target as HTMLElement; el.style.background = `color-mix(in srgb, ${ph} 12%, white)`; el.style.color = ph; el.style.borderColor = `color-mix(in srgb, ${ph} 30%, transparent)` }}
+                        >Mua ngay</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Preview: Thanh toán — interactive button */}
+                <div style={{ border: '1px solid #e2e8f0', borderRadius: 12, overflow: 'hidden' }}>
+                  <div style={{ background: '#f8fafc', padding: '8px 14px', borderBottom: '1px solid #e2e8f0' }}>
+                    <div style={{ fontSize: '12px', fontWeight: 700, color: '#475569' }}>Xác nhận thanh toán</div>
+                    <div style={{ fontSize: '11px', color: '#94a3b8' }}>Thử nhấn nút Thanh Toán</div>
+                  </div>
+                  <div style={{ padding: 12 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+                      <span style={{ fontSize: '12px', color: '#64748b' }}>Tổng cộng:</span>
+                      <span style={{ fontSize: '14px', fontWeight: 700, color: ph }}>50,000đ</span>
+                    </div>
+                    <div
+                      style={{ padding: '9px', borderRadius: 8, textAlign: 'center', background: pg, color: '#fff', fontSize: '13px', fontWeight: 700, cursor: 'pointer', transition: 'all 0.15s ease' }}
+                      onMouseEnter={e => { (e.target as HTMLElement).style.opacity = '0.85'; (e.target as HTMLElement).style.transform = 'translateY(-1px)' }}
+                      onMouseLeave={e => { (e.target as HTMLElement).style.opacity = '1'; (e.target as HTMLElement).style.transform = 'none' }}
+                      onMouseDown={e => { (e.target as HTMLElement).style.transform = 'scale(0.97)' }}
+                      onMouseUp={e => { (e.target as HTMLElement).style.transform = 'translateY(-1px)' }}
+                    >
+                      Thanh Toán
+                    </div>
+                  </div>
+                </div>
+
+                {/* Preview: Các nút + ngôn ngữ — interactive */}
+                <div style={{ border: '1px solid #e2e8f0', borderRadius: 12, overflow: 'hidden' }}>
+                  <div style={{ background: '#f8fafc', padding: '8px 14px', borderBottom: '1px solid #e2e8f0' }}>
+                    <div style={{ fontSize: '12px', fontWeight: 700, color: '#475569' }}>Các nút, viền, ngôn ngữ</div>
+                    <div style={{ fontSize: '11px', color: '#94a3b8' }}>Thử rê chuột vào từng nút</div>
+                  </div>
+                  <div style={{ padding: 12, display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+                    <span
+                      style={{ padding: '7px 16px', borderRadius: 8, border: 'none', background: pg, color: '#fff', fontSize: '12px', fontWeight: 600, cursor: 'pointer', transition: 'all 0.15s ease' }}
+                      onMouseEnter={e => { (e.target as HTMLElement).style.opacity = '0.85' }}
+                      onMouseLeave={e => { (e.target as HTMLElement).style.opacity = '1' }}
+                    >Nút chính</span>
+                    <span
+                      style={{ padding: '7px 16px', borderRadius: 8, background: 'transparent', color: ph, border: `1px solid ${ph}`, fontSize: '12px', fontWeight: 600, cursor: 'pointer', transition: 'all 0.15s ease' }}
+                      onMouseEnter={e => { const el = e.target as HTMLElement; el.style.background = `color-mix(in srgb, ${ph} 8%, transparent)` }}
+                      onMouseLeave={e => { (e.target as HTMLElement).style.background = 'transparent' }}
+                    >Nạp tiền</span>
+                    <span
+                      style={{ padding: '7px 16px', borderRadius: 8, border: `1px solid ${ph}`, fontSize: '12px', fontWeight: 600, cursor: 'pointer', transition: 'all 0.15s ease', display: 'flex', alignItems: 'center', gap: 6, color: '#475569' }}
+                      onMouseEnter={e => { (e.target as HTMLElement).style.borderColor = ph; (e.target as HTMLElement).style.color = ph }}
+                      onMouseLeave={e => { (e.target as HTMLElement).style.color = '#475569' }}
+                    >🇻🇳 Tiếng Việt ▾</span>
+                    <span style={{ color: ph, fontSize: '12px', fontWeight: 500, textDecoration: 'underline', cursor: 'pointer' }}>Đường link</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Ghi chú cuối */}
+              <Alert severity='success' sx={{ fontSize: '13px', '& .MuiAlert-message': { fontSize: '13px' } }}>
+                {isPreset
+                  ? `Bạn đang chọn bộ màu "${currentPresetName}". Nhấn "Lưu cấu hình" ở trên để áp dụng cho toàn bộ site.`
+                  : `Bạn đang dùng màu tự chọn (${pc}). Nhấn "Lưu cấu hình" ở trên để áp dụng.`
+                }
+              </Alert>
+            </div>
+          )})()}
+
+          {/* ═══════════════ Tab 2: SEO ═══════════════ */}
+          {activeTab === 2 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+              <div>
+                <h6 style={sectionTitleSx}>SEO đa ngôn ngữ</h6>
+                <p style={sectionDescSx}>Nội dung hiển thị trên Google khi người dùng tìm kiếm. Mỗi ngôn ngữ cần tiêu đề và mô tả riêng để SEO tốt hơn. Để trống sẽ dùng tên + mô tả ở tab Thương hiệu.</p>
+              </div>
+
+              <Alert
+                icon={<Info size={16} />}
+                severity='info'
+                sx={{ fontSize: '13px', '& .MuiAlert-message': { fontSize: '13px' } }}
+              >
+                SEO giúp Google hiểu nội dung site. Mỗi ngôn ngữ cần title và mô tả riêng.
+              </Alert>
+
+              {/* Language sub-tabs */}
+              <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                <Tabs
+                  value={seoLangTab}
+                  onChange={(_, v) => setSeoLangTab(v)}
+                  sx={{
+                    minHeight: 36,
+                    '& .MuiTab-root': { minHeight: 36, py: 0.5 },
+                    '& .MuiTabs-indicator': { height: 2 },
                   }}
-                  title='Preview gradient'
+                >
+                  {SEO_LANGUAGES.map((lang) => (
+                    <Tab
+                      key={lang.code}
+                      icon={<Globe size={14} />}
+                      iconPosition='start'
+                      label={lang.label}
+                      sx={{ textTransform: 'none', fontSize: '12px', fontWeight: 500, gap: '4px', minHeight: 36 }}
+                    />
+                  ))}
+                </Tabs>
+              </Box>
+
+              {SEO_LANGUAGES.map((lang, langIdx) => {
+                if (seoLangTab !== langIdx) return null
+
+                const meta = branding.seo_meta?.[lang.code] || {}
+                const placeholder = SEO_PLACEHOLDERS[lang.code] || SEO_PLACEHOLDERS.en
+
+                return (
+                  <div key={lang.code} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                    <TextField
+                      size='small'
+                      label={`Title (${lang.label})`}
+                      value={meta.title || ''}
+                      onChange={e => updateSeoMeta(lang.code, 'title', e.target.value)}
+                      placeholder={placeholder.title}
+                      fullWidth
+                      helperText='Hiển thị trên tab trình duyệt và kết quả Google (50-60 ký tự)'
+                    />
+                    <TextField
+                      size='small'
+                      label={`Description (${lang.label})`}
+                      value={meta.description || ''}
+                      onChange={e => updateSeoMeta(lang.code, 'description', e.target.value)}
+                      placeholder={placeholder.description}
+                      fullWidth
+                      multiline
+                      minRows={2}
+                      maxRows={4}
+                      helperText='Mô tả hiển thị dưới title trên Google (150-160 ký tự)'
+                    />
+                    <TextField
+                      size='small'
+                      label={`Keywords (${lang.label})`}
+                      value={meta.keywords || ''}
+                      onChange={e => updateSeoMeta(lang.code, 'keywords', e.target.value)}
+                      placeholder={placeholder.keywords}
+                      fullWidth
+                      helperText='Các từ khóa cách nhau bằng dấu phẩy'
+                    />
+                  </div>
+                )
+              })}
+            </div>
+          )}
+
+          {/* ═══════════════ Tab 3: Nâng cao ═══════════════ */}
+          {activeTab === 3 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+              {/* Google verification */}
+              <div>
+                <h6 style={sectionTitleSx}>Google Search Console</h6>
+                <p style={sectionDescSx}>Xác minh quyền sở hữu site với Google</p>
+              </div>
+              <TextField
+                size='small'
+                label='Mã xác minh Google Search Console'
+                value={branding.google_verification}
+                onChange={e => updateBrandingField('google_verification', e.target.value)}
+                placeholder='google-site-verification=xxx'
+                fullWidth
+                helperText='Lấy mã từ Google Search Console > Settings > Ownership verification'
+              />
+
+              {/* GTM */}
+              <TextField
+                size='small'
+                label='Google Tag Manager ID'
+                value={branding.gtm_id}
+                onChange={e => updateBrandingField('gtm_id', e.target.value)}
+                placeholder='GTM-XXXXXXX'
+                fullWidth
+                helperText='Dùng để cài Google Analytics, Facebook Pixel, v.v.'
+              />
+
+              {/* Organization info */}
+              <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: 20 }}>
+                <h6 style={sectionTitleSx}>Thông tin tổ chức (Schema.org)</h6>
+                <p style={sectionDescSx}>Giúp Google hiểu thông tin doanh nghiệp, hiển thị rich snippet</p>
+              </div>
+              <div style={{ display: 'flex', gap: 12 }}>
+                <TextField
+                  size='small'
+                  label='Tên tổ chức'
+                  value={branding.organization_name}
+                  onChange={e => updateBrandingField('organization_name', e.target.value)}
+                  placeholder='VD: Công ty TNHH ABC'
+                  helperText='Hiển thị trong Schema.org, trang liên hệ, footer'
+                  sx={{ flex: 2 }}
+                />
+                <TextField
+                  size='small'
+                  label='Số điện thoại'
+                  value={branding.organization_phone}
+                  onChange={e => updateBrandingField('organization_phone', e.target.value)}
+                  placeholder='VD: 0563072397'
+                  helperText='Hiển thị ở trang liên hệ'
+                  sx={{ flex: 1 }}
+                />
+                <TextField
+                  size='small'
+                  label='Email liên hệ'
+                  value={branding.organization_email}
+                  onChange={e => updateBrandingField('organization_email', e.target.value)}
+                  placeholder='VD: contact@domain.com'
+                  helperText='Hiển thị ở trang liên hệ'
+                  sx={{ flex: 1 }}
                 />
               </div>
-            </div>
-          </div>
-
-          {/* Separator */}
-          <div style={{ borderTop: '1px solid #e2e8f0' }} />
-
-          {/* ========== Support Links ========== */}
-          <div>
-            <h6 style={{ fontSize: '14px', fontWeight: 600, color: '#1e293b', marginBottom: 12 }}>
-              Liên kết hỗ trợ (hiển thị sidebar trang chủ)
-            </h6>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              {supportLinks.map((link, idx) => (
-                <div key={idx} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                  <TextField
-                    size='small'
-                    label='Tên'
-                    value={link.label}
-                    onChange={e => updateLink(idx, 'label', e.target.value)}
-                    sx={{ flex: 1 }}
-                  />
-                  <TextField
-                    size='small'
-                    label='URL'
-                    value={link.url}
-                    onChange={e => updateLink(idx, 'url', e.target.value)}
-                    sx={{ flex: 2 }}
-                  />
-                  <TextField
-                    size='small'
-                    select
-                    label='Icon'
-                    value={link.icon}
-                    onChange={e => updateLink(idx, 'icon', e.target.value)}
-                    sx={{ width: 120 }}
-                    slotProps={{ select: { native: true } }}
-                  >
-                    {ICON_OPTIONS.map(opt => (
-                      <option key={opt.value} value={opt.value}>{opt.label}</option>
-                    ))}
-                  </TextField>
-                  <TextField
-                    size='small'
-                    type='color'
-                    label='Màu'
-                    value={link.color}
-                    onChange={e => updateLink(idx, 'color', e.target.value)}
-                    sx={{ width: 80 }}
-                  />
-                  <Tooltip title='Xóa'>
-                    <IconButton
-                      size='small'
-                      onClick={() => setSupportLinks(prev => prev.filter((_, i) => i !== idx))}
-                      sx={{ color: '#94a3b8', '&:hover': { color: '#ef4444', backgroundColor: '#fef2f2' } }}
-                    >
-                      <Trash2 size={16} />
-                    </IconButton>
-                  </Tooltip>
-                </div>
-              ))}
-              <Button
-                size='small'
-                variant='outlined'
-                startIcon={<Plus size={16} />}
-                onClick={() => setSupportLinks(prev => [...prev, { ...emptySupportLink }])}
-                sx={{ alignSelf: 'flex-start', textTransform: 'none', fontSize: '13px' }}
-              >
-                Thêm liên kết
-              </Button>
-            </div>
-          </div>
-
-          {/* ========== YouTube Videos ========== */}
-          <div>
-            <h6 style={{ fontSize: '14px', fontWeight: 600, color: '#1e293b', marginBottom: 12 }}>
-              Video hướng dẫn YouTube
-            </h6>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              {youtubeVideos.map((video, idx) => (
-                <div key={idx} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                  <TextField
-                    size='small'
-                    label='Tiêu đề'
-                    value={video.title}
-                    onChange={e => updateVideo(idx, 'title', e.target.value)}
-                    sx={{ flex: 1 }}
-                  />
-                  <TextField
-                    size='small'
-                    label='URL YouTube'
-                    value={video.url}
-                    onChange={e => updateVideo(idx, 'url', e.target.value)}
-                    sx={{ flex: 2 }}
-                  />
-                  <Tooltip title='Xóa'>
-                    <IconButton
-                      size='small'
-                      onClick={() => setYoutubeVideos(prev => prev.filter((_, i) => i !== idx))}
-                      sx={{ color: '#94a3b8', '&:hover': { color: '#ef4444', backgroundColor: '#fef2f2' } }}
-                    >
-                      <Trash2 size={16} />
-                    </IconButton>
-                  </Tooltip>
-                </div>
-              ))}
-              <Button
-                size='small'
-                variant='outlined'
-                startIcon={<Plus size={16} />}
-                onClick={() => setYoutubeVideos(prev => [...prev, { ...emptyVideo }])}
-                sx={{ alignSelf: 'flex-start', textTransform: 'none', fontSize: '13px' }}
-              >
-                Thêm video
-              </Button>
-            </div>
-          </div>
-
-          {/* ========== Supplier Settings (chỉ site con) ========== */}
-          {isChild && (
-            <div>
-              <h6 style={{ fontSize: '14px', fontWeight: 600, color: '#1e293b', marginBottom: 4 }}>
-                Kết nối nhà cung cấp (site mẹ)
-              </h6>
-              <p style={{ fontSize: '12px', color: '#94a3b8', marginBottom: 12 }}>
-                Thay đổi API credentials kết nối đến site mẹ. {supplierData?.configured ? 'Đã cấu hình.' : 'Chưa cấu hình — vui lòng nhập thông tin bên dưới.'}
-              </p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div style={{ display: 'flex', gap: 12 }}>
                 <TextField
                   size='small'
-                  label='Supplier API URL'
-                  value={supplier.supplier_api_url}
-                  onChange={e => setSupplier(prev => ({ ...prev, supplier_api_url: e.target.value }))}
-                  placeholder='https://app.mktproxy.com/api'
-                  fullWidth
+                  label='Địa chỉ'
+                  value={branding.organization_address}
+                  onChange={e => updateBrandingField('organization_address', e.target.value)}
+                  placeholder='VD: 123 Đường ABC, Quận 1, TP.HCM'
+                  helperText='Hiển thị ở trang liên hệ, footer, Google Maps'
+                  sx={{ flex: 2 }}
                 />
                 <TextField
                   size='small'
-                  label='API Key'
-                  value={supplier.supplier_api_key}
-                  onChange={e => setSupplier(prev => ({ ...prev, supplier_api_key: e.target.value }))}
-                  placeholder='mkt_xxxxx'
-                  fullWidth
+                  label='Website'
+                  value={branding.website_url}
+                  onChange={e => updateBrandingField('website_url', e.target.value)}
+                  placeholder='VD: https://domain.com'
+                  helperText='Hiển thị ở trang liên hệ'
+                  sx={{ flex: 1 }}
                 />
-                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+              </div>
+              <div style={{ display: 'flex', gap: 12 }}>
+                <TextField
+                  size='small'
+                  label='Giờ làm việc'
+                  value={branding.working_hours}
+                  onChange={e => updateBrandingField('working_hours', e.target.value)}
+                  placeholder='VD: 8:00 - 22:00 (T2-T7)'
+                  helperText='Hiển thị ở trang liên hệ'
+                  sx={{ flex: 1 }}
+                />
+                <TextField
+                  size='small'
+                  label='Mã số thuế'
+                  value={branding.tax_id}
+                  onChange={e => updateBrandingField('tax_id', e.target.value)}
+                  placeholder='VD: 0123456789'
+                  helperText='Hiển thị ở footer cho uy tín'
+                  sx={{ flex: 1 }}
+                />
+              </div>
+
+              {/* Social links */}
+              <div>
+                <div style={fieldLabelSx}>Mạng xã hội</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {(branding.social_links || []).map((link, idx) => (
+                    <div key={idx} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                      <FormControl size='small' sx={{ width: 150 }}>
+                        <InputLabel>Nền tảng</InputLabel>
+                        <Select
+                          value={link.platform}
+                          label='Nền tảng'
+                          onChange={e => updateSocialLink(idx, 'platform', e.target.value)}
+                        >
+                          {SOCIAL_PLATFORM_OPTIONS.map(opt => (
+                            <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                      <TextField
+                        size='small'
+                        label='URL'
+                        value={link.url}
+                        onChange={e => updateSocialLink(idx, 'url', e.target.value)}
+                        placeholder='https://facebook.com/mktproxy'
+                        sx={{ flex: 1 }}
+                      />
+                      <Tooltip title='Xóa'>
+                        <IconButton
+                          size='small'
+                          onClick={() => removeSocialLink(idx)}
+                          sx={{ color: '#94a3b8', '&:hover': { color: '#ef4444', backgroundColor: '#fef2f2' } }}
+                        >
+                          <Trash2 size={16} />
+                        </IconButton>
+                      </Tooltip>
+                    </div>
+                  ))}
                   <Button
                     size='small'
-                    variant='contained'
-                    onClick={() => {
-                      if (!supplier.supplier_api_url || !supplier.supplier_api_key) {
-                        toast.error('Vui lòng nhập đầy đủ URL và API Key')
-
-                        return
-                      }
-
-                      setSupplierTestResult(null)
-                      updateSupplierMutation.mutate(supplier, {
-                        onSuccess: (data) => {
-                          toast.success(data?.message || 'Cập nhật thành công')
-                          setSupplierTestResult(data?.test)
-                        },
-                        onError: (error: any) => {
-                          toast.error(error?.response?.data?.message || 'Có lỗi xảy ra')
-                        }
-                      })
-                    }}
-                    disabled={updateSupplierMutation.isPending}
-                    startIcon={updateSupplierMutation.isPending ? <Loader2 size={14} className='animate-spin' /> : <Save size={14} />}
-                    sx={{ textTransform: 'none', fontSize: '13px', color: '#fff' }}
+                    variant='outlined'
+                    startIcon={<Plus size={16} />}
+                    onClick={addSocialLink}
+                    sx={{ alignSelf: 'flex-start', textTransform: 'none', fontSize: '13px' }}
                   >
-                    {updateSupplierMutation.isPending ? 'Đang lưu...' : 'Lưu & Test kết nối'}
+                    Thêm mạng xã hội
                   </Button>
-                  {supplierTestResult && (
-                    <span style={{
-                      fontSize: '13px',
-                      color: supplierTestResult.connected ? '#059669' : '#dc2626',
-                      fontWeight: 500
-                    }}>
-                      {supplierTestResult.connected
-                        ? `Kết nối OK — Số dư: ${new Intl.NumberFormat('vi-VN').format(supplierTestResult.balance)}đ`
-                        : `Lỗi kết nối: ${supplierTestResult.error}`}
-                    </span>
-                  )}
                 </div>
+              </div>
+
+              {/* Scripts (hide if isChild) */}
+              {!isChild && (
+                <>
+                  <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: 20 }}>
+                    <h6 style={sectionTitleSx}>Script tùy chỉnh</h6>
+                    <p style={sectionDescSx}>Chèn tracking code, CDN link hoặc script bên thứ 3</p>
+                  </div>
+
+                  <Alert severity='warning' sx={{ fontSize: '13px', '& .MuiAlert-message': { fontSize: '13px' } }}>
+                    Cẩn thận: Script không hợp lệ có thể ảnh hưởng hoạt động site
+                  </Alert>
+
+                  <TextField
+                    size='small'
+                    label='Script chèn vào <head>'
+                    value={branding.head_scripts}
+                    onChange={e => updateBrandingField('head_scripts', e.target.value)}
+                    placeholder='<script src="https://..."></script>'
+                    multiline
+                    minRows={3}
+                    maxRows={8}
+                    fullWidth
+                    helperText='Dán CDN link hoặc tracking script'
+                    slotProps={{ input: { style: { fontFamily: 'monospace', fontSize: '13px' } } }}
+                  />
+                  <TextField
+                    size='small'
+                    label='Script chèn vào <body>'
+                    value={branding.body_scripts}
+                    onChange={e => updateBrandingField('body_scripts', e.target.value)}
+                    placeholder='<noscript>...</noscript>'
+                    multiline
+                    minRows={3}
+                    maxRows={8}
+                    fullWidth
+                    helperText='Thường dùng cho noscript fallback của GTM'
+                    slotProps={{ input: { style: { fontFamily: 'monospace', fontSize: '13px' } } }}
+                  />
+                </>
+              )}
+            </div>
+          )}
+
+          {/* ═══════════════ Tab 4: Sidebar ═══════════════ */}
+          {activeTab === 4 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+              {/* Support Links */}
+              <div>
+                <h6 style={sectionTitleSx}>Liên kết hỗ trợ</h6>
+                <p style={sectionDescSx}>Hiển thị ở sidebar bên trái — nút Zalo, Telegram, Facebook... để khách liên hệ nhanh. Không bắt buộc, để trống nếu không cần.</p>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                {supportLinks.map((link, idx) => (
+                  <div key={idx} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                    <TextField
+                      size='small'
+                      label='Tên'
+                      value={link.label}
+                      onChange={e => updateLink(idx, 'label', e.target.value)}
+                      placeholder='VD: Chat Zalo'
+                      sx={{ flex: 1 }}
+                    />
+                    <TextField
+                      size='small'
+                      label='URL'
+                      value={link.url}
+                      onChange={e => updateLink(idx, 'url', e.target.value)}
+                      placeholder='https://zalo.me/0123456789'
+                      sx={{ flex: 2 }}
+                    />
+                    <TextField
+                      size='small'
+                      select
+                      label='Icon'
+                      value={link.icon}
+                      onChange={e => updateLink(idx, 'icon', e.target.value)}
+                      sx={{ width: 120 }}
+                      slotProps={{ select: { native: true } }}
+                    >
+                      {ICON_OPTIONS.map(opt => (
+                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                      ))}
+                    </TextField>
+                    <TextField
+                      size='small'
+                      type='color'
+                      label='Màu'
+                      value={link.color}
+                      onChange={e => updateLink(idx, 'color', e.target.value)}
+                      sx={{ width: 80 }}
+                    />
+                    <Tooltip title='Xóa'>
+                      <IconButton
+                        size='small'
+                        onClick={() => setSupportLinks(prev => prev.filter((_, i) => i !== idx))}
+                        sx={{ color: '#94a3b8', '&:hover': { color: '#ef4444', backgroundColor: '#fef2f2' } }}
+                      >
+                        <Trash2 size={16} />
+                      </IconButton>
+                    </Tooltip>
+                  </div>
+                ))}
+                <Button
+                  size='small'
+                  variant='outlined'
+                  startIcon={<Plus size={16} />}
+                  onClick={() => setSupportLinks(prev => [...prev, { ...emptySupportLink }])}
+                  sx={{ alignSelf: 'flex-start', textTransform: 'none', fontSize: '13px' }}
+                >
+                  Thêm liên kết
+                </Button>
+              </div>
+
+              {/* YouTube Videos */}
+              <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: 20 }}>
+                <h6 style={sectionTitleSx}>Video hướng dẫn YouTube</h6>
+                <p style={sectionDescSx}>Hiển thị ở sidebar bên trái — danh sách video hướng dẫn sử dụng. Không bắt buộc.</p>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                {youtubeVideos.map((video, idx) => (
+                  <div key={idx} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                    <TextField
+                      size='small'
+                      label='Tiêu đề'
+                      value={video.title}
+                      onChange={e => updateVideo(idx, 'title', e.target.value)}
+                      placeholder='VD: Hướng dẫn mua proxy'
+                      sx={{ flex: 1 }}
+                    />
+                    <TextField
+                      size='small'
+                      label='URL YouTube'
+                      value={video.url}
+                      onChange={e => updateVideo(idx, 'url', e.target.value)}
+                      placeholder='https://youtube.com/watch?v=...'
+                      sx={{ flex: 2 }}
+                    />
+                    <Tooltip title='Xóa'>
+                      <IconButton
+                        size='small'
+                        onClick={() => setYoutubeVideos(prev => prev.filter((_, i) => i !== idx))}
+                        sx={{ color: '#94a3b8', '&:hover': { color: '#ef4444', backgroundColor: '#fef2f2' } }}
+                      >
+                        <Trash2 size={16} />
+                      </IconButton>
+                    </Tooltip>
+                  </div>
+                ))}
+                <Button
+                  size='small'
+                  variant='outlined'
+                  startIcon={<Plus size={16} />}
+                  onClick={() => setYoutubeVideos(prev => [...prev, { ...emptyVideo }])}
+                  sx={{ alignSelf: 'flex-start', textTransform: 'none', fontSize: '13px' }}
+                >
+                  Thêm video
+                </Button>
               </div>
             </div>
           )}
+
+          {/* ═══════════════ Tab 5: Thanh toán ═══════════════ */}
+          {activeTab === 5 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+
+              {/* ── Section 1: Ngân hàng nhận tiền ── */}
+              <div>
+                <h6 style={sectionTitleSx}>Ngân hàng nhận tiền</h6>
+                <p style={sectionDescSx}>Thông tin ngân hàng hiển thị cho khách khi nạp tiền chuyển khoản</p>
+              </div>
+              <div style={{ display: 'flex', gap: 12 }}>
+                <TextField
+                  size='small'
+                  select
+                  label='Ngân hàng'
+                  value={bank.bank_code || ''}
+                  onChange={e => {
+                    const selected = BANK_LIST.find(b => b.code === e.target.value)
+
+                    if (selected) {
+                      setBank(prev => ({ ...prev, bank_name: selected.name, bank_code: selected.code }))
+                    }
+                  }}
+                  required
+                  sx={{ flex: 1 }}
+                  helperText='Chọn ngân hàng nhận tiền'
+                >
+                  <MenuItem value=''><em>— Chọn ngân hàng —</em></MenuItem>
+                  {BANK_LIST.map(b => (
+                    <MenuItem key={b.code} value={b.code}>{b.name} ({b.shortName})</MenuItem>
+                  ))}
+                </TextField>
+                <TextField
+                  size='small'
+                  label='Số tài khoản'
+                  value={bank.bank_number}
+                  onChange={e => setBank(prev => ({ ...prev, bank_number: e.target.value }))}
+                  placeholder='VD: 1234567890'
+                  required
+                  sx={{ flex: 1 }}
+                  helperText='Số tài khoản ngân hàng nhận tiền'
+                />
+              </div>
+              <div style={{ display: 'flex', gap: 12 }}>
+                <TextField
+                  size='small'
+                  label='Tên chủ tài khoản'
+                  value={bank.bank_account}
+                  onChange={e => setBank(prev => ({ ...prev, bank_account: e.target.value }))}
+                  placeholder='VD: NGUYEN VAN A'
+                  required
+                  sx={{ flex: 1 }}
+                  helperText='Viết IN HOA, không dấu — đúng như trên thẻ ngân hàng'
+                />
+              </div>
+              <TextField
+                size='small'
+                label='Nội dung chuyển khoản mẫu'
+                value={bank.format_chuyentien}
+                onChange={e => setBank(prev => ({ ...prev, format_chuyentien: e.target.value }))}
+                placeholder='NAP {user_id}'
+                fullWidth
+                helperText='Định dạng nội dung chuyển khoản. {user_id} sẽ được thay bằng ID người dùng.'
+              />
+              <Button
+                size='small'
+                variant='contained'
+                onClick={() => {
+                  if (!bank.bank_name || !bank.bank_number || !bank.bank_account) {
+                    toast.error('Vui lòng nhập đầy đủ tên ngân hàng, số tài khoản và chủ tài khoản')
+                    return
+                  }
+                  updateBankMutation.mutate(bank, {
+                    onSuccess: () => toast.success('Cập nhật ngân hàng thành công'),
+                    onError: (error: any) => toast.error(error?.response?.data?.message || 'Có lỗi xảy ra'),
+                  })
+                }}
+                disabled={updateBankMutation.isPending}
+                startIcon={updateBankMutation.isPending ? <Loader2 size={14} className='animate-spin' /> : <Save size={14} />}
+                sx={{
+                  alignSelf: 'flex-start',
+                  textTransform: 'none',
+                  fontSize: '13px',
+                  color: '#fff',
+                  background: 'var(--primary-hover, #e63946)',
+                  '&:hover': { opacity: 0.9 },
+                }}
+              >
+                {updateBankMutation.isPending ? 'Đang lưu...' : 'Lưu ngân hàng'}
+              </Button>
+
+              {/* ── Section 2: Pay2s ── */}
+              <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: 20 }}>
+                <h6 style={sectionTitleSx}>Pay2s (nạp tiền tự động)</h6>
+                <p style={sectionDescSx}>Token xác thực webhook từ pay2s.vn. Khi có giao dịch ngân hàng, pay2s gửi thông báo &rarr; hệ thống tự cộng tiền.</p>
+              </div>
+              <TextField
+                size='small'
+                label='Pay2s Webhook Token'
+                value={branding.pay2s_webhook_token}
+                onChange={e => updateBrandingField('pay2s_webhook_token', e.target.value)}
+                placeholder='token từ pay2s.vn'
+                fullWidth
+                helperText='Lấy token từ trang quản trị pay2s.vn > Cài đặt webhook'
+              />
+
+              {/* ── Section 3: Telegram thông báo ── */}
+              <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: 20 }}>
+                <h6 style={sectionTitleSx}>Telegram thông báo</h6>
+                <p style={sectionDescSx}>Cấu hình bot Telegram để nhận thông báo tự động theo từng kênh</p>
+              </div>
+
+              {/* System channel */}
+              <div style={{ padding: 16, border: '1px solid #e2e8f0', borderRadius: 10, display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <div>
+                  <div style={{ fontSize: '13px', fontWeight: 600, color: '#1e293b' }}>Kênh Hệ thống</div>
+                  <div style={{ fontSize: '12px', color: '#94a3b8' }}>Thông báo hệ thống: đơn hàng mới, lỗi xử lý</div>
+                </div>
+                <div style={{ display: 'flex', gap: 12 }}>
+                  <TextField
+                    size='small'
+                    label='Bot Token'
+                    value={branding.telegram_bot_token_system}
+                    onChange={e => updateBrandingField('telegram_bot_token_system', e.target.value)}
+                    placeholder='123456:ABC-DEF...'
+                    sx={{ flex: 2 }}
+                  />
+                  <TextField
+                    size='small'
+                    label='Chat ID'
+                    value={branding.telegram_chat_id_system}
+                    onChange={e => updateBrandingField('telegram_chat_id_system', e.target.value)}
+                    placeholder='-1001234567890'
+                    sx={{ flex: 1 }}
+                  />
+                </div>
+              </div>
+
+              {/* Deposit channel */}
+              <div style={{ padding: 16, border: '1px solid #e2e8f0', borderRadius: 10, display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <div>
+                  <div style={{ fontSize: '13px', fontWeight: 600, color: '#1e293b' }}>Kênh Nạp tiền</div>
+                  <div style={{ fontSize: '12px', color: '#94a3b8' }}>Thông báo nạp tiền: khi khách chuyển khoản thành công</div>
+                </div>
+                <div style={{ display: 'flex', gap: 12 }}>
+                  <TextField
+                    size='small'
+                    label='Bot Token'
+                    value={branding.telegram_bot_token_deposit}
+                    onChange={e => updateBrandingField('telegram_bot_token_deposit', e.target.value)}
+                    placeholder='123456:ABC-DEF...'
+                    sx={{ flex: 2 }}
+                  />
+                  <TextField
+                    size='small'
+                    label='Chat ID'
+                    value={branding.telegram_chat_id_deposit}
+                    onChange={e => updateBrandingField('telegram_chat_id_deposit', e.target.value)}
+                    placeholder='-1001234567890'
+                    sx={{ flex: 1 }}
+                  />
+                </div>
+              </div>
+
+              {/* Error channel */}
+              <div style={{ padding: 16, border: '1px solid #e2e8f0', borderRadius: 10, display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <div>
+                  <div style={{ fontSize: '13px', fontWeight: 600, color: '#1e293b' }}>Kênh Lỗi</div>
+                  <div style={{ fontSize: '12px', color: '#94a3b8' }}>Thông báo lỗi: khi có lỗi API, lỗi xử lý đơn hàng</div>
+                </div>
+                <div style={{ display: 'flex', gap: 12 }}>
+                  <TextField
+                    size='small'
+                    label='Bot Token'
+                    value={branding.telegram_bot_token_error}
+                    onChange={e => updateBrandingField('telegram_bot_token_error', e.target.value)}
+                    placeholder='123456:ABC-DEF...'
+                    sx={{ flex: 2 }}
+                  />
+                  <TextField
+                    size='small'
+                    label='Chat ID'
+                    value={branding.telegram_chat_id_error}
+                    onChange={e => updateBrandingField('telegram_chat_id_error', e.target.value)}
+                    placeholder='-1001234567890'
+                    sx={{ flex: 1 }}
+                  />
+                </div>
+              </div>
+
+              <Alert severity='info' sx={{ fontSize: '13px', '& .MuiAlert-message': { fontSize: '13px' } }}>
+                Pay2s và Telegram lưu cùng nút &quot;Lưu cấu hình&quot; ở trên cùng. Ngân hàng lưu riêng bằng nút &quot;Lưu ngân hàng&quot;.
+              </Alert>
+            </div>
+          )}
+
+          {/* ═══════════════ Tab 6: Nhà cung cấp (only if isChild) ═══════════════ */}
+          {isChild && activeTab === 6 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+              <div>
+                <h6 style={sectionTitleSx}>Kết nối nhà cung cấp (site mẹ)</h6>
+                <p style={sectionDescSx}>
+                  Thay đổi API credentials kết nối đến site mẹ. {supplierData?.configured ? 'Đã cấu hình.' : 'Chưa cấu hình — vui lòng nhập thông tin bên dưới.'}
+                </p>
+              </div>
+              <TextField
+                size='small'
+                label='Supplier API URL'
+                value={supplier.supplier_api_url}
+                onChange={e => setSupplier(prev => ({ ...prev, supplier_api_url: e.target.value }))}
+                placeholder='https://app.mktproxy.com/api'
+                fullWidth
+              />
+              <TextField
+                size='small'
+                label='API Key'
+                value={supplier.supplier_api_key}
+                onChange={e => setSupplier(prev => ({ ...prev, supplier_api_key: e.target.value }))}
+                placeholder='mkt_xxxxx'
+                fullWidth
+              />
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <Button
+                  size='small'
+                  variant='contained'
+                  onClick={() => {
+                    if (!supplier.supplier_api_url || !supplier.supplier_api_key) {
+                      toast.error('Vui lòng nhập đầy đủ URL và API Key')
+
+                      return
+                    }
+
+                    setSupplierTestResult(null)
+                    updateSupplierMutation.mutate(supplier, {
+                      onSuccess: (data) => {
+                        toast.success(data?.message || 'Cập nhật thành công')
+                        setSupplierTestResult(data?.test)
+                      },
+                      onError: (error: any) => {
+                        toast.error(error?.response?.data?.message || 'Có lỗi xảy ra')
+                      }
+                    })
+                  }}
+                  disabled={updateSupplierMutation.isPending}
+                  startIcon={updateSupplierMutation.isPending ? <Loader2 size={14} className='animate-spin' /> : <Save size={14} />}
+                  sx={{ textTransform: 'none', fontSize: '13px', color: '#fff' }}
+                >
+                  {updateSupplierMutation.isPending ? 'Đang lưu...' : 'Lưu & Test kết nối'}
+                </Button>
+                {supplierTestResult && (
+                  <span style={{
+                    fontSize: '13px',
+                    color: supplierTestResult.connected ? '#059669' : '#dc2626',
+                    fontWeight: 500
+                  }}>
+                    {supplierTestResult.connected
+                      ? `Kết nối OK — Số dư: ${new Intl.NumberFormat('vi-VN').format(supplierTestResult.balance)}đ`
+                      : `Lỗi kết nối: ${supplierTestResult.error}`}
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
+
         </div>
       </div>
     </div>

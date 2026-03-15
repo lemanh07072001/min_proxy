@@ -18,7 +18,7 @@ return (
       <div className='container mx-auto px-4 sm:px-6 lg:px-8'>
         <div className='text-center mb-16'>
           <h2 className='text-3xl sm:text-4xl font-bold mb-4'>
-            <span className='bg-gradient-to-r from-red-500 to-orange-500 bg-clip-text text-transparent'>{t('landing.about.missionVision.title')}</span>
+            <span style={{ background: 'var(--primary-gradient, linear-gradient(135deg, #ef4444, #f97316))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>{t('landing.about.missionVision.title')}</span>
           </h2>
           <p className='text-gray-600 text-lg max-w-3xl mx-auto'>
             {t('landing.about.missionVision.subtitle')}
@@ -29,7 +29,7 @@ return (
           {/* Sứ mệnh */}
           <div className='bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100'>
             <div className='flex items-center mb-6'>
-              <div className='w-16 h-16 bg-gradient-to-r from-red-500 to-orange-500 rounded-2xl flex items-center justify-center mr-4'>
+              <div className='w-16 h-16 rounded-2xl flex items-center justify-center mr-4' style={{ background: 'var(--primary-gradient, linear-gradient(135deg, #ef4444, #f97316))' }}>
                 <Target className='h-8 w-8 text-white' />
               </div>
               <h3 className='text-2xl font-bold text-gray-900'>{t('landing.about.missionVision.mission.title')}</h3>
@@ -63,7 +63,7 @@ return (
             <ul className='space-y-3 text-gray-600'>
               {(t('landing.about.missionVision.values.items', { returnObjects: true }) as string[] || []).map((item: string, index: number) => (
                 <li key={index} className='flex items-center'>
-                  <div className='w-2 h-2 bg-red-500 rounded-full mr-3'></div>
+                  <div className='w-2 h-2 rounded-full mr-3' style={{ background: 'var(--primary-hover, #ef4444)' }}></div>
                   {item}
                 </li>
               ))}
@@ -81,7 +81,7 @@ return (
             <ul className='space-y-3 text-gray-600'>
               {(t('landing.about.missionVision.commitment.items', { returnObjects: true }) as string[] || []).map((item: string, index: number) => (
                 <li key={index} className='flex items-center'>
-                  <div className='w-2 h-2 bg-red-500 rounded-full mr-3'></div>
+                  <div className='w-2 h-2 rounded-full mr-3' style={{ background: 'var(--primary-hover, #ef4444)' }}></div>
                   {item}
                 </li>
               ))}

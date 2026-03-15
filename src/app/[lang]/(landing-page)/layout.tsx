@@ -13,6 +13,7 @@ import ThemeProvider from '@components/theme'
 import { getMode, getSettingsFromCookie, getSystemMode } from '@core/utils/serverHelpers'
 
 import ScrollToTop from '@core/components/scroll-to-top'
+import BrandingThemeSync from '@/components/BrandingThemeSync'
 import Footer from './components/Footer'
 
 const Layout = async (props: ChildrenType) => {
@@ -56,6 +57,7 @@ const Layout = async (props: ChildrenType) => {
         }}
       />
       <SettingsProvider settingsCookie={settingsCookie} mode={mode}>
+        <BrandingThemeSync />
         <ThemeProvider direction={direction} systemMode={systemMode}>
           <div className='landing-page-wrapper'>
             <Header />

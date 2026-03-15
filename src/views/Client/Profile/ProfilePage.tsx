@@ -90,7 +90,7 @@ export default function ProfilePage({ dataProfile }: ProfileProps) {
         <div className='grid grid-cols-1 lg:grid-cols-4 gap-6'>
           <div className='lg:col-span-1'>
             <div className='bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden h-100'>
-              <div className='p-6 bg-gradient-to-br from-orange-500 to-orange-600'>
+              <div className='p-6' style={{ background: 'var(--primary-gradient, linear-gradient(to right, #f97316, #ea580c))' }}>
                 <div className='flex flex-col items-center'>
                   <div className='relative group'>
                     <div className='w-24 h-24 bg-white rounded-full flex items-center justify-center shadow-lg overflow-hidden'>
@@ -105,7 +105,7 @@ export default function ProfilePage({ dataProfile }: ProfileProps) {
                       ) : (
 
                         // 👉 Chưa có ảnh => hiển thị ký tự đầu tên
-                        <span className='text-4xl font-bold text-orange-600'>
+                        <span className='text-4xl font-bold' style={{ color: 'var(--primary-hover, #f97316)' }}>
                           {session?.user?.name?.charAt(0)?.toUpperCase() || 'A'}
                         </span>
                       )}
@@ -125,7 +125,7 @@ export default function ProfilePage({ dataProfile }: ProfileProps) {
                     />
                   </div>
                   <h3 className='mt-4 text-lg font-bold text-white'>{dataProfile?.name}</h3>
-                  <p className='text-orange-100 text-sm'>{dataProfile?.email}</p>
+                  <p className='text-sm' style={{ color: 'color-mix(in srgb, var(--primary-hover, #f97316) 30%, white)' }}>{dataProfile?.email}</p>
                 </div>
               </div>
 
@@ -136,9 +136,10 @@ export default function ProfilePage({ dataProfile }: ProfileProps) {
                     onClick={() => setActiveTab(tab.id)}
                     className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition-all mb-2 ${
                       activeTab === tab.id
-                        ? 'bg-orange-50 text-orange-600 shadow-sm'
+                        ? 'shadow-sm'
                         : 'text-gray-700  bg-white  hover:bg-gray-50'
                     }`}
+                    style={activeTab === tab.id ? { background: 'color-mix(in srgb, var(--primary-hover, #f97316) 10%, white)', color: 'var(--primary-hover, #f97316)' } : undefined}
                   >
                     <tab.icon className='w-5 h-5' />
                     <span>{tab.label}</span>

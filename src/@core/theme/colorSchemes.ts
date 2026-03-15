@@ -162,8 +162,8 @@ const colorSchemes = (skin: Skin): Theme['colorSchemes'] => {
           borderError200: '#ef4444',
           bgSuccess200: '#f0fdf4',
           borderSuccess200: '#10b981',
-          bgButtonPrimary: 'linear-gradient(45deg, #FC4336, #F88A4B)',
-          colorMain: '#f88a4b'
+          bgButtonPrimary: 'var(--primary-gradient, linear-gradient(45deg, #FC4336, #F88A4B))',
+          colorMain: 'var(--primary-hover, #f88a4b)'
         }
       }
     },
@@ -323,7 +323,7 @@ const colorSchemes = (skin: Skin): Theme['colorSchemes'] => {
           borderError200: '#ef4444',
           bgSuccess200: '#f0fdf4',
           borderSuccess200: '#10b981',
-          bgButtonPrimary: 'linear-gradient(45deg, #FC4336, #F88A4B)',
+          bgButtonPrimary: 'var(--primary-gradient, linear-gradient(45deg, #FC4336, #F88A4B))',
         }
       }
     }

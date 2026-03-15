@@ -437,25 +437,19 @@ return
           ...((!isAvailable) ? { opacity: 0.7 } : {})
         }}
       >
-        {/* Tag badge — trên viền card */}
-        {visibleTags.length > 0 && (
-          <div style={{ position: 'absolute', top: '-12px', right: '14px', zIndex: 2, display: 'flex', gap: '6px' }}>
-            {visibleTags.map((tag: string, i: number) => {
-              const tagDef = getTagStyle(tag)
-
-
-return <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '5px 14px', fontSize: '11.5px', fontWeight: 700, borderRadius: '20px', background: `linear-gradient(180deg, rgba(255,255,255,0.2) 0%, transparent 50%), ${tagDef.gradient || tagDef.bgColor}`, color: tagDef.textColor, boxShadow: `0 2px 10px ${tagDef.borderColor}55, inset 0 1px 0 rgba(255,255,255,0.2)`, border: '1px solid rgba(255,255,255,0.25)', letterSpacing: '0.3px', lineHeight: 1.2 }}>{tagDef.icon && <span style={{ fontSize: '12px' }}>{tagDef.icon}</span>}{tag.trim()}</span>
-            })}
-          </div>
-        )}
-
-        {/* Header: title + price */}
+        {/* Header: title + tags */}
         <div className='plan-header'>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
             <h3 className='plan-title' style={{ textAlign: 'left', flex: 1 }}>{plan.title} <span style={{ fontSize: '11px', fontWeight: 500, color: '#94a3b8' }}>#{plan.id}</span></h3>
-            <div style={{ fontSize: '18px', fontWeight: 700, color: '#e53e3e', whiteSpace: 'nowrap' }}>
-              {priceOptions.length > 1 && <span style={{ fontSize: '12px', fontWeight: 500, color: '#94a3b8', marginRight: '2px' }}>từ</span>}{headerPrice.toLocaleString('vi-VN')}đ
-            </div>
+            {visibleTags.length > 0 && (
+              <div style={{ display: 'flex', gap: '4px', flexShrink: 0 }}>
+                {visibleTags.map((tag: string, i: number) => {
+                  const tagDef = getTagStyle(tag)
+
+                  return <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: '3px', padding: '3px 10px', fontSize: '10.5px', fontWeight: 700, borderRadius: '6px', background: `linear-gradient(180deg, rgba(255,255,255,0.2) 0%, transparent 50%), ${tagDef.gradient || tagDef.bgColor}`, color: tagDef.textColor, boxShadow: `0 2px 10px ${tagDef.borderColor}55, inset 0 1px 0 rgba(255,255,255,0.2)`, border: '1px solid rgba(255,255,255,0.25)', letterSpacing: '0.3px', lineHeight: 1.2 }}>{tagDef.icon && <span style={{ fontSize: '10px' }}>{tagDef.icon}</span>}{tag.trim()}</span>
+                })}
+              </div>
+            )}
           </div>
         </div>
 
@@ -478,7 +472,7 @@ return <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap:
             </div>
           )}
           {/* Protocol as static feature row */}
-          <StaticFeatureRow feature={{ label: 'Hỗ trợ', value: protocolList.map((p: string) => p.toUpperCase()).join('/'), icon: Shield, iconColor: '#f97316' }} />
+          <StaticFeatureRow feature={{ label: 'Hỗ trợ', value: protocolList.map((p: string) => p.toUpperCase()).join('/'), icon: Shield, iconColor: 'var(--primary-hover, #f97316)' }} />
 
           {/* Spec attributes as feature rows */}
           {plan?.auth_type && (
@@ -535,30 +529,19 @@ return <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap:
         </div>
 
 
-        <div className='plan-footer'>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginTop: 'auto', paddingTop: 12, borderTop: '1px solid #f1f5f9' }}>
+          <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--primary-hover, #e53e3e)', whiteSpace: 'nowrap' }}>
+            {priceOptions.length > 1 && <span style={{ fontSize: '12px', fontWeight: 500, color: '#94a3b8', marginRight: '2px' }}>từ </span>}
+            {headerPrice.toLocaleString('vi-VN')}đ
+          </div>
           {isAvailable ? (
-            <button type='button' className='buy-button' onClick={handleBuy}>
-              <ShoppingCart size={16} className='mr-2' />
-              Mua Proxy
+            <button type='button' className='buy-button' onClick={handleBuy} style={{ padding: '8px 18px' }}>
+              <ShoppingCart size={14} className='mr-1' />
+              Mua ngay
             </button>
           ) : (
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-                padding: '12px',
-                borderRadius: '8px',
-                backgroundColor: '#f1f5f9',
-                border: '1px solid #e2e8f0',
-                color: '#64748b',
-                fontSize: '14px',
-                fontWeight: 600,
-                width: '100%'
-              }}
-            >
-              Tạm ngừng bán
+            <div style={{ padding: '8px 14px', borderRadius: '8px', backgroundColor: '#f1f5f9', border: '1px solid #e2e8f0', color: '#64748b', fontSize: '13px', fontWeight: 600 }}>
+              Tạm ngừng
             </div>
           )}
         </div>

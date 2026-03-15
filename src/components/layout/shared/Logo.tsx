@@ -1,30 +1,26 @@
-'use client'
+/**
+ * Logo component — render bằng CSS background-image từ server-side CSS variable.
+ *
+ * KHÔNG dùng <img> tag hay client API → không bao giờ flash.
+ * CSS variable `--site-logo-src` inject bởi layout.tsx từ DB.
+ * Site con chưa setup logo → ẩn (CSS variable empty → background-image none).
+ */
 
-import type { CSSProperties } from 'react'
-
-import { useBranding } from '@/app/contexts/BrandingContext'
-
-const Logo = ({ color }: { color?: CSSProperties['color'] }) => {
-  const { logo, name } = useBranding()
-
+const Logo = () => {
   return (
-    <div className='flex items-center'>
-      <img
-        src={logo}
-        alt={name}
-        width={180}
-        height={50}
-        style={{ maxWidth: '100%', height: 'auto' }}
-        onError={(e) => {
-          console.error('Logo image failed to load:', e)
-          const target = e.target as HTMLImageElement
-
-          if (target) {
-            target.style.display = 'none'
-          }
-        }}
-      />
-    </div>
+    <div
+      className='site-logo'
+      role='img'
+      aria-label='Logo'
+      style={{
+        width: 180,
+        height: 50,
+        backgroundImage: 'var(--site-logo)',
+        backgroundSize: 'contain',
+        backgroundRepeat: 'no-repeat',
+        backgroundPosition: 'left center',
+      }}
+    />
   )
 }
 

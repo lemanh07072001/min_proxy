@@ -40,9 +40,12 @@ import { toast } from 'react-toastify'
 import useAxiosAuth from '@/hocs/useAxiosAuth'
 import { useCopyServiceType, useDeleteServiceType } from '@/hooks/apis/useServiceType'
 import ServiceFormModal from '@/views/Client/Admin/ServiceType/ServiceFormModal'
+import ChildServiceFormModal from '@/views/Client/Admin/ServiceType/ChildServiceFormModal'
 import { getTagStyle } from '@/configs/tagConfig'
+import { useBranding } from '@/app/contexts/BrandingContext'
 
 export default function TableServiceType() {
+  const { isChild } = useBranding()
   const [columnFilters, setColumnFilters] = useState<any[]>([])
   const [rowSelection, setRowSelection] = useState({}) // State để lưu các hàng được chọn
   const [sorting, setSorting] = useState<any[]>([])
@@ -201,11 +204,11 @@ return result
         size: 120
       },
       {
-        header: 'Đối tác',
+        header: 'Nhà cung cấp',
         cell: ({ row }: { row: any }) => {
           return (
             <div>
-              <div className='font-bold'>{row.original?.partner?.title}</div>
+              <div className='font-bold'>{row.original?.provider?.title}</div>
             </div>
           )
         },
@@ -648,13 +651,22 @@ return (
         </DialogActions>
       </Dialog>
 
-      {/* Service Form Modal (Create / Edit) */}
-      <ServiceFormModal
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        serviceId={editingId}
-        initialData={editingData}
-      />
+      {/* Service Form Modal — site con dùng form đơn giản, site mẹ dùng form đầy đủ */}
+      {isChild ? (
+        <ChildServiceFormModal
+          open={modalOpen}
+          onClose={() => setModalOpen(false)}
+          serviceId={editingId}
+          initialData={editingData}
+        />
+      ) : (
+        <ServiceFormModal
+          open={modalOpen}
+          onClose={() => setModalOpen(false)}
+          serviceId={editingId}
+          initialData={editingData}
+        />
+      )}
     </>
   )
 }

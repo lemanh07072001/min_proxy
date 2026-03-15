@@ -126,13 +126,13 @@
   position: absolute;
   top: -8px;
   right: -8px;
-  background-color: #ef4444;
-  color: white;
+  background-color: var(--primary-hover, #ef4444);
+  color: var(--primary-contrast, white);
   font-size: 10px;
   font-weight: 700;
   padding: 2px 6px;
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
 }
 
 /* Price table */
@@ -188,7 +188,7 @@
 .subtotal-cell {
   font-size: 15px;
   font-weight: 700;
-  color: #e53e3e;
+  color: var(--primary-hover, #e53e3e);
 }
 
 /* Discount code */
@@ -311,7 +311,7 @@
 .total-amount {
   font-size: 20px;
   font-weight: 700;
-  color: #e53e3e;
+  color: var(--primary-hover, #e53e3e);
 }
 
 .checkout-pay-btn {
@@ -321,8 +321,8 @@
   justify-content: center;
   gap: 8px;
   padding: 12px;
-  background: linear-gradient(135deg, #e07c50, #c95a20);
-  color: white;
+  background: var(--primary-gradient, linear-gradient(135deg, #e07c50, #c95a20));
+  color: var(--primary-contrast, white);
   border: none;
   border-radius: 10px;
   font-size: 15px;
@@ -332,20 +332,20 @@
 }
 
 .checkout-pay-btn:hover:not(:disabled) {
-  background: linear-gradient(135deg, #c95a20, #b54d18);
+  opacity: 0.9;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(224, 124, 80, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .checkout-pay-btn:active:not(:disabled) {
   transform: translateY(0) scale(0.97);
-  box-shadow: 0 2px 4px rgba(201, 90, 32, 0.2);
-  background: linear-gradient(135deg, #b54d18, #a04010);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  opacity: 0.85;
 }
 
 .checkout-pay-btn:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(224, 124, 80, 0.4);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-hover, #e07c50) 30%, transparent);
 }
 
 .checkout-pay-btn:disabled {

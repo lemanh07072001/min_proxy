@@ -6,11 +6,13 @@ import { Star, Shield, CheckCircle } from 'lucide-react'
 
 import { useTranslation } from 'react-i18next'
 
+import { useBranding } from '@/app/contexts/BrandingContext'
+
 const partners = [
-  { name: 'PC', display: 'PC', color: '#ef4444' },
+  { name: 'PC', display: 'PC', color: 'var(--primary-hover, #ef4444)' },
   { name: 'GemLogin', display: 'GEMLOGIN', color: '#3b82f6' },
   { name: 'PionLogin', display: 'PionLogin', color: '#1f2937' },
-  { name: 'Viettel', display: 'viettel', color: '#ef4444' },
+  { name: 'Viettel', display: 'viettel', color: 'var(--primary-hover, #ef4444)' },
   { name: 'FPT', display: 'FPT', color: '#f97316' },
   { name: 'VNPT', display: 'VNPT', color: '#3b82f6' }
 ]
@@ -23,6 +25,7 @@ const trustItems = [
 
 const PartnersSection = () => {
   const { t } = useTranslation()
+  const { name: appName } = useBranding()
 
   return (
     <section style={{ padding: '60px 24px', background: '#f8fafc' }}>
@@ -34,13 +37,13 @@ const PartnersSection = () => {
               fontSize: '2.25rem',
               fontWeight: 800,
               marginBottom: 12,
-              color: '#ef4444'
+              color: 'var(--primary-hover, #ef4444)'
             }}
           >
             {t('landing.partners.title')}
           </h2>
           <p style={{ fontSize: '1.1rem', color: '#64748b', maxWidth: 600, margin: '0 auto' }}>
-            {t('landing.partners.subtitle', { appName: process.env.NEXT_PUBLIC_APP_NAME })}
+            {t('landing.partners.subtitle', { appName: appName || '' })}
           </p>
         </div>
 
@@ -91,7 +94,7 @@ const PartnersSection = () => {
                   justifyContent: 'center'
                 }}
               >
-                <item.icon size={20} color='#ef4444' />
+                <item.icon size={20} color='var(--primary-hover, #ef4444)' />
               </div>
               <div>
                 <div style={{ fontSize: 20, fontWeight: 700, color: '#1a202c' }}>{item.number}</div>

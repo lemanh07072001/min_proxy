@@ -1,18 +1,20 @@
-/* ===== CSS VARIABLES - PRIORITY CAO NHẤT ===== */
-/* File này phải được import đầu tiên để đảm bảo CSS variables không bị ghi đè */
+/* ===== CSS VARIABLES - Giá trị mặc định ===== */
+/* Server-side layout.tsx sẽ override bằng giá trị từ DB */
+/* BrandingContext client-side sẽ override lần nữa khi API trả về */
 
-/* Sử dụng CSS specificity cao nhất để đảm bảo không bị ghi đè */
 html:root {
-  /* Custom Variables - Sử dụng giá trị cứng để tránh timing issues */
-  --primary-hover: #e63946 !important;
-  --primary-light: rgba(252, 67, 54, 0.1) !important;
-  --primary-color-main: #ffffff !important;
-  --primary-gradient: linear-gradient(45deg, #FC4336, #F88A4B) !important;
-  --primary-gradient-alt: linear-gradient(135deg, #fc4336 0%, #e63946 100%) !important;
+  /* Primary colors — sẽ bị override bởi branding config */
+  --primary-hover: #e63946;
+  --primary-light: rgba(252, 67, 54, 0.1);
+  --primary-gradient: linear-gradient(45deg, #FC4336, #F88A4B);
+  --primary-gradient-alt: linear-gradient(135deg, #fc4336 0%, #e63946 100%);
+  --fallback-primary-gradient: linear-gradient(135deg, #fc4336 0%, #e63946 100%);
+
+  /* Layout */
   --width-sidebar: 300px !important;
-  --fallback-primary-gradient: linear-gradient(135deg, #fc4336 0%, #e63946 100%) !important;
 
   /* Force white text on primary-colored elements */
+  --primary-color-main: #ffffff !important;
   --mui-palette-primary-contrastText: #fff !important;
 }
 

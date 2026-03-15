@@ -3,7 +3,7 @@ import type { Metadata } from 'next'
 import HistoryLoginPage from '@views/Client/HistoryLogin/HistoryLoginPage'
 
 export const metadata: Metadata = {
-  title: `${process.env.NEXT_PUBLIC_APP_NAME} | Lịch sử đăng nhập`
+  title: 'Lịch sử đăng nhập'
 }
 
 export default function OrderProxy() {

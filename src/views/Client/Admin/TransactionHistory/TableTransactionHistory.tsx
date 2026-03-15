@@ -285,9 +285,9 @@ export default function TableDepositHistory() {
       },
       {
         accessorKey: 'type',
-        header: 'Loại',
+        header: 'Loại GD',
         cell: ({ row }: { row: any }) => getTypeBadge(row.original.type),
-        size: 150
+        size: 190
       },
       {
         header: 'Số trước',

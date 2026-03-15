@@ -7,7 +7,7 @@ import ProfitHero from '@/views/Client/Admin/Dashboard/ProfitHero'
 import TrendCharts from '@/views/Client/Admin/Dashboard/TrendCharts'
 import RevenueProfitCards from '@/views/Client/Admin/Dashboard/RevenueProfitCards'
 import OrdersDepositsRow from '@/views/Client/Admin/Dashboard/OrdersDepositsRow'
-import PartnerBreakdown from '@/views/Client/Admin/Dashboard/PartnerBreakdown'
+import ProviderBreakdown from '@/views/Client/Admin/Dashboard/PartnerBreakdown'
 import ReconciliationCard from '@/views/Client/Admin/Dashboard/ReconciliationHero'
 import OrderStatusReport from '@/views/Client/Admin/Dashboard/OrderStatusReport'
 import { useFinancialReport, MOCK_FINANCIAL } from '@/hooks/apis/useFinancialReport'
@@ -44,8 +44,8 @@ export default function DashboardPage() {
           periodDays={data.period_days}
         />
 
-        {/* 6. Hiệu suất theo partner */}
-        <PartnerBreakdown data={data.partner_breakdown} />
+        {/* 6. Hiệu suất theo nhà cung cấp */}
+        <ProviderBreakdown data={data.provider_breakdown} />
 
         {/* 7. Đối soát: lazy-load riêng */}
         <ReconciliationCard filterStart={filterParams.start} filterEnd={filterParams.end} />

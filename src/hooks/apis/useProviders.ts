@@ -1,0 +1,127 @@
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+
+import axios from 'axios'
+
+import useAxiosAuth from '@/hocs/useAxiosAuth'
+
+export const useProviders = () => {
+  const axiosAuth = useAxiosAuth()
+
+  return useQuery({
+    queryKey: ['providers'],
+    queryFn: async () => {
+      const res = await axiosAuth.get('/get-provider')
+      const data = res?.data?.data ?? res?.data ?? []
+
+      console.log('Providers data from API:', data)
+
+return data
+    },
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    staleTime: 5 * 60 * 1000 // Cache 5 phút
+  })
+}
+
+// Hook để tạo mới nhà cung cấp
+export const useCreateProvider = () => {
+  const axiosAuth = useAxiosAuth()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (data: any) => {
+      const res = await axiosAuth.post('/add-provider', data)
+
+
+return res?.data
+    },
+    onSuccess: () => {
+      // Refresh lại danh sách providers sau khi tạo thành công
+      queryClient.invalidateQueries({ queryKey: ['providers'] })
+    }
+  })
+}
+
+// Hook để cập nhật nhà cung cấp
+export const useUpdateProvider = (providerId?: number) => {
+  const axiosAuth = useAxiosAuth()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (data: any) => {
+      const res = await axiosAuth.post(`/edit-provider/${providerId}`, data)
+
+
+return res?.data
+    },
+    onSuccess: () => {
+      // Refresh lại danh sách providers sau khi cập nhật thành công
+      queryClient.invalidateQueries({ queryKey: ['providers'] })
+    }
+  })
+}
+
+// Hook để xóa nhà cung cấp
+export const useDeleteProvider = () => {
+  const axiosAuth = useAxiosAuth()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (providerId: number) => {
+      const res = await axiosAuth.post(`/delete-provider/${providerId}`)
+
+
+return res?.data
+    },
+    onSuccess: () => {
+      // Refresh lại danh sách providers sau khi xóa thành công
+      queryClient.invalidateQueries({ queryKey: ['providers'] })
+    }
+  })
+}
+
+// Hook để tạo QR code nạp tiền
+export const useGenerateQrCode = () => {
+  const axiosAuth = useAxiosAuth()
+
+  return useMutation({
+    mutationFn: async (data: { provider_code: string; amount: string | number }) => {
+      const res = await axiosAuth.post('/create-topup-transaction', data)
+
+
+return res?.data
+    }
+  })
+}
+
+// Hook để lấy lịch sử giao dịch nạp tiền của provider
+export const useProviderTransactions = (providerId?: number | string, enabled: boolean = true) => {
+  const axiosAuth = useAxiosAuth()
+
+  return useQuery({
+    queryKey: ['topupHistory', providerId],
+    queryFn: async () => {
+      if (!providerId) return []
+
+      try {
+        // Gọi API get-topup-history/{id} với path parameter
+        const res = await axiosAuth.get(`/get-topup-history/${providerId}`, {
+          timeout: 10000 // Timeout 10 giây
+        })
+
+        return res?.data?.data ?? res?.data ?? []
+      } catch (error: any) {
+        console.error('Error fetching topup history:', error)
+
+        // Throw error để React Query có thể xử lý
+        throw error
+      }
+    },
+    enabled: enabled && !!providerId, // Chỉ gọi khi enabled và có providerId
+    refetchOnMount: false, // Không refetch khi mount lại
+    refetchOnWindowFocus: false, // Không refetch khi focus window
+    staleTime: 5 * 60 * 1000, // Cache 5 phút
+    retry: 1, // Chỉ retry 1 lần
+    retryDelay: 1000
+  })
+}

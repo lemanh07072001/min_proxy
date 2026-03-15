@@ -92,12 +92,16 @@ export const usePendingBankQr = (enabled: boolean = true, activePolling: boolean
 return res?.data as PendingBankQrResponse
     },
     enabled,
+    retry: 1,
     refetchInterval: (query) => {
+      // Nếu lỗi → dừng poll
+      if (query.state.error) return false
+
       const hasPending = !!query.state.data?.data
 
       if (activePolling && hasPending) return 5000
-      
-return hasPending ? 30000 : 60000
+
+      return hasPending ? 30000 : 60000
     },
     refetchOnMount: true,
     refetchOnWindowFocus: true,

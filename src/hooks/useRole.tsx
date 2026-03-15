@@ -14,7 +14,7 @@ export type UserRole = 'admin' | 'user' | 'manager' | 'reseller'
 export type Permission =
   | 'admin.dashboard'
   | 'admin.users'
-  | 'admin.partner'
+  | 'admin.provider'
   | 'admin.transactionHistory'
   | 'admin.depositHistory'
   | 'admin.serviceType'
@@ -29,7 +29,7 @@ const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
   admin: [
     'admin.dashboard',
     'admin.users',
-    'admin.partner',
+    'admin.provider',
     'user.proxy',
     'user.orders',
     'user.profile',

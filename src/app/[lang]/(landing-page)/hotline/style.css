@@ -140,8 +140,15 @@
     outline: none;
 }
 
+/* Dynamic brand-color focus for form inputs */
+.input-brand-focus:focus {
+    --tw-ring-color: var(--primary-hover, #ef4444);
+    border-color: var(--primary-hover, #ef4444);
+    box-shadow: 0 0 0 2px var(--primary-hover, #ef4444);
+}
+
 .btn-gradient-primary {
-    background: linear-gradient(135deg, #ef4444, #f97316);
+    background: var(--primary-gradient, linear-gradient(135deg, #ef4444, #f97316));
     color: white !important;
     border: none;
     font-weight: 600;
@@ -170,6 +177,6 @@
 
 .btn-gradient-primary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(239, 68, 68, 0.4);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.25);
     color: white;
 }

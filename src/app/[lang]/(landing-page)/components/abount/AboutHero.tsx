@@ -7,9 +7,11 @@ import { Shield, Award, Users, Globe, Star, CheckCircle } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 import { useLanguageSync } from '@/hooks/useLanguageSync'
+import { useBranding } from '@/app/contexts/BrandingContext'
 
 const AboutHero = () => {
   const { t } = useTranslation()
+  const { name: appName } = useBranding()
 
   useLanguageSync() // Sync language with URL
   
@@ -37,7 +39,7 @@ return (
               </h1>
 
               <p className='about-hero-subtitle-modern'>
-                {t('landing.about.hero.subtitle', { appName: process.env.NEXT_PUBLIC_APP_NAME })}
+                {t('landing.about.hero.subtitle', { appName })}
               </p>
 
               <div className='hero-features-modern'>

@@ -34,7 +34,7 @@ import CustomTextField from '@/@core/components/mui/TextField'
 
 // RichTextEditor removed — using plain textarea for note
 import { TAG_CONFIG, PREDEFINED_TAGS, getTagStyle, fixCountryCode } from '@/configs/tagConfig'
-import { usePartners } from '@/hooks/apis/usePartners'
+import { useProviders } from '@/hooks/apis/useProviders'
 import { useServiceType, useCreateServiceType, useUpdateServiceType, useServiceTypes } from '@/hooks/apis/useServiceType'
 import MultiInputModal from '@/views/Client/Admin/ServiceType/MultiInputModal'
 import PriceByDurationModal from '@/views/Client/Admin/ServiceType/PriceByDurationModal'
@@ -63,7 +63,7 @@ const schema = yup.object({
     .nullable()
     .transform(value => (value ? value.trim() : value)),
   status: yup.string().nullable().required('Trạng thái là bắt buộc'),
-  partner_id: yup.string().nullable(),
+  provider_id: yup.string().nullable(),
   type: yup.string().nullable().required('Loại dịch vụ là bắt buộc'),
   ip_version: yup.string().nullable().required('IP Version là bắt buộc'),
   protocols: yup
@@ -124,7 +124,7 @@ export default function ServiceFormModal({ open, onClose, serviceId, initialData
   const isEditMode = !!serviceId
 
   // Data fetching
-  const { data: partners = [], isLoading: loadingPartners } = usePartners()
+  const { data: providers = [], isLoading: loadingProviders } = useProviders()
 
   // Luôn fetch chi tiết khi edit để lấy đầy đủ field (api_partner bị hidden trong list)
   const { data: fetchedData, isLoading: loadingService } = useServiceType(serviceId, isEditMode && open)
@@ -245,7 +245,7 @@ return { values: {}, errors: formattedErrors }
       cost_price: undefined,
       code: '',
       status: 'active',
-      partner_id: '',
+      provider_id: '',
       type: '0',
       ip_version: 'ipv4',
       protocols: [],
@@ -320,7 +320,7 @@ return { values: {}, errors: formattedErrors }
         cost_price: serviceData.cost_price || undefined,
         code: serviceData.code || '',
         status: serviceData.status || 'active',
-        partner_id: serviceData.partner_id || '',
+        provider_id: serviceData.provider_id || '',
         type: serviceData.type?.toString() || '0',
         ip_version: serviceData.ip_version?.toLowerCase() || 'ipv4',
         protocols: parsedProtocols || [],
@@ -350,7 +350,7 @@ return { values: {}, errors: formattedErrors }
         cost_price: undefined,
         code: '',
         status: 'active',
-        partner_id: '',
+        provider_id: '',
         type: '0',
         ip_version: 'ipv4',
         protocols: [],
@@ -421,7 +421,7 @@ return { values: {}, errors: formattedErrors }
         const errors: string[] = []
 
         // Fields nằm trong Accordion "Cấu hình kỹ thuật"
-        const techFields = ['partner_id', 'api_partner', 'cost_price', 'code', 'body_api']
+        const techFields = ['provider_id', 'api_partner', 'cost_price', 'code', 'body_api']
 
         // Parse validation errors object từ Laravel → set lỗi trực tiếp vào field
         if (res?.errors && typeof res.errors === 'object') {
@@ -458,7 +458,7 @@ return { values: {}, errors: formattedErrors }
     console.error('Form validation errors:', validationErrors)
 
     // Auto mở accordion nếu lỗi ở tech fields
-    const techFields = ['partner_id', 'api_partner', 'cost_price', 'code', 'body_api']
+    const techFields = ['provider_id', 'api_partner', 'cost_price', 'code', 'body_api']
 
     if (Object.keys(validationErrors).some(f => techFields.includes(f))) setTechExpanded(true)
 
@@ -489,7 +489,7 @@ return { values: {}, errors: formattedErrors }
       <Dialog open={open} onClose={onClose} maxWidth='xl' fullWidth PaperProps={{ sx: { maxHeight: '92vh' } }}>
         <DialogTitle
           sx={{
-            background: 'linear-gradient(135deg, #F88A4B 0%, #F6734B 100%)',
+            background: 'var(--primary-gradient, linear-gradient(135deg, #F88A4B 0%, #F6734B 100%))',
             color: 'white',
             display: 'flex',
             alignItems: 'center',
@@ -987,13 +987,13 @@ return (
                   <Grid2 container spacing={1}>
                     <Grid2 size={{ xs: 6, sm: 4 }}>
                       <Controller
-                        name='partner_id'
+                        name='provider_id'
                         control={control}
                         render={({ field }) => (
-                          <CustomTextField {...field} fullWidth select label='Đối tác' disabled={loadingPartners}>
-                            <MenuItem value=''><em>{loadingPartners ? '...' : '—'}</em></MenuItem>
-                            {partners?.map((partner: any) => (
-                              <MenuItem key={partner.id} value={partner.id}>{partner.title || partner.name}</MenuItem>
+                          <CustomTextField {...field} fullWidth select label='Nhà cung cấp' disabled={loadingProviders}>
+                            <MenuItem value=''><em>{loadingProviders ? '...' : '—'}</em></MenuItem>
+                            {providers?.map((provider: any) => (
+                              <MenuItem key={provider.id} value={provider.id}>{provider.title || provider.name}</MenuItem>
                             ))}
                           </CustomTextField>
                         )}
@@ -1106,7 +1106,7 @@ return (
 
                 // Render spec feature rows (dùng chung cả 2 loại card)
                 const specFeatureRows = [
-                  previewData.auth_type && { label: 'Xác thực', value: convertAuthType(previewData.auth_type), icon: Shield, color: '#f97316' },
+                  previewData.auth_type && { label: 'Xác thực', value: convertAuthType(previewData.auth_type), icon: Shield, color: 'var(--primary-hover, #f97316)' },
                   previewData.bandwidth && { label: 'Băng thông', value: previewData.bandwidth === 'unlimited' ? 'Không giới hạn' : previewData.bandwidth, icon: Wifi, color: '#3b82f6' },
                   watchedType === '1' && previewData.rotation_type && { label: 'Kiểu xoay', value: previewData.rotation_type === 'per_request' ? 'Per request' : previewData.rotation_type === 'sticky' ? 'Sticky session' : previewData.rotation_type === 'time_based' ? 'Time-based' : previewData.rotation_type, icon: RefreshCw, color: '#8b5cf6' },
                   watchedType === '1' && previewData.rotation_interval && { label: 'Thời gian xoay IP', value: previewData.rotation_interval, icon: Clock, color: '#f59e0b' },
@@ -1126,14 +1126,14 @@ return (
 
 return !(cfg && 'hidden' in cfg && cfg.hidden) })
 
-                const renderTags = () => visibleTagEls.length > 0 ? (
-                  <div style={{ position: 'absolute', top: '-12px', right: '14px', zIndex: 2, display: 'flex', gap: '6px' }}>
+                const renderInlineTags = () => visibleTagEls.length > 0 ? (
+                  <div style={{ display: 'flex', gap: '4px', flexShrink: 0 }}>
                     {visibleTagEls.map((tag: string, i: number) => {
                       const cfg = getTagStyle(tag)
 
-                      
-return <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '5px 14px', fontSize: '11.5px', fontWeight: 700, borderRadius: '20px', background: `linear-gradient(180deg, rgba(255,255,255,0.2) 0%, transparent 50%), ${cfg.gradient || cfg.bgColor}`, color: cfg.textColor, boxShadow: `0 2px 10px ${cfg.borderColor}55, inset 0 1px 0 rgba(255,255,255,0.2)`, border: '1px solid rgba(255,255,255,0.25)', letterSpacing: '0.3px', lineHeight: 1.2 }}>
-                        {cfg.icon && <span style={{ fontSize: '12px' }}>{cfg.icon}</span>}{tag}
+
+return <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: '3px', padding: '3px 10px', fontSize: '10.5px', fontWeight: 700, borderRadius: '6px', background: `linear-gradient(180deg, rgba(255,255,255,0.2) 0%, transparent 50%), ${cfg.gradient || cfg.bgColor}`, color: cfg.textColor, boxShadow: `0 2px 10px ${cfg.borderColor}55, inset 0 1px 0 rgba(255,255,255,0.2)`, border: '1px solid rgba(255,255,255,0.25)', letterSpacing: '0.3px', lineHeight: 1.2 }}>
+                        {cfg.icon && <span style={{ fontSize: '10px' }}>{cfg.icon}</span>}{tag}
                       </span>
                     })}
                   </div>
@@ -1151,16 +1151,20 @@ return <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap:
 return <p style={{ fontSize: '13px', color: '#64748b', margin: '0 0 8px', lineHeight: 1.4 }}>{preview}</p>
                 }
 
-                // Render footer
+                // Render footer — price left + button right
                 const renderFooter = () => (
-                  <div style={{ marginTop: 'auto', paddingTop: '10px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginTop: 'auto', paddingTop: 12, borderTop: '1px solid #f1f5f9' }}>
+                    <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--primary-hover, #e53e3e)', whiteSpace: 'nowrap' }}>
+                      {validPrices.length > 1 && <span style={{ fontSize: '12px', fontWeight: 500, color: '#94a3b8', marginRight: '2px' }}>từ </span>}
+                      {firstPrice > 0 ? `${firstPrice.toLocaleString('vi-VN')}đ` : '—'}
+                    </div>
                     {isAvailable ? (
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', width: '100%', padding: '8px', fontSize: '13px', fontWeight: 600, color: '#d06830', background: '#fff5ed', borderRadius: '10px', border: '1px solid #f0c4a0' }}>
-                        <ShoppingCart size={16} /> Mua Proxy
+                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '8px 18px', fontSize: '13px', fontWeight: 600, color: 'var(--primary-hover, #d06830)', background: 'color-mix(in srgb, var(--primary-hover, #f97316) 8%, white)', borderRadius: '10px', border: '1px solid color-mix(in srgb, var(--primary-hover, #f97316) 25%, white)', whiteSpace: 'nowrap' }}>
+                        <ShoppingCart size={14} /> Mua ngay
                       </div>
                     ) : (
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '12px', borderRadius: '8px', backgroundColor: '#f1f5f9', border: '1px solid #e2e8f0', color: '#64748b', fontSize: '14px', fontWeight: 600 }}>
-                        Tạm ngừng bán
+                      <div style={{ padding: '8px 14px', borderRadius: '8px', backgroundColor: '#f1f5f9', border: '1px solid #e2e8f0', color: '#64748b', fontSize: '13px', fontWeight: 600 }}>
+                        Tạm ngừng
                       </div>
                     )}
                   </div>
@@ -1174,20 +1178,17 @@ return <p style={{ fontSize: '13px', color: '#64748b', margin: '0 0 8px', lineHe
                     ...((!isAvailable) ? { opacity: 0.7 } : {})
                   }}>
                     {/* Top color bar */}
-                    <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '3px', background: watchedType === '1' ? 'linear-gradient(90deg, #3b82f6, #60a5fa)' : 'linear-gradient(90deg, #e53e3e, #ff6b6b)', borderRadius: '12px 12px 0 0' }} />
-
-                    {/* Tag badge */}
-                    {renderTags()}
+                    <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '3px', background: watchedType === '1' ? 'linear-gradient(90deg, #3b82f6, #60a5fa)' : 'var(--primary-gradient, linear-gradient(90deg, #e53e3e, #ff6b6b))', borderRadius: '12px 12px 0 0' }} />
 
                     {watchedType === '1' ? (
 
                       /* ===== ROTATING — giống PlanCard ===== */
                       <>
-                        {/* Header: title + price */}
+                        {/* Header: title + tags */}
                         <div style={{ marginBottom: '12px', paddingBottom: '10px', borderBottom: '1px solid #f1f5f9', paddingTop: '4px' }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#1e293b', margin: 0, textAlign: 'left' }}>{previewData.name || 'Tên sản phẩm'} {serviceId && <span style={{ fontSize: '11px', fontWeight: 500, color: '#94a3b8' }}>#{serviceId}</span>}</h3>
-                            {firstPrice > 0 && <div style={{ fontSize: '18px', fontWeight: 700, color: '#e53e3e', whiteSpace: 'nowrap' }}>{validPrices.length > 1 && <span style={{ fontSize: '12px', fontWeight: 500, color: '#94a3b8', marginRight: '2px' }}>từ</span>}{firstPrice.toLocaleString('vi-VN')}đ</div>}
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
+                            <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#1e293b', margin: 0, textAlign: 'left', flex: 1 }}>{previewData.name || 'Tên sản phẩm'} {serviceId && <span style={{ fontSize: '11px', fontWeight: 500, color: '#94a3b8' }}>#{serviceId}</span>}</h3>
+                            {renderInlineTags()}
                           </div>
                         </div>
 
@@ -1209,7 +1210,7 @@ return <p style={{ fontSize: '13px', color: '#64748b', margin: '0 0 8px', lineHe
                           {/* Protocol static row */}
                           {Array.isArray(previewData.protocols) && previewData.protocols.length > 0 && (
                             <div className='feature-row'>
-                              <div className='feature-icons'><Shield size={16} color='#f97316' /></div>
+                              <div className='feature-icons'><Shield size={16} color='var(--primary-hover, #f97316)' /></div>
                               <div className='feature-content'>
                                 <span className='feature-label'>Hỗ trợ:</span>
                                 <span className='feature-value'>{previewData.protocols.map((p: string) => p.toUpperCase()).join('/')}</span>
@@ -1230,7 +1231,7 @@ return <p style={{ fontSize: '13px', color: '#64748b', margin: '0 0 8px', lineHe
                           ))}
                           {/* Multi_inputs feature rows — giống StaticFeatureRow */}
                           {(() => {
-                            const featureColors = ['#f97316', '#3b82f6', '#22c55e', '#8b5cf6', '#06b6d4', '#f59e0b', '#ef4444']
+                            const featureColors = ['var(--primary-hover, #f97316)', '#3b82f6', '#22c55e', '#8b5cf6', '#06b6d4', '#f59e0b', '#ef4444']
 
                             
 return multiInputFields.filter((f: any) => f.key && f.value).map((input: any, i: number) => (
@@ -1254,11 +1255,11 @@ return multiInputFields.filter((f: any) => f.key && f.value).map((input: any, i:
                       /* ===== STATIC — giống ProxyCard ===== */
                       <>
                         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', paddingTop: '4px' }}>
-                          {/* Header: title + price */}
-                          <div style={{ marginBottom: '10px', paddingBottom: '8px', borderBottom: '1px solid #f1f5f9', paddingTop: tagElements.length > 0 ? '6px' : undefined }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                              <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#1e293b', margin: 0 }}>{previewData.name || 'Tên sản phẩm'} {serviceId && <span style={{ fontSize: '11px', fontWeight: 500, color: '#94a3b8' }}>#{serviceId}</span>}</h3>
-                              {firstPrice > 0 && <div style={{ fontSize: '18px', fontWeight: 700, color: '#e53e3e', whiteSpace: 'nowrap' }}>{validPrices.length > 1 && <span style={{ fontSize: '12px', fontWeight: 500, color: '#94a3b8', marginRight: '2px' }}>từ</span>}{firstPrice.toLocaleString('vi-VN')}đ</div>}
+                          {/* Header: title + tags */}
+                          <div style={{ marginBottom: '10px', paddingBottom: '8px', borderBottom: '1px solid #f1f5f9' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
+                              <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#1e293b', margin: 0, flex: 1 }}>{previewData.name || 'Tên sản phẩm'} {serviceId && <span style={{ fontSize: '11px', fontWeight: 500, color: '#94a3b8' }}>#{serviceId}</span>}</h3>
+                              {renderInlineTags()}
                             </div>
                           </div>
 
@@ -1279,7 +1280,7 @@ return multiInputFields.filter((f: any) => f.key && f.value).map((input: any, i:
                             {/* Protocol static row */}
                             {Array.isArray(previewData.protocols) && previewData.protocols.length > 0 && (
                               <div className='feature-row'>
-                                <div className='feature-icons'><Shield size={16} color='#f97316' /></div>
+                                <div className='feature-icons'><Shield size={16} color='var(--primary-hover, #f97316)' /></div>
                                 <div className='feature-content'>
                                   <span className='feature-label'>Hỗ trợ:</span>
                                   <span className='feature-value'>{previewData.protocols.map((p: string) => p.toUpperCase()).join('/')}</span>
@@ -1326,11 +1327,11 @@ return multiInputFields.filter((f: any) => f.key && f.value).map((input: any, i:
             disabled={isPending || (isEditMode && loadingService && !initialData)}
             startIcon={isPending ? <CircularProgress size={18} color='inherit' /> : null}
             sx={{
-              background: 'linear-gradient(135deg, #F88A4B 0%, #F6734B 100%)',
-              '&:hover': { background: 'linear-gradient(135deg, #F6734B 0%, #e5633b 100%)' },
+              background: 'var(--primary-gradient, linear-gradient(135deg, #F88A4B 0%, #F6734B 100%))',
+              '&:hover': { opacity: 0.9 },
               fontWeight: 700,
               px: 3,
-              boxShadow: '0 2px 8px rgba(246, 115, 75, 0.25)',
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
             }}
           >
             {isPending

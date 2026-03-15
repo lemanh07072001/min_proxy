@@ -7,9 +7,11 @@ import { Users, Star, Award, Target, Heart, Zap } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 import { useLanguageSync } from '@/hooks/useLanguageSync'
+import { useBranding } from '@/app/contexts/BrandingContext'
 
 const TeamSection = () => {
   const { t } = useTranslation()
+  const { name: appName } = useBranding()
 
   useLanguageSync()
 
@@ -97,17 +99,17 @@ const TeamSection = () => {
           {/* Content */}
           <div className='space-y-8'>
             <div>
-              <p className='text-orange-500 font-semibold text-lg mb-4'>{t('landing.about.team.title')}</p>
-              <h2 className='text-3xl md:text-4xl font-bold text-gray-900 mb-6'>{process.env.NEXT_PUBLIC_APP_NAME}</h2>
+              <p className='font-semibold text-lg mb-4' style={{ color: 'var(--primary-hover, #ef4444)' }}>{t('landing.about.team.title')}</p>
+              <h2 className='text-3xl md:text-4xl font-bold text-gray-900 mb-6'>{appName}</h2>
               <p className='text-gray-600 text-lg leading-relaxed mb-8'>
-                {t('landing.about.team.subtitle', { appName: process.env.NEXT_PUBLIC_APP_NAME })}
+                {t('landing.about.team.subtitle', { appName })}
               </p>
             </div>
 
             <div className='space-y-6'>
               <h3 className='text-xl font-bold text-gray-900'>{t('landing.about.team.professionalTitle')}</h3>
               <p className='text-gray-600 leading-relaxed'>
-                {t('landing.about.team.professionalDesc1', { appName: process.env.NEXT_PUBLIC_APP_NAME })}
+                {t('landing.about.team.professionalDesc1', { appName })}
               </p>
               <p className='text-gray-600 leading-relaxed'>
                 {t('landing.about.team.professionalDesc2')}
@@ -117,15 +119,15 @@ const TeamSection = () => {
             {/* Stats */}
             <div className='flex flex-wrap gap-8'>
               <div className='text-center'>
-                <div className='text-3xl font-bold text-orange-500'>25+</div>
+                <div className='text-3xl font-bold' style={{ color: 'var(--primary-hover, #ef4444)' }}>25+</div>
                 <div className='text-gray-600 text-sm'>{t('landing.about.team.stats.experts')}</div>
               </div>
               <div className='text-center'>
-                <div className='text-3xl font-bold text-orange-500'>5+</div>
+                <div className='text-3xl font-bold' style={{ color: 'var(--primary-hover, #ef4444)' }}>5+</div>
                 <div className='text-gray-600 text-sm'>{t('landing.about.team.stats.experience')}</div>
               </div>
               <div className='text-center'>
-                <div className='text-3xl font-bold text-orange-500'>24/7</div>
+                <div className='text-3xl font-bold' style={{ color: 'var(--primary-hover, #ef4444)' }}>24/7</div>
                 <div className='text-gray-600 text-sm'>{t('landing.about.team.stats.support')}</div>
               </div>
             </div>
@@ -139,9 +141,9 @@ const TeamSection = () => {
                 {[...Array(9)].map((_, i) => (
                   <div
                     key={i}
-                    className='w-16 h-16 bg-orange-500/20 rounded-full flex items-center justify-center border-2 border-orange-500/30'
+                    className='w-16 h-16 rounded-full flex items-center justify-center border-2' style={{ background: 'color-mix(in srgb, var(--primary-hover, #ef4444) 20%, transparent)', borderColor: 'color-mix(in srgb, var(--primary-hover, #ef4444) 30%, transparent)' }}
                   >
-                    <Users className='w-8 h-8 text-orange-400' />
+                    <Users className='w-8 h-8' style={{ color: 'var(--primary-hover, #ef4444)' }} />
                   </div>
                 ))}
               </div>

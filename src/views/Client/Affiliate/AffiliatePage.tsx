@@ -21,9 +21,12 @@ export default function AffiliatePage() {
 
   const [copied, setCopied] = useState(false)
 
-  const copyReferralLink = () => {
-    const referralLink = `${process.env.NEXT_PUBLIC_APP_URL}?ref=${user?.id}`
+  // Dùng window.location.origin — luôn đúng domain hiện tại, không phụ thuộc env
+  const referralLink = typeof window !== 'undefined'
+    ? `${window.location.origin}?ref=${user?.id}`
+    : `?ref=${user?.id}`
 
+  const copyReferralLink = () => {
     navigator.clipboard.writeText(referralLink)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
@@ -38,7 +41,7 @@ export default function AffiliatePage() {
         }}
       >
         <h2 className='text-xl font-bold text-gray-900 mb-6 flex items-center'>
-          <Link className='w-5 h-5 mr-2 text-orange-500' />
+          <Link className='w-5 h-5 mr-2' style={{ color: 'var(--primary-hover, #f97316)' }} />
           Link Giới Thiệu
         </h2>
 
@@ -48,9 +51,10 @@ export default function AffiliatePage() {
               <label className='block text-sm font-medium text-gray-700 mb-2'>Mã giới thiệu của bạn</label>
               <div className='flex space-x-3'>
                 <CustomTextField
-                  value={`${process.env.NEXT_PUBLIC_APP_URL}?ref=${user?.id}`}
+                  value={referralLink}
                   fullWidth
-                  placeholder='Nhập mã giới thiệu'
+                  placeholder='Link giới thiệu'
+                  slotProps={{ input: { readOnly: true } }}
                 />
 
                 <CustomIconButton
@@ -73,7 +77,7 @@ export default function AffiliatePage() {
         }}
       >
         <h2 className='text-xl font-bold text-gray-900 mb-6 flex items-center'>
-          <Link className='w-5 h-5 mr-2 text-orange-500' />
+          <Link className='w-5 h-5 mr-2' style={{ color: 'var(--primary-hover, #f97316)' }} />
           Lịch sử hoa hồng
         </h2>
 

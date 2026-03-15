@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 
 import { useModalContext } from '@/app/contexts/ModalContext'
+import { useBranding } from '@/app/contexts/BrandingContext'
 
 import LoginForm from '@views/Auth/LoginForm'
 import RegisterForm from '@views/Auth/RegisterForm'
@@ -14,6 +15,7 @@ import ResetPasswordForm from '@views/Auth/ResetPasswordForm'
 
 const AuthModal: React.FC = () => {
   const { isAuthModalOpen, authModalMode, closeAuthModal, setAuthModalMode } = useModalContext()
+  const { name: appName } = useBranding()
 
   const { t } = useTranslation()
 
@@ -60,7 +62,7 @@ const AuthModal: React.FC = () => {
               <h1 className='login-modal-title'>
                 {authModalMode === 'login' && t('auth.messages.welcomeBack')}
                 {authModalMode === 'register' &&
-                  t('auth.messages.welcomeToApp', { appName: process.env.NEXT_PUBLIC_APP_NAME })}
+                  t('auth.messages.welcomeToApp', { appName })}
                 {authModalMode === 'reset' && t('auth.messages.forgotPasswordTitle')}
                 {authModalMode === 'resetpass' && t('auth.messages.forgotPasswordTitle')}
               </h1>

@@ -17,7 +17,7 @@ const features = [
 ]
 
 const regions = [
-  { name: 'Miền Bắc', provinces: 'Hà Nội, Hải Phòng, Quảng Ninh...', color: '#ef4444' },
+  { name: 'Miền Bắc', provinces: 'Hà Nội, Hải Phòng, Quảng Ninh...', color: 'var(--primary-hover, #ef4444)' },
   { name: 'Miền Trung', provinces: 'Đà Nẵng, Huế, Khánh Hòa...', color: '#f97316' },
   { name: 'Miền Nam', provinces: 'TP.HCM, Bình Dương, Đồng Nai...', color: '#eab308' }
 ]
@@ -33,7 +33,7 @@ const VietnamCoverageSection = () => {
           {/* Left: Content */}
           <div style={{ flex: '1 1 400px' }}>
             <h2 style={{ fontSize: '2rem', fontWeight: 800, color: '#1a202c', marginBottom: 8, lineHeight: 1.3 }}>
-              Có mặt hầu hết ở các tỉnh thành <span style={{ color: '#ef4444' }}>Việt Nam</span>
+              Có mặt hầu hết ở các tỉnh thành <span style={{ color: 'var(--primary-hover, #ef4444)' }}>Việt Nam</span>
             </h2>
             <p style={{ fontSize: 15, color: '#64748b', marginBottom: 24, lineHeight: 1.7 }}>
               Mạng lưới máy chủ phủ sóng toàn diện, kết nối xuyên suốt 3 miền đất nước với công nghệ hiện đại nhất
@@ -52,7 +52,7 @@ const VietnamCoverageSection = () => {
                     backgroundColor: 'rgba(239,68,68,0.08)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
                   }}>
-                    <f.icon size={16} color='#ef4444' />
+                    <f.icon size={16} color='var(--primary-hover, #ef4444)' />
                   </div>
                   <span style={{ fontSize: 14, color: '#475569' }}>{f.text}</span>
                 </div>
@@ -61,7 +61,7 @@ const VietnamCoverageSection = () => {
 
             <Link href={`/${locale}/register`} style={{
               display: 'inline-block', textDecoration: 'none',
-              background: 'linear-gradient(135deg, #ef4444, #f97316)',
+              background: 'var(--primary-gradient, linear-gradient(135deg, #ef4444, #f97316))',
               color: 'white', border: 'none', padding: '12px 28px',
               borderRadius: 50, fontWeight: 600, fontSize: 15, cursor: 'pointer'
             }}>

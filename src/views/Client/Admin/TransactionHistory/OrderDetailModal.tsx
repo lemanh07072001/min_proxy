@@ -53,7 +53,7 @@ const LOG_ACTION_CONFIG: Record<string, { icon: any; color: string; label: strin
   failed: { icon: CircleX, color: '#ef4444', label: 'Thất bại' },
   expired: { icon: Clock, color: '#94a3b8', label: 'Hết hạn' },
   retry: { icon: RefreshCw, color: '#a855f7', label: 'Retry' },
-  api_call_start: { icon: Globe, color: '#6366f1', label: 'Gọi API đối tác' },
+  api_call_start: { icon: Globe, color: '#6366f1', label: 'Gọi API nhà cung cấp' },
   api_call_success: { icon: CheckCircle, color: '#22c55e', label: 'API thành công' },
   api_call_error: { icon: AlertTriangle, color: '#ef4444', label: 'API lỗi' },
   admin_retry_partial: { icon: RefreshCw, color: '#a855f7', label: 'Admin mua bù' },
@@ -486,9 +486,9 @@ function OrderLogsTimeline({ logs, isLoading }: { logs: OrderLog[]; isLoading: b
                 </div>
               )}
 
-              {log.partner_code && (
+              {log.provider_code && (
                 <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: 2 }}>
-                  Đối tác: <span style={{ fontWeight: 500, color: '#64748b' }}>{log.partner_code}</span>
+                  NCC: <span style={{ fontWeight: 500, color: '#64748b' }}>{log.provider_code}</span>
                   {log.http_status && ` • HTTP ${log.http_status}`}
                   {log.retry_count != null && log.retry_count > 0 && ` • Retry #${log.retry_count}`}
                 </div>

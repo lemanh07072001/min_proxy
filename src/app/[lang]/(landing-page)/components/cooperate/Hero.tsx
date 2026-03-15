@@ -7,9 +7,11 @@ import { ArrowRight, Shield, Zap, Globe } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 import { useLanguageSync } from '@/hooks/useLanguageSync'
+import { useBranding } from '@/app/contexts/BrandingContext'
 
 const Hero = () => {
   const { t } = useTranslation()
+  const branding = useBranding()
 
   useLanguageSync() // Sync language with URL
 
@@ -47,7 +49,7 @@ const Hero = () => {
 
           {/* Subtitle */}
           <p className='text-xl md:text-2xl text-gray-300 mb-8 max-w-3xl mx-auto leading-relaxed'>
-            {t('landing.cooperate.hero.subtitle', { appName: process.env.NEXT_PUBLIC_APP_NAME })}
+            {t('landing.cooperate.hero.subtitle', { appName: branding.name })}
           </p>
 
           {/* Features */}

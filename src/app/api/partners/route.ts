@@ -8,7 +8,7 @@ export const revalidate = 300 // Revalidate every 5 minutes
 
 export async function GET(request: Request) {
   try {
-    const laravelApiUrl = '/get-partner'
+    const laravelApiUrl = '/get-provider'
 
     // Fetch directly from Laravel API without auth
     const response = await axiosInstance.get(laravelApiUrl, {
@@ -20,10 +20,10 @@ export async function GET(request: Request) {
 
     return NextResponse.json(response.data)
   } catch (error: any) {
-    console.error('[API PARTNERS ERROR]', error)
+    console.error('[API PROVIDERS ERROR]', error)
 
     return NextResponse.json(
-      { message: error.response?.data?.message || 'Có lỗi xảy ra khi lấy danh sách đối tác' },
+      { message: error.response?.data?.message || 'Có lỗi xảy ra khi lấy danh sách nhà cung cấp' },
       { status: error.response?.status || 500 }
     )
   }

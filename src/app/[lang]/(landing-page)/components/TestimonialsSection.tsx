@@ -10,7 +10,7 @@ const testimonials = [
     name: 'Nguyễn Thanh Bình',
     initials: 'NB',
     role: 'Kinh doanh proxy full time',
-    color: '#ef4444',
+    color: 'var(--primary-hover, #ef4444)',
     content: `Tôi là đại lý từ những ngày đầu ra mắt và rất bất ngờ với sự chuyên nghiệp trong cách vận hành và hỗ trợ. Website riêng được tùy chỉnh theo ý mình, chính sách rõ ràng, chăm sóc kỹ lưỡng.`
   },
   {
@@ -44,7 +44,7 @@ const TestimonialsSection = () => {
       <div style={{ maxWidth: 1140, margin: '0 auto' }}>
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: 48 }}>
-          <div style={{ fontSize: '3rem', fontWeight: 800, color: '#ef4444', lineHeight: 1.2 }}>100+</div>
+          <div style={{ fontSize: '3rem', fontWeight: 800, color: 'var(--primary-hover, #ef4444)', lineHeight: 1.2 }}>100+</div>
           <div style={{ fontSize: '1.5rem', fontWeight: 600, color: 'white', marginTop: 4 }}>Khách hàng cả nước</div>
         </div>
 
@@ -80,7 +80,7 @@ const TestimonialsSection = () => {
               {/* Stars */}
               <div style={{ display: 'flex', gap: 2, marginBottom: 12 }}>
                 {[1, 2, 3, 4, 5].map(i => (
-                  <Star key={i} size={14} fill='#ef4444' color='#ef4444' />
+                  <Star key={i} size={14} fill='var(--primary-hover, #ef4444)' color='var(--primary-hover, #ef4444)' />
                 ))}
               </div>
               {/* Content */}

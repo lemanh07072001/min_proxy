@@ -5,22 +5,22 @@ import Script from 'next/script'
 import { siteConfig } from '@/configs/siteConfig'
 
 const StructuredData = () => {
+  // Không render nếu chưa setup tên site
+  if (!siteConfig.name) return null
+
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "Organization",
     "name": siteConfig.name,
     "description": siteConfig.description,
     "url": siteConfig.url,
-    "logo": siteConfig.favicon,
+    ...(siteConfig.favicon ? { "logo": siteConfig.favicon } : {}),
     "contactPoint": {
       "@type": "ContactPoint",
       "contactType": "customer service",
       "availableLanguage": ["Vietnamese", "English"]
     },
-    "sameAs": [
-      "https://facebook.com/mktproxy",
-      "https://twitter.com/mktproxy"
-    ]
+    "sameAs": []
   }
 
   return (
