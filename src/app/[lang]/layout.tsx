@@ -70,10 +70,12 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
   // Fetch branding từ DB server-side → SEO đúng cho mỗi site
   const branding = await getServerBranding()
 
-  // Tên site chỉ lấy từ DB — site con chưa setup thì rỗng, không fallback env
-  const siteName = branding.site_name || ''
-  const siteDesc = branding.site_description || ''
-  const faviconUrl = branding.favicon_url || ''
+  // Ưu tiên: DB → env var → rỗng
+  // Site mẹ: env var có giá trị → dùng env nếu DB chưa setup
+  // Site con: env var trống → rỗng nếu DB chưa setup
+  const siteName = branding.site_name || siteConfig.name || ''
+  const siteDesc = branding.site_description || siteConfig.description || ''
+  const faviconUrl = branding.favicon_url || siteConfig.favicon || ''
   const ogImage = branding.og_image_url || ''
 
   // SEO đa ngôn ngữ — lấy từ DB theo lang
@@ -178,7 +180,7 @@ const RootLayout = async (props: ChildrenType & { params: Promise<{ lang: string
   --primary-hover: ${branding.primary_hover || siteConfig.primaryHover} !important;
   --primary-gradient: ${branding.primary_gradient || siteConfig.primaryGradient} !important;
   --primary-color: ${branding.primary_color || siteConfig.primaryColor};
-  --site-logo: ${branding.logo_url ? `url('${branding.logo_url}')` : 'none'};
+  --site-logo: ${(branding.logo_url || siteConfig.logo) ? `url('${branding.logo_url || siteConfig.logo}')` : 'none'};
   --site-name: '${(branding.site_name || '').replace(/'/g, "\\'")}';
   --site-favicon: ${branding.favicon_url ? `url('${branding.favicon_url}')` : 'none'};
 }`
@@ -199,8 +201,8 @@ const RootLayout = async (props: ChildrenType & { params: Promise<{ lang: string
         </head>
         <body
           className='flex is-full min-bs-full flex-auto flex-col'
-          data-site-name={branding.site_name || ''}
-          data-site-description={branding.site_description || ''}
+          data-site-name={branding.site_name || siteConfig.name || ''}
+          data-site-description={branding.site_description || siteConfig.description || ''}
           data-site-mode={branding.site_mode || 'child'}
           data-footer-text={branding.footer_text || ''}
           data-support-contact={branding.support_contact || ''}

@@ -77,10 +77,10 @@ export function BrandingProvider({ children }: { children: React.ReactNode }) {
 
   const branding = useMemo<BrandingContextValue>(() => ({
     // Shorthand aliases — ưu tiên API > DOM > env default
-    name: data?.site_name || getServerData('site-name', ''),
-    description: data?.site_description || getServerData('site-description', ''),
-    logo: data?.logo_url || '',
-    favicon: data?.favicon_url || '',
+    name: data?.site_name || getServerData('site-name', siteConfig.name),
+    description: data?.site_description || getServerData('site-description', siteConfig.description),
+    logo: data?.logo_url || siteConfig.logo || '',
+    favicon: data?.favicon_url || siteConfig.favicon || '',
     primaryColor: data?.primary_color || siteConfig.primaryColor,
     primaryHover: data?.primary_hover || siteConfig.primaryHover,
     primaryGradient: data?.primary_gradient || siteConfig.primaryGradient,
