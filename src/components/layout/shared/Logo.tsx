@@ -1,26 +1,43 @@
+'use client'
+
 /**
- * Logo component — render bằng CSS background-image từ server-side CSS variable.
+ * Logo component — đơn giản, đáng tin cậy
  *
- * KHÔNG dùng <img> tag hay client API → không bao giờ flash.
- * CSS variable `--site-logo-src` inject bởi layout.tsx từ DB.
- * Site con chưa setup logo → ẩn (CSS variable empty → background-image none).
+ * Dùng useBranding().logo — ưu tiên DB → env var → file mặc định
+ * Site mẹ: luôn có logo
+ * Site con chưa setup: hiện file mặc định, admin upload sau sẽ override
  */
 
+import { useBranding } from '@/app/contexts/BrandingContext'
+import { siteConfig } from '@/configs/siteConfig'
+
+const DEFAULT_LOGO = '/images/logo/Logo_MKT_Proxy.png'
+
 const Logo = () => {
+  // DB → env → default file
+  const { logo } = useBranding()
+  const logoSrc = logo || siteConfig.logo || DEFAULT_LOGO
+
+  if (!logoSrc) return null
+
   return (
-    <div
-      className='site-logo'
-      role='img'
-      aria-label='Logo'
-      style={{
-        width: 180,
-        height: 50,
-        backgroundImage: 'var(--site-logo)',
-        backgroundSize: 'contain',
-        backgroundRepeat: 'no-repeat',
-        backgroundPosition: 'left center',
-      }}
-    />
+    <div style={{ minHeight: 40, maxHeight: 50, overflow: 'hidden', display: 'flex', alignItems: 'center' }}>
+      <img
+        src={logoSrc}
+        alt='Logo'
+        width={180}
+        height={50}
+        style={{
+          maxWidth: '100%',
+          maxHeight: '50px',
+          height: 'auto',
+          objectFit: 'contain',
+        }}
+        onError={(e) => {
+          (e.target as HTMLImageElement).style.display = 'none'
+        }}
+      />
+    </div>
   )
 }
 
