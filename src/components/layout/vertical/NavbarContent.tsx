@@ -1,18 +1,12 @@
 'use client'
 
-// React Imports
-import { useContext } from 'react'
-
 import { useParams, useRouter } from 'next/navigation'
 
 import { createPortal } from 'react-dom'
 
-
-// Third-party Imports
 import classnames from 'classnames'
 
-// Component Imports
-import { SessionContext, useSession } from 'next-auth/react'
+import { useSession } from 'next-auth/react'
 
 import Button from '@mui/material/Button'
 
@@ -38,7 +32,6 @@ import LanguageDropdown from '@components/layout/shared/LanguageDropdown'
 import { usePendingBankQr } from '@/hooks/apis/useBankQr'
 
 const NavbarContent = () => {
-  const data = null
   const session = useSession()
   const router = useRouter()
   const params = useParams()
@@ -65,14 +58,6 @@ const NavbarContent = () => {
         <NavToggle />
         <ModeDropdown />
 
-        {/* Hiển thị thông tin user khi đã đăng nhập */}
-
-        {session.status === 'authenticated' && (
-          <div className='hidden md:flex items-center gap-2 px-3 py-1 bg-gray-100 rounded-lg text-sm'>
-            <span className='text-green-600'>●</span>
-            <span className='text-gray-700'>{data?.user?.name || data?.user?.email || 'User'}</span>
-          </div>
-        )}
       </div>
       <div className='flex items-center gap-2'>
         {isAuthenticated && pendingRecord && (
@@ -138,7 +123,7 @@ const NavbarContent = () => {
         {/* Hiển thị UserDropdown nếu đã đăng nhập, button đăng nhập nếu chưa */}
 
         {session.status === 'authenticated' ? (
-          <UserDropdown session={data} />
+          <UserDropdown />
         ) : (
           <Button
             onClick={handleOpenLoginModal}

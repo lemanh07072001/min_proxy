@@ -35,6 +35,7 @@ import CustomTextField from '@/@core/components/mui/TextField'
 // RichTextEditor removed — using plain textarea for note
 import { TAG_CONFIG, PREDEFINED_TAGS, getTagStyle, fixCountryCode } from '@/configs/tagConfig'
 import { useProviders } from '@/hooks/apis/useProviders'
+import { useCountries } from '@/hooks/apis/useCountries'
 import { useServiceType, useCreateServiceType, useUpdateServiceType, useServiceTypes } from '@/hooks/apis/useServiceType'
 import MultiInputModal from '@/views/Client/Admin/ServiceType/MultiInputModal'
 import PriceByDurationModal from '@/views/Client/Admin/ServiceType/PriceByDurationModal'
@@ -171,19 +172,7 @@ export default function ServiceFormModal({ open, onClose, serviceId, initialData
     fr: 'Pháp', au: 'Úc', ca: 'Canada', br: 'Brazil', ru: 'Nga',
   }
 
-  const countryOptions = useMemo(() => {
-    const countries = new Set<string>()
 
-    serviceTypes.forEach((service: any) => {
-      if (service.country) countries.add(service.country.toLowerCase())
-    })
-
-    return Array.from(countries).map(code => ({
-      value: code,
-      label: COUNTRY_NAMES[code] || code.toUpperCase()
-    }))
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [serviceTypes])
 
   const ipVersionOptions = useMemo(() => {
     const versions = new Set<string>()
@@ -479,6 +468,16 @@ return { values: {}, errors: formattedErrors }
 
   const watchedType = watch('type')
   const watchedRotationType = watch('rotation_type')
+  const watchedTag = watch('tag')
+
+  const { data: countries } = useCountries()
+
+  const toggleTag = (preset: string) => {
+    const current = watchedTag ? watchedTag.split(',').map((t: string) => t.trim()).filter(Boolean) : []
+    const updated = current.includes(preset) ? current.filter((t: string) => t !== preset) : [...current, preset]
+
+    setValue('tag', updated.join(', '))
+  }
 
   // Preview data
   const previewData = watch()
@@ -666,9 +665,12 @@ return { values: {}, errors: formattedErrors }
                     control={control}
                     render={({ field }) => (
                       <CustomTextField {...field} fullWidth select label='Quốc gia' value={field.value || ''}>
-                        <MenuItem value=''><em>—</em></MenuItem>
-                        {countryOptions.map(opt => (
-                          <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>
+                        <MenuItem value=''><em>— Chọn —</em></MenuItem>
+                        {(countries || []).map((c: any) => (
+                          <MenuItem key={c.code} value={c.code.toLowerCase()}>
+                            <img src={`https://flagcdn.com/w20/${c.code.toLowerCase()}.png`} alt='' style={{ width: 20, height: 15, marginRight: 8, verticalAlign: 'middle' }} />
+                            {c.name}
+                          </MenuItem>
                         ))}
                       </CustomTextField>
                     )}
@@ -725,68 +727,32 @@ return <Chip key={val} label={p?.label || val} size='small' />
 
                 {/* Tags */}
                 <Grid2 size={{ xs: 12, sm: 4 }}>
-                  <Controller
-                    name='tag'
-                    control={control}
-                    render={({ field }) => {
-                      const selectedTags = field.value ? field.value.split(',').map((t: string) => t.trim()).filter(Boolean) : []
+                  <div>
+                    <div style={{ fontSize: '12px', fontWeight: 600, color: '#475569', marginBottom: 6 }}>Tag sản phẩm</div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                      {PREDEFINED_TAGS.map(preset => {
+                        const tags = watchedTag ? watchedTag.split(',').map((t: string) => t.trim()) : []
+                        const isActive = tags.includes(preset)
+                        const style = getTagStyle(preset)
 
-                      
-return (
-                        <CustomTextField
-                          select
-                          fullWidth
-                          label='Tags'
-                          value={selectedTags}
-                          onChange={(e: any) => {
-                            const val = e.target.value as string[]
-
-                            field.onChange(val.join(', '))
-                          }}
-                          onBlur={field.onBlur}
-                          name={field.name}
-                          error={!!errors.tag}
-                          helperText={errors.tag?.message}
-                          slotProps={{
-                            select: {
-                              multiple: true,
-                              MenuProps,
-                              renderValue: (selected: any) => {
-                                const values = selected as string[]
-
-                                if (!values || values.length === 0) return <em>Chọn tags</em>
-                                
-return (
-                                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
-                                    {values.map((tag: string) => {
-                                      const config = TAG_CONFIG[tag]
-
-                                      
-return (
-                                        <Chip key={tag} label={tag} size='small' sx={{ fontSize: '11px', fontWeight: 700, backgroundColor: config?.bgColor || '#f1f5f9', color: config?.textColor || '#475569', border: `1px solid ${config?.borderColor || '#e2e8f0'}` }} />
-                                      )
-                                    })}
-                                  </div>
-                                )
-                              }
-                            }
-                          }}
-                        >
-                          {PREDEFINED_TAGS.map(tag => {
-                            const config = TAG_CONFIG[tag]
-
-                            
-return (
-                              <MenuItem key={tag} value={tag}>
-                                <Chip label={tag} size='small' sx={{ fontSize: '11px', fontWeight: 700, backgroundColor: config.bgColor || '#f1f5f9', color: config.textColor || '#475569', border: `1px solid ${config.borderColor || '#e2e8f0'}`, mr: 1 }} />
-                                {config.hidden ? `${tag} (ẩn khỏi trang mua)` : tag}
-                              </MenuItem>
-                            )
-                          })}
-                        </CustomTextField>
-                      )
-                    }}
-                  />
+                        return (
+                          <div key={preset} onClick={() => toggleTag(preset)} style={{
+                            display: 'inline-flex', alignItems: 'center', gap: 4,
+                            padding: '4px 12px', borderRadius: 6, cursor: 'pointer',
+                            fontSize: '12px', fontWeight: 600, transition: 'all 0.15s ease',
+                            background: isActive ? (style.gradient || style.bgColor) : '#f8fafc',
+                            color: isActive ? style.textColor : '#64748b',
+                            border: isActive ? `1px solid ${style.borderColor}` : '1px solid #e2e8f0',
+                            transform: isActive ? 'scale(1.05)' : 'scale(1)',
+                          }}>
+                            {style.icon && <span style={{ fontSize: '11px' }}>{style.icon}</span>}
+                            {preset}
+                          </div>
+                        )
+                      })}
+                    </div>
+                    <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: 4 }}>Nhấn để chọn/bỏ chọn</div>
+                  </div>
                 </Grid2>
 
                 {/* Switches — compact row */}

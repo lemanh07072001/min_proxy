@@ -6,7 +6,7 @@
  * - Chọn SP từ site mẹ (dropdown)
  * - Bảng giá: giá nhập (read-only) | giá bán (editable)
  * - Tên, mô tả, tag, trạng thái
- * - KHÔNG có: provider, api_partner, body_api, code
+ * - KHÔNG có: provider, api_provider, body_api, code
  */
 
 import { useState, useEffect, useMemo } from 'react'
@@ -15,13 +15,19 @@ import {
   Dialog, DialogContent, Button, TextField, MenuItem, Grid2,
   Alert, IconButton, Chip, Switch, FormControlLabel, Tooltip
 } from '@mui/material'
-import { X, Save, Loader2, Package, Info } from 'lucide-react'
+import {
+  X, Save, Loader2, Package, Info,
+  MapPin, Shield, Wifi, Zap, Users, RefreshCw, Clock, Globe, ShoppingCart
+} from 'lucide-react'
 import { toast } from 'react-toastify'
 import { useForm, Controller } from 'react-hook-form'
 
 import CustomTextField from '@/@core/components/mui/TextField'
 import { useServiceType, useCreateServiceType, useUpdateServiceType } from '@/hooks/apis/useServiceType'
 import { useSupplierProducts, type SupplierProduct } from '@/hooks/apis/useSupplierProducts'
+import { useCountries } from '@/hooks/apis/useCountries'
+
+import { PREDEFINED_TAGS, getTagStyle } from '@/configs/tagConfig'
 
 interface Props {
   open: boolean
@@ -37,6 +43,7 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
   const { data: fetchedData, isLoading: loadingService } = useServiceType(serviceId, isEditMode && open)
   const serviceData = fetchedData || initialData
   const { data: supplierData, isLoading: loadingSupplier } = useSupplierProducts(open)
+  const { data: countries } = useCountries()
 
   // Mutations
   const createMutation = useCreateServiceType()
@@ -67,13 +74,26 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
       status: 'active',
       type: '0',
       ip_version: 'ipv4',
+      proxy_type: 'residential',
       protocols: [] as string[],
       country: '',
       note: '',
       tag: '',
       is_purchasable: true,
+      auth_type: '',
+      bandwidth: '',
+      rotation_type: '',
+      rotation_interval: '',
+      pool_size: '',
+      request_limit: '',
+      concurrent_connections: '',
     }
   })
+
+  const watchTag = watch('tag')
+
+  // Watch all fields for preview
+  const watchAll = watch()
 
   // Load service data when editing
   useEffect(() => {
@@ -108,11 +128,19 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
         status: serviceData.status || 'active',
         type: serviceData.type?.toString() || '0',
         ip_version: serviceData.ip_version?.toLowerCase() || 'ipv4',
+        proxy_type: serviceData.proxy_type || 'residential',
         protocols: parsedProtocols || [],
         country: serviceData.country?.toLowerCase() || '',
         note: serviceData.note || '',
         tag: serviceData.tag || '',
         is_purchasable: serviceData.is_purchasable !== false,
+        auth_type: serviceData.auth_type || '',
+        bandwidth: serviceData.bandwidth || '',
+        rotation_type: serviceData.rotation_type || '',
+        rotation_interval: serviceData.rotation_interval || '',
+        pool_size: serviceData.pool_size || '',
+        request_limit: serviceData.request_limit || '',
+        concurrent_connections: serviceData.concurrent_connections?.toString() || '',
       })
     }
   }, [serviceData, isEditMode, reset])
@@ -147,7 +175,10 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
     if (open && !isEditMode) {
       reset({
         name: '', status: 'active', type: '0', ip_version: 'ipv4',
+        proxy_type: 'residential',
         protocols: [], country: '', note: '', tag: '', is_purchasable: true,
+        auth_type: '', bandwidth: '', rotation_type: '', rotation_interval: '',
+        pool_size: '', request_limit: '', concurrent_connections: '',
       })
       setSelectedSupplierId(null)
       setPriceFields([])
@@ -164,6 +195,39 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
     if (days === 365) return '365 ngày (năm)'
 
     return `${key} ngày`
+  }
+
+  const toggleTag = (preset: string) => {
+    const current = watchTag ? watchTag.split(',').map((t: string) => t.trim()).filter(Boolean) : []
+    const exists = current.includes(preset)
+    const updated = exists ? current.filter((t: string) => t !== preset) : [...current, preset]
+
+    setValue('tag', updated.join(', '))
+  }
+
+  const getCountryNameFromCode = (code: string) => {
+    if (!code || !countries) return ''
+    const found = (countries as any[]).find((c: any) => c.code.toLowerCase() === code.toLowerCase())
+
+    return found ? found.name : code.toUpperCase()
+  }
+
+  const getAuthTypeLabel = (val: string) => {
+    switch (val) {
+      case 'userpass': return 'User:Pass'
+      case 'ip_whitelist': return 'IP Whitelist'
+      case 'both': return 'User:Pass + IP'
+      default: return val
+    }
+  }
+
+  const getRotationTypeLabel = (val: string) => {
+    switch (val) {
+      case 'per_request': return 'Per request'
+      case 'sticky': return 'Sticky'
+      case 'time_based': return 'Time-based'
+      default: return val
+    }
   }
 
   const onSubmit = (data: any) => {
@@ -196,10 +260,19 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
         cost: parseInt(p.cost),
       })),
       cost_price: Math.min(...priceFields.map(p => parseInt(p.cost) || 0)),
+      proxy_type: data.proxy_type || 'residential',
+      country: data.country || '',
       api_type: 'buy_api',
-      api_partner: '', // Site con không cần — SupplierService tự xử lý
+      api_provider: '', // Site con không cần — SupplierService tự xử lý
       body_api: null,
       code: null,
+      auth_type: data.auth_type || '',
+      bandwidth: data.bandwidth || '',
+      rotation_type: data.rotation_type || '',
+      rotation_interval: data.rotation_interval || '',
+      pool_size: data.pool_size || '',
+      request_limit: data.request_limit || '',
+      concurrent_connections: data.concurrent_connections ? parseInt(data.concurrent_connections) : null,
     }
 
     // Nếu tạo mới — thêm metadata với supplier_product_id
@@ -226,8 +299,34 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
   const isPending = createMutation.isPending || updateMutation.isPending
   const isLoading = loadingService || loadingSupplier
 
+  // Preview helpers
+  const previewName = watchAll.name || 'Tên sản phẩm'
+  const previewTags = watchAll.tag ? watchAll.tag.split(',').map((t: string) => t.trim()).filter(Boolean) : []
+  const previewType = watchAll.type === '1' ? 'Rotating' : 'Static'
+  const previewIpVersion = watchAll.ip_version === 'ipv6' ? 'V6' : 'V4'
+  const previewCountryCode = watchAll.country || ''
+  const previewCountryName = getCountryNameFromCode(previewCountryCode)
+
+  const previewProtocols = Array.isArray(watchAll.protocols) && watchAll.protocols.length > 0
+    ? watchAll.protocols.map((p: string) => p.toUpperCase()).join('/')
+    : '—'
+
+  const previewPrice = priceFields.length > 0 && priceFields[0].value
+    ? `${parseInt(priceFields[0].value).toLocaleString('vi-VN')}đ`
+    : '—'
+
+  const FeatureRow = ({ icon: Icon, iconColor, label, value }: { icon: any; iconColor: string; label: string; value: string }) => (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 4px', borderBottom: '1px solid #f8fafc' }}>
+      <Icon size={16} color={iconColor} />
+      <div style={{ flex: 1, display: 'flex', justifyContent: 'space-between' }}>
+        <span style={{ fontSize: '14px', color: '#4a5568', fontWeight: 500 }}>{label}:</span>
+        <span style={{ fontSize: '14px', color: '#1e293b', fontWeight: 700 }}>{value}</span>
+      </div>
+    </div>
+  )
+
   return (
-    <Dialog open={open} onClose={onClose} maxWidth='md' fullWidth closeAfterTransition={false}>
+    <Dialog open={open} onClose={onClose} maxWidth='lg' fullWidth closeAfterTransition={false}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 20px', borderBottom: '1px solid #e5e7eb' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -248,7 +347,10 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
           <div style={{ textAlign: 'center', padding: 40, color: '#94a3b8' }}>Đang tải...</div>
         ) : (
           <form onSubmit={handleSubmit(onSubmit)}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+            <div style={{ display: 'flex', gap: 24 }}>
+              {/* Left: Form */}
+              <div style={{ flex: 3 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
 
               {/* Chọn SP site mẹ (chỉ khi tạo mới) */}
               {!isEditMode && (
@@ -342,11 +444,11 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
                           <TextField
                             size='small'
                             type='text'
-                            value={field.value}
+                            value={field.value ? parseInt(field.value).toLocaleString('vi-VN') : ''}
                             onChange={e => {
-                              const val = e.target.value.replace(/[^0-9]/g, '')
+                              const raw = e.target.value.replace(/[^0-9]/g, '')
 
-                              setPriceFields(prev => prev.map((p, i) => i === idx ? { ...p, value: val } : p))
+                              setPriceFields(prev => prev.map((p, i) => i === idx ? { ...p, value: raw } : p))
                             }}
                             placeholder='Nhập giá bán'
                             sx={{ '& input': { fontSize: '13px', padding: '6px 10px' } }}
@@ -396,40 +498,166 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
                 </Grid2>
                 <Grid2 size={{ xs: 4 }}>
                   <Controller
-                    name='country'
+                    name='proxy_type'
                     control={control}
                     render={({ field }) => (
-                      <CustomTextField {...field} fullWidth label='Quốc gia' placeholder='VD: vn, us, jp' />
+                      <CustomTextField {...field} fullWidth select label='Loại proxy'>
+                        <MenuItem value='residential'>Residential</MenuItem>
+                        <MenuItem value='datacenter'>Datacenter</MenuItem>
+                      </CustomTextField>
                     )}
                   />
                 </Grid2>
               </Grid2>
 
-              {/* Tag + mô tả */}
-              <Grid2 container spacing={1.5}>
-                <Grid2 size={{ xs: 6 }}>
-                  <Controller
-                    name='tag'
-                    control={control}
-                    render={({ field }) => (
-                      <CustomTextField {...field} fullWidth label='Tag' placeholder='VD: Hot, New, Cheap' helperText='Phân cách bằng dấu phẩy' />
-                    )}
-                  />
+              {/* Country */}
+              <Controller
+                name='country'
+                control={control}
+                render={({ field }) => (
+                  <CustomTextField {...field} fullWidth select label='Quốc gia'>
+                    <MenuItem value=''><em>— Chọn —</em></MenuItem>
+                    {(countries || []).map((c: any) => (
+                      <MenuItem key={c.code} value={c.code.toLowerCase()}>
+                        <img src={`https://flagcdn.com/w20/${c.code.toLowerCase()}.png`} style={{ width: 20, height: 15, marginRight: 8, verticalAlign: 'middle' }} />
+                        {c.name}
+                      </MenuItem>
+                    ))}
+                  </CustomTextField>
+                )}
+              />
+
+              {/* Proxy attribute fields */}
+              <div>
+                <div style={{ fontSize: '13px', fontWeight: 600, color: '#1e293b', marginBottom: 8 }}>
+                  Thuộc tính proxy
+                </div>
+                <Grid2 container spacing={1.5}>
+                  <Grid2 size={{ xs: 6 }}>
+                    <Controller
+                      name='auth_type'
+                      control={control}
+                      render={({ field }) => (
+                        <CustomTextField {...field} fullWidth select label='Xác thực'>
+                          <MenuItem value=''><em>— Không chọn —</em></MenuItem>
+                          <MenuItem value='userpass'>User:Pass</MenuItem>
+                          <MenuItem value='ip_whitelist'>IP Whitelist</MenuItem>
+                          <MenuItem value='both'>Cả hai</MenuItem>
+                        </CustomTextField>
+                      )}
+                    />
+                  </Grid2>
+                  <Grid2 size={{ xs: 6 }}>
+                    <Controller
+                      name='bandwidth'
+                      control={control}
+                      render={({ field }) => (
+                        <CustomTextField {...field} fullWidth label='Băng thông' placeholder='VD: unlimited, 1GB' />
+                      )}
+                    />
+                  </Grid2>
+                  <Grid2 size={{ xs: 6 }}>
+                    <Controller
+                      name='request_limit'
+                      control={control}
+                      render={({ field }) => (
+                        <CustomTextField {...field} fullWidth label='Giới hạn request' placeholder='VD: unlimited' />
+                      )}
+                    />
+                  </Grid2>
+                  <Grid2 size={{ xs: 6 }}>
+                    <Controller
+                      name='concurrent_connections'
+                      control={control}
+                      render={({ field }) => (
+                        <CustomTextField {...field} fullWidth type='number' label='Kết nối đồng thời' placeholder='VD: 100' />
+                      )}
+                    />
+                  </Grid2>
+                  {/* Rotating-only fields */}
+                  {watchAll.type === '1' && (
+                    <>
+                      <Grid2 size={{ xs: 4 }}>
+                        <Controller
+                          name='rotation_type'
+                          control={control}
+                          render={({ field }) => (
+                            <CustomTextField {...field} fullWidth select label='Kiểu xoay'>
+                              <MenuItem value=''><em>— Không chọn —</em></MenuItem>
+                              <MenuItem value='per_request'>Per request</MenuItem>
+                              <MenuItem value='sticky'>Sticky</MenuItem>
+                              <MenuItem value='time_based'>Time-based</MenuItem>
+                            </CustomTextField>
+                          )}
+                        />
+                      </Grid2>
+                      <Grid2 size={{ xs: 4 }}>
+                        <Controller
+                          name='rotation_interval'
+                          control={control}
+                          render={({ field }) => (
+                            <CustomTextField {...field} fullWidth label='Thời gian xoay' placeholder='VD: 5 phút' />
+                          )}
+                        />
+                      </Grid2>
+                      <Grid2 size={{ xs: 4 }}>
+                        <Controller
+                          name='pool_size'
+                          control={control}
+                          render={({ field }) => (
+                            <CustomTextField {...field} fullWidth label='Pool size' placeholder='VD: 10,000+' />
+                          )}
+                        />
+                      </Grid2>
+                    </>
+                  )}
                 </Grid2>
-                <Grid2 size={{ xs: 6 }}>
-                  <Controller
-                    name='is_purchasable'
-                    control={control}
-                    render={({ field }) => (
-                      <FormControlLabel
-                        control={<Switch checked={field.value} onChange={e => field.onChange(e.target.checked)} color='success' />}
-                        label='Cho phép mua'
-                        sx={{ mt: 1 }}
-                      />
-                    )}
+              </div>
+
+              {/* Tag — chọn từ preset có màu */}
+              <div>
+                <div style={{ fontSize: '12px', fontWeight: 600, color: '#475569', marginBottom: 6 }}>Tag sản phẩm</div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                  {PREDEFINED_TAGS.map(preset => {
+                    const tags = watchTag ? watchTag.split(',').map((t: string) => t.trim()) : []
+                    const isActive = tags.includes(preset)
+                    const style = getTagStyle(preset)
+
+                    return (
+                      <div
+                        key={preset}
+                        onClick={() => toggleTag(preset)}
+                        style={{
+                          display: 'inline-flex', alignItems: 'center', gap: 4,
+                          padding: '4px 12px', borderRadius: 6, cursor: 'pointer',
+                          fontSize: '12px', fontWeight: 600,
+                          transition: 'all 0.15s ease',
+                          background: isActive ? (style.gradient || style.bgColor) : '#f8fafc',
+                          color: isActive ? style.textColor : '#64748b',
+                          border: isActive ? `1px solid ${style.borderColor}` : '1px solid #e2e8f0',
+                          transform: isActive ? 'scale(1.05)' : 'scale(1)',
+                        }}
+                      >
+                        {style.icon && <span style={{ fontSize: '11px' }}>{style.icon}</span>}
+                        {preset}
+                      </div>
+                    )
+                  })}
+                </div>
+                <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: 4 }}>Nhấn để chọn/bỏ chọn. Có thể chọn nhiều tag.</div>
+              </div>
+
+              {/* Cho phép mua */}
+              <Controller
+                name='is_purchasable'
+                control={control}
+                render={({ field }) => (
+                  <FormControlLabel
+                    control={<Switch checked={field.value} onChange={e => field.onChange(e.target.checked)} color='success' />}
+                    label='Cho phép mua'
                   />
-                </Grid2>
-              </Grid2>
+                )}
+              />
 
               <Controller
                 name='note'
@@ -465,6 +693,131 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
                 >
                   {isPending ? 'Đang lưu...' : isEditMode ? 'Cập nhật' : 'Thêm sản phẩm'}
                 </Button>
+              </div>
+                </div>
+              </div>
+
+              {/* Right: Preview */}
+              <div style={{ flex: 2, position: 'sticky', top: 0, alignSelf: 'flex-start' }}>
+                <div style={{ fontSize: '12px', fontWeight: 600, color: '#475569', marginBottom: 8 }}>Xem trước sản phẩm</div>
+                <div style={{
+                  background: 'white', borderRadius: 12, padding: 16,
+                  border: '1px solid #e2e8f0', position: 'relative',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                }}>
+                  {/* top gradient bar */}
+                  <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3,
+                    background: 'var(--primary-gradient, linear-gradient(90deg, #e53e3e, #ff6b6b))',
+                    borderRadius: '12px 12px 0 0'
+                  }} />
+
+                  {/* Header: name + tags */}
+                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8, marginBottom: 8, paddingTop: 4 }}>
+                    <div style={{ fontSize: '15px', fontWeight: 700, color: '#1e293b', lineHeight: 1.3 }}>
+                      {previewName}
+                      {serviceId && <span style={{ fontSize: '12px', color: '#94a3b8', fontWeight: 400, marginLeft: 4 }}>#{serviceId}</span>}
+                    </div>
+                    {previewTags.length > 0 && (
+                      <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', flexShrink: 0 }}>
+                        {previewTags.map((tag: string) => {
+                          const style = getTagStyle(tag)
+
+                          return (
+                            <span key={tag} style={{
+                              display: 'inline-flex', alignItems: 'center', gap: 2,
+                              padding: '2px 8px', borderRadius: 4, fontSize: '10px', fontWeight: 600,
+                              background: style.gradient || style.bgColor, color: style.textColor,
+                              border: `1px solid ${style.borderColor}`,
+                              lineHeight: 1.4,
+                            }}>
+                              {style.icon && <span style={{ fontSize: '9px' }}>{style.icon}</span>}
+                              {tag}
+                            </span>
+                          )
+                        })}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Description */}
+                  {watchAll.note && (
+                    <div style={{ fontSize: '12px', color: '#64748b', marginBottom: 12, lineHeight: 1.4,
+                      overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' as any
+                    }}>
+                      {watchAll.note}
+                    </div>
+                  )}
+
+                  {/* Divider */}
+                  <div style={{ borderTop: '1px solid #e2e8f0', margin: '8px 0' }} />
+
+                  {/* Feature rows */}
+                  <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <FeatureRow
+                      icon={MapPin} iconColor='#e53e3e'
+                      label='Loại IP'
+                      value={`${previewType} ${previewIpVersion}${previewCountryName ? ` — ${previewCountryCode ? `\u{1F1E6}` : ''}` : ''}${previewCountryName ? ` ${previewCountryName}` : ''}`}
+                    />
+                    {previewCountryCode && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 4px', borderBottom: '1px solid #f8fafc' }}>
+                        <MapPin size={16} color='#e53e3e' style={{ visibility: 'hidden' }} />
+                        <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
+                          <img src={`https://flagcdn.com/w20/${previewCountryCode.toLowerCase()}.png`} style={{ width: 20, height: 15, marginRight: 4, verticalAlign: 'middle' }} />
+                          <span style={{ fontSize: '13px', color: '#64748b' }}>{previewCountryName}</span>
+                        </div>
+                      </div>
+                    )}
+                    <FeatureRow icon={Shield} iconColor='#6366f1' label='Hỗ trợ' value={previewProtocols} />
+                    {watchAll.auth_type && (
+                      <FeatureRow icon={Shield} iconColor='#8b5cf6' label='Xác thực' value={getAuthTypeLabel(watchAll.auth_type)} />
+                    )}
+                    {watchAll.bandwidth && (
+                      <FeatureRow icon={Wifi} iconColor='#0ea5e9' label='Băng thông' value={watchAll.bandwidth} />
+                    )}
+                    {watchAll.request_limit && (
+                      <FeatureRow icon={Zap} iconColor='#f59e0b' label='Giới hạn request' value={watchAll.request_limit} />
+                    )}
+                    {watchAll.concurrent_connections && (
+                      <FeatureRow icon={Users} iconColor='#10b981' label='Kết nối đồng thời' value={watchAll.concurrent_connections} />
+                    )}
+                    {watchAll.type === '1' && watchAll.rotation_type && (
+                      <FeatureRow icon={RefreshCw} iconColor='#e53e3e' label='Kiểu xoay' value={getRotationTypeLabel(watchAll.rotation_type)} />
+                    )}
+                    {watchAll.type === '1' && watchAll.rotation_interval && (
+                      <FeatureRow icon={Clock} iconColor='#64748b' label='Thời gian xoay' value={watchAll.rotation_interval} />
+                    )}
+                    {watchAll.type === '1' && watchAll.pool_size && (
+                      <FeatureRow icon={Globe} iconColor='#0ea5e9' label='Pool size' value={watchAll.pool_size} />
+                    )}
+                  </div>
+
+                  {/* Divider */}
+                  <div style={{ borderTop: '1px solid #e2e8f0', margin: '10px 0 8px' }} />
+
+                  {/* Footer: price + buy button */}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div>
+                      <span style={{ fontSize: '11px', color: '#94a3b8' }}>từ </span>
+                      <span style={{ fontSize: '16px', fontWeight: 700, color: '#1e293b' }}>{previewPrice}</span>
+                    </div>
+                    <span style={{
+                      padding: '5px 12px', borderRadius: 7, fontSize: '11px', fontWeight: 600,
+                      background: watchAll.is_purchasable
+                        ? 'color-mix(in srgb, var(--primary-hover) 12%, white)'
+                        : '#f1f5f9',
+                      color: watchAll.is_purchasable
+                        ? 'var(--primary-hover)'
+                        : '#94a3b8',
+                      border: watchAll.is_purchasable
+                        ? '1px solid color-mix(in srgb, var(--primary-hover) 30%, transparent)'
+                        : '1px solid #e2e8f0',
+                      display: 'inline-flex', alignItems: 'center', gap: 4,
+                    }}>
+                      <ShoppingCart size={12} />
+                      {watchAll.is_purchasable ? 'Mua ngay' : 'Tạm ngừng'}
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
           </form>

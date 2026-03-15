@@ -66,8 +66,21 @@ const ModeDropdown = () => {
         open={open ? false : tooltipOpen ? true : false}
         slotProps={{ popper: { className: 'capitalize' } }}
       >
-        <IconButton ref={anchorRef} onClick={handleToggle} className='text-textPrimary'>
-          <i className={getModeIcon()} />
+        <IconButton
+          ref={anchorRef}
+          onClick={handleToggle}
+          size='small'
+          sx={{
+            color: 'text.disabled',
+            width: 32,
+            height: 32,
+            '&:hover': {
+              color: 'text.secondary',
+              bgcolor: 'action.hover',
+            },
+          }}
+        >
+          <i className={getModeIcon()} style={{ fontSize: '1.15rem' }} />
         </IconButton>
       </Tooltip>
       <Popper

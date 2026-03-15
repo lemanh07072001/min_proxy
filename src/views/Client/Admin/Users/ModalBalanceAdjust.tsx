@@ -66,7 +66,11 @@ return
       { userId: userData.id, amount: finalAmount, description: description.trim() },
       {
         onSuccess: (data) => {
-          toast.success(data?.message || 'Thành công')
+          const newBalance = data?.new_balance
+
+          toast.success(
+            `${type === 'add' ? 'Cộng' : 'Trừ'} ${new Intl.NumberFormat('vi-VN').format(numAmount)}đ thành công. Số dư mới: ${new Intl.NumberFormat('vi-VN').format(newBalance ?? 0)}đ`
+          )
           onClose()
         },
         onError: (error: any) => {
