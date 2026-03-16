@@ -133,48 +133,46 @@ export function BrandingProvider({ children }: { children: React.ReactNode }) {
     telegram_chat_id_error: data?.telegram_chat_id_error ?? null,
   }), [data, isLoading, siteMode])
 
-  // Inject CSS variables + favicon khi branding load xong
+  // Inject CSS variables — chỉ khi giá trị thực sự đổi
+  const { primaryColor, primaryHover, primaryGradient, favicon } = branding
+
   useEffect(() => {
     if (isLoading) return
     const root = document.documentElement
 
-    // CSS variables
-    root.style.setProperty('--primary-hover', branding.primaryHover, 'important')
-    root.style.setProperty('--primary-gradient', branding.primaryGradient, 'important')
+    root.style.setProperty('--primary-hover', primaryHover, 'important')
+    root.style.setProperty('--primary-gradient', primaryGradient, 'important')
 
-    // Auto-contrast: tính luminance để chọn text trắng hoặc đen trên nền primary
-    const hex = branding.primaryColor.replace('#', '')
+    const hex = primaryColor.replace('#', '')
     const r = parseInt(hex.substring(0, 2), 16) / 255
     const g = parseInt(hex.substring(2, 4), 16) / 255
     const b = parseInt(hex.substring(4, 6), 16) / 255
     const luminance = 0.299 * r + 0.587 * g + 0.114 * b
-    const contrastText = luminance > 0.6 ? '#1e293b' : '#ffffff'
 
-    root.style.setProperty('--primary-contrast', contrastText)
+    root.style.setProperty('--primary-contrast', luminance > 0.6 ? '#1e293b' : '#ffffff')
+  }, [isLoading, primaryColor, primaryHover, primaryGradient])
 
-    // Dynamic favicon — force https + cache buster
-    const rawFavicon = branding.favicon
-    const faviconUrl = rawFavicon ? rawFavicon.replace(/^http:\/\//i, 'https://') : ''
+  // Favicon — chỉ chạy khi favicon URL đổi, không chạy mỗi navigation
+  useEffect(() => {
+    if (isLoading || !favicon) return
 
-    if (faviconUrl) {
-      const bustUrl = faviconUrl.includes('?') ? `${faviconUrl}&v=${Date.now()}` : `${faviconUrl}?v=${Date.now()}`
+    const faviconUrl = favicon.replace(/^http:\/\//i, 'https://')
+    const existingIcons = document.querySelectorAll('link[rel="icon"], link[rel="shortcut icon"], link[rel="apple-touch-icon"]')
 
-      // Xóa tất cả link icon cũ rồi tạo mới — đảm bảo trình duyệt nhận thay đổi
-      document.querySelectorAll('link[rel="icon"], link[rel="shortcut icon"], link[rel="apple-touch-icon"]').forEach(el => el.remove())
-
-      const rels = ['icon', 'shortcut icon', 'apple-touch-icon']
-
-      rels.forEach(rel => {
-        const link = document.createElement('link')
-
-        link.rel = rel
-        link.href = bustUrl
-        document.head.appendChild(link)
+    if (existingIcons.length > 0) {
+      existingIcons.forEach(el => {
+        if ((el as HTMLLinkElement).href !== faviconUrl) {
+          (el as HTMLLinkElement).href = faviconUrl
+        }
       })
-    }
+    } else {
+      const link = document.createElement('link')
 
-    // GTM + head_scripts + body_scripts đã chuyển sang server-side (layout.tsx)
-  }, [branding, isLoading])
+      link.rel = 'icon'
+      link.href = faviconUrl
+      document.head.appendChild(link)
+    }
+  }, [isLoading, favicon])
 
   return (
     <BrandingContext.Provider value={branding}>

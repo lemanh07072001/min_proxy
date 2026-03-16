@@ -69,17 +69,21 @@ export interface BrandingSettings {
 }
 
 export const useBrandingSettings = () => {
-  const axiosAuth = useAxiosAuth()
-
   return useQuery({
     queryKey: ['branding-settings'],
     queryFn: async () => {
-      const res = await axiosAuth.get('/get-branding-settings')
+      // Public API — không cần auth, fetch ngay khi app mount
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || ''
+      const res = await fetch(`${apiUrl}/get-branding-settings`)
+      const json = await res.json()
 
-      return (res?.data?.data ?? {}) as BrandingSettings
+      return (json?.data ?? {}) as BrandingSettings
     },
-    staleTime: 10 * 60 * 1000,
+    staleTime: Infinity,       // không bao giờ stale — chỉ invalidate khi admin update
+    gcTime: Infinity,           // giữ cache vĩnh viễn trong session
     refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
   })
 }
 
