@@ -30,12 +30,12 @@ export async function getServerBranding(): Promise<BrandingSettings> {
     console.error('[getServerBranding] Failed:', e)
   }
 
-  // Fallback → env defaults
+  // Fallback — không có branding từ DB, trả rỗng + default colors
   return {
-    site_name: siteConfig.name,
-    site_description: siteConfig.description,
-    logo_url: siteConfig.logo,
-    favicon_url: siteConfig.favicon,
+    site_name: '',
+    site_description: '',
+    logo_url: '',
+    favicon_url: '',
     og_image_url: null,
     primary_color: siteConfig.primaryColor,
     primary_hover: siteConfig.primaryHover,
@@ -46,12 +46,23 @@ export async function getServerBranding(): Promise<BrandingSettings> {
     organization_name: null,
     organization_phone: null,
     organization_email: null,
+    organization_address: null,
+    website_url: null,
+    working_hours: null,
+    tax_id: null,
     social_links: null,
     sidebar_description: null,
     footer_text: null,
     support_contact: null,
     head_scripts: null,
     body_scripts: null,
+    pay2s_webhook_token: null,
+    telegram_bot_token_system: null,
+    telegram_chat_id_system: null,
+    telegram_bot_token_deposit: null,
+    telegram_chat_id_deposit: null,
+    telegram_bot_token_error: null,
+    telegram_chat_id_error: null,
     site_mode: 'child',
   }
 }

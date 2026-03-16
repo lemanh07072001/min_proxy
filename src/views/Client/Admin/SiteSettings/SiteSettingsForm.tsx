@@ -20,7 +20,6 @@ import { useSupplierSettings, useUpdateSupplierSettings } from '@/hooks/apis/use
 import { useBankSettings, useUpdateBankSettings } from '@/hooks/apis/useBankSettings'
 import type { BankSettings } from '@/hooks/apis/useBankSettings'
 import { useBranding } from '@/app/contexts/BrandingContext'
-import { siteConfig } from '@/configs/siteConfig'
 import useAxiosAuth from '@/hocs/useAxiosAuth'
 
 // ─── Constants ───────────────────────────────────────────────────────────────
@@ -48,28 +47,29 @@ const SEO_LANGUAGES = [
   { code: 'ko', label: '한국어' },
 ]
 
-const SEO_PLACEHOLDERS: Record<string, { title: string; description: string; keywords: string }> = {
+// SEO placeholders — siteName sẽ được inject runtime từ branding
+const getSeoPlaceholders = (siteName: string): Record<string, { title: string; description: string; keywords: string }> => ({
   vi: {
-    title: `${siteConfig.name} - Dịch vụ Proxy Chất Lượng Cao`,
+    title: `${siteName || 'Tên site'} - Dịch vụ Proxy Chất Lượng Cao`,
     description: 'Cung cấp proxy residential, datacenter chất lượng cao cho mọi nhu cầu',
     keywords: 'proxy, mua proxy, proxy việt nam, residential proxy',
   },
   en: {
-    title: `${siteConfig.name} - High Quality Proxy Service`,
+    title: `${siteName || 'Site Name'} - High Quality Proxy Service`,
     description: 'Premium residential and datacenter proxies for all your needs',
     keywords: 'proxy, buy proxy, residential proxy, datacenter proxy',
   },
   ja: {
-    title: `${siteConfig.name} - 高品質プロキシサービス`,
+    title: `${siteName || 'サイト名'} - 高品質プロキシサービス`,
     description: '高品質なレジデンシャルプロキシとデータセンタープロキシを提供',
     keywords: 'プロキシ, proxy, レジデンシャルプロキシ',
   },
   ko: {
-    title: `${siteConfig.name} - 고품질 프록시 서비스`,
+    title: `${siteName || '사이트 이름'} - 고품질 프록시 서비스`,
     description: '모든 요구에 맞는 프리미엄 주거용 및 데이터센터 프록시',
     keywords: '프록시, proxy, 레지덴셜 프록시',
   },
-}
+})
 
 const COLOR_PRESETS = [
   {
@@ -199,7 +199,7 @@ const tabSx = {
 
 export default function SiteSettingsForm() {
   const axiosAuth = useAxiosAuth()
-  const { isChild } = useBranding()
+  const { isChild, name: brandingName } = useBranding()
   const { data: sidebarData, isLoading: loadingSidebar } = useSidebarSettings()
   const { data: brandingData, isLoading: loadingBranding } = useBrandingSettings()
   const updateSidebarMutation = useUpdateSidebarSettings()
@@ -513,7 +513,7 @@ export default function SiteSettingsForm() {
                   label='Tên site'
                   value={branding.site_name}
                   onChange={e => updateBrandingField('site_name', e.target.value)}
-                  placeholder={`VD: ${siteConfig.name}`}
+                  placeholder='VD: My Proxy Site'
                   sx={{ flex: 1 }}
                 />
                 <TextField
@@ -693,7 +693,7 @@ export default function SiteSettingsForm() {
                 label='Nội dung footer'
                 value={branding.footer_text}
                 onChange={e => updateBrandingField('footer_text', e.target.value)}
-                placeholder={`VD: © 2024 ${siteConfig.name}. All rights reserved.`}
+                placeholder={`VD: © 2024 ${brandingName || 'Your Site'}. All rights reserved.`}
                 helperText='Hiển thị ở cuối trang. Để trống sẽ dùng tên site mặc định.'
                 multiline
                 minRows={2}
@@ -1029,7 +1029,8 @@ export default function SiteSettingsForm() {
                 if (seoLangTab !== langIdx) return null
 
                 const meta = branding.seo_meta?.[lang.code] || {}
-                const placeholder = SEO_PLACEHOLDERS[lang.code] || SEO_PLACEHOLDERS.en
+                const seoPlaceholders = getSeoPlaceholders(brandingName)
+                const placeholder = seoPlaceholders[lang.code] || seoPlaceholders.en
 
                 return (
                   <div key={lang.code} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>

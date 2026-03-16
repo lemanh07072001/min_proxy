@@ -20,10 +20,10 @@ interface BrandingContextValue extends Omit<BrandingSettings, 'site_mode'> {
 }
 
 const defaultBranding: BrandingContextValue = {
-  name: siteConfig.name,
-  description: siteConfig.description,
-  logo: siteConfig.logo,
-  favicon: siteConfig.favicon,
+  name: '',
+  description: '',
+  logo: '',
+  favicon: '',
   primaryColor: siteConfig.primaryColor,
   primaryHover: siteConfig.primaryHover,
   primaryGradient: siteConfig.primaryGradient,
@@ -57,6 +57,13 @@ const defaultBranding: BrandingContextValue = {
   support_contact: null,
   head_scripts: null,
   body_scripts: null,
+  pay2s_webhook_token: null,
+  telegram_bot_token_system: null,
+  telegram_chat_id_system: null,
+  telegram_bot_token_deposit: null,
+  telegram_chat_id_deposit: null,
+  telegram_bot_token_error: null,
+  telegram_chat_id_error: null,
 }
 
 const BrandingContext = createContext<BrandingContextValue>(defaultBranding)
@@ -80,10 +87,10 @@ export function BrandingProvider({ children }: { children: React.ReactNode }) {
   const isChild = siteMode === 'child'
 
   const branding = useMemo<BrandingContextValue>(() => ({
-    name: data?.site_name || (isChild ? '' : getServerData('site-name', siteConfig.name)),
-    description: data?.site_description || (isChild ? '' : getServerData('site-description', siteConfig.description)),
-    logo: data?.logo_url || (isChild ? '' : siteConfig.logo || ''),
-    favicon: data?.favicon_url || (isChild ? '' : siteConfig.favicon || ''),
+    name: data?.site_name || getServerData('site-name', ''),
+    description: data?.site_description || getServerData('site-description', ''),
+    logo: data?.logo_url || '',
+    favicon: data?.favicon_url || '',
     primaryColor: data?.primary_color || siteConfig.primaryColor,
     primaryHover: data?.primary_hover || siteConfig.primaryHover,
     primaryGradient: data?.primary_gradient || siteConfig.primaryGradient,
@@ -117,6 +124,13 @@ export function BrandingProvider({ children }: { children: React.ReactNode }) {
     support_contact: data?.support_contact ?? null,
     head_scripts: data?.head_scripts ?? null,
     body_scripts: data?.body_scripts ?? null,
+    pay2s_webhook_token: data?.pay2s_webhook_token ?? null,
+    telegram_bot_token_system: data?.telegram_bot_token_system ?? null,
+    telegram_chat_id_system: data?.telegram_chat_id_system ?? null,
+    telegram_bot_token_deposit: data?.telegram_bot_token_deposit ?? null,
+    telegram_chat_id_deposit: data?.telegram_chat_id_deposit ?? null,
+    telegram_bot_token_error: data?.telegram_bot_token_error ?? null,
+    telegram_chat_id_error: data?.telegram_chat_id_error ?? null,
   }), [data, isLoading, siteMode])
 
   // Inject CSS variables + favicon khi branding load xong

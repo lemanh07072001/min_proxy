@@ -1,11 +1,14 @@
-import { generatePageMetadata, pageMetadataConfigs } from '@/utils/generatePageMetadata'
+import { generatePageMetadata } from '@/utils/generatePageMetadata'
 import type { Locale } from '@/configs/configi18n'
 
 export async function generateMetadata({ params }: { params: Promise<{ lang: Locale }> }) {
   const resolvedParams = await params
 
-  
-return generatePageMetadata(pageMetadataConfigs.pricing, resolvedParams.lang, '/pricing')
+  return generatePageMetadata({
+    title: 'Bảng Giá Proxy',
+    description: 'Xem bảng giá proxy cạnh tranh với nhiều gói dịch vụ phù hợp.',
+    keywords: ['giá proxy', 'bảng giá', 'proxy giá rẻ', 'gói proxy'],
+  }, resolvedParams.lang, '/pricing')
 }
 
 export default function PricingPage() {
