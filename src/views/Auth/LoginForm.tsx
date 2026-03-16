@@ -81,20 +81,14 @@ export default function LoginForm() {
       }
 
       setUnverified(errorObj.type)
+      setLoading(false)
 
       if (errorObj.type === 'unverified') {
         setShowModal(true)
-        setLoading(false)
-
         setEmail(data.email)
-        toast.error(errorObj.message)
-      } else if (errorObj.type === 'invalid_credentials') {
-        setLoading(false)
-        toast.error(errorObj.message)
-      } else if (errorObj.type === 'not_found') {
-        setLoading(false)
-        toast.error(errorObj.message)
       }
+
+      toast.error(errorObj.message || t('auth.loginError'))
     } else if (res?.ok) {
       setLoading(false)
       toast.success(t('auth.loginSuccess'))
