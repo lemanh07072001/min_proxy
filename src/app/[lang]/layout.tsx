@@ -92,7 +92,10 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
     : undefined
 
   return {
-    title: seoTitle,
+    title: {
+      default: seoTitle,
+      template: siteName ? `%s | ${siteName}` : '%s',
+    },
     description: seoDescription,
     keywords: seoKeywords,
     authors: [{ name: siteName }],

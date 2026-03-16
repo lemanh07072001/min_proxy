@@ -30,7 +30,6 @@ import { FormControlLabel } from '@mui/material'
 
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 
-import { io } from 'socket.io-client'
 
 import { formatDateTimeLocal } from '@/utils/formatDate'
 import { useCopy } from '@/app/hooks/useCopy'
@@ -75,29 +74,6 @@ export default function OrderProxyPage() {
     refetchOnWindowFocus: true, // Refetch khi focus vào window để đảm bảo data mới nhất
     refetchOnMount: true // Refetch khi component mount lại để hiển thị đơn hàng mới
   })
-
-  // Socket: lắng nghe sự kiện để refetch bảng
-  useEffect(() => {
-    const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || siteConfig.socketUrl
-
-    const socket = io(socketUrl, {
-      transports: ['websocket'],
-      secure: true
-    })
-
-    socket.on('connect', () => console.log('✅ Connected to socket:', socket.id))
-    socket.on('order_completed', data => {
-      // Invalidate và refetch có độ trễ nhỏ để chờ backend cập nhật xong
-      queryClient.invalidateQueries({ queryKey: ['orderProxyStatic'] })
-      setTimeout(() => {
-        void refetch()
-      }, 600)
-    })
-
-    return () => {
-      socket.disconnect()
-    }
-  }, [refetch, queryClient])
 
   // Lọc dữ liệu theo status và loại
   const filteredData = useMemo(() => {

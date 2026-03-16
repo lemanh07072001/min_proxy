@@ -70,25 +70,18 @@ const BrandingContext = createContext<BrandingContextValue>(defaultBranding)
 
 export const useBranding = () => useContext(BrandingContext)
 
-// Đọc branding từ DOM data-* attributes (server-side inject) — đồng bộ, không flash
-function getServerData(key: string, fallback: string = ''): string {
-  if (typeof document === 'undefined') return fallback
-
-  return document.body.getAttribute(`data-${key}`) || fallback
-}
-
 export function BrandingProvider({ children }: { children: React.ReactNode }) {
   const { data, isLoading } = useBrandingSettings()
 
-  const siteMode: SiteMode = (data?.site_mode || getServerData('site-mode', 'child')) as SiteMode
+  const siteMode: SiteMode = (data?.site_mode || 'child') as SiteMode
 
   // Site con: chỉ dùng DB, không fallback env var (tránh hiện thông tin site mẹ)
   // Site mẹ: DB → env var → default
   const isChild = siteMode === 'child'
 
   const branding = useMemo<BrandingContextValue>(() => ({
-    name: data?.site_name || getServerData('site-name', ''),
-    description: data?.site_description || getServerData('site-description', ''),
+    name: data?.site_name || '',
+    description: data?.site_description || '',
     logo: data?.logo_url || '',
     favicon: data?.favicon_url || '',
     primaryColor: data?.primary_color || siteConfig.primaryColor,

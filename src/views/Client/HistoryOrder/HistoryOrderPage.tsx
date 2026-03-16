@@ -31,14 +31,12 @@ import LinearProgress from '@mui/material/LinearProgress'
 import Pagination from '@mui/material/Pagination'
 
 import { useQueryClient } from '@tanstack/react-query'
-import { io } from 'socket.io-client'
 
 import CustomTextField from '@core/components/mui/TextField'
 import CustomIconButton from '@core/components/mui/IconButton'
 
 import { formatDateTimeLocal } from '@/utils/formatDate'
 import { useHistoryOrders, PENDING_STATUSES } from '@/hooks/apis/useHistoryOrders'
-import { siteConfig } from '@/configs/siteConfig'
 import { ORDER_STATUS_LABELS, ORDER_STATUS_COLORS } from '@/constants/orderStatus'
 import OrderDetail from './OrderDetail'
 
@@ -277,24 +275,6 @@ export default function HistoryOrderPage() {
   const startRow = totalRows ? pageIndex * pageSize + 1 : 0
   const endRow = Math.min(startRow + pageSize - 1, totalRows)
 
-  // Socket: lắng nghe sự kiện để refetch
-  useEffect(() => {
-    queryClient.invalidateQueries({ queryKey: ['userOrders'] })
-
-    const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || siteConfig.socketUrl
-
-    const socket = io(socketUrl, {
-      transports: ['websocket'],
-      secure: true
-    })
-
-    socket.on('order_completed', () => {
-      queryClient.invalidateQueries({ queryKey: ['userOrders'] })
-      setTimeout(() => { void refetch() }, 600)
-    })
-
-    return () => { socket.disconnect() }
-  }, [refetch, queryClient])
 
   return (
     <>

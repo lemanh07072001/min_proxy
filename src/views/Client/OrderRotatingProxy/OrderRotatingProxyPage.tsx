@@ -45,7 +45,6 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { toast } from 'react-toastify'
 
-import { io } from 'socket.io-client'
 
 import CustomTextField from '@/@core/components/mui/TextField'
 
@@ -429,28 +428,6 @@ export default function OrderRotatingProxyPage() {
   const startRow = pageIndex * pageSize + 1
   const endRow = Math.min(startRow + pageSize - 1, totalRows)
 
-  // Socket: lắng nghe sự kiện để refetch bảng
-  useEffect(() => {
-    const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || siteConfig.socketUrl
-
-    const socket = io(socketUrl, {
-      transports: ['websocket'],
-      secure: true
-    })
-
-    socket.on('connect', () => console.log('✅ Connected to socket:', socket.id))
-
-    socket.on('order_completed', data => {
-      queryClient.invalidateQueries({ queryKey: ['proxyData'] })
-      setTimeout(() => {
-        void refetch()
-      }, 600)
-    })
-
-    return () => {
-      socket.disconnect()
-    }
-  }, [refetch, queryClient])
 
   // Function để lấy tất cả proxy đã được checked
   const getSelectedProxies = () => {
