@@ -178,28 +178,15 @@ const VerticalMenu = ({ scrollMenu, dictionary }: Props) => {
     setIsInitialLoad(false)
   }, [])
 
-  // Prefetch sidebar pages khi mount → compile sẵn, click là instant
-  // Stagger: mỗi route cách nhau 200ms để không block main thread
+  // Prefetch top routes sau khi page idle — chỉ prefetch routes phổ biến
   useEffect(() => {
-    const routes = [
-      'home', 'recharge', 'proxy-tinh', 'proxy-xoay', 'check-proxy', 'history-order', 'affiliate',
-      'transaction-history', 'contact', 'profile', 'history-login',
-      'admin/dashboard', 'admin/transaction-history',
-      'admin/users', 'admin/service-type', 'admin/providers', 'admin/partners', 'admin/resellers', 'admin/announcements', 'admin/site-settings',
-      'admin/transaction-bank', 'admin/support-tickets'
-    ]
+    const topRoutes = ['home', 'recharge', 'proxy-tinh', 'proxy-xoay', 'history-order']
 
-    const timers: ReturnType<typeof setTimeout>[] = []
+    const id = requestIdleCallback(() => {
+      topRoutes.forEach(route => router.prefetch(`/${locale}/${route}`))
+    }, { timeout: 5000 })
 
-    routes.forEach((route, i) => {
-      timers.push(
-        setTimeout(() => {
-          router.prefetch(`/${locale}/${route}`)
-        }, 3000 + i * 200)
-      )
-    })
-
-    return () => timers.forEach(t => clearTimeout(t))
+    return () => cancelIdleCallback(id)
   }, [locale, router])
 
   // --- Optimistic active state ---
@@ -293,14 +280,13 @@ const VerticalMenu = ({ scrollMenu, dictionary }: Props) => {
   const handleMenuNav = useCallback((path: string) => {
     const fullPath = `/${locale}/${path}`
 
-    if (fullPath === pathname) return
+    // Nếu đã ở trang đó hoặc đang pending trang đó → skip
+    if (fullPath === pathname || fullPath === pendingPath) return
 
-    // React 18 batches these → single render → DOM commit before browser paint
-    // router.push is async (fetches RSC) → visual update appears before navigation
     setPendingPath(fullPath)
     setNavigationPending(true)
     router.push(fullPath)
-  }, [locale, pathname, router])
+  }, [locale, pathname, pendingPath, router])
 
   // Helper: tạo props cho MenuItem
   const nav = useCallback((path: string) => ({

@@ -115,9 +115,17 @@ export default function PageTransition({ children }: { children: React.ReactNode
     setNavigationPending(false)
   }, [pathname])
 
-  // display:none thay vì conditional rendering
-  // → page cũ KHÔNG bị unmount (tránh heavy synchronous teardown)
-  // → skeleton hiển thị ngay, user vẫn tương tác được
+  // Safety timeout: nếu pending > 5s (navigation bị cancel/stuck) → force reset
+  useEffect(() => {
+    if (!isPending) return
+
+    const timer = setTimeout(() => {
+      setNavigationPending(false)
+    }, 5000)
+
+    return () => clearTimeout(timer)
+  }, [isPending])
+
   return (
     <>
       <div style={isPending ? { display: 'none' } : undefined}>

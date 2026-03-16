@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 
 import useAxiosAuth from '@/hocs/useAxiosAuth'
+import { useTabVisible } from '@/hooks/useTabVisible'
 
 export interface AdminTransactionParams {
   search?: string
@@ -17,6 +18,7 @@ export interface AdminTransactionParams {
  */
 export const useAdminTransactionHistory = (params: AdminTransactionParams = {}, enabled = true) => {
   const axiosAuth = useAxiosAuth()
+  const isTabVisible = useTabVisible()
 
   const { search, status, type, limit, order } = params
 
@@ -39,11 +41,12 @@ export const useAdminTransactionHistory = (params: AdminTransactionParams = {}, 
     staleTime: 10 * 1000,
     refetchOnWindowFocus: true,
     refetchInterval: (query) => {
+      if (!isTabVisible) return false
+
       const records = query.state.data?.data
 
       if (!Array.isArray(records)) return false
 
-      // Pending statuses: 0=pending, 1=processing, 9=retry, 10=awaiting
       const hasPending = records.some((r: any) => [0, 1, 9, 10].includes(Number(r.order?.status)))
 
       return hasPending ? 10000 : false

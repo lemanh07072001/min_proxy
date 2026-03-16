@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 
 import useAxiosAuth from '@/hocs/useAxiosAuth'
+import { useTabVisible } from '@/hooks/useTabVisible'
 
 // ── Types ──
 
@@ -45,6 +46,7 @@ export interface InvestigateResult {
  */
 export const useAdminDeposits = (params: AdminDepositsParams = {}, enabled = true) => {
   const axiosAuth = useAxiosAuth()
+  const isTabVisible = useTabVisible()
 
   return useQuery({
     queryKey: ['adminDeposits', params],
@@ -61,6 +63,7 @@ export const useAdminDeposits = (params: AdminDepositsParams = {}, enabled = tru
     staleTime: 10 * 1000,
     refetchOnWindowFocus: true,
     refetchInterval: (query) => {
+      if (!isTabVisible) return false
       const records = query.state.data?.data
 
       if (!Array.isArray(records)) return false

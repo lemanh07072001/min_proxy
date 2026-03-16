@@ -43,15 +43,16 @@ NODE_OPTIONS="--max-old-space-size=512" npm ci
 
 echo "🔨 Building..."
 
-# Backup .next hiện tại (phòng rollback)
+# Backup .next hiện tại (phòng rollback) — chỉ copy cache, không copy toàn bộ
 if [ -d ".next" ]; then
   rm -rf .next.backup
-  cp -r .next .next.backup
-  echo "✅ Backed up .next"
+  mkdir -p .next.backup
+  [ -d ".next/cache" ] && cp -r .next/cache .next.backup/
+  echo "✅ Backed up .next/cache"
 fi
 
-# Xóa build cache cũ để đảm bảo env mới được bake đúng
-rm -rf .next
+# Xóa build output nhưng GIỮ cache để build nhanh hơn
+rm -rf .next/server .next/static .next/BUILD_ID .next/*.json 2>/dev/null
 
 if NODE_OPTIONS="--max-old-space-size=1024" npm run build; then
   echo "🚀 Restarting PM2..."
@@ -64,12 +65,12 @@ if NODE_OPTIONS="--max-old-space-size=1024" npm run build; then
   rm -rf .next.backup
   echo "✅ Deploy thành công!"
 else
-  echo "❌ Build lỗi! Đang rollback..."
-  if [ -d ".next.backup" ]; then
-    rm -rf .next
-    mv .next.backup .next
-    pm2 reload "$PM2_NAME" --update-env
-    echo "⚠️  Đã rollback về bản cũ."
+  echo "❌ Build lỗi! Đang rollback cache..."
+  if [ -d ".next.backup/cache" ]; then
+    mkdir -p .next
+    cp -r .next.backup/cache .next/
+    echo "⚠️  Đã rollback cache. Build trước vẫn hoạt động nếu PM2 chưa restart."
   fi
+  rm -rf .next.backup
   exit 1
 fi

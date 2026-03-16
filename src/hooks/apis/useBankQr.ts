@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import useAxiosAuth from '@/hocs/useAxiosAuth'
+import { useTabVisible } from '@/hooks/useTabVisible'
 
 export interface PendingBankQr {
   id: number
@@ -82,19 +83,19 @@ return res?.data
  */
 export const usePendingBankQr = (enabled: boolean = true, activePolling: boolean = false) => {
   const axiosAuth = useAxiosAuth()
+  const isTabVisible = useTabVisible()
 
   return useQuery({
     queryKey: ['pending-bank-qr'],
     queryFn: async () => {
       const res = await axiosAuth.get('/pending-bank-qr')
 
-      
-return res?.data as PendingBankQrResponse
+      return res?.data as PendingBankQrResponse
     },
     enabled,
     retry: 1,
     refetchInterval: (query) => {
-      // Nếu lỗi → dừng poll
+      if (!isTabVisible) return false
       if (query.state.error) return false
 
       const hasPending = !!query.state.data?.data

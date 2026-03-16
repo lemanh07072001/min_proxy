@@ -1,7 +1,7 @@
 'use client'
 
 import type { ReactNode } from 'react'
-import { createContext, useContext, useEffect, useRef, useState } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 
 import { useSearchParams } from 'next/navigation'
 
@@ -87,20 +87,20 @@ export const ModalContextProvider = ({ children }: ModalContextProviderProps) =>
     setIsAuthModalOpen(true)
   }
 
-  const closeAuthModal = () => {
+  const closeAuthModal = useCallback(() => {
     setIsAuthModalOpen(false)
-  }
+  }, [])
 
-  const setMode = (mode: 'login' | 'register' | 'reset' | 'resetpass') => {
+  const setMode = useCallback((mode: 'login' | 'register' | 'reset' | 'resetpass') => {
     setAuthModalMode(mode)
-  }
+  }, [])
 
-  const setResetData = (email: string, token: string) => {
+  const setResetData = useCallback((email: string, token: string) => {
     setResetEmail(email)
     setResetToken(token)
-  }
+  }, [])
 
-  const value: ModalContextType = {
+  const value = useMemo<ModalContextType>(() => ({
     isAuthModalOpen,
     authModalMode,
     resetEmail,
@@ -113,7 +113,7 @@ export const ModalContextProvider = ({ children }: ModalContextProviderProps) =>
     setResetData,
     setResetPassword,
     setReferralCode
-  }
+  }), [isAuthModalOpen, authModalMode, resetEmail, resetToken, resetPassword, referralCode, openAuthModal, closeAuthModal, setMode, setResetData])
 
   return <ModalContext.Provider value={value}>{children}</ModalContext.Provider>
 }
