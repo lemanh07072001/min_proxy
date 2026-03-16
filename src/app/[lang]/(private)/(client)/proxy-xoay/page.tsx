@@ -140,14 +140,14 @@ export default function RotatingProxy() {
 
   if (isLoading) {
     return (
-      <div className='main-page'>
+      <div key='proxy-xoay' className='main-page'>
         <ProxyPageSkeleton />
       </div>
     )
   }
 
   return (
-    <div className='main-page'>
+    <div key='proxy-xoay' className='main-page'>
       <ProxyPlansClient data={mergedPlans} />
     </div>
   )

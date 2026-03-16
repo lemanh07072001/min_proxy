@@ -1,5 +1,7 @@
 'use client'
 
+import { useRef } from 'react'
+
 import { usePathname } from 'next/navigation'
 
 import { useSession } from 'next-auth/react'
@@ -15,6 +17,7 @@ const PUBLIC_ROUTES = ['/home', '/proxy-tinh', '/proxy-xoay', '/check-proxy', '/
 export default function AuthGuard({ children, locale }: ChildrenType & { locale: Locale }) {
   const pathname = usePathname()
   const { status } = useSession()
+  const wasAuthenticatedRef = useRef(false)
 
   // Public routes: luôn render content, không cần auth
   const isPublicRoute = PUBLIC_ROUTES.some(route => pathname.endsWith(route))
@@ -23,8 +26,17 @@ export default function AuthGuard({ children, locale }: ChildrenType & { locale:
     return <>{children}</>
   }
 
-  // Đang loading session → không render gì (tránh flash)
+  // Track trạng thái đã từng authenticated
+  if (status === 'authenticated') {
+    wasAuthenticatedRef.current = true
+  }
+
+  // Đang loading session — nếu đã authenticated trước đó thì giữ content, không flash trắng
   if (status === 'loading') {
+    if (wasAuthenticatedRef.current) {
+      return <>{children}</>
+    }
+
     return null
   }
 
@@ -33,6 +45,8 @@ export default function AuthGuard({ children, locale }: ChildrenType & { locale:
     return <>{children}</>
   }
 
-  // Chưa đăng nhập → hiện EmptyAuthPage (form login trong content area)
+  // Chưa đăng nhập → hiện EmptyAuthPage
+  wasAuthenticatedRef.current = false
+
   return <EmptyAuthPage lang={locale} />
 }

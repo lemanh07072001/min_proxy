@@ -64,14 +64,14 @@ export default function StaticProxy() {
 
   if (isLoading) {
     return (
-      <div className='main-page'>
+      <div key='proxy-tinh' className='main-page'>
         <ProxyPageSkeleton />
       </div>
     )
   }
 
   return (
-    <div className='main-page'>
+    <div key='proxy-tinh' className='main-page'>
       <StaticProxyPage data={proxyPlans ?? []} />
     </div>
   )

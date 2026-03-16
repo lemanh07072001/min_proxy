@@ -152,8 +152,9 @@ export function BrandingProvider({ children }: { children: React.ReactNode }) {
 
     root.style.setProperty('--primary-contrast', contrastText)
 
-    // Dynamic favicon — thêm cache buster để trình duyệt nhận favicon mới
-    const faviconUrl = branding.favicon
+    // Dynamic favicon — force https + cache buster
+    const rawFavicon = branding.favicon
+    const faviconUrl = rawFavicon ? rawFavicon.replace(/^http:\/\//i, 'https://') : ''
 
     if (faviconUrl) {
       const bustUrl = faviconUrl.includes('?') ? `${faviconUrl}&v=${Date.now()}` : `${faviconUrl}?v=${Date.now()}`

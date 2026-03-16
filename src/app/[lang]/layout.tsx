@@ -74,7 +74,7 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
   const isChildSite = branding.site_mode === 'child'
   const siteName = branding.site_name || ''
   const siteDesc = branding.site_description || ''
-  const faviconUrl = branding.favicon_url || ''
+  const faviconUrl = (branding.favicon_url || '').replace(/^http:\/\//i, 'https://')
   const ogImage = branding.og_image_url || ''
 
   // SEO đa ngôn ngữ — lấy từ DB theo lang
