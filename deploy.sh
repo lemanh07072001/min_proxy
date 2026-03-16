@@ -31,6 +31,9 @@ if [ -d ".next" ]; then
   echo "✅ Backed up .next"
 fi
 
+# Xóa build cache cũ để đảm bảo env mới được bake đúng
+rm -rf .next
+
 if NODE_OPTIONS="--max-old-space-size=1024" npm run build; then
   echo "🚀 Restarting PM2..."
   pm2 reload "$PM2_NAME" --update-env

@@ -48,7 +48,7 @@ import { setUser } from '@/store/userSlice'
 
 import type { AppDispatch, RootState } from '@/store'
 
-const denominations = ['50000', '100000', '200000', '500000', '1000000']
+const denominations = ['2000', '5000', '10000', '50000', '100000', '200000', '500000', '1000000']
 const EXPIRE_SECONDS = 600
 
 export default function RechargePage() {
