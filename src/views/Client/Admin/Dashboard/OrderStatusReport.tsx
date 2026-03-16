@@ -6,7 +6,7 @@ import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Toolti
 import { Grid2, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Pagination, MenuItem, Select, FormControl, InputLabel } from '@mui/material'
 import { BarChart3, List } from 'lucide-react'
 
-import { useOrderReportDetail, MOCK_DETAIL } from '@/hooks/apis/useOrderReport'
+import { useOrderReportDetail } from '@/hooks/apis/useOrderReport'
 import { usePartners } from '@/hooks/apis/usePartners'
 import { formatCurrency, formatNumber } from '@/utils/formatters'
 
@@ -67,7 +67,7 @@ return d })())
   }), [startDate, endDate, partnerId, selectedStatus])
 
   const { data: detailRaw, isFetching: detailFetching } = useOrderReportDetail(detailParams)
-  const allOrders: any[] = (detailRaw?.orders?.length > 0) ? detailRaw.orders : MOCK_DETAIL.orders
+  const allOrders: any[] = detailRaw?.orders ?? []
 
   // Client-side pagination
   const totalOrders = allOrders.length

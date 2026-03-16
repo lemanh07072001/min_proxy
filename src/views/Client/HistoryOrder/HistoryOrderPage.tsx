@@ -38,6 +38,7 @@ import CustomIconButton from '@core/components/mui/IconButton'
 
 import { formatDateTimeLocal } from '@/utils/formatDate'
 import { useHistoryOrders, PENDING_STATUSES } from '@/hooks/apis/useHistoryOrders'
+import { siteConfig } from '@/configs/siteConfig'
 import { ORDER_STATUS_LABELS, ORDER_STATUS_COLORS } from '@/constants/orderStatus'
 import OrderDetail from './OrderDetail'
 

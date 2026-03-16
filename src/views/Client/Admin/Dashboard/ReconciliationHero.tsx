@@ -3,7 +3,7 @@
 import { CheckCircle, AlertTriangle } from 'lucide-react'
 
 import { formatCurrency } from '@/utils/formatters'
-import { useReconciliation, MOCK_RECONCILIATION } from '@/hooks/apis/useFinancialReport'
+import { useReconciliation } from '@/hooks/apis/useFinancialReport'
 
 interface ReconciliationCardProps {
   filterStart?: string
@@ -11,10 +11,10 @@ interface ReconciliationCardProps {
 }
 
 export default function ReconciliationCard({ filterStart, filterEnd }: ReconciliationCardProps) {
-  const { data: apiData } = useReconciliation({ start: filterStart, end: filterEnd })
+  const { data, isLoading } = useReconciliation({ start: filterStart, end: filterEnd })
 
-  // Luôn có data: placeholderData (mock) hoặc API data → render ngay
-  const data = apiData ?? MOCK_RECONCILIATION
+  if (isLoading) return <div className='rounded-xl p-4 shadow-md border bg-gray-50 text-center text-gray-400 text-sm'>Đang tải đối soát...</div>
+  if (!data) return null
   const isBalanced = data.is_balanced
 
   return (

@@ -53,35 +53,33 @@ export default function TransactionHistoryPage() {
       {
         header: 'Lịch sử giao dịch',
         cell: ({ row }) => {
-          if (row.original?.type === 'NAPTIEN') {
-            return (
-              <div>
-                <Chip label='Nạp' size='small' color='success' />
-                <span className='font-sm ms-2'>Nạp tiền thành công!</span>
-              </div>
-            )
-          } else if (row.original.type === 'TRUTIEN') {
-            return (
-              <div>
-                <Chip label='Tiêu' size='small' color='primary' style={{ color: '#fff' }} />
-                <span className='font-sm ms-2'>Trừ tiền thành công!</span>
-              </div>
-            )
-          } else if (row.original.type === 'BUY') {
-            return (
-              <div>
-                <Chip label='Mua' size='small' color='info' style={{ color: '#fff' }} />
-                <span className='font-sm ms-2'>{row.original.noidung}</span>
-              </div>
-            )
-          } else if (row.original.type === 'REFUND') {
-            return (
-              <div>
-                <Chip label='Hoàn' size='small' color='error' style={{ color: '#fff' }} />
-                <span className='font-sm ms-2'>{row.original.noidung}</span>
-              </div>
-            )
+          const type = row.original?.type || ''
+          const noidung = row.original?.noidung || ''
+
+          const typeMap: Record<string, { label: string; color: 'success' | 'primary' | 'info' | 'error' | 'warning' | 'default'; text?: string }> = {
+            NAPTIEN: { label: 'Nạp', color: 'success', text: 'Nạp tiền thành công!' },
+            NAPTIEN_AUTO: { label: 'Nạp', color: 'success', text: 'Nạp tiền tự động' },
+            NAPTIEN_PAY2S: { label: 'Nạp', color: 'success', text: 'Nạp tiền tự động' },
+            NAPTIEN_MANUAL: { label: 'Nạp', color: 'success', text: 'Nạp tiền thủ công' },
+            TRUTIEN: { label: 'Tiêu', color: 'primary', text: 'Trừ tiền thành công!' },
+            BUY: { label: 'Mua', color: 'info' },
+            THANHTOAN: { label: 'Mua', color: 'info' },
+            THANHTOAN_V4: { label: 'Mua', color: 'info' },
+            GIAHAN: { label: 'Gia hạn', color: 'warning' },
+            GIAHAN_V4: { label: 'Gia hạn', color: 'warning' },
+            REFUND: { label: 'Hoàn', color: 'error' },
+            FAILED: { label: 'Lỗi', color: 'error' },
+            RUT_HOA_HONG_AFFILIATE: { label: 'Rút HH', color: 'default' },
           }
+
+          const cfg = typeMap[type] || { label: type || '?', color: 'default' as const }
+
+          return (
+            <div>
+              <Chip label={cfg.label} size='small' color={cfg.color} style={{ color: '#fff' }} />
+              <span className='font-sm ms-2'>{cfg.text || noidung || type}</span>
+            </div>
+          )
         },
         size: 400
       },

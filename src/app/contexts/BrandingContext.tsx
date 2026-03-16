@@ -152,21 +152,24 @@ export function BrandingProvider({ children }: { children: React.ReactNode }) {
 
     root.style.setProperty('--primary-contrast', contrastText)
 
-    // Dynamic favicon
+    // Dynamic favicon — thêm cache buster để trình duyệt nhận favicon mới
     const faviconUrl = branding.favicon
 
     if (faviconUrl) {
-      document.querySelectorAll('link[rel="icon"], link[rel="shortcut icon"], link[rel="apple-touch-icon"]').forEach(el => {
-        (el as HTMLLinkElement).href = faviconUrl
-      })
+      const bustUrl = faviconUrl.includes('?') ? `${faviconUrl}&v=${Date.now()}` : `${faviconUrl}?v=${Date.now()}`
 
-      if (!document.querySelector('link[rel="icon"]')) {
+      // Xóa tất cả link icon cũ rồi tạo mới — đảm bảo trình duyệt nhận thay đổi
+      document.querySelectorAll('link[rel="icon"], link[rel="shortcut icon"], link[rel="apple-touch-icon"]').forEach(el => el.remove())
+
+      const rels = ['icon', 'shortcut icon', 'apple-touch-icon']
+
+      rels.forEach(rel => {
         const link = document.createElement('link')
 
-        link.rel = 'icon'
-        link.href = faviconUrl
+        link.rel = rel
+        link.href = bustUrl
         document.head.appendChild(link)
-      }
+      })
     }
 
     // GTM + head_scripts + body_scripts đã chuyển sang server-side (layout.tsx)

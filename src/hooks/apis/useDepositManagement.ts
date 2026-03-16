@@ -58,8 +58,14 @@ export const useAdminDeposits = (params: AdminDepositsParams = {}, enabled = tru
       return res?.data
     },
     enabled,
-    staleTime: 30 * 1000,
-    refetchOnWindowFocus: false
+    staleTime: 10 * 1000,
+    refetchOnWindowFocus: true,
+    refetchInterval: (query) => {
+      const records = query.state.data?.data
+      if (!Array.isArray(records)) return false
+      const hasPending = records.some((r: any) => r.status === 'pending')
+      return hasPending ? 10000 : false
+    }
   })
 }
 

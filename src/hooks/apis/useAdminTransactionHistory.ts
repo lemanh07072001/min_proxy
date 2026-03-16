@@ -36,7 +36,17 @@ export const useAdminTransactionHistory = (params: AdminTransactionParams = {}, 
       return res?.data
     },
     enabled,
-    staleTime: 30 * 1000,
-    refetchOnWindowFocus: false
+    staleTime: 10 * 1000,
+    refetchOnWindowFocus: true,
+    refetchInterval: (query) => {
+      const records = query.state.data?.data
+
+      if (!Array.isArray(records)) return false
+
+      // Pending statuses: 0=pending, 1=processing, 9=retry, 10=awaiting
+      const hasPending = records.some((r: any) => [0, 1, 9, 10].includes(Number(r.order?.status)))
+
+      return hasPending ? 10000 : false
+    }
   })
 }

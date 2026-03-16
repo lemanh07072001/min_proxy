@@ -23,12 +23,12 @@ const Hero = () => {
       {/* Background Pattern */}
       <div className='absolute inset-0 opacity-10'>
         <div className='absolute inset-0 bg-gradient-to-r from-red-600/20 to-transparent'></div>
-        <div className='grid grid-cols-8 md:grid-cols-12 gap-4 h-full'>
-          {Array.from({ length: 96 }).map((_, i) => (
+        <div className='grid grid-cols-6 md:grid-cols-8 gap-4 h-full'>
+          {Array.from({ length: 24 }).map((_, i) => (
             <div
               key={i}
-              className='bg-white/5 rounded-lg transform rotate-12 animate-pulse'
-              style={{ animationDelay: `${i * 0.1}s` }}
+              className='bg-white/5 rounded-lg transform rotate-12'
+              style={{ opacity: 0.3 + (i % 3) * 0.2 }}
             ></div>
           ))}
         </div>

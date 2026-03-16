@@ -162,6 +162,7 @@ export default function TableDepositHistory() {
       case TRANSACTION_TYPES.GIAHAN_V4:
         return <Chip label={label} size='small' icon={<RefreshCw />} color='info' sx={chipSx} />
       case TRANSACTION_TYPES.NAPTIEN:
+      case TRANSACTION_TYPES.NAPTIEN_AUTO:
       case TRANSACTION_TYPES.NAPTIEN_PAY2S:
       case TRANSACTION_TYPES.NAPTIEN_MANUAL:
         return <Chip label={label} size='small' icon={<BadgeCheck />} color='primary' sx={chipSx} />
@@ -496,6 +497,7 @@ export default function TableDepositHistory() {
               <MenuItem value=''>
                 <em>Tất cả loại GD</em>
               </MenuItem>
+              <MenuItem value={TRANSACTION_TYPES.NAPTIEN_AUTO}>Nạp tiền tự động</MenuItem>
               <MenuItem value={TRANSACTION_TYPES.NAPTIEN_MANUAL}>Nạp tiền thủ công</MenuItem>
               <MenuItem value={TRANSACTION_TYPES.THANHTOAN}>Mua proxy</MenuItem>
               <MenuItem value={TRANSACTION_TYPES.GIAHAN}>Gia hạn</MenuItem>

@@ -32,8 +32,8 @@ export const useDepositHistory = (params: DepositHistoryParams = {}, enabled = t
       return res?.data?.data ?? []
     },
     enabled,
-    staleTime: 30 * 1000,
-    refetchOnWindowFocus: false,
+    staleTime: 10 * 1000,
+    refetchOnWindowFocus: true,
     retry: 1
   })
 }

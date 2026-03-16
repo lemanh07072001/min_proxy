@@ -10,15 +10,31 @@ import OrdersDepositsRow from '@/views/Client/Admin/Dashboard/OrdersDepositsRow'
 import ProviderBreakdown from '@/views/Client/Admin/Dashboard/PartnerBreakdown'
 import ReconciliationCard from '@/views/Client/Admin/Dashboard/ReconciliationHero'
 import OrderStatusReport from '@/views/Client/Admin/Dashboard/OrderStatusReport'
-import { useFinancialReport, MOCK_FINANCIAL } from '@/hooks/apis/useFinancialReport'
+import { useFinancialReport, type FinancialReportData } from '@/hooks/apis/useFinancialReport'
 
 export default function DashboardPage() {
   const [filterParams, setFilterParams] = useState<{ start?: string; end?: string }>({})
-  const { data: apiData, isFetching } = useFinancialReport(filterParams)
+  const { data: apiData, isFetching, isLoading } = useFinancialReport(filterParams)
 
-  // API có thể trả object rỗng (report tables chưa backfill) → check meaningful data
-  const hasRealData = apiData && apiData.daily_trend?.length > 0 && apiData.revenue?.confirmed > 0
-  const data = hasRealData ? apiData : MOCK_FINANCIAL
+  const data = apiData as FinancialReportData | null
+
+  if (isLoading) {
+    return (
+      <div className='space-y-4'>
+        <DateRangeFilter onFilterChange={setFilterParams} />
+        <div className='flex items-center justify-center py-20 text-gray-500'>Đang tải dữ liệu...</div>
+      </div>
+    )
+  }
+
+  if (!data) {
+    return (
+      <div className='space-y-4'>
+        <DateRangeFilter onFilterChange={setFilterParams} />
+        <div className='flex items-center justify-center py-20 text-gray-500'>Chưa có dữ liệu báo cáo.</div>
+      </div>
+    )
+  }
 
   return (
     <div className='space-y-4 relative'>
