@@ -75,12 +75,15 @@ export function BrandingProvider({ children }: { children: React.ReactNode }) {
 
   const siteMode: SiteMode = (data?.site_mode || getServerData('site-mode', 'child')) as SiteMode
 
+  // Site con: chỉ dùng DB, không fallback env var (tránh hiện thông tin site mẹ)
+  // Site mẹ: DB → env var → default
+  const isChild = siteMode === 'child'
+
   const branding = useMemo<BrandingContextValue>(() => ({
-    // Shorthand aliases — ưu tiên API > DOM > env default
-    name: data?.site_name || getServerData('site-name', siteConfig.name),
-    description: data?.site_description || getServerData('site-description', siteConfig.description),
-    logo: data?.logo_url || siteConfig.logo || '',
-    favicon: data?.favicon_url || siteConfig.favicon || '',
+    name: data?.site_name || (isChild ? '' : getServerData('site-name', siteConfig.name)),
+    description: data?.site_description || (isChild ? '' : getServerData('site-description', siteConfig.description)),
+    logo: data?.logo_url || (isChild ? '' : siteConfig.logo || ''),
+    favicon: data?.favicon_url || (isChild ? '' : siteConfig.favicon || ''),
     primaryColor: data?.primary_color || siteConfig.primaryColor,
     primaryHover: data?.primary_hover || siteConfig.primaryHover,
     primaryGradient: data?.primary_gradient || siteConfig.primaryGradient,

@@ -1,24 +1,32 @@
 'use client'
 
 /**
- * Logo component — đơn giản, đáng tin cậy
+ * Logo component
  *
- * Dùng useBranding().logo — ưu tiên DB → env var → file mặc định
- * Site mẹ: luôn có logo
- * Site con chưa setup: hiện file mặc định, admin upload sau sẽ override
+ * Site mẹ: DB → env var → file mặc định
+ * Site con: DB only → chưa setup thì ẩn
  */
 
 import { useBranding } from '@/app/contexts/BrandingContext'
-import { siteConfig } from '@/configs/siteConfig'
-
-const DEFAULT_LOGO = '/images/logo/Logo_MKT_Proxy.png'
 
 const Logo = () => {
-  // DB → env → default file
-  const { logo } = useBranding()
-  const logoSrc = logo || siteConfig.logo || DEFAULT_LOGO
+  const { logo, isChild, name } = useBranding()
 
-  if (!logoSrc) return null
+  // Site con: chỉ dùng DB logo. Site mẹ: fallback default file
+  const logoSrc = logo || (!isChild ? '/images/logo/Logo_MKT_Proxy.png' : '')
+
+  if (!logoSrc) {
+    // Không có logo → hiện tên site text (nếu có)
+    if (name) {
+      return (
+        <div style={{ minHeight: 40, display: 'flex', alignItems: 'center' }}>
+          <span style={{ fontSize: '16px', fontWeight: 700, color: '#1e293b' }}>{name}</span>
+        </div>
+      )
+    }
+
+    return <div style={{ minHeight: 40 }} />
+  }
 
   return (
     <div style={{ minHeight: 40, maxHeight: 50, overflow: 'hidden', display: 'flex', alignItems: 'center' }}>
@@ -27,15 +35,8 @@ const Logo = () => {
         alt='Logo'
         width={180}
         height={50}
-        style={{
-          maxWidth: '100%',
-          maxHeight: '50px',
-          height: 'auto',
-          objectFit: 'contain',
-        }}
-        onError={(e) => {
-          (e.target as HTMLImageElement).style.display = 'none'
-        }}
+        style={{ maxWidth: '100%', maxHeight: '50px', height: 'auto', objectFit: 'contain' }}
+        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
       />
     </div>
   )
