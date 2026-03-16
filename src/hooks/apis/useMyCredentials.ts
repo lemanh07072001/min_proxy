@@ -6,7 +6,7 @@ export interface MyCredentials {
   api_key: string | null
 }
 
-export const useMyCredentials = () => {
+export const useMyCredentials = (enabled: boolean = true) => {
   const axiosAuth = useAxiosAuth()
 
   return useQuery({
@@ -16,6 +16,7 @@ export const useMyCredentials = () => {
 
       return res?.data?.data as MyCredentials
     },
+    enabled,
     staleTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
   })

@@ -280,7 +280,7 @@ export default function HistoryOrderPage() {
   useEffect(() => {
     queryClient.invalidateQueries({ queryKey: ['userOrders'] })
 
-    const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || 'https://socket.mktproxy.com'
+    const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || siteConfig.socketUrl
 
     const socket = io(socketUrl, {
       transports: ['websocket'],

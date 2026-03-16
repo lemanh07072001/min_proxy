@@ -3,7 +3,7 @@ import { MetadataRoute } from 'next'
 import { i18n } from '@/configs/configi18n'
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://mktproxy.com'
+  const baseUrl = process.env.NEXTAUTH_URL || ''
   
   // Tạo sitemap cho tất cả các ngôn ngữ
   const sitemap: MetadataRoute.Sitemap = []

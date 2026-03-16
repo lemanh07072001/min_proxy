@@ -78,7 +78,7 @@ export default function OrderProxyPage() {
 
   // Socket: lắng nghe sự kiện để refetch bảng
   useEffect(() => {
-    const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || 'https://socket.mktproxy.com'
+    const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || siteConfig.socketUrl
 
     const socket = io(socketUrl, {
       transports: ['websocket'],

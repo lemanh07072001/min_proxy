@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react'
 
 import { Copy, Check, Play, Loader2, Terminal } from 'lucide-react'
+import { useSession } from 'next-auth/react'
 
 import { useMyCredentials } from '@/hooks/apis/useMyCredentials'
 
@@ -264,7 +265,9 @@ interface ApiUsageProps { endpoints?: ApiEndpoint[] }
 
 export default function ApiUsage({ endpoints }: ApiUsageProps) {
   const data = endpoints || apiEndpoints
-  const { data: credentials } = useMyCredentials()
+  const { status } = useSession()
+  const isAuth = status === 'authenticated'
+  const { data: credentials } = useMyCredentials(isAuth)
   const userApiKey = credentials?.api_key || ''
 
   const [selectedApi, setSelectedApi] = useState<string | null>(null)

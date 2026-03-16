@@ -65,7 +65,7 @@ const figtree = Figtree({
 export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }): Promise<Metadata> {
   const resolvedParams = await params
   const lang = resolvedParams.lang as string
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || ''
+  const baseUrl = process.env.NEXTAUTH_URL || ''
 
   // Fetch branding từ DB server-side → SEO đúng cho mỗi site
   const branding = await getServerBranding()
@@ -220,7 +220,7 @@ const RootLayout = async (props: ChildrenType & { params: Promise<{ lang: string
               refetchInterval={4 * 60}
               refetchOnWindowFocus={false}
               session={session as any}
-              basePath={process.env.NEXTAUTH_BASEPATH}
+              basePath={process.env.BASEPATH ? `${process.env.BASEPATH}/api/auth` : undefined}
             >
               <TanstackProvider>
                 <InitColorSchemeScript attribute='data' defaultMode={systemMode} />

@@ -17,7 +17,7 @@ export async function generatePageMetadata(
   lang: Locale,
   basePath?: string
 ): Promise<Metadata> {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || ''
+  const baseUrl = process.env.NEXTAUTH_URL || ''
   const fullPath = basePath ? `/${lang}${basePath}` : `/${lang}`
   const fullUrl = `${baseUrl}${fullPath}`
 

@@ -31,7 +31,7 @@ const Providers = async (props: Props) => {
   const session = await getServerSession(authOptions as any) as any;
 
   return (
-    <NextAuthProvider session={session} basePath={process.env.NEXTAUTH_BASEPATH}>
+    <NextAuthProvider session={session}>
       <ModalContextProvider>
         <VerticalNavProvider>
           <SettingsProvider settingsCookie={settingsCookie} mode={mode}>
