@@ -6,7 +6,6 @@ import type { Locale } from '@/configs/configi18n'
 import LayoutWrapper from '@layouts/LayoutWrapper'
 import VerticalLayout from '@layouts/VerticalLayout'
 import HorizontalLayout from '@layouts/HorizontalLayout'
-import { getDictionary } from '@/utils/getDictionary'
 
 // Component Imports
 import LayoutProvider from '@components/LayoutProvider'
@@ -25,8 +24,8 @@ import BrandingThemeSync from '@/components/BrandingThemeSync'
 import { VerticalNavProvider } from '@menu/contexts/verticalNavContext'
 import { SettingsProvider } from '@core/contexts/settingsContext'
 
-// Util Imports
-import { getMode, getSystemMode, getSettingsFromCookie } from '@core/utils/serverHelpers'
+// Util Imports — chỉ dùng defaults, theme sync client-side qua BrandingThemeSync
+import themeConfig from '@configs/themeConfig'
 
 // CSS imports
 import '@/app/[lang]/(private)/(client)/private-specific.css'
@@ -41,17 +40,13 @@ const Layout = async (props: ChildrenType & { params: Promise<{ lang: string }> 
   const params = await props.params
   const lang = params.lang as Locale
 
-  // Fetch TẤT CẢ song song — không còn waterfall như Providers cũ
-  const [mode, systemMode, dictionary, settingsCookie] = await Promise.all([
-    getMode(),
-    getSystemMode(),
-    getDictionary(lang),
-    getSettingsFromCookie()
-  ])
+  // Không gọi async functions (cookies, getDictionary) → layout static → navigation instant
+  const mode = themeConfig.mode
+  const systemMode = 'light' as const
 
   return (
     <VerticalNavProvider>
-      <SettingsProvider settingsCookie={settingsCookie} mode={mode}>
+      <SettingsProvider settingsCookie={{}} mode={mode}>
         <BrandingThemeSync />
         <ThemeProvider direction='ltr' systemMode={systemMode}>
           <LayoutProvider>
@@ -60,7 +55,7 @@ const Layout = async (props: ChildrenType & { params: Promise<{ lang: string }> 
                 systemMode={systemMode}
                 verticalLayout={
                 <VerticalLayout
-                  navigation={<Navigation dictionary={dictionary} mode={mode} />}
+                  navigation={<Navigation mode={mode} />}
                   navbar={<Navbar />}
                   landingPage={false}
                 >
@@ -73,7 +68,7 @@ const Layout = async (props: ChildrenType & { params: Promise<{ lang: string }> 
                 }
                 horizontalLayout={
                   <HorizontalLayout
-                    header={<Header dictionary={dictionary} />}
+                    header={<Header />}
                     footer={<HorizontalFooter />}
                   >
                     <AuthGuard locale={lang}>

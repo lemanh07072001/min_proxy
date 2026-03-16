@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
 
-import { useParams, usePathname, useRouter } from 'next/navigation'
+import { useParams, usePathname } from 'next/navigation'
 
 import {
   ChartColumn,
@@ -50,9 +50,7 @@ import menuSectionStyles from '@core/styles/vertical/menuSectionStyles'
 
 // App Imports
 import { useRole } from '@/hooks/useRole'
-import { setNavigationPending } from '@/lib/navigationState'
 import { useBranding } from '@/app/contexts/BrandingContext'
-import type { getDictionary } from '@/utils/getDictionary'
 import BalanceCard from '@/app/[lang]/(private)/(client)/components/wallet/BalanceCard'
 import { TransactionHistory } from '@/components/icons'
 
@@ -62,7 +60,7 @@ type RenderExpandIconProps = {
 }
 
 type Props = {
-  dictionary: Awaited<ReturnType<typeof getDictionary>>
+  dictionary?: any
   scrollMenu: (container: any, isPerfectScrollbar: boolean) => void
 }
 
@@ -161,12 +159,11 @@ const baseButtonStyles = {
 // =================================================================
 // Bắt đầu Component
 // =================================================================
-const VerticalMenu = ({ scrollMenu, dictionary }: Props) => {
+const VerticalMenu = ({ scrollMenu }: Props) => {
   // Hooks
   const theme = useTheme()
   const verticalNavOptions = useVerticalNav()
   const pathname = usePathname()
-  const router = useRouter()
   const params = useParams()
   const { lang: locale } = params
   const { isAdmin, isLoading: isAdminLoading, hasPermission } = useRole()
@@ -178,27 +175,7 @@ const VerticalMenu = ({ scrollMenu, dictionary }: Props) => {
     setIsInitialLoad(false)
   }, [])
 
-  // Prefetch top routes sau khi page idle — chỉ prefetch routes phổ biến
-  useEffect(() => {
-    const topRoutes = ['home', 'recharge', 'proxy-tinh', 'proxy-xoay', 'history-order']
-
-    const id = requestIdleCallback(() => {
-      topRoutes.forEach(route => router.prefetch(`/${locale}/${route}`))
-    }, { timeout: 5000 })
-
-    return () => cancelIdleCallback(id)
-  }, [locale, router])
-
-  // --- Optimistic active state ---
-  const [pendingPath, setPendingPath] = useState<string | null>(null)
-
-  // Khi pathname thực sự thay đổi → xóa pending
-  useEffect(() => {
-    setPendingPath(null)
-  }, [pathname])
-
-  // Dùng pendingPath (optimistic) nếu có, nếu không dùng pathname thực
-  const activePath = pendingPath || pathname
+  const activePath = pathname
 
   // Vars
   const { isBreakpointReached, transitionDuration, isCollapsed, isHovered } = verticalNavOptions
@@ -276,26 +253,10 @@ const VerticalMenu = ({ scrollMenu, dictionary }: Props) => {
     return activePath === fullPath ? mergedActiveStyles : baseMenuItemStyles
   }, [locale, activePath, mergedActiveStyles, baseMenuItemStyles])
 
-  // Navigation handler — React 18 batches setState automatically, no flushSync needed
-  const handleMenuNav = useCallback((path: string) => {
-    const fullPath = `/${locale}/${path}`
-
-    // Nếu đã ở trang đó hoặc đang pending trang đó → skip
-    if (fullPath === pathname || fullPath === pendingPath) return
-
-    setPendingPath(fullPath)
-    setNavigationPending(true)
-    router.push(fullPath)
-  }, [locale, pathname, pendingPath, router])
-
-  // Helper: tạo props cho MenuItem
+  // Helper: tạo props cho MenuItem — dùng href native, Next.js tự handle navigation
   const nav = useCallback((path: string) => ({
     rootStyles: getMenuItemStyles(path),
-    onClick: (e: any) => {
-      e.preventDefault()
-      handleMenuNav(path)
-    }
-  }), [getMenuItemStyles, handleMenuNav])
+  }), [getMenuItemStyles])
 
   return (
     <ScrollWrapper
@@ -336,7 +297,7 @@ const VerticalMenu = ({ scrollMenu, dictionary }: Props) => {
             {...nav('proxy-tinh')}
             href={`/${locale}/proxy-tinh`}
           >
-            {dictionary['navigation'].staticProxy}
+            Proxy Tĩnh
           </MenuItem>
 
           <MenuItem
@@ -344,7 +305,7 @@ const VerticalMenu = ({ scrollMenu, dictionary }: Props) => {
             {...nav('proxy-xoay')}
             href={`/${locale}/proxy-xoay`}
           >
-            {dictionary['navigation'].rotatingProxy}
+            Proxy Xoay
           </MenuItem>
 
           <MenuItem
@@ -352,7 +313,7 @@ const VerticalMenu = ({ scrollMenu, dictionary }: Props) => {
             {...nav('check-proxy')}
             href={`/${locale}/check-proxy`}
           >
-            {dictionary['navigation'].checkProxy}
+            Check Proxy
           </MenuItem>
 
           <MenuItem
@@ -360,7 +321,7 @@ const VerticalMenu = ({ scrollMenu, dictionary }: Props) => {
             {...nav('history-order')}
             href={`/${locale}/history-order`}
           >
-            {dictionary['navigation'].purchaseHistory}
+            Lịch sử mua hàng
           </MenuItem>
         </MenuSection>
 
@@ -378,7 +339,7 @@ const VerticalMenu = ({ scrollMenu, dictionary }: Props) => {
             {...nav('transaction-history')}
             href={`/${locale}/transaction-history`}
           >
-            {dictionary['navigation'].transactionHistory}
+            Lịch sử giao dịch
           </MenuItem>
         </MenuSection>
 
@@ -388,7 +349,7 @@ const VerticalMenu = ({ scrollMenu, dictionary }: Props) => {
             {...nav('affiliate')}
             href={`/${locale}/affiliate`}
           >
-            {(dictionary['navigation'] as any).affiliate || 'Tiếp thị liên kết'}
+            Tiếp thị liên kết
           </MenuItem>
 
           <MenuItem
@@ -396,7 +357,7 @@ const VerticalMenu = ({ scrollMenu, dictionary }: Props) => {
             {...nav('partner')}
             href={`/${locale}/partner`}
           >
-            {(dictionary['navigation'] as any).partner || 'Đối tác'}
+            Đối tác
           </MenuItem>
         </MenuSection>
 
@@ -406,7 +367,7 @@ const VerticalMenu = ({ scrollMenu, dictionary }: Props) => {
             rootStyles={getMenuItemStyles('docs-api')}
             href={`/${locale}/docs-api`}
           >
-            {(dictionary['navigation'] as any).docsApi || 'API Docs'}
+            API Docs
           </MenuItem>
           <MenuItem
             icon={<LifeBuoy size={20} strokeWidth={1.5} />}
@@ -420,7 +381,7 @@ const VerticalMenu = ({ scrollMenu, dictionary }: Props) => {
             {...nav('contact')}
             href={`/${locale}/contact`}
           >
-            {dictionary['navigation'].support}
+            Liên hệ
           </MenuItem>
         </MenuSection>
 
