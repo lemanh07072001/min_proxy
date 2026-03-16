@@ -3,55 +3,33 @@ set -e
 
 # ================================================
 # Deploy script cho MKT Proxy FE
-# Copy ra /root/deploy.sh rồi chỉnh APP_DIR, PM2_NAME
-# Usage: /root/deploy.sh
+# PM2 name lấy từ ecosystem.config.cjs → đồng nhất mọi server
+# Chỉ cần chỉnh APP_DIR khi copy ra /root/deploy.sh
 # ================================================
 
 APP_DIR="/var/www/mktproxy-fe"
 
-# Tự detect PM2 process name từ thư mục hiện tại, fallback lấy từ package.json
-PM2_NAME=$(pm2 jlist 2>/dev/null | python3 -c "
-import sys, json
-try:
-    procs = json.load(sys.stdin)
-    for p in procs:
-        cwd = p.get('pm2_env', {}).get('pm_cwd', '')
-        if cwd.rstrip('/') == '${APP_DIR}'.rstrip('/'):
-            print(p['name']); break
-except: pass
-" 2>/dev/null)
+cd "$APP_DIR"
 
-if [ -z "$PM2_NAME" ]; then
-  PM2_NAME=$(node -e "console.log(require('${APP_DIR}/package.json').name || '')" 2>/dev/null)
-fi
+# Lấy PM2 name từ ecosystem.config.cjs (app đầu tiên)
+PM2_NAME=$(node -e "console.log(require('./ecosystem.config.cjs').apps[0].name)" 2>/dev/null)
 
 if [ -z "$PM2_NAME" ]; then
   PM2_NAME=$(basename "$APP_DIR")
 fi
 
-echo "🔍 PM2 process: $PM2_NAME"
-
-cd "$APP_DIR"
+echo "🔍 PM2: $PM2_NAME"
 
 echo "📦 Pulling code..."
-git stash --quiet 2>/dev/null || true
-git pull
-git stash pop --quiet 2>/dev/null || true
+BRANCH=$(git rev-parse --abbrev-ref HEAD)
+git fetch origin "$BRANCH"
+git reset --hard "origin/$BRANCH"
+git clean -fd 2>/dev/null || true
 
 echo "📚 Installing deps..."
 NODE_OPTIONS="--max-old-space-size=512" npm ci
 
 echo "🔨 Building..."
-
-# Backup .next hiện tại (phòng rollback) — chỉ copy cache, không copy toàn bộ
-if [ -d ".next" ]; then
-  rm -rf .next.backup
-  mkdir -p .next.backup
-  [ -d ".next/cache" ] && cp -r .next/cache .next.backup/
-  echo "✅ Backed up .next/cache"
-fi
-
-# Xóa build output nhưng GIỮ cache để build nhanh hơn
 rm -rf .next/server .next/static .next/BUILD_ID .next/*.json 2>/dev/null
 
 if NODE_OPTIONS="--max-old-space-size=1024" npm run build; then
@@ -59,18 +37,11 @@ if NODE_OPTIONS="--max-old-space-size=1024" npm run build; then
   if pm2 describe "$PM2_NAME" > /dev/null 2>&1; then
     pm2 reload "$PM2_NAME" --update-env
   else
-    pm2 start npm --name "$PM2_NAME" -- start
+    pm2 start ecosystem.config.cjs --only "$PM2_NAME"
     pm2 save
   fi
-  rm -rf .next.backup
   echo "✅ Deploy thành công!"
 else
-  echo "❌ Build lỗi! Đang rollback cache..."
-  if [ -d ".next.backup/cache" ]; then
-    mkdir -p .next
-    cp -r .next.backup/cache .next/
-    echo "⚠️  Đã rollback cache. Build trước vẫn hoạt động nếu PM2 chưa restart."
-  fi
-  rm -rf .next.backup
+  echo "❌ Build lỗi!"
   exit 1
 fi
