@@ -7,7 +7,7 @@ set -e
 # Chỉ cần chỉnh APP_DIR khi copy ra /root/deploy.sh
 # ================================================
 
-APP_DIR="/var/www/mktproxy-fe"
+APP_DIR="/var/www/min_proxy"
 
 cd "$APP_DIR"
 
