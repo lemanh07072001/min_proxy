@@ -169,6 +169,7 @@ const RootLayout = async (props: ChildrenType & { params: Promise<{ lang: string
 
   // Dùng userData từ JWT session — không cần gọi API /me (tiết kiệm ~200-500ms)
   const user = session?.user ?? null
+  const isChildSite = branding.site_mode === 'child'
 
   return (
     <TranslationWrapper headersList={headersList} lang={params.lang as Locale}>
