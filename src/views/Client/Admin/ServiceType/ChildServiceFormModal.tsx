@@ -337,7 +337,7 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
   )
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth='lg' fullWidth closeAfterTransition={false}>
+    <Dialog open={open} onClose={onClose} maxWidth='lg' fullWidth closeAfterTransition={false} sx={{ '&.MuiModal-root': { zIndex: 1200 } }}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 20px', borderBottom: '1px solid #e5e7eb' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
