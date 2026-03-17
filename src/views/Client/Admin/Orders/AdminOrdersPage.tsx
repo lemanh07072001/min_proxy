@@ -434,18 +434,33 @@ return (
       },
       {
         header: 'Trạng thái',
-        size: 125,
+        size: 160,
         cell: ({ row }: { row: any }) => {
-          const status = row.original.status
+          const o = row.original
+          const status = o.status
           const config = STATUS_CONFIG[status] || { label: `Status ${status}`, color: '#94A3B8' }
+          const retry = o.retry ?? 0
+          const maxRetry = o.max_retry ?? 3
+          const isLocked = o.is_locked
 
-
-return (
-            <Chip
-              label={config.label}
-              size='small'
-              sx={{ backgroundColor: config.color + '18', color: config.color, fontWeight: 600, fontSize: '11px' }}
-            />
+          return (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                <Chip
+                  label={config.label}
+                  size='small'
+                  sx={{ backgroundColor: config.color + '18', color: config.color, fontWeight: 600, fontSize: '11px' }}
+                />
+                {isLocked && (
+                  <span style={{ fontSize: 10, color: '#f59e0b', fontWeight: 700 }} title='Đang xử lý (locked)'>🔒</span>
+                )}
+              </div>
+              {status === 1 && retry > 0 && (
+                <span style={{ fontSize: '10px', fontFamily: 'monospace', color: retry >= maxRetry ? '#dc2626' : '#94a3b8' }}>
+                  retry {retry}/{maxRetry} {retry >= maxRetry ? '⚠️' : ''}
+                </span>
+              )}
+            </div>
           )
         }
       },
@@ -530,8 +545,8 @@ return (
                   </Tooltip>
                 </>
               )}
-              {/* Retry cho order failed hoặc stuck */}
-              {(status === 5 || (status === 0 && order.retry >= 3)) && (
+              {/* Retry cho order processing retry >= max hoặc failed */}
+              {((status === 1 && order.retry >= (order.max_retry ?? 3)) || status === 5) && (
                 <Tooltip title='Thử lại đơn hàng'>
                   <IconButton size='small' color='warning' onClick={() => setRetryFailedOrder(order)}>
                     <RotateCcw size={16} />
