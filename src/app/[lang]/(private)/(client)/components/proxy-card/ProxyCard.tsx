@@ -130,7 +130,7 @@ return
           {/* Header: title (trái) + tags (phải) */}
           <div className='card-header-column'>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
-              <h3 className='provider-title-column' style={{ flex: 1 }}>{provider?.name ?? provider?.code} <span style={{ fontSize: '11px', fontWeight: 500, color: '#94a3b8' }}>#{provider?.id}</span></h3>
+              <h3 className='provider-title-column' style={{ flex: 1 }}>{provider?.name ?? provider?.code} <span style={{ fontFamily: 'monospace', fontSize: '11px', fontWeight: 500, color: '#94a3b8' }}>{provider?.id}#{provider?.code || ''}</span></h3>
               {visibleTags.length > 0 && (
                 <div style={{ display: 'flex', gap: '4px', flexShrink: 0 }}>
                   {visibleTags.map((tag: string, i: number) => {
