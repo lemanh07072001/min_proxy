@@ -1192,7 +1192,7 @@ return <p style={{ fontSize: '13px', color: '#64748b', margin: '0 0 8px', lineHe
                         {/* Header: title + tags */}
                         <div style={{ marginBottom: '12px', paddingBottom: '10px', borderBottom: '1px solid #f1f5f9', paddingTop: '4px' }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
-                            <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#1e293b', margin: 0, textAlign: 'left', flex: 1 }}>{previewData.name || 'Tên sản phẩm'} {serviceId && <span style={{ fontSize: '11px', fontWeight: 500, color: '#94a3b8' }}>#{serviceId}</span>}</h3>
+                            <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#1e293b', margin: 0, textAlign: 'left', flex: 1 }}>{previewData.name || 'Tên sản phẩm'} <span style={{ fontFamily: 'monospace', fontSize: '11px', fontWeight: 500, color: '#94a3b8' }}>{serviceId ? `${serviceId}#` : ''}{previewData.code || ''}</span></h3>
                             {renderInlineTags()}
                           </div>
                         </div>
@@ -1263,7 +1263,7 @@ return multiInputFields.filter((f: any) => f.key && f.value).map((input: any, i:
                           {/* Header: title + tags */}
                           <div style={{ marginBottom: '10px', paddingBottom: '8px', borderBottom: '1px solid #f1f5f9' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
-                              <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#1e293b', margin: 0, flex: 1 }}>{previewData.name || 'Tên sản phẩm'} {serviceId && <span style={{ fontSize: '11px', fontWeight: 500, color: '#94a3b8' }}>#{serviceId}</span>}</h3>
+                              <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#1e293b', margin: 0, flex: 1 }}>{previewData.name || 'Tên sản phẩm'} <span style={{ fontFamily: 'monospace', fontSize: '11px', fontWeight: 500, color: '#94a3b8' }}>{serviceId ? `${serviceId}#` : ''}{previewData.code || ''}</span></h3>
                               {renderInlineTags()}
                             </div>
                           </div>
