@@ -134,42 +134,60 @@ export default function LogModal({
                           {log.retry_count != null && <span className='ml-2'>Retry: {log.retry_count}</span>}
                         </p>
 
-                        {/* Request payload */}
-                        {log.request_body && Object.keys(log.request_body).length > 0 && (
-                          <details className='mt-2'>
-                            <summary className='text-xs text-blue-500 cursor-pointer hover:text-blue-700 font-medium'>
-                              Request payload
-                            </summary>
-                            <div className='mt-1 p-2 bg-slate-900 rounded text-xs text-blue-300 font-mono whitespace-pre-wrap max-h-40 overflow-y-auto'>
-                              {typeof log.request_body === 'string' ? log.request_body : JSON.stringify(log.request_body, null, 2)}
-                            </div>
-                          </details>
-                        )}
+                        {/* Request payload — từ request_body hoặc context.request_params */}
+                        {(() => {
+                          const reqData = log.request_body ?? log.context?.request_params
+                          if (!reqData || (typeof reqData === 'object' && Object.keys(reqData).length === 0)) return null
+                          return (
+                            <details className='mt-2'>
+                              <summary className='text-xs text-blue-500 cursor-pointer hover:text-blue-700 font-medium'>
+                                Request payload
+                              </summary>
+                              <div className='mt-1 p-2 bg-slate-900 rounded text-xs text-blue-300 font-mono whitespace-pre-wrap max-h-40 overflow-y-auto'>
+                                {typeof reqData === 'string' ? reqData : JSON.stringify(reqData, null, 2)}
+                              </div>
+                            </details>
+                          )
+                        })()}
 
-                        {/* Response body */}
-                        {log.response_body && (
-                          <details className='mt-2'>
-                            <summary className={`text-xs cursor-pointer font-medium ${log.action === 'api_call_error' ? 'text-red-500 hover:text-red-700' : 'text-green-500 hover:text-green-700'}`}>
-                              Response {log.duration_ms ? `(${log.duration_ms}ms)` : ''}
-                            </summary>
-                            <div className={`mt-1 p-2 bg-slate-900 rounded text-xs font-mono whitespace-pre-wrap max-h-40 overflow-y-auto ${log.action === 'api_call_error' ? 'text-red-300' : 'text-green-300'}`}>
-                              {typeof log.response_body === 'string'
-                                ? (() => { try { return JSON.stringify(JSON.parse(log.response_body), null, 2) } catch { return log.response_body } })()
-                                : JSON.stringify(log.response_body, null, 2)
-                              }
-                            </div>
-                          </details>
-                        )}
+                        {/* Response body — từ response_body hoặc context.response */}
+                        {(() => {
+                          const resData = log.response_body ?? log.context?.response
+                          if (!resData) return null
+                          const isError = ['api_call_error', 'failed', 'exception', 'retry'].includes(log.action)
+                          const durationMs = log.duration_ms ?? log.context?.duration_ms
+                          let formatted: string
+                          if (typeof resData === 'string') {
+                            try { formatted = JSON.stringify(JSON.parse(resData), null, 2) } catch { formatted = resData }
+                          } else {
+                            formatted = JSON.stringify(resData, null, 2)
+                          }
+                          return (
+                            <details className='mt-2' open={isError}>
+                              <summary className={`text-xs cursor-pointer font-medium ${isError ? 'text-red-500 hover:text-red-700' : 'text-green-500 hover:text-green-700'}`}>
+                                Response {durationMs ? `(${durationMs}ms)` : ''}
+                              </summary>
+                              <div className={`mt-1 p-2 bg-slate-900 rounded text-xs font-mono whitespace-pre-wrap max-h-40 overflow-y-auto ${isError ? 'text-red-300' : 'text-green-300'}`}>
+                                {formatted}
+                              </div>
+                            </details>
+                          )
+                        })()}
 
-                        {/* Context */}
-                        {log.context && Object.keys(log.context).length > 0 && (
-                          <details className='mt-2'>
-                            <summary className='text-xs text-gray-400 cursor-pointer hover:text-gray-600 font-medium'>Context</summary>
-                            <div className='mt-1 p-2 bg-gray-50 rounded text-xs text-gray-600 font-mono whitespace-pre-wrap max-h-32 overflow-y-auto'>
-                              {JSON.stringify(log.context, null, 2)}
-                            </div>
-                          </details>
-                        )}
+                        {/* Context — ẩn các key đã hiển thị ở trên */}
+                        {(() => {
+                          if (!log.context || typeof log.context !== 'object') return null
+                          const { request_params, response, duration_ms, ...rest } = log.context
+                          if (Object.keys(rest).length === 0) return null
+                          return (
+                            <details className='mt-2'>
+                              <summary className='text-xs text-gray-400 cursor-pointer hover:text-gray-600 font-medium'>Context</summary>
+                              <div className='mt-1 p-2 bg-gray-50 rounded text-xs text-gray-600 font-mono whitespace-pre-wrap max-h-32 overflow-y-auto'>
+                                {JSON.stringify(rest, null, 2)}
+                              </div>
+                            </details>
+                          )
+                        })()}
                       </div>
                     </div>
                   )
