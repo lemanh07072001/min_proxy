@@ -1,19 +1,28 @@
-/* Toast luôn hiện trên MUI Dialog/Modal (z-index 1300) */
-.Toastify,
-.Toastify__toast-container {
-  z-index: 2147483647 !important; /* max z-index — luôn trên cùng */
-}
-
+/* Toast luôn hiện trên MUI Dialog/Modal */
+/* MUI Dialog portal z-index = 1300 */
+/* Force toast container z-index cao hơn qua CSS specificity */
 .Toastify {
   position: fixed !important;
-  top: 0;
-  left: 0;
-  width: 100%;
-  pointer-events: none;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  pointer-events: none !important;
 }
 
 .Toastify__toast-container {
-  pointer-events: auto;
+  pointer-events: auto !important;
+}
+
+/* Override: MUI Modal z-index = 1300, Toast = 1400 */
+.MuiModal-root,
+.MuiDialog-root {
+  z-index: 1300 !important;
+}
+
+.Toastify,
+.Toastify__toast-container {
+  z-index: 1400 !important;
 }
 
 /* --- CÀI ĐẶT NỀN TẢNG --- */
