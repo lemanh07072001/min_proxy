@@ -373,8 +373,9 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
                     value={selectedSupplierId || ''}
                     onChange={e => {
                       const id = Number(e.target.value)
-                      setSelectedSupplierId(id)
                       const product = allSupplierProducts.find(p => p.supplier_id === id)
+
+                      setSelectedSupplierId(id)
                       setSelectedSupplierCode(product?.supplier_code || null)
                     }}
                     label='Sản phẩm site mẹ'
