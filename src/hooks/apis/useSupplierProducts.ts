@@ -4,6 +4,7 @@ import useAxiosAuth from '@/hocs/useAxiosAuth'
 
 export interface SupplierProduct {
   supplier_id: number
+  supplier_code: string | null
   name: string
   type: string
   durations: string[]
@@ -51,7 +52,8 @@ export const useImportSupplierProduct = () => {
 
   return useMutation({
     mutationFn: async (data: {
-      supplier_product_id: number
+      supplier_product_id?: number
+      supplier_product_code?: string
       name: string
       sell_prices: Record<string, number>
     }) => {

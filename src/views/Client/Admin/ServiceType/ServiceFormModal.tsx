@@ -1027,7 +1027,21 @@ return <Chip key={val} label={p?.label || val} size='small' />
                       />
                     </Grid2>
 
-                    {/* cost_price tự tính từ min(price_by_duration[].cost), code ít dùng — ẩn cả 2 */}
+                    <Grid2 size={{ xs: 6, sm: 4 }}>
+                      <Controller
+                        name='code'
+                        control={control}
+                        render={({ field }) => (
+                          <CustomTextField
+                            {...field}
+                            fullWidth
+                            label='Mã sản phẩm (Code)'
+                            placeholder='VD: proxy-vn-rotate-30d'
+                            helperText='Định danh duy nhất, dùng khi site con mua hàng. Để trống sẽ tự tạo.'
+                          />
+                        )}
+                      />
+                    </Grid2>
 
                     <Grid2 size={{ xs: 12 }}>
                       <Controller

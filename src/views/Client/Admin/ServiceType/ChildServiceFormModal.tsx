@@ -51,6 +51,7 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
 
   // State
   const [selectedSupplierId, setSelectedSupplierId] = useState<number | null>(null)
+  const [selectedSupplierCode, setSelectedSupplierCode] = useState<string | null>(null)
   const [priceFields, setPriceFields] = useState<Array<{ key: string; value: string; cost: string }>>([])
 
   // All supplier products (imported + available)
@@ -105,6 +106,7 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
         : (serviceData.metadata || {})
 
       setSelectedSupplierId(meta.supplier_product_id || null)
+      setSelectedSupplierCode(meta.supplier_product_code || null)
 
       // Parse price_by_duration
       let prices = serviceData.price_by_duration
@@ -281,9 +283,10 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
       max_quantity: data.max_quantity || 100,
     }
 
-    // Nếu tạo mới — thêm metadata với supplier_product_id
+    // Nếu tạo mới — thêm metadata với supplier_product_code + id
     if (!isEditMode && selectedSupplierId) {
       submitData.metadata = JSON.stringify({
+        ...(selectedSupplierCode ? { supplier_product_code: selectedSupplierCode } : {}),
         supplier_product_id: selectedSupplierId,
         supplier_prices: Object.fromEntries(priceFields.map(p => [p.key, parseInt(p.cost)])),
       })
@@ -368,7 +371,12 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
                     select
                     fullWidth
                     value={selectedSupplierId || ''}
-                    onChange={e => setSelectedSupplierId(Number(e.target.value))}
+                    onChange={e => {
+                      const id = Number(e.target.value)
+                      setSelectedSupplierId(id)
+                      const product = allSupplierProducts.find(p => p.supplier_id === id)
+                      setSelectedSupplierCode(product?.supplier_code || null)
+                    }}
                     label='Sản phẩm site mẹ'
                     helperText={
                       allSupplierProducts.length === 0
@@ -382,6 +390,7 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
                     )}
                     {(supplierData?.available || []).map(p => (
                       <MenuItem key={p.supplier_id} value={p.supplier_id}>
+                        {p.supplier_code && <span style={{ fontFamily: 'monospace', fontSize: 11, color: '#94a3b8', marginRight: 6 }}>[{p.supplier_code}]</span>}
                         {p.name} ({p.type}) — {Object.values(p.supplier_prices).map(pr => `${pr.toLocaleString('vi-VN')}đ`).join(' / ')}
                       </MenuItem>
                     ))}
@@ -755,7 +764,11 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
                   <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8, marginBottom: 8, paddingTop: 4 }}>
                     <div style={{ fontSize: '15px', fontWeight: 700, color: '#1e293b', lineHeight: 1.3 }}>
                       {previewName}
-                      {serviceId && <span style={{ fontSize: '12px', color: '#94a3b8', fontWeight: 400, marginLeft: 4 }}>#{serviceId}</span>}
+                      {(serviceId || watchAll.code) && (
+                        <div style={{ fontFamily: 'monospace', fontSize: '11px', color: '#94a3b8', fontWeight: 400, marginTop: 2 }}>
+                          {serviceId ? `${serviceId}#` : ''}{watchAll.code || serviceData?.code || ''}
+                        </div>
+                      )}
                     </div>
                     {previewTags.length > 0 && (
                       <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', flexShrink: 0 }}>

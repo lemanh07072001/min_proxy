@@ -156,7 +156,7 @@ export default function TableServiceType() {
     if (searchText) {
       const lower = searchText.toLowerCase()
 
-      result = result.filter((item: any) => item.name?.toLowerCase().includes(lower))
+      result = result.filter((item: any) => item.name?.toLowerCase().includes(lower) || item.code?.toLowerCase().includes(lower))
     }
 
     if (filterType === 'static') {
@@ -176,9 +176,14 @@ return result
   const columns = useMemo(
     () => [
       {
-        accessorKey: 'id',
-        header: 'ID',
-        size: 20
+        accessorKey: 'code',
+        header: 'ID#Code',
+        size: 160,
+        cell: ({ row }: { row: any }) => (
+          <span style={{ fontFamily: 'monospace', fontSize: 12, color: '#64748b' }}>
+            {row.original?.id}#{row.original?.code || '—'}
+          </span>
+        ),
       },
       {
         header: 'Name',
