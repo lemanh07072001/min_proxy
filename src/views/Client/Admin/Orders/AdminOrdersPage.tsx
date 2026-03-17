@@ -466,19 +466,36 @@ return (
             onClick={() => handleToggleSort('created_at')}
             style={{ cursor: 'pointer', userSelect: 'none', display: 'inline-flex', alignItems: 'center', gap: 4 }}
           >
-            Ngày tạo
+            Thời gian
             {sortBy === 'created_at' && (
               <span style={{ fontSize: '11px' }}>{sortOrder === 'desc' ? '▼' : '▲'}</span>
             )}
           </span>
         ),
-        size: 150,
-        cell: ({ row }: { row: any }) => (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#64748b', fontSize: '13px' }}>
-            <Clock3 size={13} />
-            {row.original.created_at ? formatDateTimeLocal(row.original.created_at) : '-'}
-          </div>
-        )
+        size: 180,
+        cell: ({ row }: { row: any }) => {
+          const r = row.original
+
+          return (
+            <div style={{ fontSize: '12px', color: '#64748b', lineHeight: 1.6 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                <Clock3 size={12} />
+                <span>Tạo: {r.created_at ? formatDateTimeLocal(r.created_at) : '-'}</span>
+              </div>
+              {r.buy_at && (
+                <div style={{ color: '#16a34a' }}>Mua: {formatDateTimeLocal(r.buy_at)}</div>
+              )}
+              {r.expired_at && (
+                <div style={{ color: r.status >= 5 ? '#dc2626' : '#94a3b8' }}>
+                  HH: {formatDateTimeLocal(r.expired_at)}
+                </div>
+              )}
+              {r.time && (
+                <div style={{ color: '#94a3b8' }}>{r.time} ngày</div>
+              )}
+            </div>
+          )
+        }
       },
       {
         header: 'Thao tác',
