@@ -1,6 +1,6 @@
 import {
   X, Loader2, FileText, Clock, AlertCircle, CheckCircle2, XCircle,
-  Play, Globe, ArrowRight, RotateCcw, RefreshCw, DollarSign, Zap
+  Play, Globe, ArrowRight, RotateCcw, RefreshCw, DollarSign, Zap, Bug
 } from 'lucide-react'
 import Dialog from '@mui/material/Dialog'
 
@@ -19,6 +19,7 @@ const ACTION_LABELS: Record<string, string> = {
   api_call_start: 'Gọi API nhà cung cấp',
   api_call_success: 'API thành công',
   api_call_error: 'API thất bại',
+  exception: 'Lỗi hệ thống',
   admin_retry_partial: 'Admin mua bù',
   admin_refund_partial: 'Admin hoàn tiền',
   auto_recovered: 'Tự phục hồi (stuck)',
@@ -35,6 +36,7 @@ const ACTION_STYLES: Record<string, { icon: React.ReactNode; bg: string; text: s
   api_call_start:       { icon: <Globe size={14} />,         bg: 'bg-indigo-100', text: 'text-indigo-600' },
   api_call_success:     { icon: <CheckCircle2 size={14} />,  bg: 'bg-green-100',  text: 'text-green-600' },
   api_call_error:       { icon: <XCircle size={14} />,       bg: 'bg-red-100',    text: 'text-red-600' },
+  exception:            { icon: <Bug size={14} />,            bg: 'bg-red-100',    text: 'text-red-700' },
   admin_retry_partial:  { icon: <Zap size={14} />,           bg: 'bg-purple-100', text: 'text-purple-600' },
   admin_refund_partial: { icon: <DollarSign size={14} />,    bg: 'bg-purple-100', text: 'text-purple-600' },
   auto_recovered:       { icon: <RefreshCw size={14} />,     bg: 'bg-amber-100',  text: 'text-amber-600' },
