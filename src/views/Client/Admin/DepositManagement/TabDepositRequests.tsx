@@ -223,14 +223,20 @@ export default function TabDepositRequests() {
       header: 'Xử lý bởi',
       size: 120,
       cell: ({ row }) => {
-        const pb = row.original.processed_by_user || row.original.processed_by_relation
+        const r = row.original
+        const pb = r.processed_by_user || r.processed_by_relation
 
-        if (row.original.status !== 'success') return <span style={{ fontSize: 12, color: '#d1d5db' }}>—</span>
+        if (r.status !== 'success') return <span style={{ fontSize: 12, color: '#d1d5db' }}>—</span>
+
+        // processed_by có thể là object (relation) hoặc number (ID)
+        const adminName = pb?.name
+          || (typeof r.processed_by === 'object' ? r.processed_by?.name : null)
+          || (typeof r.processed_by === 'number' ? `Admin #${r.processed_by}` : null)
 
         return (
           <span style={{ fontSize: 12, color: '#64748b' }}>
-            {row.original.deposit_type === 'manual'
-              ? (pb?.name || `Admin #${row.original.processed_by}`)
+            {r.deposit_type === 'manual'
+              ? (adminName || 'Admin')
               : 'Tự động'
             }
           </span>
