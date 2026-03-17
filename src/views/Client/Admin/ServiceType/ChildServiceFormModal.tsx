@@ -304,11 +304,17 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
       max_quantity: data.max_quantity || 100,
     }
 
-    // Nếu tạo mới — thêm metadata với supplier_product_code + id
-    if (!isEditMode && selectedSupplierId) {
+    // Luôn gửi metadata — cả tạo mới và cập nhật
+    if (selectedSupplierId || selectedSupplierCode) {
+      // Giữ metadata cũ + merge supplier info mới
+      const existingMeta = isEditMode && serviceData?.metadata
+        ? (typeof serviceData.metadata === 'string' ? JSON.parse(serviceData.metadata || '{}') : serviceData.metadata)
+        : {}
+
       submitData.metadata = JSON.stringify({
+        ...existingMeta,
         ...(selectedSupplierCode ? { supplier_product_code: selectedSupplierCode } : {}),
-        supplier_product_id: selectedSupplierId,
+        ...(selectedSupplierId ? { supplier_product_id: selectedSupplierId } : {}),
         supplier_prices: Object.fromEntries(priceFields.map(p => [p.key, parseInt(p.cost)])),
       })
     }
