@@ -74,7 +74,7 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
   const isChildSite = branding.site_mode === 'child'
   const siteName = branding.site_name || ''
   const siteDesc = branding.site_description || ''
-  const faviconUrl = (branding.favicon_url || '').replace(/^http:\/\//i, 'https://')
+  const faviconUrl = branding.favicon_url || ''
   const ogImage = branding.og_image_url || ''
 
   // SEO đa ngôn ngữ — lấy từ DB theo lang
@@ -106,7 +106,7 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
       address: false,
       telephone: false
     },
-    metadataBase: new URL(baseUrl),
+    metadataBase: baseUrl ? new URL(baseUrl) : undefined,
     alternates: {
       canonical: `/${lang}`,
       languages: {

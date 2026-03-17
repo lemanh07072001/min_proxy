@@ -300,8 +300,12 @@ export default function SiteSettingsForm() {
   const handleImageUpload = async (file: File, field: 'logo_url' | 'favicon_url' | 'og_image_url') => {
     const formData = new FormData()
 
+    // Map field name → tên SEO: logo_url → logo, favicon_url → favicon, og_image_url → og-image
+    const fieldName = field.replace('_url', '').replace('_', '-')
+
     formData.append('image', file)
     formData.append('folder', 'branding')
+    formData.append('field', fieldName)
 
     // Gửi URL ảnh cũ để BE xóa file cũ, giảm tải server
     const oldUrl = branding[field]

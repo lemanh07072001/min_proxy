@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect, useCallback } from 'react'
 
 import { useParams } from 'next/navigation'
 
@@ -22,6 +22,14 @@ import { toast } from 'react-toastify'
 import { useAnnouncements } from '@/hooks/apis/useAnnouncements'
 import type { Announcement } from '@/hooks/apis/useAnnouncements'
 import { useSidebarSettings } from '@/hooks/apis/useSidebarSettings'
+
+function useHydrated() {
+  const [hydrated, setHydrated] = useState(false)
+
+  useEffect(() => { setHydrated(true) }, [])
+
+  return hydrated
+}
 
 const TYPE_MAP: Record<string, { label: string; color: string; icon: typeof Tag }> = {
   discount: { label: 'Giảm giá', color: '#22c55e', icon: Tag },
@@ -237,6 +245,7 @@ function ModalAnnouncements({ items }: { items: Announcement[] }) {
 /* ─── Feed Post Card ─── */
 function AnnouncementPost({ announcement }: { announcement: Announcement }) {
   const [showFull, setShowFull] = useState(false)
+  const hydrated = useHydrated()
   const typeInfo = TYPE_MAP[announcement.type] || TYPE_MAP.general
   const TypeIcon = typeInfo.icon
 
@@ -281,7 +290,7 @@ function AnnouncementPost({ announcement }: { announcement: Announcement }) {
           />
           <span className='announcement-time'>
             <Clock size={11} />
-            {timeAgo(announcement.published_at)}
+            {hydrated ? timeAgo(announcement.published_at) : ''}
           </span>
         </div>
       </div>

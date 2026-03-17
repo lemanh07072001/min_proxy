@@ -120,6 +120,29 @@ export const useDismissTransaction = () => {
 }
 
 /**
+ * Admin: Kích hoạt lệnh nạp tiền (expired/pending → success).
+ * Cộng tiền cho user + ghi audit.
+ */
+export const useAdminCreditDeposit = () => {
+  const axiosAuth = useAxiosAuth()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ id, adminNote }: { id: number; adminNote?: string }) => {
+      const res = await axiosAuth.post(`/admin/bank-auto/${id}/credit`, {
+        admin_note: adminNote,
+      })
+
+      return res?.data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['adminDeposits'] })
+      queryClient.invalidateQueries({ queryKey: ['transactionBank'] })
+    }
+  })
+}
+
+/**
  * Hủy bỏ qua GD.
  */
 export const useUndismissTransaction = () => {

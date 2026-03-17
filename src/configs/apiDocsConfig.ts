@@ -188,7 +188,7 @@ export const apiEndpoints: ApiEndpoint[] = [
     title: 'Danh Sách Sản Phẩm',
     method: 'GET',
     endpoint: `${API_BASE}/products`,
-    description: 'Lấy danh sách sản phẩm proxy có thể mua kèm giá.',
+    description: 'Lấy danh sách sản phẩm proxy có thể mua kèm giá. Trong price_by_duration: key = số ngày sử dụng, value = giá bán (VNĐ).',
     category: 'order',
     auth: 'x_api_key',
     responses: {
@@ -197,12 +197,13 @@ export const apiEndpoints: ApiEndpoint[] = [
   "data": [
     {
       "id": 1,
+      "code": "proxy-vn-rotate-30d",
       "name": "Proxy Xoay VN",
       "type": 1,
       "price_by_duration": [
-        { "days": 1, "price": 5000 },
-        { "days": 7, "price": 25000 },
-        { "days": 30, "price": 80000 }
+        { "key": "1", "value": 5000 },    // 1 ngày = 5,000đ
+        { "key": "7", "value": 25000 },   // 7 ngày = 25,000đ
+        { "key": "30", "value": 80000 }   // 30 ngày = 80,000đ
       ],
       "country": "VN"
     }

@@ -1,6 +1,15 @@
 import { siteConfig } from '@/configs/siteConfig'
 import type { BrandingSettings } from '@/hooks/apis/useBrandingSettings'
 
+// Resolve relative path → full URL dùng API domain (server-side)
+function resolveAssetUrl(path: string | null | undefined): string {
+  if (!path) return ''
+  if (path.startsWith('http')) return path
+  const apiBase = (process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || '').replace(/\/api\/?$/, '')
+
+  return apiBase ? `${apiBase}${path}` : path
+}
+
 /**
  * Fetch branding settings server-side (cho generateMetadata + layout).
  *
@@ -24,7 +33,14 @@ export async function getServerBranding(): Promise<BrandingSettings> {
     const json = await res.json()
 
     if (json?.success && json?.data) {
-      return json.data
+      const data = json.data
+
+      // Resolve relative paths → full URLs
+      data.logo_url = resolveAssetUrl(data.logo_url)
+      data.favicon_url = resolveAssetUrl(data.favicon_url)
+      data.og_image_url = resolveAssetUrl(data.og_image_url)
+
+      return data
     }
   } catch (e) {
     console.error('[getServerBranding] Failed:', e)

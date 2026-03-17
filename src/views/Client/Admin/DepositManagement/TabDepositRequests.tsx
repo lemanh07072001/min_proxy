@@ -4,7 +4,7 @@ import { useCallback, useMemo, useState } from 'react'
 
 import {
   Search, X, Clock3, CheckCircle2, XCircle, AlertTriangle,
-  Ban, Eye, CalendarDays
+  Ban, Eye, CalendarDays, CircleDollarSign
 } from 'lucide-react'
 import {
   useReactTable, getCoreRowModel, flexRender, type ColumnDef
@@ -16,10 +16,17 @@ import Button from '@mui/material/Button'
 import IconButton from '@mui/material/IconButton'
 import Pagination from '@mui/material/Pagination'
 
+import Dialog from '@mui/material/Dialog'
+import DialogTitle from '@mui/material/DialogTitle'
+import DialogContent from '@mui/material/DialogContent'
+import DialogActions from '@mui/material/DialogActions'
+import TextField from '@mui/material/TextField'
+import { toast } from 'react-toastify'
+
 import CustomTextField from '@/@core/components/mui/TextField'
 import useMediaQuery from '@/@menu/hooks/useMediaQuery'
 import { formatDateTimeLocal } from '@/utils/formatDate'
-import { useAdminDeposits } from '@/hooks/apis/useDepositManagement'
+import { useAdminDeposits, useAdminCreditDeposit } from '@/hooks/apis/useDepositManagement'
 import InvestigationDrawer from './InvestigationDrawer'
 
 /* ── Helpers ── */
@@ -106,6 +113,11 @@ export default function TabDepositRequests() {
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [drawerBankAutoId, setDrawerBankAutoId] = useState<number | null>(null)
   const [drawerHeaderInfo, setDrawerHeaderInfo] = useState<any>(null)
+
+  // Credit dialog
+  const [creditDialog, setCreditDialog] = useState<{ open: boolean; record: any }>({ open: false, record: null })
+  const [creditNote, setCreditNote] = useState('')
+  const creditMutation = useAdminCreditDeposit()
 
   // Build params
   const dateRange = useMemo(() => getDatePreset(datePreset), [datePreset])
@@ -228,14 +240,35 @@ export default function TabDepositRequests() {
     {
       id: 'actions',
       header: '',
-      size: 50,
-      cell: ({ row }) => (
-        <Tooltip title='Điều tra'>
-          <IconButton size='small' onClick={() => openInvestigation(row.original)}>
-            <Eye size={16} />
-          </IconButton>
-        </Tooltip>
-      )
+      size: 90,
+      cell: ({ row }) => {
+        const r = row.original
+        const canCredit = r.status === 'expired' || r.status === 'pending'
+
+        return (
+          <div style={{ display: 'flex', gap: 4 }}>
+            <Tooltip title='Điều tra'>
+              <IconButton size='small' onClick={() => openInvestigation(r)}>
+                <Eye size={16} />
+              </IconButton>
+            </Tooltip>
+            {canCredit && (
+              <Tooltip title='Cộng tiền thủ công'>
+                <IconButton
+                  size='small'
+                  color='success'
+                  onClick={() => {
+                    setCreditDialog({ open: true, record: r })
+                    setCreditNote(r.status === 'expired' ? 'Admin nạp tiền thủ công do lệnh hết hạn' : '')
+                  }}
+                >
+                  <CircleDollarSign size={16} />
+                </IconButton>
+              </Tooltip>
+            )}
+          </div>
+        )
+      }
     }
   ], [openInvestigation])
 
@@ -393,6 +426,74 @@ export default function TabDepositRequests() {
         sourceId={drawerBankAutoId}
         headerInfo={drawerHeaderInfo}
       />
+
+      {/* Credit Confirm Dialog */}
+      <Dialog open={creditDialog.open} onClose={() => setCreditDialog({ open: false, record: null })} maxWidth='sm' fullWidth>
+        <DialogTitle sx={{ fontWeight: 700, fontSize: '16px' }}>
+          Xác nhận cộng tiền thủ công
+        </DialogTitle>
+        <DialogContent>
+          {creditDialog.record && (
+            <div style={{ marginBottom: 16 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 16px', fontSize: 13, color: '#475569', marginBottom: 16, background: '#f8fafc', padding: 12, borderRadius: 8 }}>
+                <div><strong>Khách hàng:</strong> {creditDialog.record.user?.name || '—'}</div>
+                <div><strong>Email:</strong> {creditDialog.record.user?.email || '—'}</div>
+                <div><strong>Số tiền:</strong> <span style={{ color: '#16a34a', fontWeight: 700 }}>{fmtMoney(creditDialog.record.amount || 0)}đ</span></div>
+                <div><strong>Trạng thái hiện tại:</strong> {statusConfig[creditDialog.record.status]?.label || creditDialog.record.status}</div>
+                <div><strong>Mã GD:</strong> <span style={{ fontFamily: 'monospace', fontSize: 12 }}>{creditDialog.record.transaction_code || '—'}</span></div>
+                <div><strong>Tạo lúc:</strong> {creditDialog.record.created_at ? formatDateTimeLocal(creditDialog.record.created_at) : '—'}</div>
+              </div>
+              <TextField
+                fullWidth
+                multiline
+                minRows={2}
+                maxRows={4}
+                label='Ghi chú admin (lý do cộng tiền)'
+                placeholder='VD: Webhook trả muộn, đã xác nhận chuyển khoản qua sao kê ngân hàng'
+                value={creditNote}
+                onChange={e => setCreditNote(e.target.value)}
+                size='small'
+              />
+            </div>
+          )}
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button
+            variant='outlined'
+            color='inherit'
+            onClick={() => setCreditDialog({ open: false, record: null })}
+          >
+            Hủy
+          </Button>
+          <Button
+            variant='contained'
+            color='success'
+            disabled={creditMutation.isPending}
+            onClick={() => {
+              if (!creditDialog.record) return
+
+              creditMutation.mutate(
+                { id: creditDialog.record.id, adminNote: creditNote || undefined },
+                {
+                  onSuccess: (data) => {
+                    if (data?.success) {
+                      toast.success(`Đã cộng ${fmtMoney(creditDialog.record.amount)}đ cho ${creditDialog.record.user?.name || 'user'}`)
+                      setCreditDialog({ open: false, record: null })
+                    } else {
+                      toast.error(data?.message || 'Cộng tiền thất bại')
+                    }
+                  },
+                  onError: (err: any) => {
+                    toast.error(err?.response?.data?.message || 'Lỗi hệ thống')
+                  }
+                }
+              )
+            }}
+          >
+            {creditMutation.isPending ? 'Đang xử lý...' : 'Xác nhận cộng tiền'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   )
 }

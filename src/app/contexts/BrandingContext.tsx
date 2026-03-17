@@ -5,6 +5,16 @@ import { createContext, useContext, useEffect, useMemo } from 'react'
 import { siteConfig } from '@/configs/siteConfig'
 import { useBrandingSettings, type SiteMode, type BrandingSettings } from '@/hooks/apis/useBrandingSettings'
 
+// Resolve relative path → full URL dùng API domain
+// /uploads/branding/xxx.png → https://api.domain.com/uploads/branding/xxx.png
+function resolveAssetUrl(path: string | null | undefined): string {
+  if (!path) return ''
+  if (path.startsWith('http')) return path
+  const apiBase = (process.env.NEXT_PUBLIC_API_URL || '').replace(/\/api\/?$/, '')
+
+  return apiBase ? `${apiBase}${path}` : path
+}
+
 interface BrandingContextValue extends Omit<BrandingSettings, 'site_mode'> {
   name: string
   description: string
@@ -82,8 +92,8 @@ export function BrandingProvider({ children }: { children: React.ReactNode }) {
   const branding = useMemo<BrandingContextValue>(() => ({
     name: data?.site_name || '',
     description: data?.site_description || '',
-    logo: data?.logo_url || '',
-    favicon: data?.favicon_url || '',
+    logo: resolveAssetUrl(data?.logo_url),
+    favicon: resolveAssetUrl(data?.favicon_url),
     primaryColor: data?.primary_color || siteConfig.primaryColor,
     primaryHover: data?.primary_hover || siteConfig.primaryHover,
     primaryGradient: data?.primary_gradient || siteConfig.primaryGradient,
