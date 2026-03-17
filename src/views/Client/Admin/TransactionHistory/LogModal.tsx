@@ -128,10 +128,21 @@ export default function LogModal({
                           <p className='text-sm text-gray-700 mt-1'>{log.message}</p>
                         )}
 
+                        {/* Order meta — service, provider, giá, số lượng */}
+                        {log.context?.service_name && (
+                          <div className='flex flex-wrap gap-x-3 gap-y-0.5 mt-1 text-xs text-gray-500'>
+                            <span>{log.context.service_name}</span>
+                            {log.context.provider_name && <span>NCC: {log.context.provider_name}</span>}
+                            {log.context.quantity && <span>SL: {log.context.quantity}</span>}
+                            {log.context.total_amount != null && <span>{Number(log.context.total_amount).toLocaleString()}đ</span>}
+                            {log.context.time_days && <span>{log.context.time_days} ngày</span>}
+                          </div>
+                        )}
+
                         <p className='text-xs text-gray-400 mt-1'>
                           {log.created_at ? formatDateTimeLocal(log.created_at) : '—'}
                           {log.provider_code && <span className='ml-2'>NCC: {log.provider_code}</span>}
-                          {log.retry_count != null && <span className='ml-2'>Retry: {log.retry_count}</span>}
+                          {log.retry_count != null && log.retry_count > 0 && <span className='ml-2'>Retry: {log.retry_count}</span>}
                         </p>
 
                         {/* Request payload — từ request_body hoặc context.request_params */}
@@ -177,7 +188,7 @@ export default function LogModal({
                         {/* Context — ẩn các key đã hiển thị ở trên */}
                         {(() => {
                           if (!log.context || typeof log.context !== 'object') return null
-                          const { request_params, response, duration_ms, ...rest } = log.context
+                          const { request_params, response, duration_ms, service_name, service_code, provider_name, provider_code, quantity, price_per_unit, total_amount, proxy_type, time_days, ...rest } = log.context
                           if (Object.keys(rest).length === 0) return null
                           return (
                             <details className='mt-2'>
