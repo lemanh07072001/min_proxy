@@ -1,7 +1,11 @@
 /* Toast luôn hiện trên MUI Dialog/Modal (z-index 1300) */
+.Toastify,
+.Toastify__toast-container {
+  z-index: 2147483647 !important; /* max z-index — luôn trên cùng */
+}
+
 .Toastify {
   position: fixed !important;
-  z-index: 99999 !important;
   top: 0;
   left: 0;
   width: 100%;
@@ -9,7 +13,6 @@
 }
 
 .Toastify__toast-container {
-  z-index: 99999 !important;
   pointer-events: auto;
 }
 
