@@ -440,7 +440,7 @@ return
         {/* Header: title + tags */}
         <div className='plan-header'>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
-            <h3 className='plan-title' style={{ textAlign: 'left', flex: 1 }}>{plan.title} <span style={{ fontSize: '11px', fontWeight: 500, color: '#94a3b8' }}>#{plan.id}</span></h3>
+            <h3 className='plan-title' style={{ textAlign: 'left', flex: 1 }}>{plan.title} <span style={{ fontFamily: 'monospace', fontSize: '11px', fontWeight: 500, color: '#94a3b8' }}>{plan.id}#{plan.code || ''}</span></h3>
             {visibleTags.length > 0 && (
               <div style={{ display: 'flex', gap: '4px', flexShrink: 0 }}>
                 {visibleTags.map((tag: string, i: number) => {
