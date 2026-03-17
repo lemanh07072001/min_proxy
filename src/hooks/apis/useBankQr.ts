@@ -100,12 +100,15 @@ export const usePendingBankQr = (enabled: boolean = true, activePolling: boolean
 
       const hasPending = !!query.state.data?.data
 
+      // Trang nạp tiền: poll 5s khi pending
       if (activePolling && hasPending) return 5000
 
-      return hasPending ? 30000 : 60000
+      // Navbar: chỉ poll khi CÓ pending (30s), KHÔNG poll khi rỗng
+      return hasPending ? 30000 : false
     },
     refetchOnMount: true,
     refetchOnWindowFocus: true,
-    staleTime: 10000
+    refetchIntervalInBackground: false,
+    staleTime: 30000
   })
 }

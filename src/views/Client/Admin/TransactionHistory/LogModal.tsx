@@ -150,7 +150,7 @@ export default function LogModal({
                           const reqData = log.request_body ?? log.context?.request_params
                           if (!reqData || (typeof reqData === 'object' && Object.keys(reqData).length === 0)) return null
                           return (
-                            <details className='mt-2'>
+                            <details className='mt-2' open>
                               <summary className='text-xs text-blue-500 cursor-pointer hover:text-blue-700 font-medium'>
                                 Request payload
                               </summary>
@@ -174,7 +174,7 @@ export default function LogModal({
                             formatted = JSON.stringify(resData, null, 2)
                           }
                           return (
-                            <details className='mt-2' open={isError}>
+                            <details className='mt-2' open>
                               <summary className={`text-xs cursor-pointer font-medium ${isError ? 'text-red-500 hover:text-red-700' : 'text-green-500 hover:text-green-700'}`}>
                                 Response {durationMs ? `(${durationMs}ms)` : ''}
                               </summary>
