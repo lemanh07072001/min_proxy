@@ -34,6 +34,11 @@ const theme = (settings: Settings, mode: SystemMode, direction: Theme['direction
         xl: 10
       }
     },
+    zIndex: {
+      modal: 1200,
+      snackbar: 1400,
+      tooltip: 1500,
+    },
     shadows: shadows(mode),
     typography: typography(public_sans.style.fontFamily),
     customShadows: customShadows(mode),

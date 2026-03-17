@@ -498,7 +498,7 @@ return { values: {}, errors: formattedErrors }
 
   return (
     <>
-      <Dialog open={open} onClose={onClose} maxWidth='xl' fullWidth PaperProps={{ sx: { maxHeight: '92vh' } }} sx={{ '&.MuiModal-root': { zIndex: 1200 } }}>
+      <Dialog open={open} onClose={onClose} maxWidth='xl' fullWidth PaperProps={{ sx: { maxHeight: '92vh' } }}>
         <DialogTitle
           sx={{
             background: 'var(--primary-gradient, linear-gradient(135deg, #F88A4B 0%, #F6734B 100%))',

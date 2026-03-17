@@ -106,8 +106,19 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
         ? JSON.parse(serviceData.metadata || '{}')
         : (serviceData.metadata || {})
 
-      setSelectedSupplierId(meta.supplier_product_id || null)
-      setSelectedSupplierCode(meta.supplier_product_code || null)
+      const supplierId = meta.supplier_product_id || null
+      let supplierCode = meta.supplier_product_code || null
+
+      setSelectedSupplierId(supplierId)
+
+      // Nếu chưa có code trong metadata, tìm từ danh sách supplier products
+      if (!supplierCode && supplierId && allSupplierProducts.length > 0) {
+        const found = allSupplierProducts.find(p => p.supplier_id === supplierId)
+
+        supplierCode = found?.supplier_code || null
+      }
+
+      setSelectedSupplierCode(supplierCode)
 
       // Parse price_by_duration
       let prices = serviceData.price_by_duration
@@ -151,7 +162,7 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
         concurrent_connections: serviceData.concurrent_connections?.toString() || '',
       })
     }
-  }, [serviceData, isEditMode, reset])
+  }, [serviceData, isEditMode, reset, allSupplierProducts])
 
   // When selecting a supplier product (new import)
   useEffect(() => {
@@ -337,7 +348,7 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
   )
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth='lg' fullWidth closeAfterTransition={false} sx={{ '&.MuiModal-root': { zIndex: 1200 } }}>
+    <Dialog open={open} onClose={onClose} maxWidth='lg' fullWidth closeAfterTransition={false}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 20px', borderBottom: '1px solid #e5e7eb' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
