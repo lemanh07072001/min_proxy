@@ -613,7 +613,7 @@ return { values: {}, errors: formattedErrors }
                   <span style={{ fontSize: '13px', fontWeight: 700, color: '#1e293b' }}>Thông tin cơ bản</span>
                 </div>
               <Grid2 container spacing={1}>
-                <Grid2 size={{ xs: 12, sm: 4 }}>
+                <Grid2 size={{ xs: 12, sm: 3 }}>
                   <Controller
                     name='name'
                     control={control}
@@ -626,6 +626,22 @@ return { values: {}, errors: formattedErrors }
                         placeholder='Proxy Xoay VN SV1'
                         error={!!errors.name}
                         helperText={errors.name?.message}
+                      />
+                    )}
+                  />
+                </Grid2>
+
+                <Grid2 size={{ xs: 6, sm: 3 }}>
+                  <Controller
+                    name='code'
+                    control={control}
+                    render={({ field }) => (
+                      <CustomTextField
+                        {...field}
+                        fullWidth
+                        label='Mã sản phẩm (Code)'
+                        placeholder='Để trống tự tạo'
+                        helperText={serviceId ? `ID: ${serviceId}` : 'Site con dùng code này để mua hàng'}
                       />
                     )}
                   />
@@ -1023,22 +1039,6 @@ return <Chip key={val} label={p?.label || val} size='small' />
                         control={control}
                         render={({ field }) => (
                           <CustomTextField {...field} fullWidth label='API Endpoint' placeholder='URL đối tác' />
-                        )}
-                      />
-                    </Grid2>
-
-                    <Grid2 size={{ xs: 6, sm: 4 }}>
-                      <Controller
-                        name='code'
-                        control={control}
-                        render={({ field }) => (
-                          <CustomTextField
-                            {...field}
-                            fullWidth
-                            label='Mã sản phẩm (Code)'
-                            placeholder='VD: proxy-vn-rotate-30d'
-                            helperText='Định danh duy nhất, dùng khi site con mua hàng. Để trống sẽ tự tạo.'
-                          />
                         )}
                       />
                     </Grid2>

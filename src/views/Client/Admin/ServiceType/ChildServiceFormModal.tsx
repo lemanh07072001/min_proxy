@@ -72,6 +72,7 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
   const { control, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm({
     defaultValues: {
       name: '',
+      code: '',
       status: 'active',
       type: '0',
       ip_version: 'ipv4',
@@ -129,6 +130,7 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
 
       reset({
         name: serviceData.name || '',
+        code: serviceData.code || '',
         status: serviceData.status || 'active',
         type: serviceData.type?.toString() || '0',
         ip_version: serviceData.ip_version?.toLowerCase() || 'ipv4',
@@ -407,9 +409,29 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
                 </div>
               )}
 
-              {/* Tên + trạng thái */}
+              {/* Phân biệt code site mẹ vs site con */}
+              {(selectedSupplierCode || (isEditMode && selectedSupplierId)) && (
+                <div style={{ display: 'flex', gap: 12, marginBottom: 8 }}>
+                  <div style={{ flex: 1, padding: '8px 12px', borderRadius: 8, background: '#eff6ff', border: '1px solid #bfdbfe', fontSize: 13 }}>
+                    <div style={{ color: '#6b7280', fontSize: 11, fontWeight: 600, marginBottom: 2 }}>Code site mẹ (nhà cung cấp)</div>
+                    <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#1d4ed8' }}>
+                      {selectedSupplierId ? `${selectedSupplierId}#` : ''}{selectedSupplierCode || 'chưa có'}
+                    </span>
+                  </div>
+                  {isEditMode && (
+                    <div style={{ flex: 1, padding: '8px 12px', borderRadius: 8, background: '#f0fdf4', border: '1px solid #bbf7d0', fontSize: 13 }}>
+                      <div style={{ color: '#6b7280', fontSize: 11, fontWeight: 600, marginBottom: 2 }}>Code site con (của bạn)</div>
+                      <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#15803d' }}>
+                        {serviceId ? `${serviceId}#` : ''}{watchAll.code || serviceData?.code || 'chưa có'}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Tên + Code site con + trạng thái */}
               <Grid2 container spacing={1.5}>
-                <Grid2 size={{ xs: 8 }}>
+                <Grid2 size={{ xs: 5 }}>
                   <Controller
                     name='name'
                     control={control}
@@ -419,6 +441,21 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
                   />
                 </Grid2>
                 <Grid2 size={{ xs: 4 }}>
+                  <Controller
+                    name='code'
+                    control={control}
+                    render={({ field }) => (
+                      <CustomTextField
+                        {...field}
+                        fullWidth
+                        label='Code site con'
+                        placeholder='Để trống sẽ tự tạo'
+                        helperText='Mã riêng của bạn, khác với code site mẹ'
+                      />
+                    )}
+                  />
+                </Grid2>
+                <Grid2 size={{ xs: 3 }}>
                   <Controller
                     name='status'
                     control={control}
