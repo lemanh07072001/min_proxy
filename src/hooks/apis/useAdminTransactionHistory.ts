@@ -40,6 +40,8 @@ export const useAdminTransactionHistory = (params: AdminTransactionParams = {}, 
     enabled,
     staleTime: 10 * 1000,
     refetchOnWindowFocus: true,
+    refetchIntervalInBackground: false,
+    placeholderData: (prev) => prev,
     refetchInterval: (query) => {
       if (!isTabVisible) return false
 
@@ -49,7 +51,7 @@ export const useAdminTransactionHistory = (params: AdminTransactionParams = {}, 
 
       const hasPending = records.some((r: any) => [0, 1, 9, 10].includes(Number(r.order?.status)))
 
-      return hasPending ? 10000 : false
+      return hasPending ? 15_000 : false
     }
   })
 }

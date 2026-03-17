@@ -43,12 +43,13 @@ export const useCancelOrder = () => {
     mutationFn: async (orderId: number) => {
       const res = await axiosAuth.post(`/cancel-order/${orderId}`)
 
-      
+
 return res?.data
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['orderProxyStatic'] })
       queryClient.invalidateQueries({ queryKey: ['userOrders'] })
+      queryClient.invalidateQueries({ queryKey: ['adminTransactionHistory'] })
     }
   })
 }
@@ -62,12 +63,13 @@ export const useResendOrder = () => {
     mutationFn: async (orderId: number) => {
       const res = await axiosAuth.post(`/resend-order/${orderId}`)
 
-      
+
 return res?.data
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['orderProxyStatic'] })
       queryClient.invalidateQueries({ queryKey: ['userOrders'] })
+      queryClient.invalidateQueries({ queryKey: ['adminTransactionHistory'] })
     }
   })
 }
