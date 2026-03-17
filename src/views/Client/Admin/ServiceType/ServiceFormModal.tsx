@@ -606,19 +606,20 @@ return { values: {}, errors: formattedErrors }
               </Collapse>
 
               {/* Inline success alert */}
-              <Collapse in={!!formSuccess}>
-                <Alert
-                  severity='success'
-                  action={
-                    <IconButton size='small' color='inherit' onClick={() => setFormSuccess('')}>
-                      <X size={16} />
-                    </IconButton>
-                  }
-                  sx={{ mb: 2, borderRadius: '8px', border: '1px solid #bbf7d0' }}
+              {formSuccess && (
+                <div
+                  data-form-alert
+                  style={{
+                    marginBottom: 16, padding: '12px 16px', borderRadius: 8,
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
+                    fontSize: 14, fontWeight: 600, animation: 'fadeIn 0.3s ease',
+                    background: '#f0fdf4', border: '1px solid #bbf7d0', color: '#15803d',
+                  }}
                 >
-                  {formSuccess}
-                </Alert>
-              </Collapse>
+                  <span>✓ {formSuccess}</span>
+                  <button onClick={() => setFormSuccess('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'inherit', fontSize: 18, padding: '0 4px', lineHeight: 1 }}>×</button>
+                </div>
+              )}
 
               {/* ========== Section 1: Thông tin cơ bản ========== */}
               <div style={{ background: '#fafbfc', borderRadius: '10px', padding: '14px 16px', marginBottom: '14px', border: '1px solid #f1f5f9' }}>
