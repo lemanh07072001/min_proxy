@@ -111,10 +111,12 @@ export default function LogModal({
                             </span>
                           )}
                           {log.duration_ms != null && (
-                            <span className='text-xs text-gray-400'>{log.duration_ms}ms</span>
+                            <span className={`text-xs font-mono px-1.5 py-0.5 rounded ${log.duration_ms > 3000 ? 'bg-red-50 text-red-500' : log.duration_ms > 1000 ? 'bg-yellow-50 text-yellow-600' : 'bg-gray-50 text-gray-500'}`}>
+                              {log.duration_ms}ms
+                            </span>
                           )}
                           {log.http_status != null && (
-                            <span className={`text-xs ${log.http_status >= 200 && log.http_status < 300 ? 'text-green-500' : 'text-red-500'}`}>
+                            <span className={`text-xs font-mono px-1.5 py-0.5 rounded ${log.http_status >= 200 && log.http_status < 300 ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-500'}`}>
                               HTTP {log.http_status}
                             </span>
                           )}
@@ -130,17 +132,39 @@ export default function LogModal({
                           {log.retry_count != null && <span className='ml-2'>Retry: {log.retry_count}</span>}
                         </p>
 
-                        {log.context && Object.keys(log.context).length > 0 && (
-                          <div className='mt-2 p-2 bg-gray-50 rounded text-xs text-gray-600 font-mono'>
-                            {JSON.stringify(log.context, null, 2)}
-                          </div>
+                        {/* Request payload */}
+                        {log.request_body && Object.keys(log.request_body).length > 0 && (
+                          <details className='mt-2'>
+                            <summary className='text-xs text-blue-500 cursor-pointer hover:text-blue-700 font-medium'>
+                              Request payload
+                            </summary>
+                            <div className='mt-1 p-2 bg-slate-900 rounded text-xs text-blue-300 font-mono whitespace-pre-wrap max-h-40 overflow-y-auto'>
+                              {typeof log.request_body === 'string' ? log.request_body : JSON.stringify(log.request_body, null, 2)}
+                            </div>
+                          </details>
                         )}
 
+                        {/* Response body */}
                         {log.response_body && (
                           <details className='mt-2'>
-                            <summary className='text-xs text-gray-400 cursor-pointer hover:text-gray-600'>Response body</summary>
-                            <div className='mt-1 p-2 bg-gray-900 rounded text-xs text-green-400 font-mono whitespace-pre-wrap max-h-32 overflow-y-auto'>
-                              {log.response_body}
+                            <summary className={`text-xs cursor-pointer font-medium ${log.action === 'api_call_error' ? 'text-red-500 hover:text-red-700' : 'text-green-500 hover:text-green-700'}`}>
+                              Response {log.duration_ms ? `(${log.duration_ms}ms)` : ''}
+                            </summary>
+                            <div className={`mt-1 p-2 bg-slate-900 rounded text-xs font-mono whitespace-pre-wrap max-h-40 overflow-y-auto ${log.action === 'api_call_error' ? 'text-red-300' : 'text-green-300'}`}>
+                              {typeof log.response_body === 'string'
+                                ? (() => { try { return JSON.stringify(JSON.parse(log.response_body), null, 2) } catch { return log.response_body } })()
+                                : JSON.stringify(log.response_body, null, 2)
+                              }
+                            </div>
+                          </details>
+                        )}
+
+                        {/* Context */}
+                        {log.context && Object.keys(log.context).length > 0 && (
+                          <details className='mt-2'>
+                            <summary className='text-xs text-gray-400 cursor-pointer hover:text-gray-600 font-medium'>Context</summary>
+                            <div className='mt-1 p-2 bg-gray-50 rounded text-xs text-gray-600 font-mono whitespace-pre-wrap max-h-32 overflow-y-auto'>
+                              {JSON.stringify(log.context, null, 2)}
                             </div>
                           </details>
                         )}

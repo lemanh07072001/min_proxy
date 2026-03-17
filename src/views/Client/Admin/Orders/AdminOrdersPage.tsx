@@ -20,7 +20,8 @@ import {
   TrendingUp,
   Package,
   X,
-  PlusCircle
+  PlusCircle,
+  RotateCcw
 } from 'lucide-react'
 
 import {
@@ -57,7 +58,7 @@ import { formatDateTimeLocal } from '@/utils/formatDate'
 import { useAdminOrders } from '@/hooks/apis/useOrderReport'
 import { useCancelOrder, useResendOrder } from '@/hooks/apis/useOrders'
 import { useProviders } from '@/hooks/apis/useProviders'
-import { useRetryPartial, useRefundPartial } from '@/hooks/apis/useTickets'
+import { useRetryPartial, useRefundPartial, useRetryOrder } from '@/hooks/apis/useTickets'
 import OrderDetailModal from '@/views/Client/Admin/TransactionHistory/OrderDetailModal'
 import FillProxiesDialog from '@/views/Client/Admin/Orders/FillProxiesDialog'
 
@@ -166,6 +167,7 @@ export default function AdminOrdersPage() {
 
   // Partial orders state
   const [retryOrder, setRetryOrder] = useState<any>(null)
+  const [retryFailedOrder, setRetryFailedOrder] = useState<any>(null)
   const [refundOrder, setRefundOrder] = useState<any>(null)
   const [fillProxiesOrder, setFillProxiesOrder] = useState<any>(null)
 
@@ -186,6 +188,7 @@ export default function AdminOrdersPage() {
   )
 
   const retryMutation = useRetryPartial()
+  const retryFailedMutation = useRetryOrder()
   const refundMutation = useRefundPartial()
 
   const { data: providers = [] } = useProviders()
@@ -526,6 +529,14 @@ return (
                     </IconButton>
                   </Tooltip>
                 </>
+              )}
+              {/* Retry cho order failed hoặc stuck */}
+              {(status === 5 || (status === 0 && order.retry >= 3)) && (
+                <Tooltip title='Thử lại đơn hàng'>
+                  <IconButton size='small' color='warning' onClick={() => setRetryFailedOrder(order)}>
+                    <RotateCcw size={16} />
+                  </IconButton>
+                </Tooltip>
               )}
               {status === 3 && (
                 <>
@@ -923,6 +934,40 @@ return (
             sx={{ color: '#fff' }}
           >
             {retryMutation.isPending ? <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} /> : 'Xác nhận mua bù'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Retry Failed Order Dialog */}
+      <Dialog open={!!retryFailedOrder} onClose={() => setRetryFailedOrder(null)}>
+        <DialogTitle>Thử lại đơn hàng</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Reset đơn <strong>#{retryFailedOrder?.order_code}</strong> về pending và đẩy lại vào queue xử lý?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setRetryFailedOrder(null)} color='inherit'>Hủy</Button>
+          <Button
+            onClick={() => {
+              if (!retryFailedOrder) return
+
+              retryFailedMutation.mutate(retryFailedOrder.id, {
+                onSuccess: (data: any) => {
+                  toast.success(data?.message || 'Đã đẩy lại đơn hàng')
+                  setRetryFailedOrder(null)
+                },
+                onError: (err: any) => {
+                  toast.error(err?.response?.data?.message || 'Lỗi khi retry')
+                }
+              })
+            }}
+            color='warning'
+            variant='contained'
+            disabled={retryFailedMutation.isPending}
+            sx={{ color: '#fff' }}
+          >
+            {retryFailedMutation.isPending ? <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} /> : 'Xác nhận thử lại'}
           </Button>
         </DialogActions>
       </Dialog>

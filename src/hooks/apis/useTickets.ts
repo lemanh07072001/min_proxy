@@ -89,6 +89,23 @@ return res.data
   })
 }
 
+export const useRetryOrder = () => {
+  const axiosAuth = useAxiosAuth()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (orderId: number) => {
+      const res = await axiosAuth.post(`/admin/retry-order/${orderId}`)
+
+      return res.data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['adminOrders'] })
+      queryClient.invalidateQueries({ queryKey: ['partialOrders'] })
+    }
+  })
+}
+
 export const useRefundPartial = () => {
   const axiosAuth = useAxiosAuth()
   const queryClient = useQueryClient()
