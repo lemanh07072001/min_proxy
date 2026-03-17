@@ -49,7 +49,7 @@ const schema = yup.object({
     .transform(value => (value ? value.trim() : value))
     .required('Tên dịch vụ là bắt buộc')
     .min(1, 'Tên dịch vụ là bắt buộc'),
-  api_partner: yup
+  api_provider: yup
     .string()
     .nullable()
     .transform(value => (value ? value.trim() : value)),
@@ -129,7 +129,7 @@ export default function ServiceFormModal({ open, onClose, serviceId, initialData
   // Data fetching
   const { data: providers = [], isLoading: loadingProviders } = useProviders()
 
-  // Luôn fetch chi tiết khi edit để lấy đầy đủ field (api_partner bị hidden trong list)
+  // Luôn fetch chi tiết khi edit để lấy đầy đủ field (api_provider bị hidden trong list)
   const { data: fetchedData, isLoading: loadingService } = useServiceType(serviceId, isEditMode && open)
   const serviceData = fetchedData || initialData
   const { data: serviceTypes = [] } = useServiceTypes()
@@ -232,7 +232,7 @@ return { values: {}, errors: formattedErrors }
     mode: 'onSubmit',
     defaultValues: {
       name: '',
-      api_partner: '',
+      api_provider: '',
       cost_price: undefined,
       code: '',
       status: 'active',
@@ -309,7 +309,7 @@ return { values: {}, errors: formattedErrors }
 
       reset({
         name: serviceData.name || '',
-        api_partner: serviceData.api_partner || '',
+        api_provider: serviceData.api_provider || '',
         cost_price: serviceData.cost_price || undefined,
         code: serviceData.code || '',
         status: serviceData.status || 'active',
@@ -341,7 +341,7 @@ return { values: {}, errors: formattedErrors }
     if (open && !isEditMode) {
       reset({
         name: '',
-        api_partner: '',
+        api_provider: '',
         cost_price: undefined,
         code: '',
         status: 'active',
@@ -423,7 +423,7 @@ return { values: {}, errors: formattedErrors }
         const errors: string[] = []
 
         // Fields nằm trong Accordion "Cấu hình kỹ thuật"
-        const techFields = ['provider_id', 'api_partner', 'cost_price', 'code', 'body_api']
+        const techFields = ['provider_id', 'api_provider', 'cost_price', 'code', 'body_api']
 
         // Parse validation errors object từ Laravel → set lỗi trực tiếp vào field
         if (res?.errors && typeof res.errors === 'object') {
@@ -460,7 +460,7 @@ return { values: {}, errors: formattedErrors }
     console.error('Form validation errors:', validationErrors)
 
     // Auto mở accordion nếu lỗi ở tech fields
-    const techFields = ['provider_id', 'api_partner', 'cost_price', 'code', 'body_api']
+    const techFields = ['provider_id', 'api_provider', 'cost_price', 'code', 'body_api']
 
     if (Object.keys(validationErrors).some(f => techFields.includes(f))) setTechExpanded(true)
 
@@ -1019,7 +1019,7 @@ return <Chip key={val} label={p?.label || val} size='small' />
 
                     <Grid2 size={{ xs: 6, sm: 4 }}>
                       <Controller
-                        name='api_partner'
+                        name='api_provider'
                         control={control}
                         render={({ field }) => (
                           <CustomTextField {...field} fullWidth label='API Endpoint' placeholder='URL đối tác' />
