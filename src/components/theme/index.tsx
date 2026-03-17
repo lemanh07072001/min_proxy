@@ -84,6 +84,11 @@ const CustomThemeProvider = (props: Props) => {
       },
       cssVariables: {
         colorSchemeSelector: 'data'
+      },
+      zIndex: {
+        modal: 1200,    // Dialog/Modal — thấp hơn toast
+        snackbar: 1400,
+        tooltip: 1500,
       }
     }
 

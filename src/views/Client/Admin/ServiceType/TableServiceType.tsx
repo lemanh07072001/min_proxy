@@ -449,10 +449,9 @@ return (
               <Button
                 onClick={handleOpenCreate}
                 variant='contained'
-                color='primary'
-                className='text-white'
                 size='small'
                 startIcon={<SquarePlus size={16} />}
+                sx={{ background: 'var(--primary-gradient, linear-gradient(45deg, #FC4336, #F88A4B))', color: '#fff', '&:hover': { opacity: 0.9 } }}
               >
                 Thêm dịch vụ
               </Button>
@@ -483,9 +482,9 @@ return (
                   style={{
                     padding: '6px 14px', fontSize: '13px', fontWeight: filterType === opt.value ? 600 : 500,
                     borderRadius: '6px',
-                    border: `1px solid ${filterType === opt.value ? 'var(--mui-palette-primary-main, #7c3aed)' : '#e2e8f0'}`,
-                    background: filterType === opt.value ? 'var(--mui-palette-primary-lightOpacity, rgba(124, 58, 237, 0.08))' : 'white',
-                    color: filterType === opt.value ? 'var(--mui-palette-primary-main, #7c3aed)' : '#64748b',
+                    border: `1px solid ${filterType === opt.value ? 'var(--primary-hover, #e63946)' : '#e2e8f0'}`,
+                    background: filterType === opt.value ? 'color-mix(in srgb, var(--primary-hover, #e63946) 10%, white)' : 'white',
+                    color: filterType === opt.value ? 'var(--primary-hover, #e63946)' : '#64748b',
                     cursor: 'pointer', transition: 'all 0.2s'
                   }}
                 >

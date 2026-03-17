@@ -19,7 +19,7 @@ import {
   X, Save, Loader2, Package, Info,
   MapPin, Shield, Wifi, Zap, Users, RefreshCw, Clock, Globe, ShoppingCart
 } from 'lucide-react'
-import { toast } from 'react-toastify'
+// Inline alert thay toast trong modal — tránh z-index conflict
 import { useForm, Controller } from 'react-hook-form'
 
 import CustomTextField from '@/@core/components/mui/TextField'
@@ -52,6 +52,7 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
   // State
   const [selectedSupplierId, setSelectedSupplierId] = useState<number | null>(null)
   const [selectedSupplierCode, setSelectedSupplierCode] = useState<string | null>(null)
+  const [formAlert, setFormAlert] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
   const [priceFields, setPriceFields] = useState<Array<{ key: string; value: string; cost: string }>>([])
 
   // All supplier products (imported + available)
@@ -69,7 +70,7 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
   }, [selectedSupplierId, allSupplierProducts])
 
   // Form
-  const { control, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm({
+  const { control, handleSubmit, reset, setValue, watch, setError, formState: { errors } } = useForm({
     defaultValues: {
       name: '',
       code: '',
@@ -189,17 +190,21 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
     )
   }, [selectedProduct, isEditMode, setValue])
 
-  // Reset when open for create
+  // Reset when modal opens
   useEffect(() => {
+    setFormAlert(null)
+
     if (open && !isEditMode) {
       reset({
-        name: '', status: 'active', type: '0', ip_version: 'ipv4',
+        name: '', code: '', status: 'active', type: '0', ip_version: 'ipv4',
         proxy_type: 'residential',
         protocols: [], country: '', note: '', tag: '', is_purchasable: true,
         auth_type: '', bandwidth: '', rotation_type: '', rotation_interval: '',
         pool_size: '', request_limit: '', concurrent_connections: '',
+        min_quantity: 1, max_quantity: 100,
       })
       setSelectedSupplierId(null)
+      setSelectedSupplierCode(null)
       setPriceFields([])
     }
   }, [open, isEditMode, reset])
@@ -254,7 +259,8 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
     const emptyPrices = priceFields.filter(p => !p.value || parseInt(p.value) <= 0)
 
     if (priceFields.length > 0 && emptyPrices.length > 0) {
-      toast.error('Vui lòng nhập giá bán cho tất cả thời gian')
+      setFormAlert({ type: 'error', message: 'Vui lòng nhập giá bán cho tất cả thời gian' })
+      document.getElementById('child-form-alert')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
 
       return
     }
@@ -265,7 +271,8 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
     if (underPriced.length > 0) {
       const label = getDurationLabel(underPriced[0].key)
 
-      toast.error(`Giá bán ${label} phải cao hơn giá nhập (${parseInt(underPriced[0].cost).toLocaleString('vi-VN')}đ)`)
+      setFormAlert({ type: 'error', message: `Giá bán ${label} phải cao hơn giá nhập (${parseInt(underPriced[0].cost).toLocaleString('vi-VN')}đ)` })
+      document.getElementById('child-form-alert')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
 
       return
     }
@@ -307,13 +314,30 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
 
     const mutation = isEditMode ? updateMutation : createMutation
 
+    setFormAlert(null)
+
     mutation.mutate(submitData, {
       onSuccess: () => {
-        toast.success(isEditMode ? 'Cập nhật thành công!' : 'Thêm sản phẩm thành công!')
-        if (!isEditMode) onClose()
+        setFormAlert({ type: 'success', message: isEditMode ? 'Cập nhật thành công!' : 'Thêm sản phẩm thành công!' })
+        document.getElementById('child-form-alert')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
       },
       onError: (error: any) => {
-        toast.error(error?.response?.data?.message || 'Có lỗi xảy ra')
+        const res = error?.response?.data
+
+        // Parse validation errors → set lỗi vào từng field
+        if (res?.errors && typeof res.errors === 'object') {
+          Object.entries(res.errors).forEach(([field, fieldErrors]: [string, any]) => {
+            const msg = Array.isArray(fieldErrors) ? fieldErrors[0] : fieldErrors
+
+            setError(field as any, { type: 'server', message: msg })
+          })
+
+          setFormAlert({ type: 'error', message: 'Vui lòng kiểm tra lại các trường bên dưới' })
+        } else {
+          setFormAlert({ type: 'error', message: res?.message || 'Có lỗi xảy ra' })
+        }
+
+        document.getElementById('child-form-alert')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
       }
     })
   }
@@ -363,6 +387,32 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
           <X size={18} />
         </IconButton>
       </div>
+
+      {/* Inline Alert — hiện trong modal, auto scroll + animation */}
+      {formAlert && (
+        <div
+          id='child-form-alert'
+          style={{
+            margin: '8px 20px 0',
+            padding: '12px 16px',
+            borderRadius: 8,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 8,
+            fontSize: 14,
+            fontWeight: 600,
+            animation: formAlert.type === 'error' ? 'shake 0.4s ease' : 'fadeIn 0.3s ease',
+            ...(formAlert.type === 'success'
+              ? { background: '#f0fdf4', border: '1px solid #bbf7d0', color: '#15803d' }
+              : { background: '#fef2f2', border: '1px solid #fecaca', color: '#dc2626' }
+            )
+          }}
+        >
+          <span>{formAlert.type === 'success' ? '✓' : '✕'} {formAlert.message}</span>
+          <button onClick={() => setFormAlert(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'inherit', fontSize: 18, padding: '0 4px', lineHeight: 1 }}>×</button>
+        </div>
+      )}
 
       <DialogContent sx={{ pt: 2.5 }}>
         {isLoading ? (
@@ -447,7 +497,9 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
                     name='name'
                     control={control}
                     render={({ field }) => (
-                      <CustomTextField {...field} fullWidth label='Tên sản phẩm' placeholder='VD: Proxy IPv4 Việt Nam' />
+                      <CustomTextField {...field} fullWidth label='Tên sản phẩm' placeholder='VD: Proxy IPv4 Việt Nam'
+                        error={!!errors.name} helperText={errors.name?.message as string}
+                      />
                     )}
                   />
                 </Grid2>
@@ -461,7 +513,8 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
                         fullWidth
                         label='Code site con'
                         placeholder='Để trống sẽ tự tạo'
-                        helperText='Mã riêng của bạn, khác với code site mẹ'
+                        error={!!errors.code}
+                        helperText={(errors.code?.message as string) || 'Mã riêng của bạn, khác với code site mẹ'}
                       />
                     )}
                   />
@@ -579,7 +632,7 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
                 name='country'
                 control={control}
                 render={({ field }) => (
-                  <CustomTextField {...field} fullWidth select label='Quốc gia'>
+                  <CustomTextField {...field} fullWidth select label='Quốc gia' error={!!errors.country} helperText={errors.country?.message as string}>
                     <MenuItem value=''><em>— Chọn —</em></MenuItem>
                     {(countries || []).map((c: any) => (
                       <MenuItem key={c.code} value={c.code.toLowerCase()}>

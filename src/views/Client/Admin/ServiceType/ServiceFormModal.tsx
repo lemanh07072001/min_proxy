@@ -145,6 +145,7 @@ export default function ServiceFormModal({ open, onClose, serviceId, initialData
   const [isPriceModalOpen, setIsPriceModalOpen] = useState(false)
   const [techExpanded, setTechExpanded] = useState(false)
   const [formErrors, setFormErrors] = useState<string[]>([])
+  const [formSuccess, setFormSuccess] = useState('')
 
   // Derive dynamic options from existing service types
   const protocols = useMemo(() => {
@@ -414,8 +415,8 @@ return { values: {}, errors: formattedErrors }
     mutation.mutate(submitData, {
       onSuccess: () => {
         setFormErrors([])
-        toast.success(isEditMode ? 'Cập nhật dịch vụ thành công!' : 'Thêm dịch vụ thành công!')
-        if (!isEditMode) onClose()
+        setFormSuccess(isEditMode ? 'Cập nhật dịch vụ thành công!' : 'Thêm dịch vụ thành công!')
+        document.getElementById('service-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
       },
       onError: (error: any) => {
         console.error('API error:', error?.response?.status, error?.response?.data || error?.message)
@@ -601,6 +602,21 @@ return { values: {}, errors: formattedErrors }
                       ))}
                     </ul>
                   )}
+                </Alert>
+              </Collapse>
+
+              {/* Inline success alert */}
+              <Collapse in={!!formSuccess}>
+                <Alert
+                  severity='success'
+                  action={
+                    <IconButton size='small' color='inherit' onClick={() => setFormSuccess('')}>
+                      <X size={16} />
+                    </IconButton>
+                  }
+                  sx={{ mb: 2, borderRadius: '8px', border: '1px solid #bbf7d0' }}
+                >
+                  {formSuccess}
                 </Alert>
               </Collapse>
 
