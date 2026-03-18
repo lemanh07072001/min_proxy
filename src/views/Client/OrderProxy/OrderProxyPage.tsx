@@ -70,7 +70,7 @@ export default function OrderProxyPage() {
     queryFn: async () => {
       const res = await axiosAuth.get('/get-order-proxy-static')
 
-      return res.data.data
+      return res?.data?.data_mongo ?? res?.data?.data ?? []
     },
     staleTime: 10 * 60 * 1000, // 10 phút - data không bị coi là stale trong 10 phút
     gcTime: 10 * 60 * 1000, // 10 phút - cache data trong 10 phút (thay thế cacheTime)

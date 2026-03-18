@@ -90,7 +90,7 @@ export default function OrderRotatingProxyPage() {
     queryFn: async () => {
       const res = await axiosAuth.get('/get-order-proxy-rotating')
 
-      return res.data.data
+      return res?.data?.data_mongo ?? res?.data?.data ?? []
     }
   })
 

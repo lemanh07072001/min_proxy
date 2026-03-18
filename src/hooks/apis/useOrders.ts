@@ -26,8 +26,8 @@ export const useApiKeys = (order_id?: string | number, enabled: boolean = true) 
     queryFn: async () => {
       const res = await axiosAuth.get(`/get-key-proxy/${order_id}`)
 
-      
-return res?.data?.data ?? []
+      // MongoDB order_items trước, fallback MySQL api_keys
+      return res?.data?.data_mongo ?? res?.data?.data ?? []
     },
     enabled: !!order_id && enabled,
     refetchOnWindowFocus: false,
