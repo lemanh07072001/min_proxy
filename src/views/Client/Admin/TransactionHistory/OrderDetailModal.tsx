@@ -164,7 +164,7 @@ return p || '-'
         header: 'Key đối tác',
         size: 160,
         cell: ({ row }: { row: any }) => {
-          const text = row.original.api_key_provider || '-'
+          const text = row.original.api_key_provider || row.original.parent_api_mapping?.supplier_api_key || '-'
           return (
             <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontFamily: 'monospace', fontSize: '11px', color: '#6366f1' }}>
               <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={text}>{text}</span>
