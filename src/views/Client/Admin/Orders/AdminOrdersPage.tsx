@@ -356,9 +356,9 @@ return {
         cell: ({ row }: { row: any }) => (
           <div>
             <span style={{ fontWeight: 600, fontSize: '13px' }}>{row.original.order_code}</span>
-            {row.original.supplier_order_code && (
+            {(row.original.provider_order_code || row.original.supplier_order_code) && (
               <div style={{ fontSize: '11px', fontFamily: 'monospace', color: '#6366f1', marginTop: 2 }} title='Mã đơn site mẹ'>
-                NCC: {row.original.supplier_order_code}
+                NCC: {row.original.provider_order_code || row.original.supplier_order_code}
               </div>
             )}
           </div>

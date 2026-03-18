@@ -80,8 +80,8 @@ export default function OrderDetailModal({ isOpen, onClose, orderData, isLoading
     const selectedRows = table.getFilteredSelectedRowModel().rows
 
     const keys = selectedRows.length > 0
-      ? selectedRows.map((r: any) => r.original.api_key || getProxyText(r.original)).join('\n')
-      : (dataApiKeys || []).map((item: any) => item.api_key || getProxyText(item)).join('\n')
+      ? selectedRows.map((r: any) => r.original.key || r.original.api_key || getProxyText(r.original)).join('\n')
+      : (dataApiKeys || []).map((item: any) => item.key || item.api_key || getProxyText(item)).join('\n')
 
     const blob = new Blob([keys], { type: 'text/plain' })
     const url = URL.createObjectURL(blob)
@@ -96,10 +96,11 @@ export default function OrderDetailModal({ isOpen, onClose, orderData, isLoading
   }
 
   const getProxyText = (item: any) => {
-    const p = item.proxys
+    // Support new `proxy` field (object with http, socks5, ip, port) and old `proxys` field
+    const p = item.proxy || item.proxys
 
-    if (p && typeof p === 'object') return p.HTTP || p.SOCK5 || '-'
-    
+    if (p && typeof p === 'object') return p.http || p.HTTP || p.socks5 || p.SOCK5 || '-'
+
 return p || '-'
   }
 
@@ -146,7 +147,7 @@ return p || '-'
         header: 'Key hệ thống',
         size: 180,
         cell: ({ row }: { row: any }) => {
-          const text = row.original.api_key || '-'
+          const text = row.original.key || row.original.api_key || '-'
           return (
             <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontFamily: 'monospace', fontSize: '11px' }}>
               <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={text}>{text}</span>
@@ -164,7 +165,7 @@ return p || '-'
         header: 'Key đối tác',
         size: 160,
         cell: ({ row }: { row: any }) => {
-          const text = row.original.api_key_provider || row.original.parent_api_mapping?.supplier_api_key || '-'
+          const text = row.original.provider_key || row.original.api_key_provider || row.original.parent_api_mapping?.supplier_api_key || '-'
           return (
             <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontFamily: 'monospace', fontSize: '11px', color: '#6366f1' }}>
               <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={text}>{text}</span>
@@ -182,7 +183,7 @@ return p || '-'
         header: 'Proxy',
         size: 200,
         cell: ({ row }: { row: any }) => {
-          const proxys = row.original.proxys
+          const proxys = row.original.proxy || row.original.proxys
           const text = getProxyText(row.original)
           const protocol = row.original.protocol || proxys?.loaiproxy || '-'
           return (
@@ -316,7 +317,7 @@ return p || '-'
                     <button
                       onClick={() => {
                         const rows = table.getFilteredSelectedRowModel().rows
-                        const keys = rows.map((r: any) => r.original.api_key || getProxyText(r.original)).join('\n')
+                        const keys = rows.map((r: any) => r.original.key || r.original.api_key || getProxyText(r.original)).join('\n')
 
                         copyToClipboard(keys, 'bulk')
                       }}

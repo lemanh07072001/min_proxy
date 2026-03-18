@@ -117,7 +117,7 @@ export default function OrderRotatingProxyPage() {
     // Filter theo loại
     if (typeFilter !== 'all') {
       filtered = filtered.filter((item: any) => {
-        const proxys = item.proxys || {}
+        const proxys = item.proxy || item.proxys || {}
         const keys = Object.keys(proxys)
         const firstKey = keys[0]?.toLowerCase()
 
@@ -304,7 +304,7 @@ export default function OrderRotatingProxyPage() {
         accessorKey: 'api_key',
         header: 'Api key',
         cell: ({ row }: { row: any }) => {
-          const api_key = row.original.api_key
+          const api_key = row.original.key || row.original.api_key
 
           return api_key ? (
             <span className='text-red-600 font-medium'>{api_key}</span>
@@ -321,7 +321,7 @@ export default function OrderRotatingProxyPage() {
         accessorKey: 'protocol',
         header: 'Loại',
         cell: ({ row }: { row: any }) => {
-          const keys = row.original.plan_type || '-'
+          const keys = row.original.type || row.original.plan_type || '-'
 
           return <div className='font-bold'>{keys}</div>
         },
@@ -377,7 +377,8 @@ export default function OrderRotatingProxyPage() {
       {
         header: 'Action',
         cell: ({ row }: { row: any }) => {
-          const isRowLoading = loadingId === row.original.api_key
+          const rowKey = row.original.key || row.original.api_key
+          const isRowLoading = loadingId === rowKey
 
           if (row.original.status === 'ACTIVE') {
             return (
@@ -386,7 +387,7 @@ export default function OrderRotatingProxyPage() {
                 color='info'
                 variant='tonal'
                 disabled={isRowLoading}
-                onClick={() => handleOpenModal(row.original?.api_key)}
+                onClick={() => handleOpenModal(rowKey)}
               >
                 {isRowLoading ? <Loader size={16} /> : <RefreshCcw size={16} />}
               </CustomIconButton>
@@ -434,7 +435,7 @@ export default function OrderRotatingProxyPage() {
     const selectedRows = table.getFilteredSelectedRowModel().rows
 
     return selectedRows.map(row => {
-      const api_key = row.original.api_key || {}
+      const api_key = row.original.key || row.original.api_key || {}
 
       return {
         id: row.original.id,

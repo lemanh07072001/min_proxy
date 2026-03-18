@@ -122,7 +122,7 @@ return days > 0 ? `${days}d ${hours}h` : `${hours}h`
         header: order?.service_type === '0' ? 'Proxy' : 'API Key',
         cell: ({ row }: { row: any }) => {
           if (order?.service_type === '0') {
-            const proxys = row.original.proxys || {}
+            const proxys = row.original.proxy || row.original.proxys || {}
 
             const proxyValues = Object.entries(proxys)
               .filter(([key]) => key !== 'loaiproxy')
@@ -145,7 +145,7 @@ return days > 0 ? `${days}d ${hours}h` : `${hours}h`
             )
           }
 
-          const apiKey = row.original?.api_key || '-'
+          const apiKey = row.original?.key || row.original?.api_key || '-'
 
           return (
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontFamily: 'monospace', fontSize: '12px', color: '#dc2626' }}>
@@ -208,15 +208,15 @@ return days > 0 ? `${days}d ${hours}h` : `${hours}h`
 
     const texts = selectedRows.map((row: any) => {
       if (order?.service_type === '0') {
-        const proxys = row.original.proxys || {}
+        const proxys = row.original.proxy || row.original.proxys || {}
         const vals = Object.entries(proxys).filter(([k]) => k !== 'loaiproxy').map(([_, v]) => v)
 
-        
+
 return String(vals[0] || '')
       }
 
-      
-return row.original?.api_key || ''
+
+return row.original?.key || row.original?.api_key || ''
     }).filter(Boolean)
 
     copy(texts.join('\n'), `Đã copy ${texts.length} ${order?.service_type === '0' ? 'proxy' : 'API key'}!`)
@@ -229,15 +229,15 @@ return row.original?.api_key || ''
 
     const texts = selectedRows.map((row: any) => {
       if (order?.service_type === '0') {
-        const proxys = row.original.proxys || {}
+        const proxys = row.original.proxy || row.original.proxys || {}
         const vals = Object.entries(proxys).filter(([k]) => k !== 'loaiproxy').map(([_, v]) => v)
 
-        
+
 return String(vals[0] || '')
       }
 
-      
-return row.original?.api_key || ''
+
+return row.original?.key || row.original?.api_key || ''
     }).filter(Boolean)
 
     const blob = new Blob([texts.join('\n')], { type: 'text/plain;charset=utf-8' })
