@@ -14,24 +14,25 @@ const LANGS = ['cURL', 'PHP', 'Node.js', 'Python', 'Go'] as const
 // URL docs (hiển thị trong code examples) vs URL thật (dùng cho "Chạy thử")
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8002/api'
 
-function buildUrl(ep: ApiEndpoint): string {
+function buildUrl(ep: ApiEndpoint, overrides?: Record<string, string>): string {
   let url = ep.endpoint
   const qp: string[] = []
 
   ep.parameters?.forEach(p => {
+    const val = overrides?.[p.name] || p.example
     if (url.includes(`{${p.name}}`)) {
-      url = url.replace(`{${p.name}}`, p.example)
+      url = url.replace(`{${p.name}}`, val)
     } else if (ep.method === 'GET') {
-      qp.push(`${p.name}=${p.example}`)
+      qp.push(`${p.name}=${encodeURIComponent(val)}`)
     }
   })
   if (qp.length) url += '?' + qp.join('&')
-  
+
 return url
 }
 
-function genCode(ep: ApiEndpoint, lang: string, key: string): string {
-  const url = buildUrl(ep)
+function genCode(ep: ApiEndpoint, lang: string, key: string, overrides?: Record<string, string>): string {
+  const url = buildUrl(ep, overrides)
   const k = key || 'YOUR_API_KEY'
   const isPost = ep.method === 'POST'
   const body = ep.requestBody
@@ -276,6 +277,7 @@ export default function ApiUsage({ endpoints }: ApiUsageProps) {
   const [liveRes, setLiveRes] = useState<string | null>(null)
   const [liveStatus, setLiveStatus] = useState<number | null>(null)
   const [loading, setLoading] = useState(false)
+  const [paramOverrides, setParamOverrides] = useState<Record<string, string>>({})
 
   const ep = selectedApi ? (data.find(a => a.id === selectedApi) || data[0]) : null
 
@@ -298,15 +300,17 @@ return 'bg-gray-600'
 
 
   const selectApi = (id: string) => {
-    setSelectedApi(id); setSelectedStatus('200 OK'); setLiveRes(null); setLiveStatus(null)
+    setSelectedApi(id); setSelectedStatus('200 OK'); setLiveRes(null); setLiveStatus(null); setParamOverrides({})
   }
+
+  const setParamValue = (name: string, value: string) => setParamOverrides(prev => ({ ...prev, [name]: value }))
 
   const tryIt = async () => {
     if (!userApiKey || !ep) return
     setLoading(true); setLiveRes(null); setLiveStatus(null)
 
     try {
-      const url = buildUrl(ep)
+      const url = buildUrl(ep, paramOverrides)
       const headers: Record<string, string> = { 'X-API-Key': userApiKey }
       const opts: RequestInit = { method: ep.method, headers }
 
@@ -325,7 +329,7 @@ return 'bg-gray-600'
     } finally { setLoading(false) }
   }
 
-  const code = ep ? genCode(ep, selectedLang, userApiKey) : ''
+  const code = ep ? genCode(ep, selectedLang, userApiKey, paramOverrides) : ''
 
   // ─── Sidebar (shared) ───
   const sidebar = (
@@ -505,8 +509,25 @@ return 'bg-gray-600'
                 <pre className='p-4 overflow-x-auto text-[13px] leading-relaxed m-0'><code className='text-gray-300 font-mono'>{code}</code></pre>
               </div>
 
-              {/* Try it button */}
-              <div className='px-4 py-3'>
+              {/* Editable params + Try it */}
+              <div className='px-4 py-3 space-y-3'>
+                {ep.parameters && ep.parameters.length > 0 && (
+                  <div className='space-y-2'>
+                    <span className='text-xs font-semibold text-gray-500 uppercase tracking-wider'>Tham số chạy thử</span>
+                    {ep.parameters.map(p => (
+                      <div key={p.name} className='flex items-center gap-2'>
+                        <label className='text-xs text-gray-600 font-mono w-24 flex-shrink-0 truncate' title={p.name}>{p.name}</label>
+                        <input
+                          type='text'
+                          value={paramOverrides[p.name] ?? p.example}
+                          onChange={e => setParamValue(p.name, e.target.value)}
+                          placeholder={p.example}
+                          className='flex-1 px-2.5 py-1.5 rounded-md border border-gray-300 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent'
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
                 <button onClick={tryIt} disabled={loading || !userApiKey}
                   className={`w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-bold transition-all ${
                     userApiKey
