@@ -157,6 +157,11 @@ export default function LogModal({
                           {log.retry_count != null && log.retry_count > 0 && <span className='ml-2'>Retry: {log.retry_count}</span>}
                         </p>
 
+                        {/* DEBUG — xem log có field gì */}
+                        <div className='mt-1 p-1 bg-yellow-100 text-xs text-yellow-800 rounded'>
+                          keys: {Object.keys(log).join(', ')}
+                        </div>
+
                         {/* Request payload */}
                         {(log.request_body || log.context?.request_params) && (
                           <div className='mt-2 border border-blue-200 rounded-lg overflow-hidden'>
