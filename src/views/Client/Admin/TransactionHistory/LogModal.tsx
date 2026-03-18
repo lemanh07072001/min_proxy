@@ -157,49 +157,41 @@ export default function LogModal({
                           {log.retry_count != null && log.retry_count > 0 && <span className='ml-2'>Retry: {log.retry_count}</span>}
                         </p>
 
-                        {/* Request payload — từ request_body hoặc context.request_params */}
-                        {(() => {
-                          const reqData = log.request_body ?? log.context?.request_params
-                          if (!reqData || (typeof reqData === 'object' && Object.keys(reqData).length === 0)) return null
-                          return (
-                            <details className='mt-2' open>
-                              <summary className='text-xs text-blue-500 cursor-pointer hover:text-blue-700 font-medium'>
-                                Request payload
-                              </summary>
-                              <div className='mt-1 p-2 bg-slate-900 rounded text-xs text-blue-300 font-mono whitespace-pre-wrap max-h-40 overflow-y-auto'>
-                                {typeof reqData === 'string' ? reqData : JSON.stringify(reqData, null, 2)}
-                              </div>
-                            </details>
-                          )
-                        })()}
+                        {/* Request payload */}
+                        {(log.request_body || log.context?.request_params) && (
+                          <div className='mt-2 border border-blue-200 rounded-lg overflow-hidden'>
+                            <div className='px-3 py-1.5 bg-blue-50 text-xs font-semibold text-blue-600'>Request payload</div>
+                            <pre className='p-3 bg-slate-900 text-xs text-blue-300 font-mono whitespace-pre-wrap max-h-40 overflow-y-auto m-0'>
+                              {JSON.stringify(log.request_body || log.context?.request_params, null, 2)}
+                            </pre>
+                          </div>
+                        )}
 
-                        {/* Response body — từ response_body hoặc context.response */}
-                        {(() => {
-                          const resData = log.response_body ?? log.context?.response
-                          if (!resData) return null
-                          const isError = ['api_call_error', 'failed', 'exception', 'retry'].includes(log.action)
-                          const durationMs = log.duration_ms ?? log.context?.duration_ms
-                          let formatted: string
-                          if (typeof resData === 'string') {
-                            try { formatted = JSON.stringify(JSON.parse(resData), null, 2) } catch { formatted = resData }
-                          } else {
-                            formatted = JSON.stringify(resData, null, 2)
-                          }
-                          return (
-                            <details className='mt-2' open>
-                              <summary className={`text-xs cursor-pointer font-medium ${isError ? 'text-red-500 hover:text-red-700' : 'text-green-500 hover:text-green-700'}`}>
-                                Response {durationMs ? `(${durationMs}ms)` : ''}
-                              </summary>
-                              <div className={`mt-1 p-2 bg-slate-900 rounded text-xs font-mono whitespace-pre-wrap max-h-40 overflow-y-auto ${isError ? 'text-red-300' : 'text-green-300'}`}>
-                                {formatted}
-                              </div>
-                            </details>
-                          )
-                        })()}
+                        {/* Response body */}
+                        {(log.response_body || log.context?.response) && (
+                          <div className='mt-2 border border-green-200 rounded-lg overflow-hidden'>
+                            <div className={`px-3 py-1.5 text-xs font-semibold ${
+                              ['api_call_error', 'failed', 'exception', 'retry'].includes(log.action)
+                                ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-600'
+                            }`}>
+                              Response {log.duration_ms ? `(${log.duration_ms}ms)` : ''}
+                            </div>
+                            <pre className={`p-3 bg-slate-900 text-xs font-mono whitespace-pre-wrap max-h-40 overflow-y-auto m-0 ${
+                              ['api_call_error', 'failed', 'exception', 'retry'].includes(log.action) ? 'text-red-300' : 'text-green-300'
+                            }`}>
+                              {(() => {
+                                const raw = log.response_body || log.context?.response
+                                if (typeof raw === 'string') {
+                                  try { return JSON.stringify(JSON.parse(raw), null, 2) } catch { return raw }
+                                }
+                                return JSON.stringify(raw, null, 2)
+                              })()}
+                            </pre>
+                          </div>
+                        )}
 
-                        {/* Context — ẩn các key đã hiển thị ở trên */}
-                        {(() => {
-                          if (!log.context || typeof log.context !== 'object') return null
+                        {/* Context */}
+                        {log.context && typeof log.context === 'object' && (() => {
                           const { request_params, response, duration_ms, service_name, service_code, provider_name, provider_code, quantity, price_per_unit, total_amount, proxy_type, time_days, ...rest } = log.context
                           if (Object.keys(rest).length === 0) return null
                           return (
