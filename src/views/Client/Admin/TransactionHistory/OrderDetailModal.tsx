@@ -521,15 +521,38 @@ function OrderLogsTimeline({ logs, isLoading }: { logs: OrderLog[]; isLoading: b
                 </div>
               )}
 
-              {log.response_body && isError && (
-                <details style={{ marginTop: 4 }}>
-                  <summary style={{ fontSize: '11px', color: '#94a3b8', cursor: 'pointer' }}>Response body</summary>
+              {/* Request payload */}
+              {(log.request_body || log.context?.request_params) && (
+                <details style={{ marginTop: 6 }} open={isError}>
+                  <summary style={{ fontSize: '11px', color: '#3b82f6', cursor: 'pointer', fontWeight: 500 }}>Request payload</summary>
                   <pre style={{
-                    fontSize: '11px', color: '#64748b', background: '#f8fafc',
-                    padding: '6px 8px', borderRadius: 4, marginTop: 4,
-                    overflow: 'auto', maxHeight: 120, whiteSpace: 'pre-wrap', wordBreak: 'break-all'
+                    fontSize: '11px', color: '#93c5fd', background: '#0f172a',
+                    padding: '8px 10px', borderRadius: 6, marginTop: 4,
+                    overflow: 'auto', maxHeight: 150, whiteSpace: 'pre-wrap', wordBreak: 'break-all'
                   }}>
-                    {log.response_body}
+                    {JSON.stringify(log.request_body || log.context?.request_params, null, 2)}
+                  </pre>
+                </details>
+              )}
+
+              {/* Response body — luôn hiện khi có data */}
+              {(log.response_body || log.context?.response) && (
+                <details style={{ marginTop: 4 }} open={isError}>
+                  <summary style={{ fontSize: '11px', color: isError ? '#ef4444' : '#22c55e', cursor: 'pointer', fontWeight: 500 }}>
+                    Response {log.duration_ms ? `(${log.duration_ms}ms)` : ''}
+                  </summary>
+                  <pre style={{
+                    fontSize: '11px', color: isError ? '#fca5a5' : '#86efac', background: '#0f172a',
+                    padding: '8px 10px', borderRadius: 6, marginTop: 4,
+                    overflow: 'auto', maxHeight: 150, whiteSpace: 'pre-wrap', wordBreak: 'break-all'
+                  }}>
+                    {(() => {
+                      const raw = log.response_body || log.context?.response
+                      if (typeof raw === 'string') {
+                        try { return JSON.stringify(JSON.parse(raw), null, 2) } catch { return raw }
+                      }
+                      return JSON.stringify(raw, null, 2)
+                    })()}
                   </pre>
                 </details>
               )}
