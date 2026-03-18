@@ -31,6 +31,7 @@ import { useBranding } from '@/app/contexts/BrandingContext'
 import ConfirmDialog from '@components/confirm-modal/ConfirmDialog'
 
 import UserProfileModal from '@/components/modals/UserProfileModal'
+import { useProfile } from '@/hooks/apis/useProfile'
 
 const UserDropdown = () => {
   const [open, setOpen] = useState(false)
@@ -53,8 +54,11 @@ const UserDropdown = () => {
   const userName = user?.name || 'User'
   const userEmail = user?.email || ''
   const userAvatar = user?.avatar || '/images/avatars/1.png'
-  const userBalance = user?.balance
   const userRole = user?.role
+
+  // Balance CHỈ lấy từ API real-time — KHÔNG dùng session (tránh stale/nhảy số)
+  const { data: profile, isLoading: balanceLoading } = useProfile()
+  const userBalance = profile?.sodu
 
   const handleDropdownOpen = () => {
     setOpen(prev => !prev)

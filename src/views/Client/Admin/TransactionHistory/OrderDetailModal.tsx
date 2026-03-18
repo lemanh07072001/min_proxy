@@ -143,20 +143,16 @@ return p || '-'
         size: 40
       },
       {
-        header: 'ApiKey / Proxy',
-        size: 220,
+        header: 'Key hệ thống',
+        size: 180,
         cell: ({ row }: { row: any }) => {
-          const text = row.original.api_key || getProxyText(row.original)
-
-          
-return (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontFamily: 'monospace', fontSize: '12px' }}>
-              <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{text}</span>
+          const text = row.original.api_key || '-'
+          return (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontFamily: 'monospace', fontSize: '11px' }}>
+              <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={text}>{text}</span>
               {text !== '-' && (
-                <button
-                  onClick={() => copyToClipboard(text, `key-${row.id}`)}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, color: copiedField === `key-${row.id}` ? '#16a34a' : '#94a3b8' }}
-                >
+                <button onClick={() => copyToClipboard(text, `key-${row.id}`)}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, color: copiedField === `key-${row.id}` ? '#16a34a' : '#94a3b8' }}>
                   {copiedField === `key-${row.id}` ? <CheckCircle size={13} /> : <Copy size={13} />}
                 </button>
               )}
@@ -165,24 +161,55 @@ return (
         }
       },
       {
-        header: 'Loại', size: 80,
-        cell: ({ row }: { row: any }) => <span style={{ fontSize: '12px' }}>{row.original.plan_type ?? '-'}</span>
+        header: 'Key đối tác',
+        size: 160,
+        cell: ({ row }: { row: any }) => {
+          const text = row.original.api_key_provider || '-'
+          return (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontFamily: 'monospace', fontSize: '11px', color: '#6366f1' }}>
+              <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={text}>{text}</span>
+              {text !== '-' && (
+                <button onClick={() => copyToClipboard(text, `pkey-${row.id}`)}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, color: copiedField === `pkey-${row.id}` ? '#16a34a' : '#94a3b8' }}>
+                  {copiedField === `pkey-${row.id}` ? <CheckCircle size={13} /> : <Copy size={13} />}
+                </button>
+              )}
+            </div>
+          )
+        }
+      },
+      {
+        header: 'Proxy',
+        size: 200,
+        cell: ({ row }: { row: any }) => {
+          const proxys = row.original.proxys
+          const text = getProxyText(row.original)
+          const protocol = row.original.protocol || proxys?.loaiproxy || '-'
+          return (
+            <div style={{ fontSize: '11px' }}>
+              <div style={{ fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={text}>
+                {text}
+              </div>
+              <div style={{ color: '#94a3b8', fontSize: '10px', marginTop: 2 }}>
+                {protocol?.toUpperCase()}
+              </div>
+            </div>
+          )
+        }
       },
       {
         header: 'Trạng thái', size: 100,
         cell: ({ row }: { row: any }) => {
           const s = row.original?.status
-
           if (s === 'ACTIVE') return <Chip label='Hoạt động' size='small' icon={<BadgeCheck size={14} />} color='success' />
           if (s === 'INACTIVE') return <Chip label='Đã tắt' size='small' icon={<BadgeMinus size={14} />} color='warning' />
-          
-return <Chip label='Hết hạn' size='small' icon={<CircleX size={14} />} color='error' />
+          return <Chip label='Hết hạn' size='small' icon={<CircleX size={14} />} color='error' />
         }
       },
       {
-        header: 'Hết hạn', size: 150,
+        header: 'Hết hạn', size: 140,
         cell: ({ row }: { row: any }) => (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#64748b', fontSize: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#64748b', fontSize: '11px' }}>
             <Clock3 size={12} />
             {formatDateTimeLocal(row.original.expired_at)}
           </div>
