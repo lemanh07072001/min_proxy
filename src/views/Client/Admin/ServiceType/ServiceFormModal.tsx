@@ -200,7 +200,8 @@ export default function ServiceFormModal({ open, onClose, serviceId, initialData
     formState: { errors },
     reset,
     watch,
-    setError
+    setError,
+    setValue
   } = useForm({
     resolver: async (data, context, options) => {
       try {
