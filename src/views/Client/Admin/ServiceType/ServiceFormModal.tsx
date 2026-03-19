@@ -114,6 +114,7 @@ return true
     .integer('Phải là số nguyên')
     .min(0, 'Phải >= 0'),
   pool_size: yup.string().nullable(),
+  metadata_json: yup.string().nullable(),
 })
 
 interface ServiceFormModalProps {
@@ -257,6 +258,7 @@ return { values: {}, errors: formattedErrors }
       request_limit: '',
       concurrent_connections: undefined,
       pool_size: '',
+      metadata_json: '',
     }
   })
 
@@ -334,6 +336,7 @@ return { values: {}, errors: formattedErrors }
         request_limit: serviceData.request_limit || '',
         concurrent_connections: serviceData.concurrent_connections ?? undefined,
         pool_size: serviceData.pool_size || '',
+        metadata_json: serviceData.metadata ? JSON.stringify(serviceData.metadata, null, 2) : '',
       })
     }
   }, [serviceData, isEditMode, reset])
@@ -366,6 +369,7 @@ return { values: {}, errors: formattedErrors }
         request_limit: '',
         concurrent_connections: undefined,
         pool_size: '',
+        metadata_json: '',
       })
       setMultiInputFields([{ key: '', value: '' }])
       setPriceFields([{ key: '', value: '', cost: '' }])
@@ -402,6 +406,15 @@ return { values: {}, errors: formattedErrors }
     const costs = formattedPriceFields.map((p: any) => parseInt(p.cost) || 0).filter((c: number) => c > 0)
     const autoCostPrice = costs.length > 0 ? Math.min(...costs) : data.cost_price || 0
 
+    // Parse metadata JSON
+    let parsedMetadata = null
+    if (data.metadata_json) {
+      try { parsedMetadata = JSON.parse(data.metadata_json) } catch {
+        toast.error('Metadata JSON không hợp lệ')
+        return
+      }
+    }
+
     const submitData = {
       ...data,
       note: cleanNote,
@@ -409,7 +422,9 @@ return { values: {}, errors: formattedErrors }
       multi_inputs: multiInputFields,
       price_by_duration: formattedPriceFields,
       cost_price: autoCostPrice,
+      metadata: parsedMetadata,
     }
+    delete submitData.metadata_json
 
     const mutation = isEditMode ? updateMutation : createMutation
 
@@ -1003,6 +1018,26 @@ return <Chip key={val} label={p?.label || val} size='small' />
                     </Grid2>
                   </>
                 )}
+
+                {/* Metadata / Custom Fields */}
+                <Grid2 size={{ xs: 12 }}>
+                  <Controller
+                    name='metadata_json'
+                    control={control}
+                    render={({ field }) => (
+                      <CustomTextField
+                        {...field}
+                        fullWidth
+                        multiline
+                        rows={4}
+                        label='Metadata (JSON) — Tuỳ chọn mua hàng'
+                        placeholder={'{\n  "custom_fields": [\n    {"param": "loaiproxy", "label": "Nhà mạng", "type": "select", "required": true, "default": "Viettel", "options": [\n      {"value": "Viettel", "label": "Viettel"},\n      {"value": "FPT", "label": "FPT"}\n    ]}\n  ]\n}'}
+                        helperText='Định nghĩa dropdown cho user chọn khi mua. Mỗi nhà cung cấp có options riêng.'
+                        slotProps={{ input: { style: { fontFamily: 'monospace', fontSize: '12px' } } }}
+                      />
+                    )}
+                  />
+                </Grid2>
               </Grid2>
               </div>
 

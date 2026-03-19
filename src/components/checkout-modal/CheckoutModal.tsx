@@ -35,6 +35,14 @@ interface CheckoutModalProps {
   country?: string
   extraPayload?: Record<string, any>
   authType?: 'userpass' | 'ip_whitelist' | 'both' | null
+  customFields?: Array<{
+    param: string
+    label: string
+    type: 'select'
+    required?: boolean
+    options: Array<{ value: string; label: string }>
+    default?: string
+  }>
 }
 
 const CheckoutModal: React.FC<CheckoutModalProps> = ({
@@ -49,7 +57,8 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({
   proxyType,
   country,
   extraPayload,
-  authType
+  authType,
+  customFields
 }) => {
   const [selectedDuration, setSelectedDuration] = useState(priceOptions[0]?.key || '1')
   const [selectedProtocol, setSelectedProtocol] = useState(protocols[0] || 'http')
@@ -60,6 +69,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({
   const [customUser, setCustomUser] = useState('')
   const [customPass, setCustomPass] = useState('')
   const [allowIp, setAllowIp] = useState('')
+  const [customFieldValues, setCustomFieldValues] = useState<Record<string, string>>({})
 
   // Hiện auth options nếu sản phẩm hỗ trợ
   const showAuthOptions = authType === 'both'
@@ -83,8 +93,12 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({
     setCustomPass('')
     setAllowIp('')
     setAuthMethod('userpass')
+    // Init custom field defaults
+    const defaults: Record<string, string> = {}
+    customFields?.forEach(f => { if (f.default) defaults[f.param] = f.default })
+    setCustomFieldValues(defaults)
     isSubmitting.current = false
-  }, [priceOptions, protocols])
+  }, [priceOptions, protocols, customFields])
 
   // Reset success state khi modal mở lại
   useEffect(() => {
@@ -173,6 +187,13 @@ return pct > 0 ? Math.round(pct) : null
       isSubmitting.current = false
       return
     }
+    // Validate required custom fields
+    const missingField = customFields?.find(f => f.required && !customFieldValues[f.param])
+    if (missingField) {
+      toast.error(`Vui lòng chọn ${missingField.label}.`)
+      isSubmitting.current = false
+      return
+    }
 
     const orderData: any = {
       serviceTypeId,
@@ -195,6 +216,7 @@ return pct > 0 ? Math.round(pct) : null
       ...(customUser && { custom_user: customUser, custom_pass: customPass }),
       ...(showAuthOptions && { auth_method: authMethod }),
       ...(showIpField && allowIp && { allow_ips: [allowIp] }),
+      ...(Object.keys(customFieldValues).length > 0 && { custom_fields: customFieldValues }),
     }
 
     mutate(orderData)
@@ -268,6 +290,29 @@ return (
               />
             </div>
           )}
+
+          {/* Custom fields (dropdown động từ ServiceType) */}
+          {customFields?.map(field => (
+            <div className='checkout-section' key={field.param}>
+              <label className='checkout-section-label'>{field.label.toUpperCase()}</label>
+              <div className='checkout-duration-options'>
+                {field.options.map(opt => (
+                  <label
+                    key={opt.value}
+                    className={`checkout-duration-option ${(customFieldValues[field.param] || field.default) === opt.value ? 'active' : ''}`}
+                  >
+                    <input
+                      type='radio'
+                      value={opt.value}
+                      checked={(customFieldValues[field.param] || field.default) === opt.value}
+                      onChange={() => setCustomFieldValues(prev => ({ ...prev, [field.param]: opt.value }))}
+                    />
+                    <span>{opt.label}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          ))}
 
           {/* Auth method selector */}
           {showAuthOptions && (

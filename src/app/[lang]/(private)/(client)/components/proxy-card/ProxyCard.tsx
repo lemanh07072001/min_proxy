@@ -242,6 +242,7 @@ return <p style={{ fontSize: '13px', color: '#64748b', margin: '0 0 8px', lineHe
         proxyType={provider.proxy_type}
         country={provider.country || provider.country_name || provider.country_code}
         authType={provider.auth_type || null}
+        customFields={provider.metadata?.custom_fields || undefined}
       />
     </>
   )

@@ -559,6 +559,7 @@ return
         proxyType={plan.proxy_type}
         country={plan.country}
         authType={plan.auth_type || null}
+        customFields={plan.metadata?.custom_fields || undefined}
       />
     </>
   )
