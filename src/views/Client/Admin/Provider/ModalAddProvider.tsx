@@ -65,6 +65,10 @@ interface ApiConfigBuy {
   user_override_enabled: boolean
   user_override_user_param: string
   user_override_pass_param: string
+  protocol_override_enabled: boolean
+  protocol_override_param: string
+  protocol_override_http: string
+  protocol_override_socks5: string
   response: ApiConfigBuyResponse
 }
 
@@ -137,6 +141,10 @@ const defaultBuy: ApiConfigBuy = {
   user_override_enabled: false,
   user_override_user_param: 'user',
   user_override_pass_param: 'password',
+  protocol_override_enabled: false,
+  protocol_override_param: 'type',
+  protocol_override_http: 'HTTP',
+  protocol_override_socks5: 'SOCKS5',
   response: {
     type: 'array_last_status',
     success_field: 'statusCode',
@@ -179,6 +187,10 @@ function parseBuySection(buy: any): ApiConfigBuy {
     user_override_enabled: !!buy.user_override,
     user_override_user_param: buy.user_override?.user_param || 'user',
     user_override_pass_param: buy.user_override?.pass_param || 'password',
+    protocol_override_enabled: !!buy.protocol_override,
+    protocol_override_param: buy.protocol_override?.param || 'type',
+    protocol_override_http: buy.protocol_override?.map?.http || 'HTTP',
+    protocol_override_socks5: buy.protocol_override?.map?.socks5 || 'SOCKS5',
     response: {
       type: buyResp.type || 'array_last_status',
       success_field: buyResp.success_field || 'statusCode',
@@ -281,6 +293,17 @@ function buildBuySection(buy: ApiConfigBuy): object | null {
     }
   }
 
+  // Protocol override: map protocol user chọn sang param provider
+  if (buy.protocol_override_enabled) {
+    result.protocol_override = {
+      param: buy.protocol_override_param || 'type',
+      map: {
+        http: buy.protocol_override_http || 'HTTP',
+        socks5: buy.protocol_override_socks5 || 'SOCKS5',
+      }
+    }
+  }
+
   const resp: any = {
     type: buy.response.type,
     proxy_format: buy.response.proxy_format,
@@ -368,6 +391,7 @@ function BuyConfigFields({
   const responseType = useWatch({ control, name: `${prefix}.response.type` })
   const proxyFormat = useWatch({ control, name: `${prefix}.response.proxy_format` })
   const userOverrideEnabled = useWatch({ control, name: `${prefix}.user_override_enabled` })
+  const protocolOverrideEnabled = useWatch({ control, name: `${prefix}.protocol_override_enabled` })
   const durationParam = useWatch({ control, name: `${prefix}.duration_param` })
 
   return (
@@ -573,6 +597,45 @@ function BuyConfigFields({
               <Grid2 size={{ xs: 6, sm: 4 }}>
                 <Controller name={`${prefix}.user_override_pass_param`} control={control} render={({ field }) => (
                   <CustomTextField {...field} fullWidth label={<>Param password <FieldHint text='Tên param gửi password cho provider. VD: password, pass, pwd' /></>} placeholder='password' />
+                )} />
+              </Grid2>
+            </>
+          )}
+
+          {/* Protocol override: map protocol sang param provider */}
+          <Grid2 size={{ xs: 12, sm: 4 }}>
+            <Controller
+              name={`${prefix}.protocol_override_enabled`}
+              control={control}
+              render={({ field: { value, onChange, ...field } }) => (
+                <CustomTextField
+                  {...field}
+                  value={value ? 'true' : 'false'}
+                  onChange={(e) => onChange(e.target.value === 'true')}
+                  fullWidth select
+                  label={<>Map protocol vào param <FieldHint text='Bật nếu provider cần param type/protocol. User chọn HTTP/SOCKS5 → gửi giá trị tương ứng.' /></>}
+                >
+                  <MenuItem value='false'>Không</MenuItem>
+                  <MenuItem value='true'>Có</MenuItem>
+                </CustomTextField>
+              )}
+            />
+          </Grid2>
+          {protocolOverrideEnabled && (
+            <>
+              <Grid2 size={{ xs: 4, sm: 2.67 }}>
+                <Controller name={`${prefix}.protocol_override_param`} control={control} render={({ field }) => (
+                  <CustomTextField {...field} fullWidth label={<>Param <FieldHint text='Tên param. VD: type, protocol' /></>} placeholder='type' />
+                )} />
+              </Grid2>
+              <Grid2 size={{ xs: 4, sm: 2.67 }}>
+                <Controller name={`${prefix}.protocol_override_http`} control={control} render={({ field }) => (
+                  <CustomTextField {...field} fullWidth label='HTTP =' placeholder='HTTP' />
+                )} />
+              </Grid2>
+              <Grid2 size={{ xs: 4, sm: 2.67 }}>
+                <Controller name={`${prefix}.protocol_override_socks5`} control={control} render={({ field }) => (
+                  <CustomTextField {...field} fullWidth label='SOCKS5 =' placeholder='SOCKS5' />
                 )} />
               </Grid2>
             </>
