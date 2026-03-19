@@ -9,19 +9,19 @@ import ModalAddProvider from '@/views/Client/Admin/Provider/ModalAddProvider'
 import TableProvider from '@/views/Client/Admin/Provider/TableProvider'
 
 export default function AdminProviderPage() {
-  const { isChild } = useBranding()
+  const { isChild, isLoading } = useBranding()
   const router = useRouter()
   const { lang: locale } = useParams()
   const [open, setOpen] = useState(false)
   const [type, setType] = useState<'create' | 'edit'>('create')
   const [providerData, setProviderData] = useState<any>(null)
 
-  // Site con không có quyền truy cập nhà cung cấp
+  // Site con không có quyền truy cập nhà cung cấp — chờ data load xong mới check
   useEffect(() => {
-    if (isChild) {
+    if (!isLoading && isChild) {
       router.replace(`/${locale}/home`)
     }
-  }, [isChild, router, locale])
+  }, [isChild, isLoading, router, locale])
 
   const handleOpenModal = (modalType: 'create' | 'edit', data?: any) => {
     setType(modalType)
@@ -34,7 +34,7 @@ export default function AdminProviderPage() {
     setProviderData(null)
   }
 
-  if (isChild) return null
+  if (isLoading || isChild) return null
 
   return (
     <>
