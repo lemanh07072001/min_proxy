@@ -207,6 +207,16 @@ return <p style={{ fontSize: '13px', color: '#64748b', margin: '0 0 8px', lineHe
                 </div>
               </div>
             )}
+            {/* Custom fields — hiển thị options cho user biết */}
+            {provider?.metadata?.custom_fields?.map((field: any) => (
+              <div className='feature-row' key={field.param}>
+                <div className='feature-icons'><Zap size={16} color='#8b5cf6' /></div>
+                <div className='feature-content'>
+                  <span className='feature-label'>{field.label}:</span>
+                  <span className='feature-value'>{field.options?.map((o: any) => o.label).join(', ')}</span>
+                </div>
+              </div>
+            ))}
           </div>
 
         </div>
