@@ -558,6 +558,7 @@ return
         ipVersion={plan.ip_version}
         proxyType={plan.proxy_type}
         country={plan.country}
+        authType={plan.auth_type || null}
       />
     </>
   )
