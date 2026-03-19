@@ -34,6 +34,7 @@ interface CheckoutModalProps {
   proxyType?: string
   country?: string
   extraPayload?: Record<string, any>
+  authType?: 'userpass' | 'ip_whitelist' | 'both' | null
 }
 
 const CheckoutModal: React.FC<CheckoutModalProps> = ({
@@ -47,13 +48,23 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({
   ipVersion,
   proxyType,
   country,
-  extraPayload
+  extraPayload,
+  authType
 }) => {
   const [selectedDuration, setSelectedDuration] = useState(priceOptions[0]?.key || '1')
   const [selectedProtocol, setSelectedProtocol] = useState(protocols[0] || 'http')
   const [quantity, setQuantity] = useState(1)
   const [discountCode, setDiscountCode] = useState('')
   const [purchaseSuccess, setPurchaseSuccess] = useState(false)
+  const [authMethod, setAuthMethod] = useState<'userpass' | 'ip_whitelist'>('userpass')
+  const [customUser, setCustomUser] = useState('')
+  const [customPass, setCustomPass] = useState('')
+  const [allowIp, setAllowIp] = useState('')
+
+  // Hiện auth options nếu sản phẩm hỗ trợ
+  const showAuthOptions = authType === 'both'
+  const showUserPassFields = authType === 'userpass' || authType === 'both'
+  const showIpField = authType === 'ip_whitelist' || (authType === 'both' && authMethod === 'ip_whitelist')
 
   const dispatch = useDispatch<AppDispatch>()
   const queryClient = useQueryClient()
@@ -68,6 +79,10 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({
     setQuantity(1)
     setDiscountCode('')
     setPurchaseSuccess(false)
+    setCustomUser('')
+    setCustomPass('')
+    setAllowIp('')
+    setAuthMethod('userpass')
     isSubmitting.current = false
   }, [priceOptions, protocols])
 
@@ -141,6 +156,24 @@ return pct > 0 ? Math.round(pct) : null
     if (!isBalanceSufficient || isSubmitting.current || isPending || purchaseSuccess) return
     isSubmitting.current = true
 
+    // Validate user:pass pair
+    if (customUser && !customPass) {
+      toast.error('Đã nhập username thì phải nhập password.')
+      isSubmitting.current = false
+      return
+    }
+    if (!customUser && customPass) {
+      toast.error('Đã nhập password thì phải nhập username.')
+      isSubmitting.current = false
+      return
+    }
+    // Validate IP nếu chọn ip_whitelist
+    if (showIpField && authMethod === 'ip_whitelist' && !allowIp) {
+      toast.error('Vui lòng nhập IP whitelist.')
+      isSubmitting.current = false
+      return
+    }
+
     const orderData: any = {
       serviceTypeId,
       quantity,
@@ -157,7 +190,11 @@ return pct > 0 ? Math.round(pct) : null
       ...(productType === 'rotating' && {
         time: selectedDuration,
         ...extraPayload
-      })
+      }),
+      // Auth options
+      ...(customUser && { custom_user: customUser, custom_pass: customPass }),
+      ...(showAuthOptions && { auth_method: authMethod }),
+      ...(showIpField && allowIp && { allow_ips: [allowIp] }),
     }
 
     mutate(orderData)
@@ -228,6 +265,65 @@ return (
                 selectedProtocol={selectedProtocol}
                 onProtocolChange={setSelectedProtocol}
                 label='GIAO THỨC'
+              />
+            </div>
+          )}
+
+          {/* Auth method selector */}
+          {showAuthOptions && (
+            <div className='checkout-section'>
+              <label className='checkout-section-label'>XÁC THỰC</label>
+              <div className='checkout-duration-options'>
+                <label className={`checkout-duration-option ${authMethod === 'userpass' ? 'active' : ''}`}>
+                  <input type='radio' value='userpass' checked={authMethod === 'userpass'} onChange={() => setAuthMethod('userpass')} />
+                  <span>User:Pass</span>
+                </label>
+                <label className={`checkout-duration-option ${authMethod === 'ip_whitelist' ? 'active' : ''}`}>
+                  <input type='radio' value='ip_whitelist' checked={authMethod === 'ip_whitelist'} onChange={() => setAuthMethod('ip_whitelist')} />
+                  <span>IP Whitelist</span>
+                </label>
+              </div>
+            </div>
+          )}
+
+          {/* Custom user:pass (khi auth = userpass hoặc both+userpass) */}
+          {showUserPassFields && authMethod === 'userpass' && (
+            <div className='checkout-section'>
+              <label className='checkout-section-label'>TÀI KHOẢN PROXY (bỏ trống = random)</label>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <input
+                  type='text'
+                  placeholder='Username'
+                  value={customUser}
+                  onChange={e => setCustomUser(e.target.value.replace(/[^a-zA-Z0-9_.-]/g, ''))}
+                  className='discount-input'
+                  style={{ flex: 1 }}
+                  maxLength={50}
+                />
+                <input
+                  type='text'
+                  placeholder='Password'
+                  value={customPass}
+                  onChange={e => setCustomPass(e.target.value.replace(/[^a-zA-Z0-9_.-]/g, ''))}
+                  className='discount-input'
+                  style={{ flex: 1 }}
+                  maxLength={50}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* IP whitelist input */}
+          {showIpField && (
+            <div className='checkout-section'>
+              <label className='checkout-section-label'>IP WHITELIST</label>
+              <input
+                type='text'
+                placeholder='VD: 1.2.3.4'
+                value={allowIp}
+                onChange={e => setAllowIp(e.target.value.replace(/[^0-9.]/g, ''))}
+                className='discount-input'
+                maxLength={15}
               />
             </div>
           )}

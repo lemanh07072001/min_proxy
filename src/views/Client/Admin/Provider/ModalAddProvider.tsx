@@ -62,6 +62,9 @@ interface ApiConfigBuy {
   duration_map_1: string
   duration_map_7: string
   duration_map_30: string
+  user_override_enabled: boolean
+  user_override_user_param: string
+  user_override_pass_param: string
   response: ApiConfigBuyResponse
 }
 
@@ -131,6 +134,9 @@ const defaultBuy: ApiConfigBuy = {
   double_ampersand: false,
   duration_param: '',
   duration_map_1: '', duration_map_7: '', duration_map_30: '',
+  user_override_enabled: false,
+  user_override_user_param: 'user',
+  user_override_pass_param: 'password',
   response: {
     type: 'array_last_status',
     success_field: 'statusCode',
@@ -170,6 +176,9 @@ function parseBuySection(buy: any): ApiConfigBuy {
     duration_map_1: durationMap['1'] || '',
     duration_map_7: durationMap['7'] || '',
     duration_map_30: durationMap['30'] || '',
+    user_override_enabled: !!buy.user_override,
+    user_override_user_param: buy.user_override?.user_param || 'user',
+    user_override_pass_param: buy.user_override?.pass_param || 'password',
     response: {
       type: buyResp.type || 'array_last_status',
       success_field: buyResp.success_field || 'statusCode',
@@ -264,6 +273,14 @@ function buildBuySection(buy: ApiConfigBuy): object | null {
     }
   }
 
+  // User override: cho phép user nhập custom user:pass khi mua
+  if (buy.user_override_enabled) {
+    result.user_override = {
+      user_param: buy.user_override_user_param || 'user',
+      pass_param: buy.user_override_pass_param || 'password',
+    }
+  }
+
   const resp: any = {
     type: buy.response.type,
     proxy_format: buy.response.proxy_format,
@@ -350,6 +367,7 @@ function BuyConfigFields({
   const useUrlByDuration = useWatch({ control, name: `${prefix}.use_url_by_duration` })
   const responseType = useWatch({ control, name: `${prefix}.response.type` })
   const proxyFormat = useWatch({ control, name: `${prefix}.response.proxy_format` })
+  const userOverrideEnabled = useWatch({ control, name: `${prefix}.user_override_enabled` })
   const durationParam = useWatch({ control, name: `${prefix}.duration_param` })
 
   return (
@@ -525,6 +543,40 @@ function BuyConfigFields({
               )}
             />
           </Grid2>
+
+          {/* User override: cho user nhập custom user:pass khi mua */}
+          <Grid2 size={{ xs: 12, sm: 4 }}>
+            <Controller
+              name={`${prefix}.user_override_enabled`}
+              control={control}
+              render={({ field: { value, onChange, ...field } }) => (
+                <CustomTextField
+                  {...field}
+                  value={value ? 'true' : 'false'}
+                  onChange={(e) => onChange(e.target.value === 'true')}
+                  fullWidth select
+                  label={<>Cho user nhập User:Pass <FieldHint text='Bật nếu provider cho phép user tự chọn username/password. Mặc định = random từ provider.' /></>}
+                >
+                  <MenuItem value='false'>Không (random)</MenuItem>
+                  <MenuItem value='true'>Có (user chọn)</MenuItem>
+                </CustomTextField>
+              )}
+            />
+          </Grid2>
+          {userOverrideEnabled && (
+            <>
+              <Grid2 size={{ xs: 6, sm: 4 }}>
+                <Controller name={`${prefix}.user_override_user_param`} control={control} render={({ field }) => (
+                  <CustomTextField {...field} fullWidth label={<>Param username <FieldHint text='Tên param gửi username cho provider. VD: user, username, login' /></>} placeholder='user' />
+                )} />
+              </Grid2>
+              <Grid2 size={{ xs: 6, sm: 4 }}>
+                <Controller name={`${prefix}.user_override_pass_param`} control={control} render={({ field }) => (
+                  <CustomTextField {...field} fullWidth label={<>Param password <FieldHint text='Tên param gửi password cho provider. VD: password, pass, pwd' /></>} placeholder='password' />
+                )} />
+              </Grid2>
+            </>
+          )}
 
           {/* Response config */}
           <Grid2 size={{ xs: 12 }}>
