@@ -21,17 +21,17 @@ import { signOut, useSession } from 'next-auth/react'
 
 import { ChevronDown, User, LogOut, Wallet, Settings, CreditCard } from 'lucide-react'
 
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 
 import { useSettings } from '@core/hooks/useSettings'
 import { clearUser } from '@/store/userSlice'
+import type { RootState } from '@/store'
 
 import { useBranding } from '@/app/contexts/BrandingContext'
 
 import ConfirmDialog from '@components/confirm-modal/ConfirmDialog'
 
 import UserProfileModal from '@/components/modals/UserProfileModal'
-import { useProfile } from '@/hooks/apis/useProfile'
 
 const UserDropdown = () => {
   const [open, setOpen] = useState(false)
@@ -56,9 +56,9 @@ const UserDropdown = () => {
   const userAvatar = user?.avatar || '/images/avatars/1.png'
   const userRole = user?.role
 
-  // Balance CHỈ lấy từ API real-time — KHÔNG dùng session (tránh stale/nhảy số)
-  const { data: profile, isLoading: balanceLoading } = useProfile()
-  const userBalance = profile?.sodu
+  // Balance lấy từ Redux — cùng nguồn với sidebar BalanceCard (đồng bộ)
+  const { sodu } = useSelector((state: RootState) => state.user)
+  const userBalance = sodu
 
   const handleDropdownOpen = () => {
     setOpen(prev => !prev)

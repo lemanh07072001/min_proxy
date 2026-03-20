@@ -20,16 +20,18 @@ export interface SidebarSettings {
 }
 
 export const useSidebarSettings = () => {
-  const axiosAuth = useAxiosAuth()
-
   return useQuery({
     queryKey: ['sidebar-settings'],
     queryFn: async () => {
-      const res = await axiosAuth.get('/get-sidebar-settings')
+      // Public API — không cần auth
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || ''
+      const res = await fetch(`${apiUrl}/get-sidebar-settings`)
+      const json = await res.json()
 
-      return (res?.data?.data ?? { support_links: [], youtube_videos: [] }) as SidebarSettings
+      return (json?.data ?? { support_links: [], youtube_videos: [] }) as SidebarSettings
     },
-    staleTime: 10 * 60 * 1000
+    staleTime: 10 * 60 * 1000,
+    refetchOnWindowFocus: false,
   })
 }
 
@@ -45,6 +47,7 @@ export const useUpdateSidebarSettings = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['sidebar-settings'] })
+      queryClient.invalidateQueries({ queryKey: ['sidebar-settings-public'] })
     }
   })
 }
