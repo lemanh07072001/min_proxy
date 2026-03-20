@@ -19,6 +19,7 @@ import {
   X, Save, Loader2, Package, Info,
   MapPin, Shield, Wifi, Zap, Users, RefreshCw, Clock, Globe, ShoppingCart
 } from 'lucide-react'
+import { toast } from 'react-toastify'
 import { useFormNotification } from '@/hooks/useFormNotification'
 import FormAlert from '@/components/FormAlert'
 import { useForm, Controller } from 'react-hook-form'
@@ -678,10 +679,39 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
                 const parentCostPerDay = parseInt(costPerUnit) || 0
                 const unitLabel = timeUnit === 'month' ? 'tháng' : 'ngày'
 
+                // Đồng bộ giá nhập từ supplier product
+                const handleSyncCost = () => {
+                  if (parentIsPerUnit && parentCostPerDay > 0) {
+                    // Mẹ per_unit → tính cost = đơn giá × số ngày
+                    setPriceFields(prev => prev.map(p => ({
+                      ...p,
+                      cost: String((parseInt(p.key) || 0) * parentCostPerDay)
+                    })))
+                    toast.success('Đã đồng bộ giá nhập từ site mẹ')
+                  } else if (selectedProduct?.supplier_prices) {
+                    // Mẹ fixed → lấy từ supplier_prices
+                    const sp = selectedProduct.supplier_prices
+                    setPriceFields(prev => prev.map(p => ({
+                      ...p,
+                      cost: String(sp[p.key] || p.cost || '')
+                    })))
+                    toast.success('Đã đồng bộ giá nhập từ site mẹ')
+                  } else {
+                    toast.error('Không tìm thấy giá nhập từ site mẹ')
+                  }
+                }
+
                 return (
                 <div>
-                  <div style={{ fontSize: '13px', fontWeight: 600, color: '#1e293b', marginBottom: 4 }}>
-                    Bảng giá mốc cố định
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                    <div style={{ fontSize: '13px', fontWeight: 600, color: '#1e293b' }}>Bảng giá mốc cố định</div>
+                    <button
+                      type='button'
+                      onClick={handleSyncCost}
+                      style={{ fontSize: '11.5px', padding: '4px 10px', borderRadius: 6, border: '1px solid #3b82f6', background: '#eff6ff', color: '#2563eb', cursor: 'pointer', fontWeight: 600 }}
+                    >
+                      ↻ Đồng bộ giá nhập
+                    </button>
                   </div>
                   {parentIsPerUnit && parentCostPerDay > 0 && (
                     <div style={{ fontSize: '11.5px', color: '#3b82f6', background: '#eff6ff', padding: '6px 10px', borderRadius: 8, marginBottom: 8 }}>
