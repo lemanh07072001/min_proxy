@@ -375,13 +375,17 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
 
         // Parse validation errors → set lỗi vào từng field
         if (res?.errors && typeof res.errors === 'object') {
+          console.error('Validation errors:', res.errors)
+          const errorMessages: string[] = []
+
           Object.entries(res.errors).forEach(([field, fieldErrors]: [string, any]) => {
             const msg = Array.isArray(fieldErrors) ? fieldErrors[0] : fieldErrors
 
             setError(field as any, { type: 'server', message: msg })
+            errorMessages.push(`${field}: ${msg}`)
           })
 
-          showError('Vui lòng kiểm tra lại các trường bên dưới')
+          showError('Lỗi: ' + errorMessages.join(', '))
         } else {
           showError(res?.message || 'Có lỗi xảy ra')
         }
