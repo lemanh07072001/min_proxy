@@ -1,6 +1,5 @@
 /**
- * SVG icons chính thức cho các nền tảng liên hệ
- * Path lấy từ brand assets chính thức
+ * Brand icons — SVG paths chuẩn từ SimpleIcons / brand assets
  */
 
 interface IconProps {
@@ -10,34 +9,45 @@ interface IconProps {
 
 export const ZaloIcon = ({ size = 24, className }: IconProps) => (
   <svg width={size} height={size} viewBox='0 0 48 48' className={className}>
-    <rect width='48' height='48' rx='24' fill='#0068FF' />
-    <path fillRule='evenodd' clipRule='evenodd' d='M12.5 26.8C12.5 19.5 17.6 14 24.2 14c6 0 11.3 5 11.3 11.5 0 .6 0 1.1-.1 1.7v.2c-.5 4.8-4.7 8.8-9.6 9.8-.6.1-1.1.2-1.6.2-1.2 0-2.3-.2-3.4-.6l-.3-.1-3.6 1 1-3.2-.2-.3c-1.3-1.8-2.2-4-2.2-6.4zm5.2 1.7v3c0 .4.3.5.5.5h.7c.4 0 .5-.3.5-.5v-5.2h-1.2c-.3 0-.5.2-.5.5v1.7zm8-4.7h-4.4c-.3 0-.5.2-.5.5v.4c0 .3.2.5.5.5h2.5c.1 0 .2.1.1.2l-3.3 4.4c-.1.2-.2.3-.2.5v.2c0 .3.2.5.5.5h4.7c.3 0 .5-.2.5-.5v-.4c0-.3-.2-.5-.5-.5h-2.7c-.1 0-.2-.1-.1-.2l3.3-4.4c.1-.2.2-.3.2-.5v-.2c0-.3-.2-.5-.5-.5zm4.6 0c-1.7 0-3 1.4-3 3.3s1.3 3.3 3 3.3 3-1.4 3-3.3-1.3-3.3-3-3.3zm0 5.2c-.8 0-1.5-.8-1.5-1.9 0-1.1.7-1.9 1.5-1.9s1.5.8 1.5 1.9c0 1.1-.7 1.9-1.5 1.9z' fill='#fff' />
+    <defs>
+      <linearGradient id='zalo-grad' x1='0' y1='0' x2='0' y2='1'>
+        <stop offset='0%' stopColor='#0068FF' />
+        <stop offset='100%' stopColor='#0052CC' />
+      </linearGradient>
+    </defs>
+    <rect width='48' height='48' rx='12' fill='url(#zalo-grad)' />
+    <text x='24' y='33' textAnchor='middle' fontFamily='Arial,Helvetica,sans-serif' fontWeight='900' fontSize='28' fill='#fff' letterSpacing='-1'>Z</text>
   </svg>
 )
 
 export const FacebookIcon = ({ size = 24, className }: IconProps) => (
   <svg width={size} height={size} viewBox='0 0 48 48' className={className}>
-    <rect width='48' height='48' rx='24' fill='#1877F2' />
-    <path d='M33.12 30.94l1.12-7.32h-7.02v-4.75c0-2 .98-3.96 4.13-3.96h3.2V8.74s-2.9-.5-5.68-.5c-5.8 0-9.59 3.51-9.59 9.88v5.58h-6.44v7.32h6.44v17.68a25.5 25.5 0 007.94 0V30.94h5.9z' fill='#fff' />
+    <rect width='48' height='48' rx='12' fill='#1877F2' />
+    <path d='M29.72 25.5l.85-5.52h-5.3v-3.58c0-1.51.74-2.98 3.11-2.98h2.41V8.64s-2.18-.37-4.27-.37c-4.36 0-7.21 2.64-7.21 7.43v4.2h-4.85v5.52h4.85V39.2a19.2 19.2 0 005.98 0V25.5h4.43z' fill='#fff' />
   </svg>
 )
 
 export const TelegramIcon = ({ size = 24, className }: IconProps) => (
   <svg width={size} height={size} viewBox='0 0 48 48' className={className}>
-    <rect width='48' height='48' rx='24' fill='#2AABEE' />
-    <path d='M34.27 13.73l-4.56 21.48c-.34 1.52-1.24 1.9-2.52 1.18l-6.96-5.13-3.36 3.23c-.37.37-.68.68-1.4.68l.5-7.1 12.93-11.69c.56-.5-.12-.78-.87-.28L17.24 27.2l-6.86-2.14c-1.49-.47-1.52-1.49.31-2.21l26.82-10.33c1.24-.47 2.33.28 1.92 2.09l.84-1.88z' fill='#fff' />
+    <defs>
+      <linearGradient id='tg-grad' x1='0' y1='0' x2='0' y2='1'>
+        <stop offset='0%' stopColor='#37AEE2' />
+        <stop offset='100%' stopColor='#1E96C8' />
+      </linearGradient>
+    </defs>
+    <rect width='48' height='48' rx='12' fill='url(#tg-grad)' />
+    <path d='M10.68 23.62l7.2 2.7 2.78 8.94c.18.57.88.75 1.3.33l4-3.87a1.12 1.12 0 011.37-.05l7.22 5.24c.5.36 1.2.06 1.3-.55l4.72-22.72c.12-.67-.54-1.22-1.16-.97L10.66 22.2c-.72.28-.7 1.3.02 1.42zm10.04 1.2l14.54-8.96c.28-.17.56.2.32.42L23 28.08c-.4.37-.66.88-.73 1.43l-.38 2.86c-.05.38-.58.42-.7.06l-1.7-5.16a.93.93 0 01.43-1.12l.7-.33z' fill='#fff' />
   </svg>
 )
 
 export const YoutubeIcon = ({ size = 24, className }: IconProps) => (
   <svg width={size} height={size} viewBox='0 0 48 48' className={className}>
-    <rect width='48' height='48' rx='24' fill='#FF0000' />
+    <rect width='48' height='48' rx='12' fill='#FF0000' />
     <path d='M37.2 17.8c-.3-1.3-1.3-2.3-2.6-2.6C32.4 14.6 24 14.6 24 14.6s-8.4 0-10.6.5c-1.3.3-2.3 1.3-2.6 2.6-.5 2.3-.5 7-.5 7s0 4.8.5 7c.3 1.3 1.3 2.3 2.6 2.6 2.2.5 10.6.5 10.6.5s8.4 0 10.6-.5c1.3-.3 2.3-1.3 2.6-2.6.5-2.3.5-7 .5-7s0-4.8-.5-7.1z' fill='#fff' />
     <path d='M21.2 29.1l7.1-4.3-7.1-4.3v8.6z' fill='#FF0000' />
   </svg>
 )
 
-// Map icon name → component
 export const SOCIAL_ICON_MAP: Record<string, React.FC<IconProps>> = {
   zalo: ZaloIcon,
   facebook: FacebookIcon,

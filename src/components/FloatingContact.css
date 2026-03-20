@@ -4,48 +4,15 @@
   right: 24px;
   z-index: 9999;
   display: flex;
-  flex-direction: column-reverse;
+  flex-direction: column;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
-/* Trigger button */
-.floating-trigger {
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
-  border: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  background: var(--primary-gradient, linear-gradient(135deg, #FC4336, #F88A4B));
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2), 0 0 0 0 rgba(252, 67, 54, 0.4);
-  transition: all 0.3s ease;
-  animation: floating-pulse 2s infinite;
-}
-
-.floating-trigger:hover {
-  transform: scale(1.08);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
-}
-
-.floating-trigger.open {
-  background: #475569;
-  animation: none;
-  transform: rotate(0deg);
-}
-
-@keyframes floating-pulse {
-  0%, 100% { box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2), 0 0 0 0 rgba(252, 67, 54, 0.4); }
-  50% { box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2), 0 0 0 8px rgba(252, 67, 54, 0); }
-}
-
-/* Links container */
+/* Links phía trên trigger */
 .floating-links {
   display: flex;
-  flex-direction: column-reverse;
+  flex-direction: column;
   align-items: center;
   gap: 10px;
   pointer-events: none;
@@ -55,30 +22,68 @@
   pointer-events: auto;
 }
 
-/* Individual link item */
+/* Từng item — bay từ dưới lên */
 .floating-link-item {
-  width: 44px;
-  height: 44px;
+  width: 46px;
+  height: 46px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   background: #fff;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
   text-decoration: none;
-  transition: all 0.25s ease;
   opacity: 0;
-  transform: scale(0.5) translateY(10px);
+  transform: translateY(20px) scale(0.6);
+  transition: opacity 0.2s ease, transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .floating-links.open .floating-link-item {
   opacity: 1;
-  transform: scale(1) translateY(0);
+  transform: translateY(0) scale(1);
 }
 
 .floating-link-item:hover {
-  transform: scale(1.12) !important;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+  transform: translateY(-2px) scale(1.1) !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* Trigger button — luôn ở dưới cùng */
+.floating-trigger {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  background: var(--primary-gradient, linear-gradient(135deg, #FC4336, #F88A4B));
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+  animation: floating-pulse 2.5s infinite;
+  flex-shrink: 0;
+}
+
+.floating-trigger:hover {
+  transform: scale(1.08);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.28);
+}
+
+.floating-trigger.open {
+  background: #475569;
+  animation: none;
+  transform: rotate(90deg);
+}
+
+.floating-trigger.open:hover {
+  transform: rotate(90deg) scale(1.08);
+}
+
+@keyframes floating-pulse {
+  0%, 100% { box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2), 0 0 0 0 rgba(252, 67, 54, 0.35); }
+  50% { box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2), 0 0 0 10px rgba(252, 67, 54, 0); }
 }
 
 /* Mobile */
@@ -94,7 +99,7 @@
   }
 
   .floating-link-item {
-    width: 40px;
-    height: 40px;
+    width: 42px;
+    height: 42px;
   }
 }

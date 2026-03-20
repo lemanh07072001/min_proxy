@@ -18,11 +18,10 @@ export default function FloatingContact() {
 
   return (
     <div className='floating-contact'>
-      {/* Expanded: danh sách icon */}
+      {/* Links — phía trên trigger, bay từ dưới lên */}
       <div className={`floating-links ${open ? 'open' : ''}`}>
         {links.map((link, i) => {
           const SvgIcon = SOCIAL_ICON_MAP[link.icon]
-          const FallbackIcon = ExternalLink
 
           return (
             <a
@@ -32,11 +31,11 @@ export default function FloatingContact() {
               rel='noopener noreferrer'
               className='floating-link-item'
               title={link.label}
-              style={{ transitionDelay: open ? `${i * 50}ms` : '0ms' }}
+              style={{ transitionDelay: open ? `${(links.length - 1 - i) * 60}ms` : '0ms' }}
             >
-              {SvgIcon ? <SvgIcon size={32} /> : (
-                <div style={{ width: 32, height: 32, borderRadius: '50%', background: link.color || '#64748b', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <FallbackIcon size={16} color='#fff' />
+              {SvgIcon ? <SvgIcon size={34} /> : (
+                <div style={{ width: 34, height: 34, borderRadius: '50%', background: link.color || '#64748b', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <ExternalLink size={16} color='#fff' />
                 </div>
               )}
             </a>
@@ -44,7 +43,7 @@ export default function FloatingContact() {
         })}
       </div>
 
-      {/* Trigger button */}
+      {/* Trigger — luôn ở dưới cùng */}
       <button
         className={`floating-trigger ${open ? 'open' : ''}`}
         onClick={() => setOpen(v => !v)}
