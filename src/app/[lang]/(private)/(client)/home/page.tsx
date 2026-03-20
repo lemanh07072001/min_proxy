@@ -437,7 +437,7 @@ function EmptyFeed() {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       {/* Welcome Banner */}
       <div style={{
-        background: 'linear-gradient(135deg, #1e293b 0%, #334155 50%, #475569 100%)',
+        background: 'linear-gradient(135deg, #1e293b 0%, color-mix(in srgb, var(--primary-color, #6366f1) 40%, #1e293b) 60%, color-mix(in srgb, var(--primary-color, #6366f1) 25%, #334155) 100%)',
         borderRadius: 16, padding: '32px 28px', color: '#fff', position: 'relative', overflow: 'hidden',
       }}>
         {/* Background decoration */}
