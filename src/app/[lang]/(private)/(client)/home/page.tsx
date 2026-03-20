@@ -17,7 +17,8 @@ import {
 } from '@mui/material'
 import { Share2, Clock, X, ChevronLeft, ChevronRight, MessageCircle, Send, Youtube, ExternalLink, Tag, Sparkles, TrendingUp, Wrench, Megaphone, Wallet, Globe, Search, BookOpen, ArrowRight } from 'lucide-react'
 import { toast } from 'react-toastify'
-
+import { useSelector } from 'react-redux'
+import type { RootState } from '@/store'
 
 import { useAnnouncements } from '@/hooks/apis/useAnnouncements'
 import type { Announcement } from '@/hooks/apis/useAnnouncements'
@@ -419,6 +420,11 @@ function FeedSkeleton() {
 function EmptyFeed() {
   const { lang } = useParams()
   const locale = lang || 'vi'
+  const { name } = useSelector((state: RootState) => state.user)
+
+  const hour = new Date().getHours()
+  const greeting = hour < 12 ? 'Chào buổi sáng' : hour < 18 ? 'Chào buổi chiều' : 'Chào buổi tối'
+  const displayName = name || 'bạn'
 
   const quickActions = [
     { icon: Globe, label: 'Proxy Tĩnh', desc: 'IP cố định, ổn định', href: `/${locale}/proxy-tinh`, color: '#3b82f6', gradient: 'linear-gradient(135deg, #3b82f6, #6366f1)' },
@@ -439,12 +445,11 @@ function EmptyFeed() {
         <div style={{ position: 'absolute', bottom: -30, right: 60, width: 80, height: 80, borderRadius: '50%', background: 'rgba(255,255,255,0.05)' }} />
 
         <div style={{ position: 'relative', zIndex: 1 }}>
-          <div style={{ fontSize: 32, marginBottom: 8 }}>👋</div>
           <h2 style={{ fontSize: 22, fontWeight: 800, margin: '0 0 6px', letterSpacing: '-0.3px' }}>
-            Chào mừng bạn!
+            {greeting}, {displayName}! 👋
           </h2>
           <p style={{ fontSize: 14, opacity: 0.85, margin: '0 0 20px', lineHeight: 1.5, maxWidth: 400 }}>
-            Bắt đầu sử dụng dịch vụ proxy chất lượng cao. Chọn sản phẩm phù hợp bên dưới.
+            Hôm nay bạn muốn làm gì? Chọn nhanh bên dưới để bắt đầu.
           </p>
           <a
             href={`/${locale}/proxy-tinh`}
