@@ -1336,8 +1336,8 @@ export default function SiteSettingsForm() {
 
               {/* ── Section 2: Nút liên hệ sidebar ── */}
               <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: 20 }}>
-                <h6 style={sectionTitleSx}>Nút liên hệ nhanh (Sidebar)</h6>
-                <p style={sectionDescSx}>Hiển thị ở menu bên trái — các nút Zalo, Telegram, Facebook... để khách nhấn vào liên hệ trực tiếp. Mỗi nút sẽ mở link tương ứng.</p>
+                <h6 style={sectionTitleSx}>Nút liên hệ nhanh</h6>
+                <p style={sectionDescSx}>Hiển thị ở <strong>cột phải trang chủ</strong> (mục "Bạn cần hỗ trợ?") — các nút Zalo, Telegram, Facebook... để khách nhấn vào liên hệ trực tiếp.</p>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 {supportLinks.map((link, idx) => (
@@ -1403,12 +1403,20 @@ export default function SiteSettingsForm() {
 
               {/* ── Section 3: Video hướng dẫn ── */}
               <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: 20 }}>
-                <h6 style={sectionTitleSx}>Video hướng dẫn (Sidebar)</h6>
-                <p style={sectionDescSx}>Hiển thị ở menu bên trái — danh sách video YouTube hướng dẫn khách sử dụng dịch vụ. Không bắt buộc.</p>
+                <h6 style={sectionTitleSx}>Video hướng dẫn</h6>
+                <p style={sectionDescSx}>Hiển thị ở <strong>cột phải trang chủ</strong> (mục "Video hướng dẫn sử dụng") — danh sách video YouTube hướng dẫn khách sử dụng dịch vụ.</p>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                {youtubeVideos.map((video, idx) => (
+                {youtubeVideos.map((video, idx) => {
+                  const ytId = video.url?.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|shorts\/))([^?&\s]+)/)?.[1]
+
+                  return (
                   <div key={idx} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                    {ytId ? (
+                      <img src={`https://img.youtube.com/vi/${ytId}/mqdefault.jpg`} alt='' style={{ width: 64, height: 36, objectFit: 'cover', borderRadius: 4, border: '1px solid #e2e8f0', flexShrink: 0 }} />
+                    ) : (
+                      <div style={{ width: 64, height: 36, borderRadius: 4, border: '1px dashed #cbd5e1', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8', fontSize: '10px', flexShrink: 0 }}>—</div>
+                    )}
                     <TextField
                       size='small'
                       label='Tiêu đề'
@@ -1435,7 +1443,8 @@ export default function SiteSettingsForm() {
                       </IconButton>
                     </Tooltip>
                   </div>
-                ))}
+                  )
+                })}
                 <Button
                   size='small'
                   variant='outlined'

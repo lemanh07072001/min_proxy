@@ -372,20 +372,26 @@ function HomeSidebar() {
             Video hướng dẫn sử dụng
           </h4>
           <div className='sidebar-video-list'>
-            {youtubeVideos.map(video => (
-              <a
-                key={video.title}
-                href={video.url}
-                target='_blank'
-                rel='noopener noreferrer'
-                className='sidebar-video-item'
-              >
-                <div className='sidebar-video-thumb'>
-                  <Youtube size={24} />
-                </div>
-                <span className='sidebar-video-title'>{video.title}</span>
-              </a>
-            ))}
+            {youtubeVideos.map(video => {
+              // Extract YouTube video ID from URL
+              const videoId = video.url?.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|shorts\/))([^?&\s]+)/)?.[1]
+              const thumbUrl = videoId ? `https://img.youtube.com/vi/${videoId}/mqdefault.jpg` : ''
+
+              return (
+                <a
+                  key={video.title}
+                  href={video.url}
+                  target='_blank'
+                  rel='noopener noreferrer'
+                  className='sidebar-video-item'
+                >
+                  <div className='sidebar-video-thumb' style={thumbUrl ? { backgroundImage: `url(${thumbUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}>
+                    {!thumbUrl && <Youtube size={24} />}
+                  </div>
+                  <span className='sidebar-video-title'>{video.title}</span>
+                </a>
+              )
+            })}
           </div>
         </div>
       )}

@@ -369,13 +369,11 @@ return !(tagDef && 'hidden' in tagDef && tagDef.hidden)
   }, [plan?.tag])
 
   // Note preview (strip HTML, truncate)
-  const notePreview = useMemo(() => {
-    if (!plan.note || plan.note === '<p></p>') return null
+  const hasNote = useMemo(() => {
+    if (!plan.note || plan.note === '<p></p>') return false
     const text = plan.note.replace(/<[^>]+>/g, '').trim()
 
-    if (!text) return null
-
-return text.length > 80 ? text.substring(0, 80) + '...' : text
+    return !!text
   }, [plan.note])
 
   // Form chỉ còn cho dynamic fields (input/checkbox/select) — không cho time/protocol
@@ -440,7 +438,10 @@ return
         {/* Header: title + tags */}
         <div className='plan-header'>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
-            <h3 className='plan-title' style={{ textAlign: 'left', flex: 1 }}>{plan.title} <span style={{ fontFamily: 'monospace', fontSize: '11px', fontWeight: 500, color: '#94a3b8' }}>{plan.id}#{plan.code || ''}</span></h3>
+            <div style={{ flex: 1 }}>
+              <h3 className='plan-title' style={{ textAlign: 'left', marginBottom: 1 }}>{plan.title}</h3>
+              <span style={{ fontFamily: 'monospace', fontSize: '10.5px', fontWeight: 500, color: '#b0b8c4', lineHeight: 1, display: 'block' }}>{plan.id}#{plan.code || ''}</span>
+            </div>
             {visibleTags.length > 0 && (
               <div style={{ display: 'flex', gap: '4px', flexShrink: 0 }}>
                 {visibleTags.map((tag: string, i: number) => {
@@ -453,11 +454,9 @@ return
           </div>
         </div>
 
-        {/* Note preview */}
-        {notePreview && (
-          <p style={{ fontSize: '13px', color: '#64748b', margin: '0 0 8px', lineHeight: 1.4, padding: '0 16px' }}>
-            {notePreview}
-          </p>
+        {/* Note — hiện full HTML */}
+        {hasNote && (
+          <div className='proxy-note-content' style={{ fontSize: '12px', color: '#64748b', margin: '0 0 8px', lineHeight: 1.5, padding: '0 2px' }} dangerouslySetInnerHTML={{ __html: plan.note }} />
         )}
 
         <div className='plan-features'>
