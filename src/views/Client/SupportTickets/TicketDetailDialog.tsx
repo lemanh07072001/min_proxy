@@ -11,6 +11,8 @@ import IconButton from '@mui/material/IconButton'
 import { X, Clock3, MessageSquare, ShieldCheck, UserCheck, Send, Upload, Trash2, Image as ImageIcon } from 'lucide-react'
 import { toast } from 'react-toastify'
 
+import { useSession } from 'next-auth/react'
+
 import { formatDateTimeLocal } from '@/utils/formatDate'
 import { TICKET_STATUS, TICKET_STATUS_LABELS, TICKET_STATUS_COLORS, TICKET_TYPE_LABELS } from '@/constants/ticketStatus'
 import { ORDER_STATUS_LABELS, ORDER_STATUS_COLORS } from '@/constants/orderStatus'
@@ -39,6 +41,8 @@ export default function TicketDetailDialog({ open, onClose, ticket }: Props) {
   const [localReplies, setLocalReplies] = useState<any[]>([])
   const fileRef = useRef<HTMLInputElement>(null)
   const reply = useUserReply()
+  const session = useSession()
+  const currentUserId = (session?.data?.user as any)?.id
 
   // Reset local replies khi ticket đổi
   const ticketId = ticket?.id
@@ -142,12 +146,17 @@ export default function TicketDetailDialog({ open, onClose, ticket }: Props) {
           {/* Reply thread — chat bubble */}
           {replies.length > 0 && (
             <div style={{ display: 'flex', flexDirection: 'column', padding: '8px 12px', gap: 8 }}>
-              {replies.map((r: any) => (
-                <div key={r.id} style={{ display: 'flex', justifyContent: r.is_admin ? 'flex-start' : 'flex-end' }}>
+              {replies.map((r: any) => {
+                const isMe = !r.is_admin && r.user_id === currentUserId
+                const isMySide = !r.is_admin // User side: tin của user (mình) bên phải, admin bên trái
+                const displayName = r.is_admin ? 'Admin' : (isMe ? 'Bạn' : (r.user?.name || 'User'))
+
+                return (
+                <div key={r.id} style={{ display: 'flex', justifyContent: isMySide ? 'flex-end' : 'flex-start' }}>
                   <div style={{
                     maxWidth: '85%', padding: '8px 12px',
-                    background: r.is_admin ? '#dcfce7' : '#eff6ff',
-                    borderRadius: r.is_admin ? '12px 12px 12px 4px' : '12px 12px 4px 12px',
+                    background: isMySide ? '#eff6ff' : '#dcfce7',
+                    borderRadius: isMySide ? '12px 12px 4px 12px' : '12px 12px 12px 4px',
                   }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 3, fontSize: '11px' }}>
                       {r.is_admin ? (
@@ -156,7 +165,7 @@ export default function TicketDetailDialog({ open, onClose, ticket }: Props) {
                         <UserCheck size={11} style={{ color: '#3b82f6' }} />
                       )}
                       <strong style={{ color: r.is_admin ? '#16a34a' : '#3b82f6' }}>
-                        {r.user?.name || (r.is_admin ? 'Admin' : 'Bạn')}
+                        {displayName}
                       </strong>
                       <span style={{ color: '#94a3b8' }}>{formatDateTimeLocal(r.created_at)}</span>
                     </div>
@@ -166,7 +175,8 @@ export default function TicketDetailDialog({ open, onClose, ticket }: Props) {
                     )}
                   </div>
                 </div>
-              ))}
+                )
+              })}
             </div>
           )}
 
