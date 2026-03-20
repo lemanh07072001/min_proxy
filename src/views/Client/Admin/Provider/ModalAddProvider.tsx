@@ -43,6 +43,7 @@ interface ApiConfigBuyResponse {
   proxy_fields_user: string
   proxy_fields_pass: string
   proxy_fields_type: string
+  proxy_id_field: string
 }
 
 interface ApiConfigBuy {
@@ -155,6 +156,7 @@ const defaultBuy: ApiConfigBuy = {
     proxy_key_field: 'keyxoay',
     proxy_fields_ip: '', proxy_fields_port: '',
     proxy_fields_user: '', proxy_fields_pass: '', proxy_fields_type: '',
+    proxy_id_field: '',
   }
 }
 
@@ -204,6 +206,7 @@ function parseBuySection(buy: any): ApiConfigBuy {
       proxy_fields_user: proxyFields.user || '',
       proxy_fields_pass: proxyFields.pass || '',
       proxy_fields_type: proxyFields.type || '',
+      proxy_id_field: buyResp.proxy_id_field || '',
     }
   }
 }
@@ -330,6 +333,9 @@ function buildBuySection(buy: ApiConfigBuy): object | null {
     if (buy.response.proxy_fields_pass) resp.proxy_fields.pass = buy.response.proxy_fields_pass
     if (buy.response.proxy_fields_type) resp.proxy_fields.type = buy.response.proxy_fields_type
   }
+
+  // Provider item ID field (VD: idproxy)
+  if (buy.response.proxy_id_field) resp.proxy_id_field = buy.response.proxy_id_field
 
   result.response = resp
 
@@ -757,6 +763,19 @@ function BuyConfigFields({
                 )} />
               </Grid2>
             </>
+          )}
+
+          {/* Provider item ID field — cho format fields hoặc string */}
+          {(proxyFormat === 'fields' || proxyFormat === 'string') && (
+            <Grid2 size={{ xs: 12, sm: 6 }}>
+              <Controller
+                name={`${prefix}.response.proxy_id_field`}
+                control={control}
+                render={({ field }) => (
+                  <CustomTextField {...field} fullWidth label={<>Field ID nhà cung cấp <FieldHint text='Tên field chứa ID proxy từ provider. VD: idproxy, id, proxy_id. Lưu vào provider_item_id. Bỏ trống nếu không có.' /></>} placeholder='idproxy' />
+                )}
+              />
+            </Grid2>
           )}
         </>
       )}
