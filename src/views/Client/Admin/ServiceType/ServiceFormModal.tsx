@@ -469,7 +469,10 @@ return { values: {}, errors: formattedErrors }
       note: cleanNote,
       api_type: 'buy_api',
       multi_inputs: multiInputFields,
-      price_by_duration: formattedPriceFields,
+      // per_unit: giữ price_by_duration cũ nếu có (không xóa mốc)
+      price_by_duration: pricingMode === 'per_unit' && formattedPriceFields.filter((f: any) => f.key).length === 0
+        ? (serviceData?.price_by_duration || [])
+        : formattedPriceFields,
       cost_price: autoCostPrice,
       metadata: metadataFinal,
       pricing_mode: pricingMode,
@@ -1272,7 +1275,20 @@ return <Chip key={val} label={p?.label || val} size='small' />
                       size='small'
                       label='Pricing mode'
                       value={pricingMode}
-                      onChange={(e) => setPricingMode(e.target.value as 'fixed' | 'per_unit')}
+                      onChange={(e) => {
+                        const mode = e.target.value as 'fixed' | 'per_unit'
+
+                        setPricingMode(mode)
+
+                        // Đổi về fixed mà chưa có mốc giá → tạo mặc định
+                        if (mode === 'fixed' && priceFields.filter(f => f.key && f.value).length === 0) {
+                          setPriceFields([
+                            { key: '1', value: '', cost: '' },
+                            { key: '7', value: '', cost: '' },
+                            { key: '30', value: '', cost: '' },
+                          ])
+                        }
+                      }}
                     >
                       <MenuItem value='fixed'>Mốc cố định</MenuItem>
                       <MenuItem value='per_unit'>Nhập tự do (per unit)</MenuItem>
@@ -1315,6 +1331,15 @@ return <Chip key={val} label={p?.label || val} size='small' />
                         />
                       </Grid2>
                     </>
+                  )}
+
+                  {/* Khi per_unit: hiện mốc giá cũ đã lưu (read-only) */}
+                  {pricingMode === 'per_unit' && priceFields.filter(f => f.key && f.value).length > 0 && (
+                    <Grid2 size={{ xs: 12 }}>
+                      <div style={{ fontSize: '11.5px', color: '#94a3b8', padding: '6px 10px', background: '#f8fafc', borderRadius: 8, border: '1px solid #e2e8f0' }}>
+                        Có {priceFields.filter(f => f.key && f.value).length} mốc giá cố định đã lưu trước đó — sẽ được giữ lại để dùng khi đổi về "Mốc cố định"
+                      </div>
+                    </Grid2>
                   )}
 
                   {pricingMode === 'fixed' && (
