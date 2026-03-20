@@ -611,12 +611,17 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
                     >
                       Mốc cố định
                     </button>
+                    {/* Per_unit chỉ khả dụng khi mẹ per_unit — mẹ fixed chỉ bán theo mốc */}
                     <button
                       type='button'
-                      onClick={() => setPricingMode('per_unit')}
+                      onClick={() => { if (parentPricingMode === 'per_unit') setPricingMode('per_unit') }}
+                      disabled={parentPricingMode === 'fixed'}
+                      title={parentPricingMode === 'fixed' ? 'Site mẹ bán theo mốc cố định — không thể bán tự do' : ''}
                       style={{
                         padding: '4px 12px', fontSize: '12px', fontWeight: 600, borderRadius: 6, border: '1px solid',
-                        cursor: 'pointer', transition: 'all 0.15s',
+                        transition: 'all 0.15s',
+                        cursor: parentPricingMode === 'fixed' ? 'not-allowed' : 'pointer',
+                        opacity: parentPricingMode === 'fixed' ? 0.4 : 1,
                         background: pricingMode === 'per_unit' ? '#1e293b' : '#fff',
                         color: pricingMode === 'per_unit' ? '#fff' : '#64748b',
                         borderColor: pricingMode === 'per_unit' ? '#1e293b' : '#e2e8f0',
@@ -625,8 +630,8 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
                       Nhập tự do ({timeUnit === 'month' ? 'tháng' : 'ngày'})
                     </button>
                   </div>
-                  {pricingMode !== parentPricingMode && (
-                    <span style={{ fontSize: '11px', color: '#f59e0b' }}>Khác site mẹ ({parentPricingMode === 'per_unit' ? 'tự do' : 'cố định'})</span>
+                  {parentPricingMode === 'fixed' && pricingMode === 'fixed' && (
+                    <span style={{ fontSize: '11px', color: '#64748b' }}>Site mẹ bán theo mốc — chỉ hỗ trợ bán mốc cố định</span>
                   )}
                 </div>
               )}
