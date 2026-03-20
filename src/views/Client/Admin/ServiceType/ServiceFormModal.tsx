@@ -989,8 +989,10 @@ return <Chip key={val} label={p?.label || val} size='small' />
 
                 {/* User:Pass mode — cho admin chọn + preview */}
                 {(watch('auth_type') === 'userpass' || watch('auth_type') === 'both') && (
-                  <Grid2 size={{ xs: 12 }} sx={{ mt: -0.5 }}>
-                    <div style={{ display: 'flex', gap: 8, marginBottom: 6 }}>
+                  <Grid2 size={{ xs: 12 }}>
+                    <div style={{ border: '1px solid #e2e8f0', borderRadius: 10, padding: '12px 14px', background: '#fafbfc' }}>
+                    <div style={{ fontSize: '12px', fontWeight: 700, color: '#1e293b', marginBottom: 8 }}>User:Pass cho khách hàng</div>
+                    <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
                       <button
                         type='button'
                         onClick={() => setAllowCustomAuth(false)}
@@ -1031,6 +1033,7 @@ return <Chip key={val} label={p?.label || val} size='small' />
                           <div style={{ color: '#64748b', marginTop: 2 }}>Không hiện input — hệ thống tự sinh user:pass random</div>
                         </div>
                       )}
+                    </div>
                     </div>
                   </Grid2>
                 )}
