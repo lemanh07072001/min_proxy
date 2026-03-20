@@ -161,6 +161,7 @@ export default function ServiceFormModal({ open, onClose, serviceId, initialData
     options: Array<{ value: string; label: string }>
   }
   const [purchaseOptions, setPurchaseOptions] = useState<PurchaseOption[]>([])
+  const [allowCustomAuth, setAllowCustomAuth] = useState(false)
 
   // Derive dynamic options from existing service types
   const protocols = useMemo(() => {
@@ -359,8 +360,9 @@ return { values: {}, errors: formattedErrors }
         metadata_json: '',
       })
 
-      // Load purchase options từ metadata
+      // Load purchase options + allow_custom_auth từ metadata
       const meta = serviceData.metadata || {}
+      setAllowCustomAuth(!!meta.allow_custom_auth)
       if (meta.custom_fields && Array.isArray(meta.custom_fields)) {
         setPurchaseOptions(meta.custom_fields.map((f: any) => ({
           param: f.param || '',
@@ -408,6 +410,7 @@ return { values: {}, errors: formattedErrors }
       setMultiInputFields([{ key: '', value: '' }])
       setPriceFields([{ key: '', value: '', cost: '' }])
       setPurchaseOptions([])
+      setAllowCustomAuth(false)
       setPricingMode('fixed')
       setTimeUnit('day')
       setPricePerUnit('')
@@ -458,6 +461,9 @@ return { values: {}, errors: formattedErrors }
       }))
     } : null
 
+    // Merge allow_custom_auth vào metadata
+    const metadataFinal = { ...(metadata || {}), allow_custom_auth: allowCustomAuth }
+
     const submitData: any = {
       ...data,
       note: cleanNote,
@@ -465,7 +471,7 @@ return { values: {}, errors: formattedErrors }
       multi_inputs: multiInputFields,
       price_by_duration: formattedPriceFields,
       cost_price: autoCostPrice,
-      metadata,
+      metadata: metadataFinal,
       pricing_mode: pricingMode,
       time_unit: timeUnit,
       price_per_unit: pricingMode === 'per_unit' ? (parseInt(pricePerUnit) || null) : null,
@@ -977,6 +983,22 @@ return <Chip key={val} label={p?.label || val} size='small' />
                     )}
                   />
                 </Grid2>
+
+                {/* Toggle: cho phép khách tự nhập user/pass */}
+                {(watch('auth_type') === 'userpass' || watch('auth_type') === 'both') && (
+                  <Grid2 size={{ xs: 12 }} sx={{ mt: -0.5 }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: '12px', color: '#475569', paddingLeft: 2 }}>
+                      <input
+                        type='checkbox'
+                        checked={allowCustomAuth}
+                        onChange={e => setAllowCustomAuth(e.target.checked)}
+                        style={{ width: 16, height: 16, accentColor: 'var(--primary-hover, #3b82f6)' }}
+                      />
+                      Cho phép khách tự nhập User:Pass
+                      <span style={{ color: '#94a3b8', fontWeight: 400 }}>— Tắt = hệ thống random tự động</span>
+                    </label>
+                  </Grid2>
+                )}
 
                 <Grid2 size={{ xs: 6, sm: 3 }}>
                   <Controller

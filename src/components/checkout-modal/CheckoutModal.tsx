@@ -38,6 +38,7 @@ interface CheckoutModalProps {
   pricingMode?: 'fixed' | 'per_unit'
   timeUnit?: 'day' | 'month'
   pricePerUnit?: number
+  allowCustomAuth?: boolean
   customFields?: Array<{
     param: string
     label: string
@@ -64,6 +65,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({
   pricingMode = 'fixed',
   timeUnit = 'day',
   pricePerUnit = 0,
+  allowCustomAuth = false,
   customFields
 }) => {
   const [selectedDuration, setSelectedDuration] = useState(priceOptions[0]?.key || '1')
@@ -72,6 +74,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({
   const [quantity, setQuantity] = useState(1)
   const [discountCode, setDiscountCode] = useState('')
   const [purchaseSuccess, setPurchaseSuccess] = useState(false)
+  const [apiError, setApiError] = useState('')
   const [authMethod, setAuthMethod] = useState<'userpass' | 'ip_whitelist'>('userpass')
   const [customUser, setCustomUser] = useState('')
   const [customPass, setCustomPass] = useState('')
@@ -111,6 +114,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({
   useEffect(() => {
     if (open) {
       setPurchaseSuccess(false)
+      setApiError('')
       isSubmitting.current = false
     }
   }, [open])
@@ -120,7 +124,6 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({
   const unitPrice = isPerUnit ? (pricePerUnit * customDuration) : (selectedOption?.price || 0)
   const activeDuration = isPerUnit ? String(customDuration) : selectedDuration
   const total = unitPrice * quantity
-  const isBalanceSufficient = sodu >= total
 
   const calculateDiscount = (key: string, price: number) => {
     if (priceOptions.length <= 1) return null
@@ -172,13 +175,14 @@ return pct > 0 ? Math.round(pct) : null
     },
     onError: (error: any) => {
       isSubmitting.current = false
-      toast.error(error.response?.data?.message || 'Lỗi không xác định')
+      setApiError(error.response?.data?.message || 'Lỗi không xác định, vui lòng thử lại.')
     }
   })
 
   const handlePurchase = () => {
     if (isSubmitting.current || isPending || purchaseSuccess) return
     isSubmitting.current = true
+    setApiError('')
 
     // Validate user:pass pair
     if (customUser && !customPass) {
@@ -371,27 +375,36 @@ return (
           {/* Custom user:pass (khi auth = userpass hoặc both+userpass) */}
           {showUserPassFields && authMethod === 'userpass' && (
             <div className='checkout-section'>
-              <label className='checkout-section-label'>TÀI KHOẢN PROXY (bỏ trống = random)</label>
-              <div style={{ display: 'flex', gap: 8 }}>
-                <input
-                  type='text'
-                  placeholder='Username'
-                  value={customUser}
-                  onChange={e => setCustomUser(e.target.value.replace(/[^a-zA-Z0-9_.-]/g, ''))}
-                  className='discount-input'
-                  style={{ flex: 1 }}
-                  maxLength={50}
-                />
-                <input
-                  type='text'
-                  placeholder='Password'
-                  value={customPass}
-                  onChange={e => setCustomPass(e.target.value.replace(/[^a-zA-Z0-9_.-]/g, ''))}
-                  className='discount-input'
-                  style={{ flex: 1 }}
-                  maxLength={50}
-                />
-              </div>
+              {allowCustomAuth ? (
+                <>
+                  <label className='checkout-section-label'>TÀI KHOẢN PROXY (bỏ trống = random)</label>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <input
+                      type='text'
+                      placeholder='Username'
+                      value={customUser}
+                      onChange={e => setCustomUser(e.target.value.replace(/[^a-zA-Z0-9_.-]/g, ''))}
+                      className='discount-input'
+                      style={{ flex: 1 }}
+                      maxLength={50}
+                    />
+                    <input
+                      type='text'
+                      placeholder='Password'
+                      value={customPass}
+                      onChange={e => setCustomPass(e.target.value.replace(/[^a-zA-Z0-9_.-]/g, ''))}
+                      className='discount-input'
+                      style={{ flex: 1 }}
+                      maxLength={50}
+                    />
+                  </div>
+                </>
+              ) : (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', background: '#f0f9ff', borderRadius: 8, border: '1px solid #bae6fd' }}>
+                  <span style={{ fontSize: '13px' }}>🔑</span>
+                  <span style={{ fontSize: '12.5px', color: '#0369a1' }}>User:Pass được tạo tự động sau khi mua</span>
+                </div>
+              )}
             </div>
           )}
 
@@ -494,14 +507,11 @@ return (
             </div>
           </div>
 
-          {/* Balance warning — chỉ cảnh báo, không chặn mua (BE check cuối cùng) */}
-          {!isBalanceSufficient && (
+          {/* Lỗi từ API — hiện inline thay vì toast */}
+          {apiError && (
             <div className='checkout-warning'>
               <AlertTriangle size={16} />
-              <span>
-                Số dư không đủ. Cần thêm{' '}
-                <strong>{(total - sodu).toLocaleString('vi-VN')}đ</strong> để thanh toán.
-              </span>
+              <span>{apiError}</span>
             </div>
           )}
         </div>

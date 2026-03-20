@@ -288,6 +288,7 @@ return
         pricingMode={provider.pricing_mode || 'fixed'}
         timeUnit={provider.time_unit || 'day'}
         pricePerUnit={provider.price_per_unit || 0}
+        allowCustomAuth={!!provider.metadata?.allow_custom_auth}
         customFields={provider.metadata?.custom_fields || undefined}
       />
     </>

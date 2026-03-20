@@ -38,6 +38,14 @@ import TicketDetailDialog from './TicketDetailDialog'
 export default function TicketsPage() {
   const [isCreateOpen, setIsCreateOpen] = useState(false)
   const [selectedTicket, setSelectedTicket] = useState<any>(null)
+  const [previewImage, setPreviewImage] = useState('')
+
+  const resolveUrl = (path: string) => {
+    if (!path || path.startsWith('http')) return path
+    const apiBase = (process.env.NEXT_PUBLIC_API_URL || '').replace(/\/api\/?$/, '')
+
+    return apiBase ? `${apiBase}${path}` : path
+  }
 
   const { data: tickets = [], isLoading } = useMyTickets()
 
@@ -75,29 +83,44 @@ export default function TicketsPage() {
         )
       },
       {
-        header: 'Đơn hàng',
-        size: 140,
-        cell: ({ row }: { row: any }) => (
-          <span style={{ fontSize: '13px', color: row.original.order ? undefined : '#94a3b8' }}>
-            {row.original.order?.order_code || '—'}
-          </span>
-        )
+        header: 'Tham chiếu',
+        size: 160,
+        cell: ({ row }: { row: any }) => {
+          const t = row.original
+
+          if (t.deposit) return (
+            <div style={{ fontSize: '12px' }}>
+              <div style={{ fontWeight: 600 }}>Nạp tiền #{t.deposit.id}</div>
+              <div style={{ color: '#64748b' }}>{Number(t.deposit.amount).toLocaleString('vi-VN')}đ</div>
+            </div>
+          )
+
+          if (t.order) return (
+            <span style={{ fontSize: '12px', fontWeight: 600 }}>{t.order.order_code}</span>
+          )
+
+          return <span style={{ fontSize: '12px', color: '#94a3b8' }}>—</span>
+        }
       },
       {
         accessorKey: 'message',
         header: 'Nội dung',
         size: 250,
         cell: ({ row }: { row: any }) => (
-          <div
-            style={{
-              fontSize: '13px',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-              maxWidth: '250px'
-            }}
-          >
-            {row.original.message}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{ fontSize: '13px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '200px', flex: 1 }}>
+              {row.original.message}
+            </div>
+            {row.original.image_url && (
+              <div style={{ width: 28, height: 28, borderRadius: 4, overflow: 'hidden', border: '1px solid #e2e8f0', flexShrink: 0 }}>
+                <img
+                  src={resolveUrl(row.original.image_url)}
+                  alt=''
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', cursor: 'pointer' }}
+                  onClick={(e) => { e.stopPropagation(); setPreviewImage(resolveUrl(row.original.image_url)) }}
+                />
+              </div>
+            )}
           </div>
         )
       },
@@ -248,6 +271,16 @@ export default function TicketsPage() {
 
       <CreateTicketDialog open={isCreateOpen} onClose={() => setIsCreateOpen(false)} />
       <TicketDetailDialog open={!!selectedTicket} onClose={() => setSelectedTicket(null)} ticket={selectedTicket} />
+
+      {/* Image preview */}
+      {previewImage && (
+        <div
+          onClick={() => setPreviewImage('')}
+          style={{ position: 'fixed', inset: 0, zIndex: 99999, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+        >
+          <img src={previewImage} alt='' style={{ maxWidth: '90vw', maxHeight: '90vh', borderRadius: 8 }} />
+        </div>
+      )}
     </>
   )
 }

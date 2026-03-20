@@ -39,6 +39,7 @@ export default function ResolveTicketDialog({ open, onClose, ticket }: Props) {
   const [replyText, setReplyText] = useState('')
   const [replyImage, setReplyImage] = useState<File | null>(null)
   const [replyPreview, setReplyPreview] = useState('')
+  const [fullImage, setFullImage] = useState('')
   const fileRef = useRef<HTMLInputElement>(null)
 
   const resolveTicket = useResolveTicket()
@@ -92,6 +93,7 @@ export default function ResolveTicketDialog({ open, onClose, ticket }: Props) {
   }
 
   return (
+    <>
     <Dialog open={open} onClose={onClose} maxWidth='md' fullWidth>
       <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', pb: 1 }}>
         <span>
@@ -136,7 +138,7 @@ export default function ResolveTicketDialog({ open, onClose, ticket }: Props) {
               </div>
             )}
             {ticket.image_url && (
-              <img src={resolveUrl(ticket.image_url)} alt='' style={{ maxWidth: '100%', borderRadius: 8, border: '1px solid #e2e8f0' }} />
+              <img src={resolveUrl(ticket.image_url)} alt='' style={{ maxWidth: '100%', borderRadius: 8, border: '1px solid #e2e8f0', cursor: 'pointer' }} onClick={() => setFullImage(resolveUrl(ticket.image_url))} />
             )}
 
             {/* Resolve form */}
@@ -206,7 +208,7 @@ export default function ResolveTicketDialog({ open, onClose, ticket }: Props) {
                   </div>
                   <p style={{ margin: 0, fontSize: '13px', whiteSpace: 'pre-wrap', lineHeight: 1.5 }}>{r.message}</p>
                   {r.image_url && (
-                    <img src={resolveUrl(r.image_url)} alt='' style={{ maxHeight: 120, borderRadius: 8, marginTop: 6, border: '1px solid #e2e8f0' }} />
+                    <img src={resolveUrl(r.image_url)} alt='' style={{ maxHeight: 120, borderRadius: 8, marginTop: 6, border: '1px solid #e2e8f0', cursor: 'pointer' }} onClick={() => setFullImage(resolveUrl(r.image_url))} />
                   )}
                 </div>
               ))}
@@ -253,5 +255,14 @@ export default function ResolveTicketDialog({ open, onClose, ticket }: Props) {
         </div>
       </DialogContent>
     </Dialog>
+    {fullImage && (
+      <div
+        onClick={() => setFullImage('')}
+        style={{ position: 'fixed', inset: 0, zIndex: 99999, background: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+      >
+        <img src={fullImage} alt='' style={{ maxWidth: '90vw', maxHeight: '90vh', borderRadius: 8 }} />
+      </div>
+    )}
+    </>
   )
 }
