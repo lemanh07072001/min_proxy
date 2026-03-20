@@ -1,7 +1,5 @@
 'use client'
 
-import { useRef } from 'react'
-
 import { useParams, useRouter } from 'next/navigation'
 
 import { createPortal } from 'react-dom'
@@ -42,12 +40,8 @@ const NavbarContent = () => {
   const { openAuthModal } = useModalContext()
   const { primaryHover } = useBranding()
 
-  // Nhớ trạng thái auth trước đó — tránh nháy khi NextAuth refetch session
-  const wasAuthRef = useRef(false)
-
-  if (session.status === 'authenticated') wasAuthRef.current = true
-  if (session.status === 'unauthenticated') wasAuthRef.current = false
-  const isAuthenticated = session.status === 'authenticated' || (session.status === 'loading' && wasAuthRef.current)
+  const isAuthenticated = session.status === 'authenticated'
+  const isUnauthenticated = session.status === 'unauthenticated'
   const { data: pendingData } = usePendingBankQr(isAuthenticated)
   const pendingRecord = pendingData?.data ?? null
 
@@ -67,7 +61,7 @@ const NavbarContent = () => {
 
       </div>
       <div className='flex items-center gap-2'>
-        {isAuthenticated && pendingRecord && (
+        {(isAuthenticated || !isUnauthenticated) && pendingRecord && (
           <Box
             onClick={handleNavigateRecharge}
             sx={{
@@ -103,48 +97,45 @@ const NavbarContent = () => {
           </Box>
         )}
 
-        {isAuthenticated ? (
-          <Button
-            variant='outlined'
-            onClick={handleNavigateRecharge}
-            sx={{
-              padding: '7px 10px',
-              fontSize: '0.875rem',
-              display: 'flex',
-              gap: '10px',
+        {/* Nạp tiền — ẩn bằng CSS, không unmount */}
+        <Button
+          variant='outlined'
+          onClick={handleNavigateRecharge}
+          sx={{
+            padding: '7px 10px',
+            fontSize: '0.875rem',
+            display: isUnauthenticated ? 'none' : 'flex',
+            gap: '10px',
+            borderColor: primaryHover,
+            color: primaryHover,
+            '&:hover': {
               borderColor: primaryHover,
-              color: primaryHover,
-              '&:hover': {
-                borderColor: primaryHover,
-                backgroundColor: `${primaryHover}14`,
-              }
-            }}
-          >
-            <Wallet size={16} />
-            Nạp tiền
-          </Button>
-        ) : null}
+              backgroundColor: `${primaryHover}14`,
+            }
+          }}
+        >
+          <Wallet size={16} />
+          Nạp tiền
+        </Button>
 
         <LanguageDropdown />
 
-        {/* Hiển thị UserDropdown nếu đã đăng nhập, button đăng nhập nếu chắc chắn chưa login */}
-        {/* Khi loading (refetch session) → giữ nguyên trạng thái cũ, tránh nháy */}
-
-        {session.status === 'authenticated' ? (
+        {/* Auth area — luôn render cả hai, toggle bằng CSS display để không nháy */}
+        <div style={{ display: isUnauthenticated ? 'none' : 'flex' }}>
           <UserDropdown />
-        ) : session.status === 'unauthenticated' ? (
-          <Button
-            onClick={handleOpenLoginModal}
-            className='px-4 py-2 text-sm  text-white rounded-lg h transition-colors'
-            sx={{
-              '&.MuiButtonBase-root': {
-                background: 'var(--primary-gradient)'
-              }
-            }}
-          >
-            Đăng nhập
-          </Button>
-        ) : null}
+        </div>
+        <Button
+          onClick={handleOpenLoginModal}
+          className='px-4 py-2 text-sm text-white rounded-lg h transition-colors'
+          sx={{
+            display: isUnauthenticated ? 'inline-flex' : 'none',
+            '&.MuiButtonBase-root': {
+              background: 'var(--primary-gradient)'
+            }
+          }}
+        >
+          Đăng nhập
+        </Button>
       </div>
 
       {/* AuthModal - Render trong Portal để tránh constraints */}

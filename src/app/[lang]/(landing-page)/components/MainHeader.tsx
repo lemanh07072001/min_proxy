@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useContext, useCallback, useRef } from 'react'
+import React, { useState, useEffect, useContext, useCallback } from 'react'
 
 import Image from 'next/image'
 import dynamic from 'next/dynamic'
@@ -34,12 +34,7 @@ const MainHeader = () => {
   const session = useSession()
   const { logo, name } = useBranding()
 
-  // Nhớ trạng thái auth — tránh nháy khi NextAuth refetch
-  const wasAuthRef = useRef(false)
-
-  if (session?.status === 'authenticated') wasAuthRef.current = true
-  if (session?.status === 'unauthenticated') wasAuthRef.current = false
-  const isAuthenticated = session?.status === 'authenticated' || (session?.status === 'loading' && wasAuthRef.current)
+  const isUnauthenticated = session?.status === 'unauthenticated'
 
   // Lightweight scroll listener thay cho framer-motion
   useEffect(() => {
@@ -136,13 +131,14 @@ const MainHeader = () => {
 
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               <LanguageDropdown />
-              {isAuthenticated ? (
+              <div style={{ display: isUnauthenticated ? 'none' : 'flex' }}>
                 <UserDropdown />
-              ) : session?.status === 'unauthenticated' ? (
+              </div>
+              {isUnauthenticated && (
                 <CustomIconButton aria-label='login' color='primary' size='small' onClick={handleOpenModalLogin}>
                   <User />
                 </CustomIconButton>
-              ) : null}
+              )}
             </Box>
           </div>
 
