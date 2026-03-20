@@ -55,6 +55,10 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
   const [selectedSupplierCode, setSelectedSupplierCode] = useState<string | null>(null)
   const { notification, showSuccess, showError, clear: clearNotification } = useFormNotification()
   const [priceFields, setPriceFields] = useState<Array<{ key: string; value: string; cost: string }>>([])
+  const [pricingMode, setPricingMode] = useState<'fixed' | 'per_unit'>('fixed')
+  const [timeUnit, setTimeUnit] = useState<'day' | 'month'>('day')
+  const [pricePerUnit, setPricePerUnit] = useState('')
+  const [costPerUnit, setCostPerUnit] = useState('')
 
   // All supplier products (imported + available)
   const allSupplierProducts = useMemo(() => {
@@ -137,6 +141,12 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
         })))
       }
 
+      // Load pricing mode
+      setPricingMode(serviceData.pricing_mode || 'fixed')
+      setTimeUnit(serviceData.time_unit || 'day')
+      setPricePerUnit(serviceData.price_per_unit?.toString() || '')
+      setCostPerUnit(serviceData.cost_per_unit?.toString() || '')
+
       let parsedProtocols = serviceData.protocols
 
       if (typeof parsedProtocols === 'string') try { parsedProtocols = JSON.parse(parsedProtocols) } catch { parsedProtocols = [] }
@@ -179,16 +189,27 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
       setValue('protocols', selectedProduct.protocols)
     }
 
-    // Set price fields from supplier prices
-    const prices = selectedProduct.supplier_prices || {}
+    // Set pricing mode theo site mẹ
+    const parentMode = selectedProduct.pricing_mode || 'fixed'
+    setPricingMode(parentMode)
+    setTimeUnit(selectedProduct.time_unit || 'day')
 
-    setPriceFields(
-      Object.entries(prices).map(([key, cost]) => ({
-        key,
-        value: '', // Admin sẽ nhập giá bán
-        cost: String(cost),
-      }))
-    )
+    if (parentMode === 'per_unit') {
+      // Per_unit: giá nhập = price_per_unit site mẹ
+      setCostPerUnit(String(selectedProduct.price_per_unit || 0))
+      setPricePerUnit('') // Admin nhập giá bán
+      setPriceFields([])
+    } else {
+      // Fixed: set price fields từ supplier prices
+      const prices = selectedProduct.supplier_prices || {}
+      setPriceFields(
+        Object.entries(prices).map(([key, cost]) => ({
+          key,
+          value: '', // Admin sẽ nhập giá bán
+          cost: String(cost),
+        }))
+      )
+    }
   }, [selectedProduct, isEditMode, setValue])
 
   // Reset when modal opens
@@ -207,6 +228,10 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
       setSelectedSupplierId(null)
       setSelectedSupplierCode(null)
       setPriceFields([])
+      setPricingMode('fixed')
+      setTimeUnit('day')
+      setPricePerUnit('')
+      setCostPerUnit('')
     }
   }, [open, isEditMode, reset])
 
@@ -256,37 +281,55 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
   }
 
   const onSubmit = (data: any) => {
-    // Validate giá bán
-    const emptyPrices = priceFields.filter(p => !p.value || parseInt(p.value) <= 0)
+    if (pricingMode === 'per_unit') {
+      // Per_unit: validate giá bán/đơn vị
+      const sell = parseInt(pricePerUnit)
+      const cost = parseInt(costPerUnit)
 
-    if (priceFields.length > 0 && emptyPrices.length > 0) {
-      showError('Vui lòng nhập giá bán cho tất cả thời gian')
-      document.getElementById('child-form-alert')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+      if (!sell || sell <= 0) {
+        showError('Vui lòng nhập giá bán / đơn vị')
+        return
+      }
 
-      return
-    }
+      if (cost > 0 && sell <= cost) {
+        showError(`Giá bán phải cao hơn giá nhập (${cost.toLocaleString('vi-VN')}đ/${timeUnit === 'month' ? 'tháng' : 'ngày'})`)
+        return
+      }
+    } else {
+      // Fixed: validate giá bán
+      const emptyPrices = priceFields.filter(p => !p.value || parseInt(p.value) <= 0)
 
-    // Check giá bán > giá nhập
-    const underPriced = priceFields.filter(p => parseInt(p.value) <= parseInt(p.cost))
+      if (priceFields.length > 0 && emptyPrices.length > 0) {
+        showError('Vui lòng nhập giá bán cho tất cả thời gian')
+        document.getElementById('child-form-alert')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+        return
+      }
 
-    if (underPriced.length > 0) {
-      const label = getDurationLabel(underPriced[0].key)
+      const underPriced = priceFields.filter(p => parseInt(p.value) <= parseInt(p.cost))
 
-      showError(`Giá bán ${label} phải cao hơn giá nhập (${parseInt(underPriced[0].cost).toLocaleString('vi-VN')}đ)`)
-      document.getElementById('child-form-alert')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
-
-      return
+      if (underPriced.length > 0) {
+        const label = getDurationLabel(underPriced[0].key)
+        showError(`Giá bán ${label} phải cao hơn giá nhập (${parseInt(underPriced[0].cost).toLocaleString('vi-VN')}đ)`)
+        document.getElementById('child-form-alert')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+        return
+      }
     }
 
     const submitData: any = {
       ...data,
-      price: parseInt(priceFields[0]?.value || '0'),
-      price_by_duration: priceFields.map(p => ({
+      pricing_mode: pricingMode,
+      time_unit: timeUnit,
+      price_per_unit: pricingMode === 'per_unit' ? (parseInt(pricePerUnit) || null) : null,
+      cost_per_unit: pricingMode === 'per_unit' ? (parseInt(costPerUnit) || null) : null,
+      price: pricingMode === 'per_unit' ? (parseInt(pricePerUnit) || 0) : parseInt(priceFields[0]?.value || '0'),
+      price_by_duration: pricingMode === 'per_unit' ? [] : priceFields.map(p => ({
         key: p.key,
         value: parseInt(p.value),
         cost: parseInt(p.cost),
       })),
-      cost_price: Math.min(...priceFields.map(p => parseInt(p.cost) || 0)),
+      cost_price: pricingMode === 'per_unit'
+        ? (parseInt(costPerUnit) || 0)
+        : Math.min(...priceFields.map(p => parseInt(p.cost) || 0).filter(v => v > 0), 0),
       proxy_type: data.proxy_type || 'residential',
       country: data.country || '',
       api_type: 'buy_api',
@@ -514,8 +557,57 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
                 </Grid2>
               </Grid2>
 
-              {/* Bảng giá — giá nhập (read-only) | giá bán (editable) */}
-              {priceFields.length > 0 && (
+              {/* Chế độ giá (read-only, theo site mẹ) */}
+              {selectedProduct && (
+                <div style={{ fontSize: '12px', color: '#64748b', marginBottom: 4 }}>
+                  Chế độ giá: <strong style={{ color: '#1e293b' }}>{pricingMode === 'per_unit' ? `Nhập tự do (${timeUnit === 'month' ? 'tháng' : 'ngày'})` : 'Mốc cố định'}</strong>
+                  <span style={{ color: '#94a3b8' }}> — theo site mẹ</span>
+                </div>
+              )}
+
+              {/* Per_unit: giá nhập + giá bán / đơn vị */}
+              {pricingMode === 'per_unit' && (selectedProduct || isEditMode) && (
+                <div style={{ border: '1px solid #e2e8f0', borderRadius: 10, padding: 12, marginBottom: 8 }}>
+                  <div style={{ fontSize: '13px', fontWeight: 600, color: '#1e293b', marginBottom: 8 }}>
+                    Giá theo {timeUnit === 'month' ? 'tháng' : 'ngày'}
+                  </div>
+                  <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start' }}>
+                    <TextField
+                      size='small'
+                      label={`Giá nhập/${timeUnit === 'month' ? 'tháng' : 'ngày'}`}
+                      value={costPerUnit ? parseInt(costPerUnit).toLocaleString('vi-VN') : ''}
+                      disabled
+                      sx={{ width: 160, '& input': { fontSize: '13px' } }}
+                    />
+                    <TextField
+                      size='small'
+                      label={`Giá bán/${timeUnit === 'month' ? 'tháng' : 'ngày'}`}
+                      value={pricePerUnit ? parseInt(pricePerUnit).toLocaleString('vi-VN') : ''}
+                      onChange={e => setPricePerUnit(e.target.value.replace(/[^0-9]/g, ''))}
+                      placeholder='Nhập giá bán'
+                      error={!!pricePerUnit && parseInt(costPerUnit) > 0 && parseInt(pricePerUnit) <= parseInt(costPerUnit)}
+                      sx={{ width: 160, '& input': { fontSize: '13px' } }}
+                    />
+                    {parseInt(pricePerUnit) > 0 && parseInt(costPerUnit) > 0 && (
+                      <div style={{ fontSize: '13px', paddingTop: 8 }}>
+                        <span style={{
+                          fontWeight: 600,
+                          color: parseInt(pricePerUnit) > parseInt(costPerUnit) ? '#22c55e' : '#ef4444'
+                        }}>
+                          +{(parseInt(pricePerUnit) - parseInt(costPerUnit)).toLocaleString('vi-VN')}đ
+                          ({Math.round(((parseInt(pricePerUnit) - parseInt(costPerUnit)) / parseInt(costPerUnit)) * 100)}%)
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: 6 }}>
+                    Khách hàng sẽ nhập số {timeUnit === 'month' ? 'tháng' : 'ngày'}, tổng = giá bán × số lượng.
+                  </div>
+                </div>
+              )}
+
+              {/* Bảng giá fixed — giá nhập (read-only) | giá bán (editable) */}
+              {pricingMode === 'fixed' && priceFields.length > 0 && (
                 <div>
                   <div style={{ fontSize: '13px', fontWeight: 600, color: '#1e293b', marginBottom: 8 }}>
                     Bảng giá
