@@ -36,15 +36,28 @@ export default function TicketDetailDialog({ open, onClose, ticket }: Props) {
   const [replyImage, setReplyImage] = useState<File | null>(null)
   const [replyPreview, setReplyPreview] = useState('')
   const [fullImage, setFullImage] = useState('')
+  const [localReplies, setLocalReplies] = useState<any[]>([])
   const fileRef = useRef<HTMLInputElement>(null)
   const reply = useUserReply()
+
+  // Reset local replies khi ticket đổi
+  const ticketId = ticket?.id
+  const [prevTicketId, setPrevTicketId] = useState<number | null>(null)
+
+  if (ticketId && ticketId !== prevTicketId) {
+    setPrevTicketId(ticketId)
+    setLocalReplies([])
+  }
 
   if (!ticket) return null
 
   const statusLabel = TICKET_STATUS_LABELS[ticket.status] || 'Không xác định'
   const statusColor = TICKET_STATUS_COLORS[ticket.status] || 'default'
   const isClosed = [TICKET_STATUS.RESOLVED, TICKET_STATUS.CLOSED, TICKET_STATUS.REJECTED].includes(ticket.status)
-  const replies = ticket.replies || []
+
+  const serverReplies = ticket.replies || []
+  const serverIds = new Set(serverReplies.map((r: any) => r.id))
+  const replies = [...serverReplies, ...localReplies.filter(r => !serverIds.has(r.id))]
 
   const handleReply = () => {
     if (!replyText.trim()) return
@@ -55,11 +68,13 @@ export default function TicketDetailDialog({ open, onClose, ticket }: Props) {
     if (replyImage) formData.append('image', replyImage)
 
     reply.mutate({ ticketId: ticket.id, data: formData }, {
-      onSuccess: () => {
+      onSuccess: (res: any) => {
+        const newReply = res?.data
+
+        if (newReply) setLocalReplies(prev => [...prev, newReply])
         setReplyText('')
         setReplyImage(null)
         setReplyPreview('')
-        toast.success('Đã gửi phản hồi')
       },
       onError: (err: any) => toast.error(err?.response?.data?.message || 'Lỗi')
     })
@@ -124,33 +139,32 @@ export default function TicketDetailDialog({ open, onClose, ticket }: Props) {
             </div>
           )}
 
-          {/* Reply thread */}
+          {/* Reply thread — chat bubble */}
           {replies.length > 0 && (
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', padding: '8px 12px', gap: 8 }}>
               {replies.map((r: any) => (
-                <div
-                  key={r.id}
-                  style={{
-                    padding: '10px 16px',
-                    background: r.is_admin ? '#f0fdf4' : '#fff',
-                    borderBottom: '1px solid #f8fafc',
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4, fontSize: '12px' }}>
-                    {r.is_admin ? (
-                      <ShieldCheck size={13} style={{ color: '#16a34a' }} />
-                    ) : (
-                      <UserCheck size={13} style={{ color: '#3b82f6' }} />
+                <div key={r.id} style={{ display: 'flex', justifyContent: r.is_admin ? 'flex-start' : 'flex-end' }}>
+                  <div style={{
+                    maxWidth: '85%', padding: '8px 12px',
+                    background: r.is_admin ? '#dcfce7' : '#eff6ff',
+                    borderRadius: r.is_admin ? '12px 12px 12px 4px' : '12px 12px 4px 12px',
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 3, fontSize: '11px' }}>
+                      {r.is_admin ? (
+                        <ShieldCheck size={11} style={{ color: '#16a34a' }} />
+                      ) : (
+                        <UserCheck size={11} style={{ color: '#3b82f6' }} />
+                      )}
+                      <strong style={{ color: r.is_admin ? '#16a34a' : '#3b82f6' }}>
+                        {r.user?.name || (r.is_admin ? 'Admin' : 'Bạn')}
+                      </strong>
+                      <span style={{ color: '#94a3b8' }}>{formatDateTimeLocal(r.created_at)}</span>
+                    </div>
+                    <p style={{ margin: 0, fontSize: '13px', whiteSpace: 'pre-wrap', lineHeight: 1.5 }}>{r.message}</p>
+                    {r.image_url && (
+                      <img src={resolveUrl(r.image_url)} alt='' style={{ maxHeight: 120, borderRadius: 8, marginTop: 6, border: '1px solid #e2e8f0', cursor: 'pointer' }} onClick={() => setFullImage(resolveUrl(r.image_url))} />
                     )}
-                    <strong style={{ color: r.is_admin ? '#16a34a' : '#3b82f6' }}>
-                      {r.user?.name || (r.is_admin ? 'Admin' : 'Bạn')}
-                    </strong>
-                    <span style={{ color: '#94a3b8' }}>{formatDateTimeLocal(r.created_at)}</span>
                   </div>
-                  <p style={{ margin: 0, fontSize: '13px', whiteSpace: 'pre-wrap', lineHeight: 1.5 }}>{r.message}</p>
-                  {r.image_url && (
-                    <img src={resolveUrl(r.image_url)} alt='' style={{ maxHeight: 120, borderRadius: 8, marginTop: 6, border: '1px solid #e2e8f0', cursor: 'pointer' }} onClick={() => setFullImage(resolveUrl(r.image_url))} />
-                  )}
                 </div>
               ))}
             </div>
