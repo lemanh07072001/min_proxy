@@ -641,10 +641,10 @@ body {
 
 .sidebar-video-item {
   display: flex;
-  align-items: center;
-  gap: 12px;
+  flex-direction: column;
+  gap: 8px;
   padding: 10px;
-  border-radius: 8px;
+  border-radius: 10px;
   background: #f8fafc;
   text-decoration: none;
   transition: background 0.15s;
@@ -655,8 +655,8 @@ body {
 }
 
 .sidebar-video-thumb {
-  width: 120px;
-  height: 68px;
+  width: 100%;
+  aspect-ratio: 16/9;
   border-radius: 8px;
   background: #fee2e2;
   color: #ef4444;

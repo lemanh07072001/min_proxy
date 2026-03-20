@@ -15,7 +15,8 @@ import {
   FormControlLabel,
   Checkbox
 } from '@mui/material'
-import { Share2, Clock, X, ChevronLeft, ChevronRight, MessageCircle, Send, Youtube, ExternalLink, Tag, Sparkles, TrendingUp, Wrench, Megaphone, Wallet, Globe, Search, BookOpen, ArrowRight } from 'lucide-react'
+import { Share2, Clock, X, ChevronLeft, ChevronRight, ExternalLink, Tag, Sparkles, TrendingUp, Wrench, Megaphone, Wallet, Globe, Search, BookOpen, ArrowRight, Youtube } from 'lucide-react'
+import { SOCIAL_ICON_MAP } from '@/components/icons/SocialIcons'
 import { toast } from 'react-toastify'
 import { useSelector } from 'react-redux'
 import type { RootState } from '@/store'
@@ -322,13 +323,8 @@ function AnnouncementPost({ announcement }: { announcement: Announcement }) {
 }
 
 /* ─── Sidebar Icon Map ─── */
-const ICON_MAP: Record<string, typeof MessageCircle> = {
-  zalo: MessageCircle,
-  facebook: ExternalLink,
-  telegram: Send,
-  youtube: Youtube,
-  other: ExternalLink
-}
+// Icon fallback cho platform không có SVG
+const LucideIconMap: Record<string, typeof ExternalLink> = { other: ExternalLink }
 
 /* ─── Sidebar ─── */
 function HomeSidebar() {
@@ -344,7 +340,8 @@ function HomeSidebar() {
           <h4 className='sidebar-card-title'>Bạn cần hỗ trợ?</h4>
           <div className='sidebar-links-grid'>
             {supportLinks.map(link => {
-              const Icon = ICON_MAP[link.icon] || ExternalLink
+              const SvgIcon = SOCIAL_ICON_MAP[link.icon]
+              const FallbackIcon = LucideIconMap[link.icon] || ExternalLink
 
               return (
                 <a
@@ -354,8 +351,8 @@ function HomeSidebar() {
                   rel='noopener noreferrer'
                   className='sidebar-link-item'
                 >
-                  <div className='sidebar-link-icon' style={{ backgroundColor: `${link.color}15`, color: link.color }}>
-                    <Icon size={20} />
+                  <div className='sidebar-link-icon' style={{ backgroundColor: SvgIcon ? 'transparent' : `${link.color}15`, color: link.color }}>
+                    {SvgIcon ? <SvgIcon size={36} /> : <FallbackIcon size={20} />}
                   </div>
                   <span className='sidebar-link-label'>{link.label}</span>
                 </a>

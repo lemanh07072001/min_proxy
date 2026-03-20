@@ -52,6 +52,7 @@ import StoreProvider from '@/components/StoreProvider'
 import ReferralHandler from '@/components/ReferralHandler'
 import { NextAuthProvider } from '@/app/contexts/nextAuthProvider'
 import NavigationProgress from '@/components/NavigationProgress'
+import FloatingContact from '@/components/FloatingContact'
 
 import { siteConfig } from '@/configs/siteConfig'
 import { getServerBranding } from '@/utils/getServerBranding'
@@ -234,6 +235,7 @@ const RootLayout = async (props: ChildrenType & { params: Promise<{ lang: string
                         <ReferralHandler />
                       </Suspense>
                       <div className='relative z-10 main'>{children}</div>
+                      <FloatingContact />
                     </ModalContextProvider>
                   </StoreProvider>
                 </BrandingProvider>
