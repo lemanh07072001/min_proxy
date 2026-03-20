@@ -354,12 +354,14 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
         ? (typeof serviceData.metadata === 'string' ? JSON.parse(serviceData.metadata || '{}') : serviceData.metadata)
         : {}
 
-      submitData.metadata = JSON.stringify({
+      submitData.metadata = {
         ...existingMeta,
         ...(selectedSupplierCode ? { supplier_product_code: selectedSupplierCode } : {}),
         ...(selectedSupplierId ? { supplier_product_id: selectedSupplierId } : {}),
-        supplier_prices: Object.fromEntries(priceFields.map(p => [p.key, parseInt(p.cost)])),
-      })
+        supplier_prices: pricingMode === 'per_unit'
+          ? { per_unit: parseInt(costPerUnit) || 0 }
+          : Object.fromEntries(priceFields.map(p => [p.key, parseInt(p.cost)])),
+      }
     }
 
     const mutation = isEditMode ? updateMutation : createMutation
