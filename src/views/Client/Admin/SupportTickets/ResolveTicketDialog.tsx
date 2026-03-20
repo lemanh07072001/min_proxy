@@ -80,7 +80,7 @@ export default function ResolveTicketDialog({ open, onClose, ticket }: Props) {
         const newReply = res?.data
 
         if (newReply) {
-          setLocalReplies(prev => [...prev, newReply])
+          setLocalReplies(prev => [...prev, { ...newReply, user_id: currentUserId }])
         }
 
         setReplyText('')

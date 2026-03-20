@@ -75,7 +75,7 @@ export default function TicketDetailDialog({ open, onClose, ticket }: Props) {
       onSuccess: (res: any) => {
         const newReply = res?.data
 
-        if (newReply) setLocalReplies(prev => [...prev, newReply])
+        if (newReply) setLocalReplies(prev => [...prev, { ...newReply, user_id: currentUserId }])
         setReplyText('')
         setReplyImage(null)
         setReplyPreview('')
