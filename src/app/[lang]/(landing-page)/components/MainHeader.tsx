@@ -39,8 +39,10 @@ const MainHeader = ({ serverLogo, serverName }: MainHeaderProps) => {
   const session = useSession()
   const { logo: clientLogo, name: clientName } = useBranding()
 
-  // Ưu tiên server logo (có ngay, không nháy), fallback client logo
-  const logo = serverLogo || clientLogo
+  const { isChild } = useBranding()
+
+  // Ưu tiên server logo → client logo → file mặc định (site mẹ)
+  const logo = serverLogo || clientLogo || (!isChild ? '/images/logo/Logo_MKT_Proxy.png' : '')
   const name = serverName || clientName
 
   const isUnauthenticated = session?.status === 'unauthenticated'

@@ -565,11 +565,46 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
                 </Grid2>
               </Grid2>
 
-              {/* Chế độ giá (read-only, theo site mẹ) */}
-              {selectedProduct && (
-                <div style={{ fontSize: '12px', color: '#64748b', marginBottom: 4 }}>
-                  Chế độ giá: <strong style={{ color: '#1e293b' }}>{pricingMode === 'per_unit' ? `Nhập tự do (${timeUnit === 'month' ? 'tháng' : 'ngày'})` : 'Mốc cố định'}</strong>
-                  <span style={{ color: '#94a3b8' }}> — theo site mẹ</span>
+              {/* Chế độ giá — site con được chọn riêng */}
+              {(selectedProduct || isEditMode) && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 4 }}>
+                  <span style={{ fontSize: '12px', color: '#64748b' }}>Chế độ giá bán:</span>
+                  <div style={{ display: 'flex', gap: 4 }}>
+                    <button
+                      type='button'
+                      onClick={() => {
+                        setPricingMode('fixed')
+                        if (pricingMode !== 'fixed' && priceFields.length === 0) {
+                          setPriceFields([{ key: '1', value: '', cost: '' }, { key: '7', value: '', cost: '' }, { key: '30', value: '', cost: '' }])
+                        }
+                      }}
+                      style={{
+                        padding: '4px 12px', fontSize: '12px', fontWeight: 600, borderRadius: 6, border: '1px solid',
+                        cursor: 'pointer', transition: 'all 0.15s',
+                        background: pricingMode === 'fixed' ? '#1e293b' : '#fff',
+                        color: pricingMode === 'fixed' ? '#fff' : '#64748b',
+                        borderColor: pricingMode === 'fixed' ? '#1e293b' : '#e2e8f0',
+                      }}
+                    >
+                      Mốc cố định
+                    </button>
+                    <button
+                      type='button'
+                      onClick={() => setPricingMode('per_unit')}
+                      style={{
+                        padding: '4px 12px', fontSize: '12px', fontWeight: 600, borderRadius: 6, border: '1px solid',
+                        cursor: 'pointer', transition: 'all 0.15s',
+                        background: pricingMode === 'per_unit' ? '#1e293b' : '#fff',
+                        color: pricingMode === 'per_unit' ? '#fff' : '#64748b',
+                        borderColor: pricingMode === 'per_unit' ? '#1e293b' : '#e2e8f0',
+                      }}
+                    >
+                      Nhập tự do ({timeUnit === 'month' ? 'tháng' : 'ngày'})
+                    </button>
+                  </div>
+                  {selectedProduct && pricingMode !== (selectedProduct.pricing_mode || 'fixed') && (
+                    <span style={{ fontSize: '11px', color: '#f59e0b' }}>Khác site mẹ ({selectedProduct.pricing_mode === 'per_unit' ? 'tự do' : 'cố định'})</span>
+                  )}
                 </div>
               )}
 
@@ -637,7 +672,22 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
 
                       return (
                         <div key={field.key} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', alignItems: 'center', padding: '8px 12px', borderBottom: idx < priceFields.length - 1 ? '1px solid #f1f5f9' : 'none' }}>
-                          <span style={{ fontSize: '13px', fontWeight: 600, color: '#1e293b' }}>{getDurationLabel(field.key)}</span>
+                          {field.cost ? (
+                            <span style={{ fontSize: '13px', fontWeight: 600, color: '#1e293b' }}>{getDurationLabel(field.key)}</span>
+                          ) : (
+                            <TextField
+                              size='small'
+                              type='text'
+                              value={field.key}
+                              onChange={e => {
+                                const raw = e.target.value.replace(/[^0-9]/g, '')
+
+                                setPriceFields(prev => prev.map((p, i) => i === idx ? { ...p, key: raw } : p))
+                              }}
+                              placeholder='Số ngày'
+                              sx={{ '& input': { fontSize: '13px', padding: '6px 10px' }, width: 80 }}
+                            />
+                          )}
                           <span style={{ fontSize: '13px', color: '#64748b' }}>{cost.toLocaleString('vi-VN')}đ</span>
                           <TextField
                             size='small'
@@ -664,6 +714,25 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
                   </div>
                   <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: 6 }}>
                     Giá nhập lấy tự động từ site mẹ, cập nhật mỗi giờ. Phần chênh lệch là lợi nhuận của bạn.
+                  </div>
+                  {/* Thêm/xóa mốc giá khi site con tự chọn fixed */}
+                  <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+                    <button
+                      type='button'
+                      onClick={() => setPriceFields(prev => [...prev, { key: '', value: '', cost: '' }])}
+                      style={{ fontSize: '12px', padding: '4px 10px', borderRadius: 6, border: '1px solid #e2e8f0', background: '#fff', cursor: 'pointer', color: '#475569' }}
+                    >
+                      + Thêm mốc
+                    </button>
+                    {priceFields.length > 1 && (
+                      <button
+                        type='button'
+                        onClick={() => setPriceFields(prev => prev.slice(0, -1))}
+                        style={{ fontSize: '12px', padding: '4px 10px', borderRadius: 6, border: '1px solid #fecaca', background: '#fff', cursor: 'pointer', color: '#ef4444' }}
+                      >
+                        − Xóa mốc cuối
+                      </button>
+                    )}
                   </div>
                 </div>
               )}
