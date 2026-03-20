@@ -131,11 +131,11 @@ const MainHeader = () => {
               <LanguageDropdown />
               {session && session.status === 'authenticated' ? (
                 <UserDropdown />
-              ) : (
+              ) : session?.status === 'unauthenticated' ? (
                 <CustomIconButton aria-label='login' color='primary' size='small' onClick={handleOpenModalLogin}>
                   <User />
                 </CustomIconButton>
-              )}
+              ) : null}
             </Box>
           </div>
 

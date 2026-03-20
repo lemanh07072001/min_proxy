@@ -41,6 +41,7 @@ const NavbarContent = () => {
   const { primaryHover } = useBranding()
 
   const isAuthenticated = session.status === 'authenticated'
+  const isLoading = session.status === 'loading'
   const { data: pendingData } = usePendingBankQr(isAuthenticated)
   const pendingRecord = pendingData?.data ?? null
 
@@ -60,7 +61,7 @@ const NavbarContent = () => {
 
       </div>
       <div className='flex items-center gap-2'>
-        {isAuthenticated && pendingRecord && (
+        {(isAuthenticated || isLoading) && pendingRecord && (
           <Box
             onClick={handleNavigateRecharge}
             sx={{
@@ -96,7 +97,7 @@ const NavbarContent = () => {
           </Box>
         )}
 
-        {isAuthenticated ? (
+        {(isAuthenticated || isLoading) ? (
           <Button
             variant='outlined'
             onClick={handleNavigateRecharge}
@@ -120,11 +121,12 @@ const NavbarContent = () => {
 
         <LanguageDropdown />
 
-        {/* Hiển thị UserDropdown nếu đã đăng nhập, button đăng nhập nếu chưa */}
+        {/* Hiển thị UserDropdown nếu đã đăng nhập, button đăng nhập nếu chắc chắn chưa login */}
+        {/* Khi loading (refetch session) → giữ nguyên trạng thái cũ, tránh nháy */}
 
         {session.status === 'authenticated' ? (
           <UserDropdown />
-        ) : (
+        ) : session.status === 'unauthenticated' ? (
           <Button
             onClick={handleOpenLoginModal}
             className='px-4 py-2 text-sm  text-white rounded-lg h transition-colors'
@@ -136,7 +138,7 @@ const NavbarContent = () => {
           >
             Đăng nhập
           </Button>
-        )}
+        ) : null}
       </div>
 
       {/* AuthModal - Render trong Portal để tránh constraints */}
