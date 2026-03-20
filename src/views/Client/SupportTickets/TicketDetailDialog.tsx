@@ -148,23 +148,24 @@ export default function TicketDetailDialog({ open, onClose, ticket }: Props) {
             <div style={{ display: 'flex', flexDirection: 'column', padding: '8px 12px', gap: 8 }}>
               {replies.map((r: any) => {
                 const isMe = r.user_id === currentUserId
-                const isMySide = isMe // Tin của mình bên phải, người khác bên trái
-                const displayName = isMe ? 'Bạn' : (r.is_admin ? 'Admin' : (r.user?.name || 'User'))
+                // Không có user_id (bị ẩn) = admin reply
+                const isAdminReply = !r.user_id || (r.user_id && r.user_id !== currentUserId && !r.user)
+                const displayName = isMe ? 'Bạn' : (isAdminReply ? 'Admin' : (r.user?.name || 'User'))
 
                 return (
-                <div key={r.id} style={{ display: 'flex', justifyContent: isMySide ? 'flex-end' : 'flex-start' }}>
+                <div key={r.id} style={{ display: 'flex', justifyContent: isMe ? 'flex-end' : 'flex-start' }}>
                   <div style={{
                     maxWidth: '85%', padding: '8px 12px',
-                    background: isMySide ? '#eff6ff' : '#dcfce7',
-                    borderRadius: isMySide ? '12px 12px 4px 12px' : '12px 12px 12px 4px',
+                    background: isMe ? '#eff6ff' : '#dcfce7',
+                    borderRadius: isMe ? '12px 12px 4px 12px' : '12px 12px 12px 4px',
                   }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 3, fontSize: '11px' }}>
-                      {r.is_admin ? (
+                      {isAdminReply ? (
                         <ShieldCheck size={11} style={{ color: '#16a34a' }} />
                       ) : (
                         <UserCheck size={11} style={{ color: '#3b82f6' }} />
                       )}
-                      <strong style={{ color: r.is_admin ? '#16a34a' : '#3b82f6' }}>
+                      <strong style={{ color: isAdminReply ? '#16a34a' : '#3b82f6' }}>
                         {displayName}
                       </strong>
                       <span style={{ color: '#94a3b8' }}>{formatDateTimeLocal(r.created_at)}</span>
