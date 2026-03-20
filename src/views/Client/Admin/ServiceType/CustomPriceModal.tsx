@@ -20,7 +20,9 @@ import {
   CircularProgress,
   Chip,
   Collapse,
-  Alert
+  Alert,
+  Autocomplete,
+  TextField
 } from '@mui/material'
 
 import { X, Plus, Pencil, Trash2, DollarSign, Eye, Save, ChevronDown, ChevronUp } from 'lucide-react'
@@ -44,7 +46,6 @@ interface EditingPrice {
   fixed_prices: Record<string, string>
   fixed_per_unit: string
   is_enabled: boolean
-  note: string
 }
 
 const emptyEditing: EditingPrice = {
@@ -54,7 +55,6 @@ const emptyEditing: EditingPrice = {
   fixed_prices: {},
   fixed_per_unit: '',
   is_enabled: true,
-  note: ''
 }
 
 export default function CustomPriceModal({ open, onClose, serviceType }: CustomPriceModalProps) {
@@ -156,7 +156,6 @@ export default function CustomPriceModal({ open, onClose, serviceType }: CustomP
       fixed_prices: fixedPrices,
       fixed_per_unit: cp.fixed_per_unit?.toString() ?? '',
       is_enabled: cp.is_enabled,
-      note: cp.note ?? ''
     })
     setIsAdding(false)
     setPreviewPrices(cp.preview_prices ?? {})
@@ -181,7 +180,6 @@ export default function CustomPriceModal({ open, onClose, serviceType }: CustomP
       user_id: editing.user_id,
       price_type: editing.price_type,
       is_enabled: editing.is_enabled,
-      note: editing.note || null,
     }
 
     if (editing.price_type === 'cost_plus') {
@@ -285,7 +283,7 @@ export default function CustomPriceModal({ open, onClose, serviceType }: CustomP
                       </TableCell>
                       <TableCell>
                         <Chip
-                          label={cp.price_type === 'cost_plus' ? `cost+${cp.markup_percent}%` : 'fixed'}
+                          label={cp.price_type === 'cost_plus' ? `vốn+${cp.markup_percent}%` : 'cố định'}
                           size='small'
                           color={cp.price_type === 'cost_plus' ? 'warning' : 'primary'}
                           variant='outlined'
@@ -341,23 +339,23 @@ export default function CustomPriceModal({ open, onClose, serviceType }: CustomP
                   </Typography>
 
                   <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 1.5 }}>
-                    {/* User select — chỉ khi thêm mới */}
+                    {/* User search — chỉ khi thêm mới */}
                     {isAdding && (
-                      <CustomTextField
-                        select
+                      <Autocomplete
                         size='small'
-                        label='User'
-                        value={editing.user_id}
-                        onChange={(e) => setEditing({ ...editing, user_id: parseInt(e.target.value) || '' })}
-                        sx={{ minWidth: 200 }}
-                      >
-                        <MenuItem value=''><em>Chọn user</em></MenuItem>
-                        {availableUsers.map((u: any) => (
-                          <MenuItem key={u.id} value={u.id}>
-                            {u.name} ({u.email})
-                          </MenuItem>
-                        ))}
-                      </CustomTextField>
+                        options={availableUsers}
+                        getOptionLabel={(u: any) => `${u.name} (${u.email})`}
+                        filterOptions={(options, { inputValue }) => {
+                          const q = inputValue.toLowerCase()
+                          return options.filter((u: any) =>
+                            u.email?.toLowerCase().includes(q) || u.name?.toLowerCase().includes(q)
+                          ).slice(0, 20)
+                        }}
+                        onChange={(_e, user) => setEditing({ ...editing, user_id: user?.id || '' })}
+                        renderInput={(params) => <TextField {...params} label='Tìm user (email hoặc tên)' />}
+                        sx={{ minWidth: 280 }}
+                        noOptionsText='Không tìm thấy user'
+                      />
                     )}
 
                     {/* Loại giá */}
@@ -372,19 +370,20 @@ export default function CustomPriceModal({ open, onClose, serviceType }: CustomP
                       }}
                       sx={{ minWidth: 150 }}
                     >
-                      <MenuItem value='cost_plus'>Cost + %markup</MenuItem>
                       <MenuItem value='fixed'>Giá cố định</MenuItem>
+                      <MenuItem value='cost_plus'>Giá vốn + % lợi nhuận</MenuItem>
                     </CustomTextField>
 
                     {/* Cost plus: markup % */}
                     {editing.price_type === 'cost_plus' && (
                       <CustomTextField
                         size='small'
-                        label='Markup %'
+                        label='% lợi nhuận'
                         type='number'
                         value={editing.markup_percent}
                         onChange={(e) => setEditing({ ...editing, markup_percent: e.target.value })}
-                        sx={{ width: 100 }}
+                        helperText='VD: 20 = giá vốn + 20%'
+                        sx={{ width: 130 }}
                       />
                     )}
 
@@ -399,15 +398,6 @@ export default function CustomPriceModal({ open, onClose, serviceType }: CustomP
                         sx={{ width: 140 }}
                       />
                     )}
-
-                    {/* Note */}
-                    <CustomTextField
-                      size='small'
-                      label='Ghi chú'
-                      value={editing.note}
-                      onChange={(e) => setEditing({ ...editing, note: e.target.value })}
-                      sx={{ minWidth: 150, flex: 1 }}
-                    />
                   </Box>
 
                   {/* Fixed mode: nhập giá từng mốc */}
