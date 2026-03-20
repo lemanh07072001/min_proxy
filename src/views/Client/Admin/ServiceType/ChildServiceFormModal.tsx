@@ -742,20 +742,8 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
 
                       return (
                         <div key={idx} style={{ display: 'grid', gridTemplateColumns: '100px 1fr 1fr 1fr', alignItems: 'center', padding: '8px 12px', borderBottom: idx < priceFields.length - 1 ? '1px solid #f1f5f9' : 'none' }}>
-                          {/* Số ngày — editable nếu mốc mới (cost trống) hoặc mẹ per_unit */}
-                          {(!field.cost && !parentIsPerUnit) ? (
-                            <TextField
-                              size='small'
-                              value={field.key}
-                              onChange={e => {
-                                const raw = e.target.value.replace(/[^0-9]/g, '')
-
-                                setPriceFields(prev => prev.map((p, i) => i === idx ? { ...p, key: raw } : p))
-                              }}
-                              placeholder='Ngày'
-                              sx={{ '& input': { fontSize: '13px', padding: '6px 10px' }, width: 70 }}
-                            />
-                          ) : parentIsPerUnit ? (
+                          {/* Số ngày — editable chỉ khi mẹ per_unit (con tự tạo mốc) */}
+                          {parentIsPerUnit ? (
                             <TextField
                               size='small'
                               value={field.key}
@@ -804,7 +792,8 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
                       : 'Giá nhập lấy tự động từ site mẹ. Phần chênh lệch là lợi nhuận của bạn.'
                     }
                   </div>
-                  {/* Thêm/xóa mốc */}
+                  {/* Thêm/xóa mốc — chỉ khi mẹ per_unit (con tự tạo mốc), mẹ fixed thì khóa */}
+                  {parentIsPerUnit && (
                   <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
                     <button
                       type='button'
@@ -823,6 +812,7 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
                       </button>
                     )}
                   </div>
+                  )}
                 </div>
                 )
               })()}
