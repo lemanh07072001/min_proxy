@@ -212,8 +212,9 @@ return p || '-'
         header: 'Trạng thái', size: 100,
         cell: ({ row }: { row: any }) => {
           const s = row.original?.status
-          if (s === 'ACTIVE') return <Chip label='Hoạt động' size='small' icon={<BadgeCheck size={14} />} color='success' />
-          if (s === 'INACTIVE') return <Chip label='Đã tắt' size='small' icon={<BadgeMinus size={14} />} color='warning' />
+          // status: 0=ACTIVE, 1=INACTIVE, 2=EXPIRED (hoặc string 'ACTIVE'/'INACTIVE')
+          if (s === 0 || s === 'ACTIVE') return <Chip label='Hoạt động' size='small' icon={<BadgeCheck size={14} />} color='success' />
+          if (s === 1 || s === 'INACTIVE') return <Chip label='Đã tắt' size='small' icon={<BadgeMinus size={14} />} color='warning' />
           return <Chip label='Hết hạn' size='small' icon={<CircleX size={14} />} color='error' />
         }
       },
