@@ -19,7 +19,6 @@ import {
   X, Save, Loader2, Package, Info,
   MapPin, Shield, Wifi, Zap, Users, RefreshCw, Clock, Globe, ShoppingCart
 } from 'lucide-react'
-import { toast } from 'react-toastify'
 import { useFormNotification } from '@/hooks/useFormNotification'
 import FormAlert from '@/components/FormAlert'
 import { useForm, Controller } from 'react-hook-form'
@@ -62,6 +61,7 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
   const [pricePerUnit, setPricePerUnit] = useState('')
   const [costPerUnit, setCostPerUnit] = useState('')
   const [allowCustomAuth, setAllowCustomAuth] = useState(false)
+  const [syncStatus, setSyncStatus] = useState<'idle' | 'loading' | 'done' | 'error'>('idle')
 
   // All supplier products (imported + available)
   const allSupplierProducts = useMemo(() => {
@@ -686,24 +686,26 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
 
                 // Đồng bộ giá nhập từ supplier product
                 const handleSyncCost = () => {
-                  if (parentIsPerUnit && parentCostPerDay > 0) {
-                    // Mẹ per_unit → tính cost = đơn giá × số ngày
-                    setPriceFields(prev => prev.map(p => ({
-                      ...p,
-                      cost: String((parseInt(p.key) || 0) * parentCostPerDay)
-                    })))
-                    toast.success('Đã đồng bộ giá nhập từ site mẹ')
-                  } else if (selectedProduct?.supplier_prices) {
-                    // Mẹ fixed → lấy từ supplier_prices
-                    const sp = selectedProduct.supplier_prices
-                    setPriceFields(prev => prev.map(p => ({
-                      ...p,
-                      cost: String(sp[p.key] || p.cost || '')
-                    })))
-                    toast.success('Đã đồng bộ giá nhập từ site mẹ')
-                  } else {
-                    toast.error('Không tìm thấy giá nhập từ site mẹ')
-                  }
+                  setSyncStatus('loading')
+                  setTimeout(() => {
+                    if (parentIsPerUnit && parentCostPerDay > 0) {
+                      setPriceFields(prev => prev.map(p => ({
+                        ...p,
+                        cost: String((parseInt(p.key) || 0) * parentCostPerDay)
+                      })))
+                      setSyncStatus('done')
+                    } else if (selectedProduct?.supplier_prices) {
+                      const sp = selectedProduct.supplier_prices
+                      setPriceFields(prev => prev.map(p => ({
+                        ...p,
+                        cost: String(sp[p.key] || p.cost || '')
+                      })))
+                      setSyncStatus('done')
+                    } else {
+                      setSyncStatus('error')
+                    }
+                    setTimeout(() => setSyncStatus('idle'), 2000)
+                  }, 800)
                 }
 
                 return (
@@ -713,9 +715,26 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
                     <button
                       type='button'
                       onClick={handleSyncCost}
-                      style={{ fontSize: '11.5px', padding: '4px 10px', borderRadius: 6, border: '1px solid #3b82f6', background: '#eff6ff', color: '#2563eb', cursor: 'pointer', fontWeight: 600 }}
+                      disabled={syncStatus === 'loading'}
+                      style={{
+                        fontSize: '11.5px', padding: '4px 10px', borderRadius: 6, border: '1px solid',
+                        cursor: syncStatus === 'loading' ? 'wait' : 'pointer', fontWeight: 600,
+                        background: syncStatus === 'done' ? '#f0fdf4' : syncStatus === 'error' ? '#fef2f2' : '#eff6ff',
+                        color: syncStatus === 'done' ? '#16a34a' : syncStatus === 'error' ? '#ef4444' : '#2563eb',
+                        borderColor: syncStatus === 'done' ? '#bbf7d0' : syncStatus === 'error' ? '#fecaca' : '#3b82f6',
+                      }}
                     >
-                      ↻ Đồng bộ giá nhập
+                      {syncStatus === 'loading' ? (
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                          <RefreshCw size={12} style={{ animation: 'spin 1s linear infinite' }} /> Đang đồng bộ...
+                        </span>
+                      ) : syncStatus === 'done' ? (
+                        '✓ Đã đồng bộ'
+                      ) : syncStatus === 'error' ? (
+                        '✗ Không tìm thấy giá'
+                      ) : (
+                        '↻ Đồng bộ giá nhập'
+                      )}
                     </button>
                   </div>
                   {parentIsPerUnit && parentCostPerDay > 0 && (
