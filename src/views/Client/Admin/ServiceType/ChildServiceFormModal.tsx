@@ -56,6 +56,7 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
   const { notification, showSuccess, showError, clear: clearNotification } = useFormNotification()
   const [priceFields, setPriceFields] = useState<Array<{ key: string; value: string; cost: string }>>([])
   const [pricingMode, setPricingMode] = useState<'fixed' | 'per_unit'>('fixed')
+  const [parentPricingMode, setParentPricingMode] = useState<'fixed' | 'per_unit'>('fixed')
   const [timeUnit, setTimeUnit] = useState<'day' | 'month'>('day')
   const [pricePerUnit, setPricePerUnit] = useState('')
   const [costPerUnit, setCostPerUnit] = useState('')
@@ -143,6 +144,7 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
 
       // Load pricing mode
       setPricingMode(serviceData.pricing_mode || 'fixed')
+      setParentPricingMode(meta.parent_pricing_mode || serviceData.pricing_mode || 'fixed')
       setTimeUnit(serviceData.time_unit || 'day')
       setPricePerUnit(serviceData.price_per_unit?.toString() || '')
       setCostPerUnit(serviceData.cost_per_unit?.toString() || '')
@@ -191,6 +193,7 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
 
     // Set pricing mode theo site mẹ
     const parentMode = selectedProduct.pricing_mode || 'fixed'
+    setParentPricingMode(parentMode)
     setPricingMode(parentMode)
     setTimeUnit(selectedProduct.time_unit || 'day')
 
@@ -323,7 +326,7 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
       cost_per_unit: pricingMode === 'per_unit' ? (parseInt(costPerUnit) || null) : null,
       price: pricingMode === 'per_unit' ? (parseInt(pricePerUnit) || 0) : parseInt(priceFields[0]?.value || '0'),
       price_by_duration: pricingMode === 'per_unit' ? [] : priceFields.map(p => {
-        const parentPerUnit = selectedProduct?.pricing_mode === 'per_unit'
+        const parentPerUnit = parentPricingMode === 'per_unit'
         const computedCost = parentPerUnit ? (parseInt(costPerUnit) || 0) * (parseInt(p.key) || 0) : (parseInt(p.cost) || 0)
 
         return { key: p.key, value: parseInt(p.value), cost: computedCost }
@@ -331,7 +334,7 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
       cost_price: pricingMode === 'per_unit'
         ? (parseInt(costPerUnit) || 0)
         : (() => {
-            const parentPerUnit = selectedProduct?.pricing_mode === 'per_unit'
+            const parentPerUnit = parentPricingMode === 'per_unit'
             const costs = priceFields.map(p => parentPerUnit ? (parseInt(costPerUnit) || 0) * (parseInt(p.key) || 0) : (parseInt(p.cost) || 0)).filter(v => v > 0)
 
             return costs.length > 0 ? Math.min(...costs) : 0
@@ -364,10 +367,11 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
         ...existingMeta,
         ...(selectedSupplierCode ? { supplier_product_code: selectedSupplierCode } : {}),
         ...(selectedSupplierId ? { supplier_product_id: selectedSupplierId } : {}),
+        parent_pricing_mode: parentPricingMode,
         supplier_prices: pricingMode === 'per_unit'
           ? { per_unit: parseInt(costPerUnit) || 0 }
           : Object.fromEntries(priceFields.map(p => {
-              const parentPerUnit = selectedProduct?.pricing_mode === 'per_unit'
+              const parentPerUnit = parentPricingMode === 'per_unit'
               const cost = parentPerUnit ? (parseInt(costPerUnit) || 0) * (parseInt(p.key) || 0) : (parseInt(p.cost) || 0)
 
               return [p.key, cost]
@@ -613,8 +617,8 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
                       Nhập tự do ({timeUnit === 'month' ? 'tháng' : 'ngày'})
                     </button>
                   </div>
-                  {selectedProduct && pricingMode !== (selectedProduct.pricing_mode || 'fixed') && (
-                    <span style={{ fontSize: '11px', color: '#f59e0b' }}>Khác site mẹ ({selectedProduct.pricing_mode === 'per_unit' ? 'tự do' : 'cố định'})</span>
+                  {pricingMode !== parentPricingMode && (
+                    <span style={{ fontSize: '11px', color: '#f59e0b' }}>Khác site mẹ ({parentPricingMode === 'per_unit' ? 'tự do' : 'cố định'})</span>
                   )}
                 </div>
               )}
@@ -663,7 +667,7 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
               {/* Bảng giá fixed */}
               {pricingMode === 'fixed' && priceFields.length > 0 && (() => {
                 // Mẹ per_unit → giá nhập = costPerUnit × số ngày (tính realtime)
-                const parentIsPerUnit = selectedProduct?.pricing_mode === 'per_unit'
+                const parentIsPerUnit = parentPricingMode === 'per_unit'
                 const parentCostPerDay = parseInt(costPerUnit) || 0
                 const unitLabel = timeUnit === 'month' ? 'tháng' : 'ngày'
 
