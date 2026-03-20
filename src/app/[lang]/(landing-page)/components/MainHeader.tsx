@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useContext, useCallback } from 'react'
+import React, { useState, useEffect, useContext, useCallback, useRef } from 'react'
 
 import Image from 'next/image'
 import dynamic from 'next/dynamic'
@@ -33,6 +33,13 @@ const MainHeader = () => {
   const sessionContext = useContext(SessionContext)
   const session = useSession()
   const { logo, name } = useBranding()
+
+  // Nhớ trạng thái auth — tránh nháy khi NextAuth refetch
+  const wasAuthRef = useRef(false)
+
+  if (session?.status === 'authenticated') wasAuthRef.current = true
+  if (session?.status === 'unauthenticated') wasAuthRef.current = false
+  const isAuthenticated = session?.status === 'authenticated' || (session?.status === 'loading' && wasAuthRef.current)
 
   // Lightweight scroll listener thay cho framer-motion
   useEffect(() => {
@@ -129,7 +136,7 @@ const MainHeader = () => {
 
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               <LanguageDropdown />
-              {(session?.status === 'authenticated' || (session?.status === 'loading' && !!session?.data)) ? (
+              {isAuthenticated ? (
                 <UserDropdown />
               ) : session?.status === 'unauthenticated' ? (
                 <CustomIconButton aria-label='login' color='primary' size='small' onClick={handleOpenModalLogin}>

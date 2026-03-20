@@ -1,5 +1,7 @@
 'use client'
 
+import { useRef } from 'react'
+
 import { useParams, useRouter } from 'next/navigation'
 
 import { createPortal } from 'react-dom'
@@ -40,8 +42,12 @@ const NavbarContent = () => {
   const { openAuthModal } = useModalContext()
   const { primaryHover } = useBranding()
 
-  // Giữ UI ổn định khi refetch: nếu đã có session data → coi như authenticated
-  const isAuthenticated = session.status === 'authenticated' || (session.status === 'loading' && !!session.data)
+  // Nhớ trạng thái auth trước đó — tránh nháy khi NextAuth refetch session
+  const wasAuthRef = useRef(false)
+
+  if (session.status === 'authenticated') wasAuthRef.current = true
+  if (session.status === 'unauthenticated') wasAuthRef.current = false
+  const isAuthenticated = session.status === 'authenticated' || (session.status === 'loading' && wasAuthRef.current)
   const { data: pendingData } = usePendingBankQr(isAuthenticated)
   const pendingRecord = pendingData?.data ?? null
 
