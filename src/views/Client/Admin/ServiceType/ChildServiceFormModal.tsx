@@ -335,7 +335,7 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
       api_type: 'buy_api',
       api_provider: '', // Site con không cần — SupplierService tự xử lý
       body_api: null,
-      code: null,
+      code: data.code || null,
       auth_type: data.auth_type || '',
       bandwidth: data.bandwidth || '',
       rotation_type: data.rotation_type || '',
