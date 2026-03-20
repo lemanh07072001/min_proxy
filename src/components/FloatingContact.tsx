@@ -2,36 +2,24 @@
 
 import { useState } from 'react'
 
+import axios from 'axios'
 import { useQuery } from '@tanstack/react-query'
 import { X, MessageCircle, ExternalLink } from 'lucide-react'
 
-import useAxiosAuth from '@/hocs/useAxiosAuth'
+import { PUBLIC_API_URL } from '@/config/api'
 import { SOCIAL_ICON_MAP } from '@/components/icons/SocialIcons'
 
 import './FloatingContact.css'
 
 export default function FloatingContact() {
   const [hidden, setHidden] = useState(false)
-  const axiosAuth = useAxiosAuth()
 
   const { data: links = [] } = useQuery({
     queryKey: ['floating-contact-links'],
     queryFn: async () => {
-      try {
-        const res = await axiosAuth.get('/get-sidebar-settings')
+      const res = await axios.get(`${PUBLIC_API_URL}/get-sidebar-settings`)
 
-        return res?.data?.data?.support_links ?? []
-      } catch {
-        try {
-          const apiUrl = process.env.NEXT_PUBLIC_API_URL || ''
-          const res = await fetch(`${apiUrl}/get-sidebar-settings`)
-          const json = await res.json()
-
-          return json?.data?.support_links ?? []
-        } catch {
-          return []
-        }
-      }
+      return res?.data?.data?.support_links ?? []
     },
     staleTime: 10 * 60 * 1000,
     refetchOnWindowFocus: false,

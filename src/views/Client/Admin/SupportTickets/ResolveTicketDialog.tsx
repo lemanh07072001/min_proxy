@@ -93,7 +93,6 @@ export default function ResolveTicketDialog({ open, onClose, ticket }: Props) {
   }
 
   return (
-    <>
     <Dialog open={open} onClose={onClose} maxWidth='md' fullWidth>
       <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', pb: 1 }}>
         <span>
@@ -253,16 +252,17 @@ export default function ResolveTicketDialog({ open, onClose, ticket }: Props) {
             )}
           </div>
         </div>
+
+        {/* Image fullscreen overlay */}
+        {fullImage && (
+          <div
+            onClick={() => setFullImage('')}
+            style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+          >
+            <img src={fullImage} alt='' style={{ maxWidth: '90vw', maxHeight: '90vh', borderRadius: 8, boxShadow: '0 8px 32px rgba(0,0,0,0.5)' }} onClick={e => e.stopPropagation()} />
+          </div>
+        )}
       </DialogContent>
     </Dialog>
-    {fullImage && (
-      <div
-        onClick={() => setFullImage('')}
-        style={{ position: 'fixed', inset: 0, zIndex: 999999, background: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
-      >
-        <img src={fullImage} alt='' style={{ maxWidth: '90vw', maxHeight: '90vh', borderRadius: 8, boxShadow: '0 8px 32px rgba(0,0,0,0.5)' }} onClick={e => e.stopPropagation()} />
-      </div>
-    )}
-    </>
   )
 }

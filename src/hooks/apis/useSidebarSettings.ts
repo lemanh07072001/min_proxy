@@ -1,5 +1,7 @@
+import axios from 'axios'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
+import { PUBLIC_API_URL } from '@/config/api'
 import useAxiosAuth from '@/hocs/useAxiosAuth'
 
 export interface SupportLink {
@@ -21,29 +23,14 @@ export interface SidebarSettings {
 
 const defaultData: SidebarSettings = { support_links: [], youtube_videos: [] }
 
-// Public fetch — dùng axios instance không cần token
+// Dùng axios trực tiếp (không cần auth) — public endpoint
 export const useSidebarSettings = () => {
-  const axiosAuth = useAxiosAuth()
-
   return useQuery({
     queryKey: ['sidebar-settings'],
     queryFn: async () => {
-      try {
-        const res = await axiosAuth.get('/get-sidebar-settings')
+      const res = await axios.get(`${PUBLIC_API_URL}/get-sidebar-settings`)
 
-        return (res?.data?.data ?? defaultData) as SidebarSettings
-      } catch {
-        // Fallback: plain fetch nếu axios fail (chưa login)
-        try {
-          const apiUrl = process.env.NEXT_PUBLIC_API_URL || ''
-          const res = await fetch(`${apiUrl}/get-sidebar-settings`)
-          const json = await res.json()
-
-          return (json?.data ?? defaultData) as SidebarSettings
-        } catch {
-          return defaultData
-        }
-      }
+      return (res?.data?.data ?? defaultData) as SidebarSettings
     },
     staleTime: 10 * 60 * 1000,
     refetchOnWindowFocus: false,
@@ -62,7 +49,6 @@ export const useUpdateSidebarSettings = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['sidebar-settings'] })
-      queryClient.invalidateQueries({ queryKey: ['sidebar-settings-public'] })
     }
   })
 }
