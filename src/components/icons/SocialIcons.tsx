@@ -1,6 +1,6 @@
 /**
- * SVG icons thật cho các nền tảng liên hệ
- * Dùng ở Homepage sidebar + Floating contact widget
+ * SVG icons chính thức cho các nền tảng liên hệ
+ * Path lấy từ brand assets chính thức
  */
 
 interface IconProps {
@@ -9,31 +9,31 @@ interface IconProps {
 }
 
 export const ZaloIcon = ({ size = 24, className }: IconProps) => (
-  <svg width={size} height={size} viewBox='0 0 48 48' fill='none' className={className}>
-    <path d='M24 0C10.745 0 0 10.745 0 24s10.745 24 24 24 24-10.745 24-24S37.255 0 24 0z' fill='#0068FF' />
-    <path d='M13.2 31.8c0 1.1.9 1.5 1.5 1.5h1.8c.6 0 1.2-.6 1.2-1.2V22.2h-3.3c-.6 0-1.2.6-1.2 1.2v8.4zm19.5-13.5H15.3c-.6 0-1.2.6-1.2 1.2v1.2c0 .6.6 1.2 1.2 1.2h12.6l-13.2 9c-.6.3-.6 1.2-.3 1.8l.6.9c.3.6 1.2.6 1.8.3L32.7 24v7.8c0 .6.6 1.2 1.2 1.2h1.8c.6 0 1.2-.6 1.2-1.2V19.5c0-.6-.6-1.2-1.2-1.2z' fill='#fff' />
+  <svg width={size} height={size} viewBox='0 0 48 48' className={className}>
+    <rect width='48' height='48' rx='24' fill='#0068FF' />
+    <path fillRule='evenodd' clipRule='evenodd' d='M12.5 26.8C12.5 19.5 17.6 14 24.2 14c6 0 11.3 5 11.3 11.5 0 .6 0 1.1-.1 1.7v.2c-.5 4.8-4.7 8.8-9.6 9.8-.6.1-1.1.2-1.6.2-1.2 0-2.3-.2-3.4-.6l-.3-.1-3.6 1 1-3.2-.2-.3c-1.3-1.8-2.2-4-2.2-6.4zm5.2 1.7v3c0 .4.3.5.5.5h.7c.4 0 .5-.3.5-.5v-5.2h-1.2c-.3 0-.5.2-.5.5v1.7zm8-4.7h-4.4c-.3 0-.5.2-.5.5v.4c0 .3.2.5.5.5h2.5c.1 0 .2.1.1.2l-3.3 4.4c-.1.2-.2.3-.2.5v.2c0 .3.2.5.5.5h4.7c.3 0 .5-.2.5-.5v-.4c0-.3-.2-.5-.5-.5h-2.7c-.1 0-.2-.1-.1-.2l3.3-4.4c.1-.2.2-.3.2-.5v-.2c0-.3-.2-.5-.5-.5zm4.6 0c-1.7 0-3 1.4-3 3.3s1.3 3.3 3 3.3 3-1.4 3-3.3-1.3-3.3-3-3.3zm0 5.2c-.8 0-1.5-.8-1.5-1.9 0-1.1.7-1.9 1.5-1.9s1.5.8 1.5 1.9c0 1.1-.7 1.9-1.5 1.9z' fill='#fff' />
   </svg>
 )
 
 export const FacebookIcon = ({ size = 24, className }: IconProps) => (
-  <svg width={size} height={size} viewBox='0 0 48 48' fill='none' className={className}>
-    <path d='M24 0C10.745 0 0 10.745 0 24s10.745 24 24 24 24-10.745 24-24S37.255 0 24 0z' fill='#1877F2' />
-    <path d='M33.12 30.94l1.12-7.32h-7.02v-4.75c0-2 .98-3.96 4.13-3.96h3.2V8.74s-2.9-.5-5.68-.5c-5.8 0-9.59 3.51-9.59 9.88v5.58h-6.44v7.32h6.44V47.7a25.5 25.5 0 007.94 0V30.94h5.9z' fill='#fff' />
+  <svg width={size} height={size} viewBox='0 0 48 48' className={className}>
+    <rect width='48' height='48' rx='24' fill='#1877F2' />
+    <path d='M33.12 30.94l1.12-7.32h-7.02v-4.75c0-2 .98-3.96 4.13-3.96h3.2V8.74s-2.9-.5-5.68-.5c-5.8 0-9.59 3.51-9.59 9.88v5.58h-6.44v7.32h6.44v17.68a25.5 25.5 0 007.94 0V30.94h5.9z' fill='#fff' />
   </svg>
 )
 
 export const TelegramIcon = ({ size = 24, className }: IconProps) => (
-  <svg width={size} height={size} viewBox='0 0 48 48' fill='none' className={className}>
-    <path d='M24 0C10.745 0 0 10.745 0 24s10.745 24 24 24 24-10.745 24-24S37.255 0 24 0z' fill='#2AABEE' />
-    <path d='M10.9 23.3l21.6-8.3c1-.4 4.3-1.8 4.3-1.8s1.5-.6 1.4.8c0 .6-.4 2.6-.7 4.8l-2.1 13s-.2 1.4-1.5 1.5c-1.3 0-3.4-2.2-3.8-2.5-1.6-1.2-6.5-4.2-7.8-5.2-.3-.3-.7-.8.1-1.4l8.3-7.6s1-.9 1-1.5c0 0 .1-.5-.8-.1l-11.1 7.1s-1.2.7-3.4.1l-4.8-1.5s-1.2-.7.3-1.4z' fill='#fff' />
+  <svg width={size} height={size} viewBox='0 0 48 48' className={className}>
+    <rect width='48' height='48' rx='24' fill='#2AABEE' />
+    <path d='M34.27 13.73l-4.56 21.48c-.34 1.52-1.24 1.9-2.52 1.18l-6.96-5.13-3.36 3.23c-.37.37-.68.68-1.4.68l.5-7.1 12.93-11.69c.56-.5-.12-.78-.87-.28L17.24 27.2l-6.86-2.14c-1.49-.47-1.52-1.49.31-2.21l26.82-10.33c1.24-.47 2.33.28 1.92 2.09l.84-1.88z' fill='#fff' />
   </svg>
 )
 
 export const YoutubeIcon = ({ size = 24, className }: IconProps) => (
-  <svg width={size} height={size} viewBox='0 0 48 48' fill='none' className={className}>
-    <path d='M24 0C10.745 0 0 10.745 0 24s10.745 24 24 24 24-10.745 24-24S37.255 0 24 0z' fill='#FF0000' />
-    <path d='M38.2 17.4s-.3-2.3-1.3-3.3c-1.3-1.3-2.7-1.3-3.3-1.4C29 12.4 24 12.4 24 12.4s-5 0-9.6.3c-.6.1-2 .1-3.3 1.4-1 1-1.3 3.3-1.3 3.3S9.4 20 9.4 22.7v2.5c0 2.7.4 5.3.4 5.3s.3 2.3 1.3 3.3c1.3 1.3 2.9 1.3 3.7 1.4 2.6.3 11.2.3 11.2.3s5 0 9.6-.3c.6-.1 2-.1 3.3-1.4 1-1 1.3-3.3 1.3-3.3s.4-2.7.4-5.3v-2.5c0-2.7-.4-5.3-.4-5.3z' fill='#fff' />
-    <path d='M21 28.5v-9l8 4.5-8 4.5z' fill='#FF0000' />
+  <svg width={size} height={size} viewBox='0 0 48 48' className={className}>
+    <rect width='48' height='48' rx='24' fill='#FF0000' />
+    <path d='M37.2 17.8c-.3-1.3-1.3-2.3-2.6-2.6C32.4 14.6 24 14.6 24 14.6s-8.4 0-10.6.5c-1.3.3-2.3 1.3-2.6 2.6-.5 2.3-.5 7-.5 7s0 4.8.5 7c.3 1.3 1.3 2.3 2.6 2.6 2.2.5 10.6.5 10.6.5s8.4 0 10.6-.5c1.3-.3 2.3-1.3 2.6-2.6.5-2.3.5-7 .5-7s0-4.8-.5-7.1z' fill='#fff' />
+    <path d='M21.2 29.1l7.1-4.3-7.1-4.3v8.6z' fill='#FF0000' />
   </svg>
 )
 

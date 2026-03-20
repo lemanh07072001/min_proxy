@@ -4,6 +4,7 @@ import { ToastContainer } from 'react-toastify'
 
 import type { ChildrenType } from '@core/types'
 import Header from '@/app/[lang]/(landing-page)/components/Header'
+import { getServerBranding } from '@/utils/getServerBranding'
 
 // Lightweight providers — chỉ cần SettingsProvider + ThemeProvider cho MUI
 // KHÔNG dùng Providers.tsx vì nó gọi getServerSession() thừa
@@ -20,10 +21,11 @@ const Layout = async (props: ChildrenType) => {
   const { children } = props
 
   // Chỉ fetch những gì MUI theme cần — KHÔNG gọi getServerSession()
-  const [mode, settingsCookie, systemMode] = await Promise.all([
+  const [mode, settingsCookie, systemMode, branding] = await Promise.all([
     getMode(),
     getSettingsFromCookie(),
-    getSystemMode()
+    getSystemMode(),
+    getServerBranding()
   ])
 
   const direction = 'ltr'
@@ -60,7 +62,7 @@ const Layout = async (props: ChildrenType) => {
         <BrandingThemeSync />
         <ThemeProvider direction={direction} systemMode={systemMode}>
           <div className='landing-page-wrapper'>
-            <Header />
+            <Header serverLogo={branding.logo_url || ''} serverName={branding.site_name || ''} />
             <main className='landing-page'>
               {children}
             </main>

@@ -25,14 +25,23 @@ import { useResponsive } from '@/app/hooks/useResponsive'
 
 import CustomIconButton from '@core/components/mui/IconButton'
 
-const MainHeader = () => {
+interface MainHeaderProps {
+  serverLogo?: string
+  serverName?: string
+}
+
+const MainHeader = ({ serverLogo, serverName }: MainHeaderProps) => {
   const [isOpenMenu, setIsOpenMenu] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const { isMobile } = useResponsive()
   const { openAuthModal } = useModalContext()
   const sessionContext = useContext(SessionContext)
   const session = useSession()
-  const { logo, name } = useBranding()
+  const { logo: clientLogo, name: clientName } = useBranding()
+
+  // Ưu tiên server logo (có ngay, không nháy), fallback client logo
+  const logo = serverLogo || clientLogo
+  const name = serverName || clientName
 
   const isUnauthenticated = session?.status === 'unauthenticated'
 

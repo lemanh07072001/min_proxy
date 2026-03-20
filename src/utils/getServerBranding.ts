@@ -37,6 +37,7 @@ export async function getServerBranding(): Promise<BrandingSettings> {
 
       // Resolve relative paths → full URLs
       data.logo_url = resolveAssetUrl(data.logo_url)
+      data.logo_icon_url = resolveAssetUrl(data.logo_icon_url)
       data.favicon_url = resolveAssetUrl(data.favicon_url)
       data.og_image_url = resolveAssetUrl(data.og_image_url)
 
