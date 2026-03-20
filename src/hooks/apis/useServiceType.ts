@@ -30,9 +30,9 @@ export const useServiceType = (serviceId?: string | number, enabled: boolean = t
       return res?.data?.data
     },
     enabled: !!serviceId && enabled,
-    refetchOnMount: 'always',
+    refetchOnMount: true,
     refetchOnWindowFocus: false,
-    staleTime: 0
+    staleTime: 30 * 1000
   })
 }
 

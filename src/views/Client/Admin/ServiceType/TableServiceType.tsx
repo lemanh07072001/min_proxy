@@ -5,7 +5,7 @@ import { useMemo, useState, useCallback } from 'react'
 import Image from 'next/image'
 import { useParams, useRouter } from 'next/navigation'
 
-import { CircleQuestionMark, BadgeCheck, BadgeMinus, ShoppingCart, ShoppingCartIcon, List, Copy, SquarePen, Trash2, SquarePlus, Search } from 'lucide-react'
+import { CircleQuestionMark, BadgeCheck, BadgeMinus, ShoppingCart, ShoppingCartIcon, List, Copy, SquarePen, Trash2, SquarePlus, Search, DollarSign } from 'lucide-react'
 
 import {
   useReactTable,
@@ -41,6 +41,7 @@ import useAxiosAuth from '@/hocs/useAxiosAuth'
 import { useCopyServiceType, useDeleteServiceType } from '@/hooks/apis/useServiceType'
 import ServiceFormModal from '@/views/Client/Admin/ServiceType/ServiceFormModal'
 import ChildServiceFormModal from '@/views/Client/Admin/ServiceType/ChildServiceFormModal'
+import CustomPriceModal from '@/views/Client/Admin/ServiceType/CustomPriceModal'
 import { getTagStyle } from '@/configs/tagConfig'
 import { useBranding } from '@/app/contexts/BrandingContext'
 
@@ -63,6 +64,7 @@ export default function TableServiceType() {
   const [modalOpen, setModalOpen] = useState(false)
   const [editingId, setEditingId] = useState<number | null>(null)
   const [editingData, setEditingData] = useState<any>(null)
+  const [customPriceService, setCustomPriceService] = useState<any>(null)
 
   const router = useRouter()
   const params = useParams()
@@ -365,6 +367,14 @@ return (
                   <SquarePen size={18} />
                 </IconButton>
               </Tooltip>
+
+              {!isChild && (
+                <Tooltip title='Giá riêng'>
+                  <IconButton size='small' color='warning' onClick={() => setCustomPriceService(row.original)}>
+                    <DollarSign size={18} />
+                  </IconButton>
+                </Tooltip>
+              )}
 
               <Tooltip title='Sao chép dịch vụ'>
                 <span>
@@ -669,6 +679,14 @@ return (
           onClose={() => setModalOpen(false)}
           serviceId={editingId}
           initialData={editingData}
+        />
+      )}
+
+      {customPriceService && (
+        <CustomPriceModal
+          open={!!customPriceService}
+          onClose={() => setCustomPriceService(null)}
+          serviceType={customPriceService}
         />
       )}
     </>

@@ -559,6 +559,9 @@ return
         proxyType={plan.proxy_type}
         country={plan.country}
         authType={plan.auth_type || null}
+        pricingMode={plan.pricing_mode || 'fixed'}
+        timeUnit={plan.time_unit || 'day'}
+        pricePerUnit={plan.price_per_unit || 0}
         customFields={plan.metadata?.custom_fields || undefined}
       />
     </>

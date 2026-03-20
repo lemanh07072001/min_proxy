@@ -35,6 +35,9 @@ interface CheckoutModalProps {
   country?: string
   extraPayload?: Record<string, any>
   authType?: 'userpass' | 'ip_whitelist' | 'both' | null
+  pricingMode?: 'fixed' | 'per_unit'
+  timeUnit?: 'day' | 'month'
+  pricePerUnit?: number
   customFields?: Array<{
     param: string
     label: string
@@ -58,9 +61,13 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({
   country,
   extraPayload,
   authType,
+  pricingMode = 'fixed',
+  timeUnit = 'day',
+  pricePerUnit = 0,
   customFields
 }) => {
   const [selectedDuration, setSelectedDuration] = useState(priceOptions[0]?.key || '1')
+  const [customDuration, setCustomDuration] = useState(1)
   const [selectedProtocol, setSelectedProtocol] = useState(protocols[0] || 'http')
   const [quantity, setQuantity] = useState(1)
   const [discountCode, setDiscountCode] = useState('')
@@ -108,8 +115,10 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({
     }
   }, [open])
 
+  const isPerUnit = pricingMode === 'per_unit'
   const selectedOption = priceOptions.find(p => p.key === selectedDuration) || priceOptions[0]
-  const unitPrice = selectedOption?.price || 0
+  const unitPrice = isPerUnit ? (pricePerUnit * customDuration) : (selectedOption?.price || 0)
+  const activeDuration = isPerUnit ? String(customDuration) : selectedDuration
   const total = unitPrice * quantity
   const isBalanceSufficient = sodu >= total
 
@@ -199,7 +208,7 @@ return pct > 0 ? Math.round(pct) : null
       serviceTypeId,
       quantity,
       protocol: selectedProtocol,
-      days: selectedDuration,
+      days: activeDuration,
       total,
       ...(productType === 'static' && {
         price: unitPrice,
@@ -209,7 +218,7 @@ return pct > 0 ? Math.round(pct) : null
         isPrivate: 'true'
       }),
       ...(productType === 'rotating' && {
-        time: selectedDuration,
+        time: activeDuration,
         ...extraPayload
       }),
       // Auth options
@@ -245,8 +254,35 @@ return pct > 0 ? Math.round(pct) : null
         <div className='checkout-body'>
           <p className='checkout-product-name'>{productName} <span style={{ fontSize: '12px', fontWeight: 500, color: '#94a3b8' }}>#{serviceTypeId}</span></p>
 
-          {/* Duration selector */}
-          {priceOptions.length > 1 && (
+          {/* Per-unit duration input */}
+          {isPerUnit && (
+            <div className='checkout-section'>
+              <label className='checkout-section-label'>
+                <Clock size={16} />
+                {timeUnit === 'month' ? 'SỐ THÁNG' : 'SỐ NGÀY'}
+              </label>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <input
+                  type='number'
+                  min={1}
+                  max={365}
+                  value={customDuration}
+                  onChange={(e) => setCustomDuration(Math.max(1, parseInt(e.target.value) || 1))}
+                  style={{
+                    width: 80, padding: '8px 12px', borderRadius: 8,
+                    border: '1px solid #e2e8f0', fontSize: 14, textAlign: 'center'
+                  }}
+                />
+                <span style={{ fontSize: 13, color: '#64748b' }}>
+                  × {pricePerUnit.toLocaleString('vi-VN')}đ/{timeUnit === 'month' ? 'tháng' : 'ngày'}
+                  = <strong style={{ color: '#0f172a' }}>{unitPrice.toLocaleString('vi-VN')}đ</strong>
+                </span>
+              </div>
+            </div>
+          )}
+
+          {/* Duration selector (mốc cố định) */}
+          {!isPerUnit && priceOptions.length > 1 && (
             <div className='checkout-section'>
               <label className='checkout-section-label'>
                 <Clock size={16} />

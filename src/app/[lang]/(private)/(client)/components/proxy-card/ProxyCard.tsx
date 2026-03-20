@@ -101,8 +101,10 @@ return defaultProtocols.map(p => p.id)
 
   if (shouldHideByTag(provider?.tag)) return null
 
-  // Giá hiển thị ở header (giá thấp nhất)
-  const headerPrice = priceOptions[0]?.price || parseInt(provider?.price, 10) || 0
+  // Giá hiển thị ở header
+  const isPerUnit = provider.pricing_mode === 'per_unit'
+  const headerPrice = isPerUnit ? (provider.price_per_unit || 0) : (priceOptions[0]?.price || parseInt(provider?.price, 10) || 0)
+  const headerPriceSuffix = isPerUnit ? `/${provider.time_unit === 'month' ? 'tháng' : 'ngày'}` : ''
 
   const handleBuy = () => {
     if (session.status !== 'authenticated') {
@@ -224,8 +226,8 @@ return <p style={{ fontSize: '13px', color: '#64748b', margin: '0 0 8px', lineHe
         {/* Footer: giá (trái) + button (phải) — cùng 1 hàng */}
         <div className='card-footer'>
           <div className='price-amount'>
-            {priceOptions.length > 1 && <span style={{ fontSize: '12px', fontWeight: 500, color: '#94a3b8', marginRight: '2px' }}>từ </span>}
-            {headerPrice.toLocaleString('vi-VN')}đ
+            {(priceOptions.length > 1 || isPerUnit) && <span style={{ fontSize: '12px', fontWeight: 500, color: '#94a3b8', marginRight: '2px' }}>từ </span>}
+            {headerPrice.toLocaleString('vi-VN')}đ{headerPriceSuffix}
           </div>
           {isAvailable ? (
             <button type='button' className='buy-button' onClick={handleBuy} style={{ padding: '8px 18px' }}>
@@ -252,6 +254,9 @@ return <p style={{ fontSize: '13px', color: '#64748b', margin: '0 0 8px', lineHe
         proxyType={provider.proxy_type}
         country={provider.country || provider.country_name || provider.country_code}
         authType={provider.auth_type || null}
+        pricingMode={provider.pricing_mode || 'fixed'}
+        timeUnit={provider.time_unit || 'day'}
+        pricePerUnit={provider.price_per_unit || 0}
         customFields={provider.metadata?.custom_fields || undefined}
       />
     </>

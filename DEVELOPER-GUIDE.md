@@ -2920,3 +2920,19 @@ Các phần dưới đây nằm ngoài scope "flow mua proxy" nhưng có thể c
 | R6 | **Affiliate commission** | `AffiliateController`, logic tính hoa hồng khi mua proxy | Tính đúng % chưa? Race condition trùng commission? |
 | R7 | **Flow nạp tiền** (deposit/payment) | `BankQrController`, `DepositService`, pay2s webhook | Webhook idempotency, double-credit, QR expiry |
 | R8 | **Dongtien recording** | Tạo record `dongtien` khi mua/gia hạn/refund | Có ghi đúng type, amount, balance before/after? Missing records? |
+
+### 20/03/2026
+
+#### 13.N Pricing System — FE Phase 5+6
+
+**Sửa:**
+- **Phase 5 — Admin UI:**
+  - `ServiceFormModal`: thêm section "Chế độ giá" — chọn fixed/per_unit, nhập price_per_unit, cost_per_unit, time_unit
+  - `TableServiceType`: nút "Giá riêng" ($) per row → mở `CustomPriceModal`
+  - `CustomPriceModal`: CRUD giá riêng per user — chọn user, loại giá (cost_plus/fixed), preview realtime
+  - `useCustomPrices.ts`: hook TanStack Query cho CRUD + preview API
+- **Phase 6 — User UI:**
+  - `CheckoutModal`: hỗ trợ per_unit mode — input số ngày/tháng, tính giá realtime
+  - `ProxyCard`: hiện "từ Xđ/ngày" khi per_unit mode
+
+**Files:** `ServiceFormModal.tsx`, `TableServiceType.tsx`, `CustomPriceModal.tsx`, `useCustomPrices.ts`, `CheckoutModal.tsx`, `ProxyCard.tsx`, `RotatingProxyPage.tsx`

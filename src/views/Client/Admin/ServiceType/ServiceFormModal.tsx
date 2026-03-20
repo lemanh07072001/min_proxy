@@ -25,7 +25,7 @@ import {
 } from '@mui/material'
 
 import { toast } from 'react-toastify'
-import { X, Plus, ChevronDown, AlertCircle, Eye, Shield, Wifi, Zap, Users, MapPin, RefreshCw, Clock, Info, ShoppingCart, CheckCircle, Globe, Tag } from 'lucide-react'
+import { X, Plus, ChevronDown, AlertCircle, Eye, Shield, Wifi, Zap, Users, MapPin, RefreshCw, Clock, Info, ShoppingCart, CheckCircle, Globe, Tag, DollarSign } from 'lucide-react'
 import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
@@ -130,9 +130,9 @@ export default function ServiceFormModal({ open, onClose, serviceId, initialData
   // Data fetching
   const { data: providers = [], isLoading: loadingProviders } = useProviders()
 
-  // Luôn fetch chi tiết khi edit để lấy đầy đủ field (api_provider bị hidden trong list)
+  // Fetch chi tiết khi edit để lấy field hidden (api_provider) — dùng initialData làm placeholder
   const { data: fetchedData, isLoading: loadingService } = useServiceType(serviceId, isEditMode && open)
-  const serviceData = fetchedData || initialData
+  const serviceData = fetchedData ?? initialData
   const { data: serviceTypes = [] } = useServiceTypes()
 
   // Mutations
@@ -144,6 +144,10 @@ export default function ServiceFormModal({ open, onClose, serviceId, initialData
   const [priceFields, setPriceFields] = useState<Array<{ key: string; value: string; cost?: string }>>([{ key: '', value: '', cost: '' }])
   const [isMultiInputModalOpen, setIsMultiInputModalOpen] = useState(false)
   const [isPriceModalOpen, setIsPriceModalOpen] = useState(false)
+  const [pricingMode, setPricingMode] = useState<'fixed' | 'per_unit'>('fixed')
+  const [timeUnit, setTimeUnit] = useState<'day' | 'month'>('day')
+  const [pricePerUnit, setPricePerUnit] = useState('')
+  const [costPerUnit, setCostPerUnit] = useState('')
   const [techExpanded, setTechExpanded] = useState(false)
   const [formErrors, setFormErrors] = useState<string[]>([])
   const [formSuccess, setFormSuccess] = useState('')
@@ -316,6 +320,12 @@ return { values: {}, errors: formattedErrors }
         )
       }
 
+      // Load pricing mode fields
+      setPricingMode(serviceData.pricing_mode || 'fixed')
+      setTimeUnit(serviceData.time_unit || 'day')
+      setPricePerUnit(serviceData.price_per_unit?.toString() || '')
+      setCostPerUnit(serviceData.cost_per_unit?.toString() || '')
+
       // Parse protocols (có thể là JSON string hoặc array)
       let parsedProtocols = serviceData.protocols
 
@@ -398,6 +408,10 @@ return { values: {}, errors: formattedErrors }
       setMultiInputFields([{ key: '', value: '' }])
       setPriceFields([{ key: '', value: '', cost: '' }])
       setPurchaseOptions([])
+      setPricingMode('fixed')
+      setTimeUnit('day')
+      setPricePerUnit('')
+      setCostPerUnit('')
       setTechExpanded(false)
       setFormErrors([])
     }
@@ -444,7 +458,7 @@ return { values: {}, errors: formattedErrors }
       }))
     } : null
 
-    const submitData = {
+    const submitData: any = {
       ...data,
       note: cleanNote,
       api_type: 'buy_api',
@@ -452,6 +466,10 @@ return { values: {}, errors: formattedErrors }
       price_by_duration: formattedPriceFields,
       cost_price: autoCostPrice,
       metadata,
+      pricing_mode: pricingMode,
+      time_unit: timeUnit,
+      price_per_unit: pricingMode === 'per_unit' ? (parseInt(pricePerUnit) || null) : null,
+      cost_per_unit: pricingMode === 'per_unit' ? (parseInt(costPerUnit) || null) : null,
     }
     delete submitData.metadata_json
 
@@ -846,8 +864,8 @@ return <Chip key={val} label={p?.label || val} size='small' />
                   </div>
                 </Grid2>
 
-                {/* Switches — compact row */}
-                <Grid2 size={{ xs: 12, sm: 4 }}>
+                {/* Switches */}
+                <Grid2 size={{ xs: 12, sm: 6 }}>
                   <div style={{ display: 'flex', gap: '12px', alignItems: 'center', padding: '8px 14px', background: 'white', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
                     <Controller
                       name='status'
@@ -1186,6 +1204,89 @@ return <Chip key={val} label={p?.label || val} size='small' />
               </Grid2>
               </div>
 
+              {/* ========== Section: Chế độ giá ========== */}
+              <div style={{ border: '1px solid #e2e8f0', borderRadius: 8, padding: '12px 16px', marginBottom: 16 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
+                  <DollarSign size={16} color='#d97706' />
+                  <span style={{ fontSize: '13px', fontWeight: 700, color: '#92400e' }}>Chế độ giá</span>
+                </div>
+                <Grid2 container spacing={2}>
+                  <Grid2 size={{ xs: 12, sm: 4 }}>
+                    <CustomTextField
+                      select
+                      fullWidth
+                      size='small'
+                      label='Pricing mode'
+                      value={pricingMode}
+                      onChange={(e) => setPricingMode(e.target.value as 'fixed' | 'per_unit')}
+                    >
+                      <MenuItem value='fixed'>Mốc cố định</MenuItem>
+                      <MenuItem value='per_unit'>Nhập tự do (per unit)</MenuItem>
+                    </CustomTextField>
+                  </Grid2>
+
+                  {pricingMode === 'per_unit' && (
+                    <>
+                      <Grid2 size={{ xs: 12, sm: 2.5 }}>
+                        <CustomTextField
+                          select
+                          fullWidth
+                          size='small'
+                          label='Đơn vị'
+                          value={timeUnit}
+                          onChange={(e) => setTimeUnit(e.target.value as 'day' | 'month')}
+                        >
+                          <MenuItem value='day'>Ngày</MenuItem>
+                          <MenuItem value='month'>Tháng</MenuItem>
+                        </CustomTextField>
+                      </Grid2>
+                      <Grid2 size={{ xs: 12, sm: 2.5 }}>
+                        <CustomTextField
+                          fullWidth
+                          size='small'
+                          type='number'
+                          label={`Giá bán/${timeUnit === 'month' ? 'tháng' : 'ngày'}`}
+                          value={pricePerUnit}
+                          onChange={(e) => setPricePerUnit(e.target.value)}
+                        />
+                      </Grid2>
+                      <Grid2 size={{ xs: 12, sm: 2.5 }}>
+                        <CustomTextField
+                          fullWidth
+                          size='small'
+                          type='number'
+                          label={`Giá vốn/${timeUnit === 'month' ? 'tháng' : 'ngày'}`}
+                          value={costPerUnit}
+                          onChange={(e) => setCostPerUnit(e.target.value)}
+                        />
+                      </Grid2>
+                    </>
+                  )}
+
+                  {pricingMode === 'fixed' && (
+                    <Grid2 size={{ xs: 12, sm: 8 }} sx={{ display: 'flex', alignItems: 'flex-end' }}>
+                      <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', paddingBottom: 4 }}>
+                        <Button
+                          onClick={() => setIsPriceModalOpen(true)}
+                          variant='contained'
+                          color='info'
+                          size='small'
+                          className='text-white'
+                          startIcon={<Plus size={14} />}
+                        >
+                          Set giá theo thời gian
+                        </Button>
+                        {priceFields.filter((f: any) => f.key && f.value).length > 0 && (
+                          <Typography variant='caption' color='text.secondary'>
+                            ({priceFields.filter((f: any) => f.key && f.value).length} mốc giá)
+                          </Typography>
+                        )}
+                      </div>
+                    </Grid2>
+                  )}
+                </Grid2>
+              </div>
+
               {/* ========== Section 3: Cấu hình kỹ thuật (collapsed) ========== */}
               <Accordion
                 expanded={techExpanded}
@@ -1270,16 +1371,6 @@ return <Chip key={val} label={p?.label || val} size='small' />
                           startIcon={<Plus size={14} />}
                         >
                           Thêm nhiều trường
-                        </Button>
-                        <Button
-                          onClick={() => setIsPriceModalOpen(true)}
-                          variant='contained'
-                          color='info'
-                          size='small'
-                          className='text-white'
-                          startIcon={<Plus size={14} />}
-                        >
-                          Set giá theo thời gian
                         </Button>
                       </div>
                     </Grid2>
