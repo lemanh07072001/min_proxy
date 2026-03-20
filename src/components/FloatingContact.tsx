@@ -2,17 +2,32 @@
 
 import { useState } from 'react'
 
+import { useQuery } from '@tanstack/react-query'
 import { X, MessageCircle, ExternalLink } from 'lucide-react'
 
-import { useSidebarSettings } from '@/hooks/apis/useSidebarSettings'
 import { SOCIAL_ICON_MAP } from '@/components/icons/SocialIcons'
 
 import './FloatingContact.css'
 
+// Fetch public — không cần auth
+function usePublicSidebarSettings() {
+  return useQuery({
+    queryKey: ['sidebar-settings-public'],
+    queryFn: async () => {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || ''
+      const res = await fetch(`${apiUrl}/get-sidebar-settings`)
+      const json = await res.json()
+
+      return json?.data?.support_links ?? []
+    },
+    staleTime: 10 * 60 * 1000,
+    refetchOnWindowFocus: false,
+  })
+}
+
 export default function FloatingContact() {
   const [hidden, setHidden] = useState(false)
-  const { data } = useSidebarSettings()
-  const links = data?.support_links ?? []
+  const { data: links = [] } = usePublicSidebarSettings()
 
   if (links.length === 0) return null
 
@@ -20,7 +35,7 @@ export default function FloatingContact() {
     <div className='floating-contact'>
       {/* Links — mặc định hiện, click trigger để ẩn */}
       <div className={`floating-links ${hidden ? '' : 'open'}`}>
-        {links.map((link, i) => {
+        {links.map((link: any, i: number) => {
           const SvgIcon = SOCIAL_ICON_MAP[link.icon]
 
           return (
