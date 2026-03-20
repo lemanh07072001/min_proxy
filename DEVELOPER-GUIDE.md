@@ -2936,3 +2936,11 @@ Các phần dưới đây nằm ngoài scope "flow mua proxy" nhưng có thể c
   - `ProxyCard`: hiện "từ Xđ/ngày" khi per_unit mode
 
 **Files:** `ServiceFormModal.tsx`, `TableServiceType.tsx`, `CustomPriceModal.tsx`, `useCustomPrices.ts`, `CheckoutModal.tsx`, `ProxyCard.tsx`, `RotatingProxyPage.tsx`
+
+#### 13.N+1 Fix: CheckoutModal chặn mua sai khi FE balance stale
+
+**Vấn đề:** CheckoutModal check `sodu >= total` từ Redux để disable nút "Thanh Toán". Redux `sodu` chỉ refresh mỗi 30s → user nạp tiền xong vẫn bị chặn mua vì FE chưa cập nhật balance. UX rất tệ — user có tiền mà không mua được.
+
+**Sửa:** Bỏ chặn mua dựa trên FE balance check. Warning "Số dư không đủ" vẫn hiện nhưng chỉ là cảnh báo tham khảo. BE là nơi quyết định cuối cùng (`lockForUpdate` + check `sodu` real-time). Nếu BE trả lỗi → FE hiện toast.
+
+**Files:** `CheckoutModal.tsx`
