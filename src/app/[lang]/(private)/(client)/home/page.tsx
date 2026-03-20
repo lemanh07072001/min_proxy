@@ -430,7 +430,7 @@ function EmptyFeed() {
     { icon: Globe, label: 'Proxy Tĩnh', desc: 'IP cố định, ổn định', href: `/${locale}/proxy-tinh`, color: '#3b82f6', gradient: 'linear-gradient(135deg, #3b82f6, #6366f1)' },
     { icon: TrendingUp, label: 'Proxy Xoay', desc: 'Đổi IP tự động', href: `/${locale}/proxy-xoay`, color: '#8b5cf6', gradient: 'linear-gradient(135deg, #8b5cf6, #a855f7)' },
     { icon: Wallet, label: 'Nạp Tiền', desc: 'Chuyển khoản tự động', href: `/${locale}/recharge`, color: '#22c55e', gradient: 'linear-gradient(135deg, #22c55e, #16a34a)' },
-    { icon: BookOpen, label: 'API Docs', desc: 'Tích hợp qua REST API', href: `/${locale}/api-docs`, color: '#f59e0b', gradient: 'linear-gradient(135deg, #f59e0b, #d97706)' }
+    { icon: BookOpen, label: 'API Docs', desc: 'Tích hợp qua REST API', href: `/${locale}/docs-api`, color: '#f59e0b', gradient: 'linear-gradient(135deg, #f59e0b, #d97706)' }
   ]
 
   return (
