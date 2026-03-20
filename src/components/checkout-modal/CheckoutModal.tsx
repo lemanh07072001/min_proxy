@@ -162,6 +162,7 @@ return pct > 0 ? Math.round(pct) : null
 
         queryClient.invalidateQueries({ queryKey: [queryKey] })
         queryClient.invalidateQueries({ queryKey: ['userOrders'] })
+        queryClient.invalidateQueries({ queryKey: ['profile'] })
 
         // Reset sau 2s để khách có thể mua tiếp
         setTimeout(() => {
