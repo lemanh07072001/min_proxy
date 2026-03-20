@@ -984,19 +984,51 @@ return <Chip key={val} label={p?.label || val} size='small' />
                   />
                 </Grid2>
 
-                {/* Toggle: cho phép khách tự nhập user/pass */}
+                {/* User:Pass mode — cho admin chọn + preview */}
                 {(watch('auth_type') === 'userpass' || watch('auth_type') === 'both') && (
                   <Grid2 size={{ xs: 12 }} sx={{ mt: -0.5 }}>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: '12px', color: '#475569', paddingLeft: 2 }}>
-                      <input
-                        type='checkbox'
-                        checked={allowCustomAuth}
-                        onChange={e => setAllowCustomAuth(e.target.checked)}
-                        style={{ width: 16, height: 16, accentColor: 'var(--primary-hover, #3b82f6)' }}
-                      />
-                      Cho phép khách tự nhập User:Pass
-                      <span style={{ color: '#94a3b8', fontWeight: 400 }}>— Tắt = hệ thống random tự động</span>
-                    </label>
+                    <div style={{ display: 'flex', gap: 8, marginBottom: 6 }}>
+                      <button
+                        type='button'
+                        onClick={() => setAllowCustomAuth(false)}
+                        style={{
+                          padding: '6px 14px', fontSize: '12px', fontWeight: 600, borderRadius: 8, border: '1.5px solid',
+                          cursor: 'pointer', transition: 'all 0.15s',
+                          background: !allowCustomAuth ? '#1e293b' : '#fff',
+                          color: !allowCustomAuth ? '#fff' : '#64748b',
+                          borderColor: !allowCustomAuth ? '#1e293b' : '#e2e8f0',
+                        }}
+                      >
+                        Random tự động
+                      </button>
+                      <button
+                        type='button'
+                        onClick={() => setAllowCustomAuth(true)}
+                        style={{
+                          padding: '6px 14px', fontSize: '12px', fontWeight: 600, borderRadius: 8, border: '1.5px solid',
+                          cursor: 'pointer', transition: 'all 0.15s',
+                          background: allowCustomAuth ? '#1e293b' : '#fff',
+                          color: allowCustomAuth ? '#fff' : '#64748b',
+                          borderColor: allowCustomAuth ? '#1e293b' : '#e2e8f0',
+                        }}
+                      >
+                        Khách tự nhập
+                      </button>
+                    </div>
+                    {/* Preview — admin thấy user sẽ nhìn thấy gì */}
+                    <div style={{ padding: '8px 12px', borderRadius: 8, fontSize: '12px', border: '1px solid', background: allowCustomAuth ? '#eff6ff' : '#f0fdf4', borderColor: allowCustomAuth ? '#bfdbfe' : '#bbf7d0' }}>
+                      {allowCustomAuth ? (
+                        <div>
+                          <strong style={{ color: '#1e40af' }}>Khách sẽ thấy:</strong> 2 ô nhập Username + Password tùy chọn
+                          <div style={{ color: '#64748b', marginTop: 2 }}>Khách có thể tự đặt user:pass hoặc để trống (hệ thống random)</div>
+                        </div>
+                      ) : (
+                        <div>
+                          <strong style={{ color: '#166534' }}>Khách sẽ thấy:</strong> 🔑 User:Pass được tạo tự động sau khi mua
+                          <div style={{ color: '#64748b', marginTop: 2 }}>Không hiện input — hệ thống tự sinh user:pass random</div>
+                        </div>
+                      )}
+                    </div>
                   </Grid2>
                 )}
 

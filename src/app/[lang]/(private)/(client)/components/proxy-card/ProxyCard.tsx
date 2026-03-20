@@ -202,7 +202,14 @@ return
                 <div className='feature-icons'><Shield size={14} color='#e67e22' /></div>
                 <div className='feature-content'>
                   <span className='feature-label'>Xác thực:</span>
-                  <span className='feature-value'>{convertAuthType(provider.auth_type)}</span>
+                  <span className='feature-value'>
+                    {convertAuthType(provider.auth_type)}
+                    {(provider.auth_type === 'userpass' || provider.auth_type === 'both') && (
+                      <span style={{ fontSize: '10.5px', fontWeight: 500, color: provider.metadata?.allow_custom_auth ? '#2563eb' : '#16a34a', marginLeft: 4 }}>
+                        ({provider.metadata?.allow_custom_auth ? 'Tự nhập' : 'Random'})
+                      </span>
+                    )}
+                  </span>
                 </div>
               </div>
             )}
