@@ -42,7 +42,7 @@ export default function TicketDetailDialog({ open, onClose, ticket }: Props) {
   const fileRef = useRef<HTMLInputElement>(null)
   const reply = useUserReply()
   const session = useSession()
-  const currentUserId = (session?.data?.user as any)?.id
+  const currentUserId = Number((session?.data?.user as any)?.id) || 0
 
   // Reset local replies khi ticket đổi
   const ticketId = ticket?.id
@@ -147,9 +147,8 @@ export default function TicketDetailDialog({ open, onClose, ticket }: Props) {
           {replies.length > 0 && (
             <div style={{ display: 'flex', flexDirection: 'column', padding: '8px 12px', gap: 8 }}>
               {replies.map((r: any) => {
-                const isMe = r.user_id === currentUserId
-                // Không có user_id (bị ẩn) = admin reply
-                const isAdminReply = !r.user_id || (r.user_id && r.user_id !== currentUserId && !r.user)
+                const isMe = Number(r.user_id) === currentUserId && currentUserId > 0
+                const isAdminReply = !r.user_id
                 const displayName = isMe ? 'Bạn' : (isAdminReply ? 'Admin' : (r.user?.name || 'User'))
 
                 return (

@@ -44,7 +44,7 @@ export default function ResolveTicketDialog({ open, onClose, ticket }: Props) {
   const [fullImage, setFullImage] = useState('')
   const [localReplies, setLocalReplies] = useState<any[]>([])
   const session = useSession()
-  const currentUserId = (session?.data?.user as any)?.id
+  const currentUserId = Number((session?.data?.user as any)?.id) || 0
 
   // Reset local replies khi ticket đổi
   const ticketId = ticket?.id
@@ -222,7 +222,7 @@ export default function ResolveTicketDialog({ open, onClose, ticket }: Props) {
               {/* Replies — chat bubble style */}
               {replies.map((r: any) => {
                 // Admin side: tin admin (mình hoặc admin khác) bên phải, user bên trái
-                const isMe = r.user_id === currentUserId
+                const isMe = Number(r.user_id) === currentUserId && currentUserId > 0
                 const isMySide = isMe // Tin của mình bên phải, người khác bên trái
                 const displayName = isMe ? 'Bạn' : (r.user?.name || (r.is_admin ? 'Admin' : 'User'))
 
