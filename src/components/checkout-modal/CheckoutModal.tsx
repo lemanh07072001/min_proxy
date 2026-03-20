@@ -176,7 +176,7 @@ return pct > 0 ? Math.round(pct) : null
   })
 
   const handlePurchase = () => {
-    if (!isBalanceSufficient || isSubmitting.current || isPending || purchaseSuccess) return
+    if (isSubmitting.current || isPending || purchaseSuccess) return
     isSubmitting.current = true
 
     // Validate user:pass pair
@@ -475,7 +475,7 @@ return (
             </div>
           </div>
 
-          {/* Balance warning */}
+          {/* Balance warning — chỉ cảnh báo, không chặn mua (BE check cuối cùng) */}
           {!isBalanceSufficient && (
             <div className='checkout-warning'>
               <AlertTriangle size={16} />
@@ -497,7 +497,7 @@ return (
             type='button'
             className='checkout-pay-btn'
             onClick={purchaseSuccess ? onClose : handlePurchase}
-            disabled={isPending || (!isBalanceSufficient && !purchaseSuccess)}
+            disabled={isPending || purchaseSuccess}
             style={purchaseSuccess ? { background: '#16a34a' } : undefined}
           >
             {isPending ? (
