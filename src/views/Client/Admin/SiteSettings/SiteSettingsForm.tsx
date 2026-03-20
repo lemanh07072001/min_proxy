@@ -1413,9 +1413,9 @@ export default function SiteSettingsForm() {
                   return (
                   <div key={idx} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                     {ytId ? (
-                      <img src={`https://img.youtube.com/vi/${ytId}/mqdefault.jpg`} alt='' style={{ width: 64, height: 36, objectFit: 'cover', borderRadius: 4, border: '1px solid #e2e8f0', flexShrink: 0 }} />
+                      <img src={`https://img.youtube.com/vi/${ytId}/mqdefault.jpg`} alt='' style={{ width: 96, height: 54, objectFit: 'cover', borderRadius: 6, border: '1px solid #e2e8f0', flexShrink: 0 }} />
                     ) : (
-                      <div style={{ width: 64, height: 36, borderRadius: 4, border: '1px dashed #cbd5e1', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8', fontSize: '10px', flexShrink: 0 }}>—</div>
+                      <div style={{ width: 96, height: 54, borderRadius: 6, border: '1px dashed #cbd5e1', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8', fontSize: '10px', flexShrink: 0 }}>—</div>
                     )}
                     <TextField
                       size='small'
