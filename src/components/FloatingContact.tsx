@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 
-import { MessageCircle, X, ExternalLink } from 'lucide-react'
+import { X, MessageCircle, ExternalLink } from 'lucide-react'
 
 import { useSidebarSettings } from '@/hooks/apis/useSidebarSettings'
 import { SOCIAL_ICON_MAP } from '@/components/icons/SocialIcons'
@@ -10,7 +10,7 @@ import { SOCIAL_ICON_MAP } from '@/components/icons/SocialIcons'
 import './FloatingContact.css'
 
 export default function FloatingContact() {
-  const [open, setOpen] = useState(false)
+  const [hidden, setHidden] = useState(false)
   const { data } = useSidebarSettings()
   const links = data?.support_links ?? []
 
@@ -18,8 +18,8 @@ export default function FloatingContact() {
 
   return (
     <div className='floating-contact'>
-      {/* Links — phía trên trigger, bay từ dưới lên */}
-      <div className={`floating-links ${open ? 'open' : ''}`}>
+      {/* Links — mặc định hiện, click trigger để ẩn */}
+      <div className={`floating-links ${hidden ? '' : 'open'}`}>
         {links.map((link, i) => {
           const SvgIcon = SOCIAL_ICON_MAP[link.icon]
 
@@ -31,7 +31,7 @@ export default function FloatingContact() {
               rel='noopener noreferrer'
               className='floating-link-item'
               title={link.label}
-              style={{ transitionDelay: open ? `${(links.length - 1 - i) * 60}ms` : '0ms' }}
+              style={{ transitionDelay: hidden ? '0ms' : `${(links.length - 1 - i) * 60}ms` }}
             >
               {SvgIcon ? <SvgIcon size={34} /> : (
                 <div style={{ width: 34, height: 34, borderRadius: '50%', background: link.color || '#64748b', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -43,13 +43,13 @@ export default function FloatingContact() {
         })}
       </div>
 
-      {/* Trigger — luôn ở dưới cùng */}
+      {/* Trigger — click để ẩn/hiện */}
       <button
-        className={`floating-trigger ${open ? 'open' : ''}`}
-        onClick={() => setOpen(v => !v)}
-        aria-label='Liên hệ hỗ trợ'
+        className={`floating-trigger ${hidden ? '' : 'open'}`}
+        onClick={() => setHidden(v => !v)}
+        aria-label={hidden ? 'Hiện liên hệ' : 'Ẩn liên hệ'}
       >
-        {open ? <X size={22} /> : <MessageCircle size={22} />}
+        {hidden ? <MessageCircle size={22} /> : <X size={20} />}
       </button>
     </div>
   )
