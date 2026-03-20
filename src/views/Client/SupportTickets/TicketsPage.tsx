@@ -182,7 +182,7 @@ export default function TicketsPage() {
               <div className='page-icon'>
                 <List size={17} />
               </div>
-              <h5 className='mb-0 font-semibold'>Hỗ trợ</h5>
+              <h5 className='mb-0 font-semibold'>Ticket Hỗ trợ</h5>
             </div>
             <div className='header-right' style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               {!isLoading && tickets.length > 0 && (

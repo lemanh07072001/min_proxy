@@ -374,7 +374,7 @@ const VerticalMenu = ({ scrollMenu }: Props) => {
             {...nav('support-tickets')}
             href={`/${locale}/support-tickets`}
           >
-            Hỗ trợ
+            Ticket Hỗ trợ
           </MenuItem>
           <MenuItem
             icon={<MessageCircleQuestionMark size={20} strokeWidth={1.5} />}
