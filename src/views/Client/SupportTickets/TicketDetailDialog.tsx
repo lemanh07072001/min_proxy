@@ -221,9 +221,9 @@ export default function TicketDetailDialog({ open, onClose, ticket }: Props) {
     {fullImage && (
       <div
         onClick={() => setFullImage('')}
-        style={{ position: 'fixed', inset: 0, zIndex: 99999, background: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+        style={{ position: 'fixed', inset: 0, zIndex: 999999, background: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
       >
-        <img src={fullImage} alt='' style={{ maxWidth: '90vw', maxHeight: '90vh', borderRadius: 8 }} />
+        <img src={fullImage} alt='' style={{ maxWidth: '90vw', maxHeight: '90vh', borderRadius: 8, boxShadow: '0 8px 32px rgba(0,0,0,0.5)' }} onClick={e => e.stopPropagation()} />
       </div>
     )}
     </>

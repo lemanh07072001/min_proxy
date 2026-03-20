@@ -5,35 +5,42 @@ import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { X, MessageCircle, ExternalLink } from 'lucide-react'
 
+import useAxiosAuth from '@/hocs/useAxiosAuth'
 import { SOCIAL_ICON_MAP } from '@/components/icons/SocialIcons'
 
 import './FloatingContact.css'
 
-// Fetch public — không cần auth
-function usePublicSidebarSettings() {
-  return useQuery({
-    queryKey: ['sidebar-settings-public'],
-    queryFn: async () => {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || ''
-      const res = await fetch(`${apiUrl}/get-sidebar-settings`)
-      const json = await res.json()
+export default function FloatingContact() {
+  const [hidden, setHidden] = useState(false)
+  const axiosAuth = useAxiosAuth()
 
-      return json?.data?.support_links ?? []
+  const { data: links = [] } = useQuery({
+    queryKey: ['floating-contact-links'],
+    queryFn: async () => {
+      try {
+        const res = await axiosAuth.get('/get-sidebar-settings')
+
+        return res?.data?.data?.support_links ?? []
+      } catch {
+        try {
+          const apiUrl = process.env.NEXT_PUBLIC_API_URL || ''
+          const res = await fetch(`${apiUrl}/get-sidebar-settings`)
+          const json = await res.json()
+
+          return json?.data?.support_links ?? []
+        } catch {
+          return []
+        }
+      }
     },
     staleTime: 10 * 60 * 1000,
     refetchOnWindowFocus: false,
   })
-}
-
-export default function FloatingContact() {
-  const [hidden, setHidden] = useState(false)
-  const { data: links = [] } = usePublicSidebarSettings()
 
   if (links.length === 0) return null
 
   return (
     <div className='floating-contact'>
-      {/* Links — mặc định hiện, click trigger để ẩn */}
       <div className={`floating-links ${hidden ? '' : 'open'}`}>
         {links.map((link: any, i: number) => {
           const SvgIcon = SOCIAL_ICON_MAP[link.icon]
@@ -58,7 +65,6 @@ export default function FloatingContact() {
         })}
       </div>
 
-      {/* Trigger — click để ẩn/hiện */}
       <button
         className={`floating-trigger ${hidden ? '' : 'open'}`}
         onClick={() => setHidden(v => !v)}

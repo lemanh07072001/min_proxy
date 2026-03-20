@@ -19,16 +19,31 @@ export interface SidebarSettings {
   youtube_videos: YoutubeVideo[]
 }
 
+const defaultData: SidebarSettings = { support_links: [], youtube_videos: [] }
+
+// Public fetch — dùng axios instance không cần token
 export const useSidebarSettings = () => {
+  const axiosAuth = useAxiosAuth()
+
   return useQuery({
     queryKey: ['sidebar-settings'],
     queryFn: async () => {
-      // Public API — không cần auth
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || ''
-      const res = await fetch(`${apiUrl}/get-sidebar-settings`)
-      const json = await res.json()
+      try {
+        const res = await axiosAuth.get('/get-sidebar-settings')
 
-      return (json?.data ?? { support_links: [], youtube_videos: [] }) as SidebarSettings
+        return (res?.data?.data ?? defaultData) as SidebarSettings
+      } catch {
+        // Fallback: plain fetch nếu axios fail (chưa login)
+        try {
+          const apiUrl = process.env.NEXT_PUBLIC_API_URL || ''
+          const res = await fetch(`${apiUrl}/get-sidebar-settings`)
+          const json = await res.json()
+
+          return (json?.data ?? defaultData) as SidebarSettings
+        } catch {
+          return defaultData
+        }
+      }
     },
     staleTime: 10 * 60 * 1000,
     refetchOnWindowFocus: false,
