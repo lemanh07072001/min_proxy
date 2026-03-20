@@ -409,9 +409,11 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
     ? watchAll.protocols.map((p: string) => p.toUpperCase()).join('/')
     : '—'
 
-  const previewPrice = priceFields.length > 0 && priceFields[0].value
-    ? `${parseInt(priceFields[0].value).toLocaleString('vi-VN')}đ`
-    : '—'
+  const previewPrice = pricingMode === 'per_unit' && pricePerUnit
+    ? `${parseInt(pricePerUnit).toLocaleString('vi-VN')}đ/${timeUnit === 'month' ? 'tháng' : 'ngày'}`
+    : priceFields.length > 0 && priceFields[0].value
+      ? `${parseInt(priceFields[0].value).toLocaleString('vi-VN')}đ`
+      : '—'
 
   const FeatureRow = ({ icon: Icon, iconColor, label, value }: { icon: any; iconColor: string; label: string; value: string }) => (
     <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 4px', borderBottom: '1px solid #f8fafc' }}>
