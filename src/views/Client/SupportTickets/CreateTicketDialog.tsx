@@ -48,12 +48,22 @@ export default function CreateTicketDialog({ open, onClose }: Props) {
     setDepositId('')
   }
 
+  const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/gif', 'image/webp']
+
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
 
     if (file) {
+      if (!allowedTypes.includes(file.type)) {
+        toast.error('Chỉ chấp nhận ảnh PNG, JPG, GIF, WebP')
+        e.target.value = ''
+
+        return
+      }
+
       if (file.size > 2 * 1024 * 1024) {
         toast.error('Ảnh tối đa 2MB')
+        e.target.value = ''
 
         return
       }
@@ -236,7 +246,7 @@ export default function CreateTicketDialog({ open, onClose }: Props) {
               Chọn ảnh (tối đa 2MB)
             </Button>
           )}
-          <input ref={fileInputRef} type='file' hidden accept='image/*' onChange={handleImageSelect} />
+          <input ref={fileInputRef} type='file' hidden accept='image/png,image/jpeg,image/jpg,image/gif,image/webp' onChange={handleImageSelect} />
         </div>
       </DialogContent>
       <DialogActions sx={{ px: 3, py: 2 }}>

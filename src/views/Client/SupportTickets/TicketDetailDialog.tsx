@@ -216,10 +216,17 @@ export default function TicketDetailDialog({ open, onClose, ticket }: Props) {
                   </IconButton>
                 </div>
               )}
-              <input ref={fileRef} type='file' hidden accept='image/*' onChange={e => {
+              <input ref={fileRef} type='file' hidden accept='image/png,image/jpeg,image/jpg,image/gif,image/webp' onChange={e => {
                 const f = e.target.files?.[0]
 
-                if (f) { setReplyImage(f); setReplyPreview(URL.createObjectURL(f)) }
+                if (f) {
+                  const allowed = ['image/png', 'image/jpeg', 'image/jpg', 'image/gif', 'image/webp']
+
+                  if (!allowed.includes(f.type)) { toast.error('Chỉ chấp nhận ảnh PNG, JPG, GIF, WebP'); e.target.value = ''; return }
+                  if (f.size > 2 * 1024 * 1024) { toast.error('Ảnh tối đa 2MB'); e.target.value = ''; return }
+                  setReplyImage(f); setReplyPreview(URL.createObjectURL(f))
+                }
+
                 e.target.value = ''
               }} />
             </div>
