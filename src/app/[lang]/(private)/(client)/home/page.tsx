@@ -421,27 +421,49 @@ function EmptyFeed() {
   const locale = lang || 'vi'
 
   const quickActions = [
-    { icon: Globe, label: 'Mua Proxy', desc: 'Proxy tĩnh & xoay', href: `/${locale}/proxy-tinh`, color: '#3b82f6' },
-    { icon: Wallet, label: 'Nạp tiền', desc: 'Chuyển khoản ngân hàng', href: `/${locale}/recharge`, color: '#22c55e' },
-    { icon: Search, label: 'Check Proxy', desc: 'Kiểm tra proxy hoạt động', href: `/${locale}/check-proxy`, color: '#f59e0b' },
-    { icon: BookOpen, label: 'API Docs', desc: 'Tích hợp qua API', href: `/${locale}/api-docs`, color: '#8b5cf6' }
+    { icon: Globe, label: 'Proxy Tĩnh', desc: 'IP cố định, ổn định', href: `/${locale}/proxy-tinh`, color: '#3b82f6', gradient: 'linear-gradient(135deg, #3b82f6, #6366f1)' },
+    { icon: TrendingUp, label: 'Proxy Xoay', desc: 'Đổi IP tự động', href: `/${locale}/proxy-xoay`, color: '#8b5cf6', gradient: 'linear-gradient(135deg, #8b5cf6, #a855f7)' },
+    { icon: Wallet, label: 'Nạp Tiền', desc: 'Chuyển khoản tự động', href: `/${locale}/recharge`, color: '#22c55e', gradient: 'linear-gradient(135deg, #22c55e, #16a34a)' },
+    { icon: BookOpen, label: 'API Docs', desc: 'Tích hợp qua REST API', href: `/${locale}/api-docs`, color: '#f59e0b', gradient: 'linear-gradient(135deg, #f59e0b, #d97706)' }
   ]
 
   return (
-    <div className='announcement-post' style={{ padding: 0, overflow: 'hidden' }}>
-      {/* Header */}
-      <div style={{ padding: '32px 24px 20px', textAlign: 'center' }}>
-        <div style={{ fontSize: '28px', marginBottom: '8px' }}>👋</div>
-        <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#1e293b', margin: '0 0 4px' }}>
-          Chào mừng bạn!
-        </h3>
-        <p style={{ fontSize: '13px', color: '#94a3b8', margin: 0 }}>
-          Hiện chưa có thông báo mới. Bắt đầu sử dụng dịch vụ ngay:
-        </p>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      {/* Welcome Banner */}
+      <div style={{
+        background: 'linear-gradient(135deg, var(--primary-color, #6366f1) 0%, var(--primary-hover, #4f46e5) 50%, #7c3aed 100%)',
+        borderRadius: 16, padding: '32px 28px', color: '#fff', position: 'relative', overflow: 'hidden',
+      }}>
+        {/* Background decoration */}
+        <div style={{ position: 'absolute', top: -20, right: -20, width: 120, height: 120, borderRadius: '50%', background: 'rgba(255,255,255,0.08)' }} />
+        <div style={{ position: 'absolute', bottom: -30, right: 60, width: 80, height: 80, borderRadius: '50%', background: 'rgba(255,255,255,0.05)' }} />
+
+        <div style={{ position: 'relative', zIndex: 1 }}>
+          <div style={{ fontSize: 32, marginBottom: 8 }}>👋</div>
+          <h2 style={{ fontSize: 22, fontWeight: 800, margin: '0 0 6px', letterSpacing: '-0.3px' }}>
+            Chào mừng bạn!
+          </h2>
+          <p style={{ fontSize: 14, opacity: 0.85, margin: '0 0 20px', lineHeight: 1.5, maxWidth: 400 }}>
+            Bắt đầu sử dụng dịch vụ proxy chất lượng cao. Chọn sản phẩm phù hợp bên dưới.
+          </p>
+          <a
+            href={`/${locale}/proxy-tinh`}
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: 8,
+              padding: '10px 20px', borderRadius: 10,
+              background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(10px)',
+              color: '#fff', fontWeight: 600, fontSize: 14,
+              textDecoration: 'none', border: '1px solid rgba(255,255,255,0.25)',
+              transition: 'background 0.2s',
+            }}
+          >
+            <Sparkles size={16} /> Khám phá ngay <ArrowRight size={16} />
+          </a>
+        </div>
       </div>
 
-      {/* Quick actions */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px', padding: '0 20px 24px' }}>
+      {/* Quick Actions Grid */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
         {quickActions.map(action => {
           const Icon = action.icon
 
@@ -450,19 +472,41 @@ function EmptyFeed() {
               key={action.label}
               href={action.href}
               className='empty-feed-action'
-              style={{ '--action-color': action.color } as React.CSSProperties}
+              style={{
+                '--action-color': action.color,
+                padding: '16px',
+                borderRadius: 12,
+                background: '#fff',
+                border: '1px solid #f1f5f9',
+              } as React.CSSProperties}
             >
-              <div className='empty-feed-action-icon' style={{ backgroundColor: `${action.color}10`, color: action.color }}>
-                <Icon size={18} />
+              <div style={{
+                width: 42, height: 42, borderRadius: 12,
+                background: action.gradient, color: '#fff',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                boxShadow: `0 4px 12px ${action.color}30`,
+              }}>
+                <Icon size={20} />
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: '13px', fontWeight: 600, color: '#1e293b' }}>{action.label}</div>
-                <div style={{ fontSize: '11px', color: '#94a3b8', lineHeight: 1.3 }}>{action.desc}</div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: '#1e293b', marginBottom: 2 }}>{action.label}</div>
+                <div style={{ fontSize: 12, color: '#94a3b8', lineHeight: 1.3 }}>{action.desc}</div>
               </div>
-              <ArrowRight size={14} style={{ color: '#cbd5e1', flexShrink: 0 }} />
+              <ArrowRight size={16} style={{ color: '#cbd5e1', flexShrink: 0 }} />
             </a>
           )
         })}
+      </div>
+
+      {/* Info note */}
+      <div style={{
+        display: 'flex', alignItems: 'center', gap: 10,
+        padding: '12px 16px', borderRadius: 10,
+        background: '#f0f9ff', border: '1px solid #bae6fd',
+        fontSize: 13, color: '#0369a1',
+      }}>
+        <Megaphone size={16} style={{ flexShrink: 0 }} />
+        <span>Thông báo từ hệ thống sẽ hiển thị tại đây khi có cập nhật mới.</span>
       </div>
     </div>
   )
