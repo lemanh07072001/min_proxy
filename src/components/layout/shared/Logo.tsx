@@ -3,20 +3,59 @@
 /**
  * Logo component
  *
- * Site mẹ: DB → env var → file mặc định
- * Site con: DB only → chưa setup thì ẩn
+ * - Expanded: hiện logo đầy đủ (chữ + biểu tượng)
+ * - Collapsed: hiện logo icon nhỏ (chỉ biểu tượng, không chữ)
+ * - Site mẹ: DB → fallback default file
+ * - Site con: DB only → chưa setup thì ẩn
  */
 
 import { useBranding } from '@/app/contexts/BrandingContext'
 
-const Logo = () => {
-  const { logo, isChild, name } = useBranding()
+interface LogoProps {
+  isCollapsed?: boolean
+}
+
+const Logo = ({ isCollapsed = false }: LogoProps) => {
+  const { logo, logoIcon, isChild, name } = useBranding()
 
   // Site con: chỉ dùng DB logo. Site mẹ: fallback default file
-  const logoSrc = logo || (!isChild ? '/images/logo/Logo_MKT_Proxy.png' : '')
+  const fullLogoSrc = logo || (!isChild ? '/images/logo/Logo_MKT_Proxy.png' : '')
+  const iconLogoSrc = logoIcon || ''
 
-  if (!logoSrc) {
-    // Không có logo → hiện tên site text (nếu có)
+  // Collapsed: hiện icon nếu có, không thì hiện chữ cái đầu
+  if (isCollapsed) {
+    if (iconLogoSrc) {
+      return (
+        <div style={{ width: 34, height: 34, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <img
+            src={iconLogoSrc}
+            alt='Logo'
+            width={34}
+            height={34}
+            style={{ maxWidth: '100%', maxHeight: '34px', objectFit: 'contain' }}
+            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+          />
+        </div>
+      )
+    }
+
+    // Fallback: chữ cái đầu
+    const initial = (name || 'M').charAt(0).toUpperCase()
+
+    return (
+      <div style={{
+        width: 34, height: 34, borderRadius: 8,
+        background: 'var(--primary-gradient, linear-gradient(135deg, #FC4336, #F88A4B))',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        color: '#fff', fontWeight: 700, fontSize: '16px'
+      }}>
+        {initial}
+      </div>
+    )
+  }
+
+  // Expanded: logo đầy đủ
+  if (!fullLogoSrc) {
     if (name) {
       return (
         <div style={{ minHeight: 40, display: 'flex', alignItems: 'center' }}>
@@ -31,7 +70,7 @@ const Logo = () => {
   return (
     <div style={{ minHeight: 40, maxHeight: 50, overflow: 'hidden', display: 'flex', alignItems: 'center' }}>
       <img
-        src={logoSrc}
+        src={fullLogoSrc}
         alt='Logo'
         width={180}
         height={50}

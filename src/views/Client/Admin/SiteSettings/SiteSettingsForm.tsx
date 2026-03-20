@@ -8,7 +8,7 @@ import {
 } from '@mui/material'
 import {
   Settings, Plus, Trash2, Save, Loader2, Upload, Palette,
-  Search, Code, PanelLeft, Truck, Globe, Info, Eye, ShoppingCart, CreditCard
+  Search, Code, PanelLeft, Truck, Globe, Info, Eye, ShoppingCart, CreditCard, Headphones
 } from 'lucide-react'
 import { toast } from 'react-toastify'
 
@@ -142,6 +142,7 @@ const defaultBranding: BrandingSettings = {
   site_name: '',
   site_description: '',
   logo_url: '',
+  logo_icon_url: '',
   favicon_url: '',
   og_image_url: '',
   primary_color: '#FC4336',
@@ -223,8 +224,18 @@ export default function SiteSettingsForm() {
   const [branding, setBranding] = useState<BrandingSettings>({ ...defaultBranding })
 
   const logoInputRef = useRef<HTMLInputElement>(null)
+  const logoIconInputRef = useRef<HTMLInputElement>(null)
   const faviconInputRef = useRef<HTMLInputElement>(null)
   const ogImageInputRef = useRef<HTMLInputElement>(null)
+
+  // Resolve relative path → full URL cho preview ảnh
+  const resolveUrl = (path: string | null | undefined) => {
+    if (!path) return ''
+    if (path.startsWith('http')) return path
+    const apiBase = (process.env.NEXT_PUBLIC_API_URL || '').replace(/\/api\/?$/, '')
+
+    return apiBase ? `${apiBase}${path}` : path
+  }
 
   // ─── Effects ─────────────────────────────────────────────────────────────
 
@@ -241,6 +252,7 @@ export default function SiteSettingsForm() {
         site_name: brandingData.site_name || '',
         site_description: brandingData.site_description || '',
         logo_url: brandingData.logo_url || '',
+        logo_icon_url: brandingData.logo_icon_url || '',
         favicon_url: brandingData.favicon_url || '',
         og_image_url: brandingData.og_image_url || '',
         primary_color: brandingData.primary_color || '#FC4336',
@@ -297,7 +309,7 @@ export default function SiteSettingsForm() {
 
   // ─── Handlers ────────────────────────────────────────────────────────────
 
-  const handleImageUpload = async (file: File, field: 'logo_url' | 'favicon_url' | 'og_image_url') => {
+  const handleImageUpload = async (file: File, field: 'logo_url' | 'logo_icon_url' | 'favicon_url' | 'og_image_url') => {
     const formData = new FormData()
 
     // Map field name → tên SEO: logo_url → logo, favicon_url → favicon, og_image_url → og-image
@@ -368,7 +380,7 @@ export default function SiteSettingsForm() {
   }
 
   // Xóa ảnh → lưu DB ngay (gửi empty string để BE xóa key)
-  const resetImageField = (field: 'logo_url' | 'favicon_url' | 'og_image_url') => {
+  const resetImageField = (field: 'logo_url' | 'logo_icon_url' | 'favicon_url' | 'og_image_url') => {
     setBranding(prev => ({ ...prev, [field]: '' }))
     updateBrandingMutation.mutate({ [field]: '' } as any, {
       onSuccess: () => toast.success('Đã về mặc định'),
@@ -440,7 +452,7 @@ export default function SiteSettingsForm() {
     { label: 'Màu sắc', icon: <Palette size={16} /> },
     { label: 'SEO', icon: <Search size={16} /> },
     { label: 'Nâng cao', icon: <Code size={16} /> },
-    { label: 'Sidebar', icon: <PanelLeft size={16} /> },
+    { label: 'Hỗ trợ & Liên hệ', icon: <Headphones size={16} /> },
     { label: 'Thanh toán', icon: <CreditCard size={16} /> },
     ...(isChild ? [{ label: 'Nhà cung cấp', icon: <Truck size={16} /> }] : []),
   ]
@@ -542,7 +554,7 @@ export default function SiteSettingsForm() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     {branding.logo_url ? (
                       <img
-                        src={branding.logo_url}
+                        src={resolveUrl(branding.logo_url)}
                         alt='Logo'
                         style={{ maxHeight: 40, maxWidth: 160, objectFit: 'contain', border: '1px solid #e2e8f0', borderRadius: 6, padding: 4 }}
                       />
@@ -582,13 +594,59 @@ export default function SiteSettingsForm() {
                   </div>
                 </div>
 
+                {/* Logo Icon (collapsed menu) */}
+                <div style={{ flex: 1 }}>
+                  <div style={fieldLabelSx}>Logo thu gọn <span style={{ fontWeight: 400, color: '#94a3b8' }}>— Hiện khi menu co lại. Vuông, 64x64px</span></div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    {branding.logo_icon_url ? (
+                      <img
+                        src={resolveUrl(branding.logo_icon_url)}
+                        alt='Logo Icon'
+                        style={{ width: 36, height: 36, objectFit: 'contain', border: '1px solid #e2e8f0', borderRadius: 8, padding: 2 }}
+                      />
+                    ) : (
+                      <div style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px dashed #cbd5e1', borderRadius: 8, color: '#94a3b8', fontSize: '10px' }}>
+                        —
+                      </div>
+                    )}
+                    <Button
+                      variant='outlined'
+                      size='small'
+                      startIcon={<Upload size={14} />}
+                      onClick={() => logoIconInputRef.current?.click()}
+                      sx={{ textTransform: 'none', fontSize: '12px' }}
+                    >
+                      {branding.logo_icon_url ? 'Thay' : 'Tải lên'}
+                    </Button>
+                    {branding.logo_icon_url && (
+                      <Tooltip title='Xóa logo thu gọn'>
+                        <IconButton size='small' onClick={() => resetImageField('logo_icon_url')} sx={{ color: '#94a3b8', '&:hover': { color: '#ef4444' } }}>
+                          <Trash2 size={14} />
+                        </IconButton>
+                      </Tooltip>
+                    )}
+                    <input
+                      ref={logoIconInputRef}
+                      type='file'
+                      hidden
+                      accept='image/png,image/svg+xml,image/webp'
+                      onChange={e => {
+                        const file = e.target.files?.[0]
+
+                        if (file) handleImageUpload(file, 'logo_icon_url')
+                        e.target.value = ''
+                      }}
+                    />
+                  </div>
+                </div>
+
                 {/* Favicon */}
                 <div style={{ flex: 1 }}>
                   <div style={fieldLabelSx}>Favicon <span style={{ fontWeight: 400, color: '#94a3b8' }}>— Icon nhỏ trên tab trình duyệt. PNG/ICO vuông 32x32px</span></div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     {branding.favicon_url ? (
                       <img
-                        src={branding.favicon_url}
+                        src={resolveUrl(branding.favicon_url)}
                         alt='Favicon'
                         style={{ width: 32, height: 32, objectFit: 'contain', border: '1px solid #e2e8f0', borderRadius: 6, padding: 2 }}
                       />
@@ -634,7 +692,7 @@ export default function SiteSettingsForm() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     {branding.og_image_url ? (
                       <img
-                        src={branding.og_image_url}
+                        src={resolveUrl(branding.og_image_url)}
                         alt='OG Image'
                         style={{ maxHeight: 40, maxWidth: 80, objectFit: 'cover', border: '1px solid #e2e8f0', borderRadius: 6, padding: 2 }}
                       />
@@ -704,15 +762,7 @@ export default function SiteSettingsForm() {
                 maxRows={4}
                 fullWidth
               />
-              <TextField
-                size='small'
-                label='Liên hệ hỗ trợ'
-                value={branding.support_contact}
-                onChange={e => updateBrandingField('support_contact', e.target.value)}
-                placeholder='VD: Zalo: 0123456789, Telegram: @mktproxy'
-                helperText='Hiển thị ở sidebar hoặc footer để khách liên hệ. Để trống nếu không cần.'
-                fullWidth
-              />
+              {/* Liên hệ hỗ trợ đã chuyển sang tab "Hỗ trợ & Liên hệ" */}
             </div>
           )}
 
@@ -1103,80 +1153,7 @@ export default function SiteSettingsForm() {
                 helperText='Dùng để cài Google Analytics, Facebook Pixel, v.v.'
               />
 
-              {/* Organization info */}
-              <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: 20 }}>
-                <h6 style={sectionTitleSx}>Thông tin tổ chức (Schema.org)</h6>
-                <p style={sectionDescSx}>Giúp Google hiểu thông tin doanh nghiệp, hiển thị rich snippet</p>
-              </div>
-              <div style={{ display: 'flex', gap: 12 }}>
-                <TextField
-                  size='small'
-                  label='Tên tổ chức'
-                  value={branding.organization_name}
-                  onChange={e => updateBrandingField('organization_name', e.target.value)}
-                  placeholder='VD: Công ty TNHH ABC'
-                  helperText='Hiển thị trong Schema.org, trang liên hệ, footer'
-                  sx={{ flex: 2 }}
-                />
-                <TextField
-                  size='small'
-                  label='Số điện thoại'
-                  value={branding.organization_phone}
-                  onChange={e => updateBrandingField('organization_phone', e.target.value)}
-                  placeholder='VD: 0563072397'
-                  helperText='Hiển thị ở trang liên hệ'
-                  sx={{ flex: 1 }}
-                />
-                <TextField
-                  size='small'
-                  label='Email liên hệ'
-                  value={branding.organization_email}
-                  onChange={e => updateBrandingField('organization_email', e.target.value)}
-                  placeholder='VD: contact@domain.com'
-                  helperText='Hiển thị ở trang liên hệ'
-                  sx={{ flex: 1 }}
-                />
-              </div>
-              <div style={{ display: 'flex', gap: 12 }}>
-                <TextField
-                  size='small'
-                  label='Địa chỉ'
-                  value={branding.organization_address}
-                  onChange={e => updateBrandingField('organization_address', e.target.value)}
-                  placeholder='VD: 123 Đường ABC, Quận 1, TP.HCM'
-                  helperText='Hiển thị ở trang liên hệ, footer, Google Maps'
-                  sx={{ flex: 2 }}
-                />
-                <TextField
-                  size='small'
-                  label='Website'
-                  value={branding.website_url}
-                  onChange={e => updateBrandingField('website_url', e.target.value)}
-                  placeholder='VD: https://domain.com'
-                  helperText='Hiển thị ở trang liên hệ'
-                  sx={{ flex: 1 }}
-                />
-              </div>
-              <div style={{ display: 'flex', gap: 12 }}>
-                <TextField
-                  size='small'
-                  label='Giờ làm việc'
-                  value={branding.working_hours}
-                  onChange={e => updateBrandingField('working_hours', e.target.value)}
-                  placeholder='VD: 8:00 - 22:00 (T2-T7)'
-                  helperText='Hiển thị ở trang liên hệ'
-                  sx={{ flex: 1 }}
-                />
-                <TextField
-                  size='small'
-                  label='Mã số thuế'
-                  value={branding.tax_id}
-                  onChange={e => updateBrandingField('tax_id', e.target.value)}
-                  placeholder='VD: 0123456789'
-                  helperText='Hiển thị ở footer cho uy tín'
-                  sx={{ flex: 1 }}
-                />
-              </div>
+              {/* Thông tin tổ chức đã chuyển sang tab "Hỗ trợ & Liên hệ" */}
 
               {/* Social links */}
               <div>
@@ -1270,13 +1247,97 @@ export default function SiteSettingsForm() {
             </div>
           )}
 
-          {/* ═══════════════ Tab 4: Sidebar ═══════════════ */}
+          {/* ═══════════════ Tab 4: Hỗ trợ & Liên hệ ═══════════════ */}
           {activeTab === 4 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-              {/* Support Links */}
+
+              {/* ── Section 1: Thông tin liên hệ ── */}
               <div>
-                <h6 style={sectionTitleSx}>Liên kết hỗ trợ</h6>
-                <p style={sectionDescSx}>Hiển thị ở sidebar bên trái — nút Zalo, Telegram, Facebook... để khách liên hệ nhanh. Không bắt buộc, để trống nếu không cần.</p>
+                <h6 style={sectionTitleSx}>Thông tin liên hệ</h6>
+                <p style={sectionDescSx}>Hiển thị ở: footer trang, trang liên hệ, kết quả Google (Schema.org). Giúp khách hàng biết cách liên lạc với bạn.</p>
+              </div>
+              <TextField
+                size='small'
+                label='Liên hệ hỗ trợ nhanh'
+                value={branding.support_contact}
+                onChange={e => updateBrandingField('support_contact', e.target.value)}
+                placeholder='VD: Zalo: 0123456789, Telegram: @mktproxy'
+                helperText='Hiển thị ở sidebar trái + footer — dòng text ngắn để khách liên hệ nhanh'
+                fullWidth
+              />
+              <div style={{ display: 'flex', gap: 12 }}>
+                <TextField
+                  size='small'
+                  label='Tên tổ chức / doanh nghiệp'
+                  value={branding.organization_name}
+                  onChange={e => updateBrandingField('organization_name', e.target.value)}
+                  placeholder='VD: Công ty TNHH ABC'
+                  helperText='Hiển thị ở footer, Schema.org'
+                  sx={{ flex: 2 }}
+                />
+                <TextField
+                  size='small'
+                  label='Số điện thoại'
+                  value={branding.organization_phone}
+                  onChange={e => updateBrandingField('organization_phone', e.target.value)}
+                  placeholder='VD: 0563072397'
+                  helperText='Hiển thị ở footer, trang liên hệ'
+                  sx={{ flex: 1 }}
+                />
+                <TextField
+                  size='small'
+                  label='Email liên hệ'
+                  value={branding.organization_email}
+                  onChange={e => updateBrandingField('organization_email', e.target.value)}
+                  placeholder='VD: contact@domain.com'
+                  helperText='Hiển thị ở footer, trang liên hệ'
+                  sx={{ flex: 1 }}
+                />
+              </div>
+              <div style={{ display: 'flex', gap: 12 }}>
+                <TextField
+                  size='small'
+                  label='Địa chỉ'
+                  value={branding.organization_address}
+                  onChange={e => updateBrandingField('organization_address', e.target.value)}
+                  placeholder='VD: 123 Đường ABC, Quận 1, TP.HCM'
+                  helperText='Hiển thị ở footer, Google Maps'
+                  sx={{ flex: 2 }}
+                />
+                <TextField
+                  size='small'
+                  label='Website'
+                  value={branding.website_url}
+                  onChange={e => updateBrandingField('website_url', e.target.value)}
+                  placeholder='VD: https://domain.com'
+                  sx={{ flex: 1 }}
+                />
+              </div>
+              <div style={{ display: 'flex', gap: 12 }}>
+                <TextField
+                  size='small'
+                  label='Giờ làm việc'
+                  value={branding.working_hours}
+                  onChange={e => updateBrandingField('working_hours', e.target.value)}
+                  placeholder='VD: 8:00 - 22:00 (T2-T7)'
+                  helperText='Hiển thị ở footer, trang liên hệ'
+                  sx={{ flex: 1 }}
+                />
+                <TextField
+                  size='small'
+                  label='Mã số thuế'
+                  value={branding.tax_id}
+                  onChange={e => updateBrandingField('tax_id', e.target.value)}
+                  placeholder='VD: 0123456789'
+                  helperText='Hiển thị ở footer'
+                  sx={{ flex: 1 }}
+                />
+              </div>
+
+              {/* ── Section 2: Nút liên hệ sidebar ── */}
+              <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: 20 }}>
+                <h6 style={sectionTitleSx}>Nút liên hệ nhanh (Sidebar)</h6>
+                <p style={sectionDescSx}>Hiển thị ở menu bên trái — các nút Zalo, Telegram, Facebook... để khách nhấn vào liên hệ trực tiếp. Mỗi nút sẽ mở link tương ứng.</p>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 {supportLinks.map((link, idx) => (
@@ -1340,10 +1401,10 @@ export default function SiteSettingsForm() {
                 </Button>
               </div>
 
-              {/* YouTube Videos */}
+              {/* ── Section 3: Video hướng dẫn ── */}
               <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: 20 }}>
-                <h6 style={sectionTitleSx}>Video hướng dẫn YouTube</h6>
-                <p style={sectionDescSx}>Hiển thị ở sidebar bên trái — danh sách video hướng dẫn sử dụng. Không bắt buộc.</p>
+                <h6 style={sectionTitleSx}>Video hướng dẫn (Sidebar)</h6>
+                <p style={sectionDescSx}>Hiển thị ở menu bên trái — danh sách video YouTube hướng dẫn khách sử dụng dịch vụ. Không bắt buộc.</p>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 {youtubeVideos.map((video, idx) => (

@@ -19,6 +19,7 @@ export interface BrandingSettings {
   site_name: string | null
   site_description: string | null
   logo_url: string | null
+  logo_icon_url: string | null
   favicon_url: string | null
   og_image_url: string | null
 

@@ -132,7 +132,10 @@ return
           {/* Header: title (trái) + tags (phải) */}
           <div className='card-header-column'>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
-              <h3 className='provider-title-column' style={{ flex: 1 }}>{provider?.name ?? provider?.code} <span style={{ fontFamily: 'monospace', fontSize: '11px', fontWeight: 500, color: '#94a3b8' }}>{provider?.id}#{provider?.code || ''}</span></h3>
+              <div style={{ flex: 1 }}>
+                <h3 className='provider-title-column'>{provider?.name ?? provider?.code}</h3>
+                <span style={{ fontFamily: 'monospace', fontSize: '11px', fontWeight: 500, color: '#94a3b8', lineHeight: 1 }}>{provider?.id}#{provider?.code || ''}</span>
+              </div>
               {visibleTags.length > 0 && (
                 <div style={{ display: 'flex', gap: '4px', flexShrink: 0 }}>
                   {visibleTags.map((tag: string, i: number) => {
@@ -145,21 +148,19 @@ return
             </div>
           </div>
 
-          {/* Note preview (mô tả ngắn) */}
+          {/* Note — hiện full HTML */}
           {provider?.note && provider.note !== '<p></p>' && (() => {
             const text = provider.note.replace(/<[^>]+>/g, '').trim()
 
             if (!text) return null
-            const preview = text.length > 80 ? text.substring(0, 80) + '...' : text
 
-            
-return <p style={{ fontSize: '13px', color: '#64748b', margin: '0 0 8px', lineHeight: 1.4 }}>{preview}</p>
+            return <div className='proxy-note-content' style={{ fontSize: '12px', color: '#64748b', margin: '0 0 8px', lineHeight: 1.5 }} dangerouslySetInnerHTML={{ __html: provider.note }} />
           })()}
 
           {/* Product info as feature rows */}
           <div style={{ marginBottom: '8px' }}>
             <div className='feature-row'>
-              <div className='feature-icons'><MapPin size={16} color='#6366f1' /></div>
+              <div className='feature-icons'><MapPin size={14} color='#6366f1' /></div>
               <div className='feature-content'>
                 <span className='feature-label'>Loại IP:</span>
                 <span className='feature-value' style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>Static {convertIpVersion(provider.ip_version)} — {(provider?.country || provider?.country_code) && <img src={`https://flagcdn.com/w40/${fixCountryCode(provider.country || provider.country_code)}.png`} alt='' style={{ width: 18, height: 13, objectFit: 'cover', borderRadius: 2 }} />}{getCountryName() || provider?.country_name || provider?.country || 'N/A'}</span>
@@ -167,7 +168,7 @@ return <p style={{ fontSize: '13px', color: '#64748b', margin: '0 0 8px', lineHe
             </div>
             {/* Protocol as static feature row */}
             <div className='feature-row'>
-              <div className='feature-icons'><Shield size={16} color='#f97316' /></div>
+              <div className='feature-icons'><Shield size={14} color='#f97316' /></div>
               <div className='feature-content'>
                 <span className='feature-label'>Hỗ trợ:</span>
                 <span className='feature-value'>{protocolList.map(p => p.toUpperCase()).join('/')}</span>
@@ -175,7 +176,7 @@ return <p style={{ fontSize: '13px', color: '#64748b', margin: '0 0 8px', lineHe
             </div>
             {provider?.auth_type && (
               <div className='feature-row'>
-                <div className='feature-icons'><Shield size={16} color='#e67e22' /></div>
+                <div className='feature-icons'><Shield size={14} color='#e67e22' /></div>
                 <div className='feature-content'>
                   <span className='feature-label'>Xác thực:</span>
                   <span className='feature-value'>{convertAuthType(provider.auth_type)}</span>
@@ -184,7 +185,7 @@ return <p style={{ fontSize: '13px', color: '#64748b', margin: '0 0 8px', lineHe
             )}
             {provider?.bandwidth && (
               <div className='feature-row'>
-                <div className='feature-icons'><Wifi size={16} color='#3b82f6' /></div>
+                <div className='feature-icons'><Wifi size={14} color='#3b82f6' /></div>
                 <div className='feature-content'>
                   <span className='feature-label'>Băng thông:</span>
                   <span className='feature-value'>{provider.bandwidth === 'unlimited' ? 'Không giới hạn' : provider.bandwidth}</span>
@@ -193,7 +194,7 @@ return <p style={{ fontSize: '13px', color: '#64748b', margin: '0 0 8px', lineHe
             )}
             {provider?.request_limit && (
               <div className='feature-row'>
-                <div className='feature-icons'><Zap size={16} color='#22c55e' /></div>
+                <div className='feature-icons'><Zap size={14} color='#22c55e' /></div>
                 <div className='feature-content'>
                   <span className='feature-label'>Giới hạn request:</span>
                   <span className='feature-value'>{provider.request_limit}</span>
@@ -202,7 +203,7 @@ return <p style={{ fontSize: '13px', color: '#64748b', margin: '0 0 8px', lineHe
             )}
             {provider?.concurrent_connections && (
               <div className='feature-row'>
-                <div className='feature-icons'><Users size={16} color='#ef4444' /></div>
+                <div className='feature-icons'><Users size={14} color='#ef4444' /></div>
                 <div className='feature-content'>
                   <span className='feature-label'>Kết nối đồng thời:</span>
                   <span className='feature-value'>{provider.concurrent_connections}</span>
@@ -212,7 +213,7 @@ return <p style={{ fontSize: '13px', color: '#64748b', margin: '0 0 8px', lineHe
             {/* Custom fields — hiển thị options cho user biết */}
             {provider?.metadata?.custom_fields?.map((field: any) => (
               <div className='feature-row' key={field.param}>
-                <div className='feature-icons'><Zap size={16} color='#8b5cf6' /></div>
+                <div className='feature-icons'><Zap size={14} color='#8b5cf6' /></div>
                 <div className='feature-content'>
                   <span className='feature-label'>{field.label}:</span>
                   <span className='feature-value'>{field.options?.map((o: any) => o.label).join(', ')}</span>

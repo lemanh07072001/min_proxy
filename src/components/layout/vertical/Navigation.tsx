@@ -29,7 +29,7 @@ type Props = {
 }
 
 const StyledBoxForShadow = styled('div')(({ theme }) => ({
-  top: 60,
+  top: 80,
   left: -8,
   zIndex: 2,
   opacity: 0,
@@ -109,7 +109,7 @@ const Navigation = (props: Props) => {
       {/* Nav Header including Logo & nav toggle icons  */}
       <NavHeader>
         <Link href='/'>
-          <Logo />
+          <Logo isCollapsed={isCollapsed && !isHovered} />
         </Link>
         {!(isCollapsed && !isHovered) && (
           <NavCollapseIcons

@@ -274,10 +274,10 @@ export default function StaticProxyPage({ data }: StaticProxyPageProps) {
 
         </Box>
 
-        <Grid2 container columnSpacing={2} rowSpacing={4} sx={{ mt: 1 }}>
+        <Grid2 container columnSpacing={1.5} rowSpacing={2.5} sx={{ mt: 1 }}>
           {filteredProviders?.length > 0 ? (
             filteredProviders.map((provider: any, index: any) => (
-              <Grid2 key={index} size={{ xs: 12, md: 6, lg: 4 }}>
+              <Grid2 key={index} size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
                 <ProxyCard provider={provider} isFirstCard={index === 0} countries={countries} />
               </Grid2>
             ))

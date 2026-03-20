@@ -19,6 +19,7 @@ interface BrandingContextValue extends Omit<BrandingSettings, 'site_mode'> {
   name: string
   description: string
   logo: string
+  logoIcon: string
   favicon: string
   primaryColor: string
   primaryHover: string
@@ -33,6 +34,7 @@ const defaultBranding: BrandingContextValue = {
   name: '',
   description: '',
   logo: '',
+  logoIcon: '',
   favicon: '',
   primaryColor: siteConfig.primaryColor,
   primaryHover: siteConfig.primaryHover,
@@ -46,6 +48,7 @@ const defaultBranding: BrandingContextValue = {
   site_name: null,
   site_description: null,
   logo_url: null,
+  logo_icon_url: null,
   favicon_url: null,
   og_image_url: null,
   primary_color: null,
@@ -93,6 +96,7 @@ export function BrandingProvider({ children }: { children: React.ReactNode }) {
     name: data?.site_name || '',
     description: data?.site_description || '',
     logo: resolveAssetUrl(data?.logo_url),
+    logoIcon: resolveAssetUrl(data?.logo_icon_url),
     favicon: resolveAssetUrl(data?.favicon_url),
     primaryColor: data?.primary_color || siteConfig.primaryColor,
     primaryHover: data?.primary_hover || siteConfig.primaryHover,
@@ -106,6 +110,7 @@ export function BrandingProvider({ children }: { children: React.ReactNode }) {
     site_name: data?.site_name ?? null,
     site_description: data?.site_description ?? null,
     logo_url: data?.logo_url ?? null,
+    logo_icon_url: data?.logo_icon_url ?? null,
     favicon_url: data?.favicon_url ?? null,
     og_image_url: data?.og_image_url ?? null,
     primary_color: data?.primary_color ?? null,
