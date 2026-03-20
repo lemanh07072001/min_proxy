@@ -25,15 +25,68 @@ export const useCreateTicket = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async (data: { order_id?: number; type: string; message: string }) => {
-      const res = await axiosAuth.post('/support-tickets', data)
+    mutationFn: async (data: FormData) => {
+      const res = await axiosAuth.post('/support-tickets', data, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      })
 
-      
-return res.data
+      return res.data
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['myTickets'] })
     }
+  })
+}
+
+export const useUserReply = () => {
+  const axiosAuth = useAxiosAuth()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ ticketId, data }: { ticketId: number; data: FormData }) => {
+      const res = await axiosAuth.post(`/support-tickets/${ticketId}/reply`, data, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      })
+
+      return res.data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['myTickets'] })
+      queryClient.invalidateQueries({ queryKey: ['adminTickets'] })
+    }
+  })
+}
+
+export const useAdminReply = () => {
+  const axiosAuth = useAxiosAuth()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ ticketId, data }: { ticketId: number; data: FormData }) => {
+      const res = await axiosAuth.post(`/admin/support-tickets/${ticketId}/reply`, data, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      })
+
+      return res.data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['adminTickets'] })
+      queryClient.invalidateQueries({ queryKey: ['myTickets'] })
+    }
+  })
+}
+
+export const useMyDeposits = () => {
+  const axiosAuth = useAxiosAuth()
+
+  return useQuery({
+    queryKey: ['myDeposits'],
+    queryFn: async () => {
+      const res = await axiosAuth.get('/my-deposits')
+
+      return res.data.data
+    },
+    staleTime: 60 * 1000,
   })
 }
 

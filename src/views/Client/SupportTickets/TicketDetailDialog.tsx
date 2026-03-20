@@ -1,17 +1,29 @@
 'use client'
 
+import { useState, useRef } from 'react'
+
 import Dialog from '@mui/material/Dialog'
 import DialogTitle from '@mui/material/DialogTitle'
 import DialogContent from '@mui/material/DialogContent'
-import DialogActions from '@mui/material/DialogActions'
 import Button from '@mui/material/Button'
 import Chip from '@mui/material/Chip'
 import IconButton from '@mui/material/IconButton'
-import { X, Clock3, MessageSquare, ShieldCheck, UserCheck } from 'lucide-react'
+import { X, Clock3, MessageSquare, ShieldCheck, UserCheck, Send, Upload, Trash2, Image as ImageIcon } from 'lucide-react'
+import { toast } from 'react-toastify'
 
 import { formatDateTimeLocal } from '@/utils/formatDate'
-import { TICKET_STATUS_LABELS, TICKET_STATUS_COLORS, TICKET_TYPE_LABELS } from '@/constants'
+import { TICKET_STATUS, TICKET_STATUS_LABELS, TICKET_STATUS_COLORS, TICKET_TYPE_LABELS } from '@/constants/ticketStatus'
 import { ORDER_STATUS_LABELS, ORDER_STATUS_COLORS } from '@/constants/orderStatus'
+import { useUserReply } from '@/hooks/apis/useTickets'
+
+// Resolve relative path → full URL
+function resolveUrl(path: string | null | undefined): string {
+  if (!path) return ''
+  if (path.startsWith('http')) return path
+  const apiBase = (process.env.NEXT_PUBLIC_API_URL || '').replace(/\/api\/?$/, '')
+
+  return apiBase ? `${apiBase}${path}` : path
+}
 
 interface Props {
   open: boolean
@@ -20,127 +32,189 @@ interface Props {
 }
 
 export default function TicketDetailDialog({ open, onClose, ticket }: Props) {
+  const [replyText, setReplyText] = useState('')
+  const [replyImage, setReplyImage] = useState<File | null>(null)
+  const [replyPreview, setReplyPreview] = useState('')
+  const fileRef = useRef<HTMLInputElement>(null)
+  const reply = useUserReply()
+
   if (!ticket) return null
 
   const statusLabel = TICKET_STATUS_LABELS[ticket.status] || 'Không xác định'
   const statusColor = TICKET_STATUS_COLORS[ticket.status] || 'default'
+  const isClosed = [TICKET_STATUS.RESOLVED, TICKET_STATUS.CLOSED, TICKET_STATUS.REJECTED].includes(ticket.status)
+  const replies = ticket.replies || []
+
+  const handleReply = () => {
+    if (!replyText.trim()) return
+    const formData = new FormData()
+
+    formData.append('message', replyText.trim())
+
+    if (replyImage) formData.append('image', replyImage)
+
+    reply.mutate({ ticketId: ticket.id, data: formData }, {
+      onSuccess: () => {
+        setReplyText('')
+        setReplyImage(null)
+        setReplyPreview('')
+        toast.success('Đã gửi phản hồi')
+      },
+      onError: (err: any) => toast.error(err?.response?.data?.message || 'Lỗi')
+    })
+  }
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth='sm' fullWidth>
-      <DialogTitle
-        sx={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          pb: 1
-        }}
-      >
-        Chi tiết ticket
-        <IconButton size='small' onClick={onClose}>
-          <X size={18} />
-        </IconButton>
+      <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', pb: 1 }}>
+        <span>
+          {ticket.ticket_code}
+          <Chip label={statusLabel} color={statusColor as any} size='small' sx={{ ml: 1, height: 22, fontSize: '11px' }} />
+        </span>
+        <IconButton size='small' onClick={onClose}><X size={18} /></IconButton>
       </DialogTitle>
-      <DialogContent dividers>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          {/* Header info */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontWeight: 600, fontSize: '15px' }}>{ticket.ticket_code}</span>
-            <Chip label={statusLabel} color={statusColor as any} size='small' />
-          </div>
+      <DialogContent dividers sx={{ p: 0 }}>
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          {/* Ticket info */}
+          <div style={{ padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 10, borderBottom: '1px solid #f1f5f9' }}>
+            <div style={{ fontSize: '12px', color: '#94a3b8' }}>
+              {TICKET_TYPE_LABELS[ticket.type] || ticket.type} · {formatDateTimeLocal(ticket.created_at)}
+            </div>
 
-          {/* Type */}
-          <div>
-            <span style={{ fontSize: '12px', color: '#94a3b8' }}>Loại yêu cầu</span>
-            <p style={{ margin: '4px 0 0', fontSize: '14px' }}>{TICKET_TYPE_LABELS[ticket.type] || ticket.type}</p>
-          </div>
+            {/* Deposit info */}
+            {ticket.deposit && (
+              <div style={{ padding: '8px 10px', background: '#eff6ff', borderRadius: 8, border: '1px solid #bfdbfe', fontSize: '13px' }}>
+                Lệnh nạp: <strong>{Number(ticket.deposit.amount).toLocaleString('vi-VN')}đ</strong>
+                {ticket.deposit.transaction_code && ` — ${ticket.deposit.transaction_code}`}
+                {' · '}{formatDateTimeLocal(ticket.deposit.created_at)}
+              </div>
+            )}
 
-          {/* Order */}
-          {ticket.order && (
-            <div style={{ padding: '10px 12px', background: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: '12px', color: '#94a3b8' }}>Đơn hàng liên quan</span>
+            {/* Order info */}
+            {ticket.order && (
+              <div style={{ padding: '8px 10px', background: '#f8fafc', borderRadius: 8, border: '1px solid #e2e8f0', fontSize: '13px' }}>
+                Đơn hàng: <strong>{ticket.order.order_code}</strong>
                 <Chip
                   label={ORDER_STATUS_LABELS[ticket.order.status] || '?'}
                   color={(ORDER_STATUS_COLORS[ticket.order.status] || 'default') as any}
-                  size='small'
-                  sx={{ height: '22px', fontSize: '11px' }}
+                  size='small' sx={{ ml: 1, height: 20, fontSize: '10px' }}
                 />
               </div>
-              <p style={{ margin: '4px 0 0', fontSize: '14px', fontWeight: 600 }}>{ticket.order.order_code}</p>
-              <p style={{ margin: '2px 0 0', fontSize: '13px', color: '#64748b' }}>
-                Proxy: {ticket.order.delivered_quantity ?? '?'}/{ticket.order.quantity}
-                {ticket.order.delivered_quantity != null && ticket.order.delivered_quantity < ticket.order.quantity && (
-                  <span style={{ color: '#ef4444', fontWeight: 600 }}>
-                    {' '}(thiếu {ticket.order.quantity - ticket.order.delivered_quantity})
-                  </span>
-                )}
-              </p>
-              {ticket.order.total_amount && (
-                <p style={{ margin: '2px 0 0', fontSize: '12px', color: '#94a3b8' }}>
-                  Tổng: {new Intl.NumberFormat('vi-VN').format(ticket.order.total_amount)}đ
-                </p>
+            )}
+
+            {/* Original message */}
+            <div>
+              <p style={{ margin: 0, fontSize: '14px', whiteSpace: 'pre-wrap', lineHeight: 1.6 }}>{ticket.message}</p>
+              {ticket.image_url && (
+                <img src={resolveUrl(ticket.image_url)} alt='' style={{ maxHeight: 150, borderRadius: 8, marginTop: 8, border: '1px solid #e2e8f0' }} />
               )}
             </div>
-          )}
-
-          {/* Message */}
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
-              <MessageSquare size={14} style={{ color: '#94a3b8' }} />
-              <span style={{ fontSize: '12px', color: '#94a3b8' }}>Nội dung</span>
-            </div>
-            <p style={{ margin: 0, fontSize: '14px', whiteSpace: 'pre-wrap', lineHeight: 1.6 }}>{ticket.message}</p>
           </div>
 
-          {/* Admin response */}
-          {ticket.admin_note && (
-            <div style={{ padding: '12px', background: '#f0fdf4', borderRadius: '8px', border: '1px solid #bbf7d0' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
-                <ShieldCheck size={14} style={{ color: '#16a34a' }} />
-                <span style={{ fontSize: '12px', color: '#16a34a', fontWeight: 600 }}>Phản hồi từ admin</span>
+          {/* Legacy admin_note (old tickets) */}
+          {ticket.admin_note && replies.length === 0 && (
+            <div style={{ padding: '12px 16px', background: '#f0fdf4', borderBottom: '1px solid #f1f5f9' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 4, fontSize: '12px', color: '#16a34a', fontWeight: 600 }}>
+                <ShieldCheck size={13} /> Admin
+                {ticket.resolved_by_user && ` · ${ticket.resolved_by_user.name}`}
+                {ticket.resolved_at && ` · ${formatDateTimeLocal(ticket.resolved_at)}`}
               </div>
-              <p style={{ margin: 0, fontSize: '14px', whiteSpace: 'pre-wrap', lineHeight: 1.6 }}>{ticket.admin_note}</p>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', marginTop: '8px', fontSize: '12px', color: '#94a3b8' }}>
-                {ticket.resolved_by_user && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <UserCheck size={12} />
-                    <span>Xử lý bởi: {ticket.resolved_by_user.name}</span>
-                  </div>
-                )}
-                {ticket.resolved_at && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <Clock3 size={12} />
-                    <span>Lúc: {formatDateTimeLocal(ticket.resolved_at)}</span>
-                  </div>
-                )}
-              </div>
+              <p style={{ margin: 0, fontSize: '13px', whiteSpace: 'pre-wrap' }}>{ticket.admin_note}</p>
             </div>
           )}
 
-          {/* Tracking info */}
-          {(ticket.assigned_to_user || ticket.processing_by_user) && (
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', fontSize: '12px', color: '#64748b' }}>
-              {ticket.assigned_to_user && (
-                <span>Phụ trách: <strong>{ticket.assigned_to_user.name}</strong></span>
-              )}
-              {ticket.processing_by_user && (
-                <span>Nhận xử lý: <strong>{ticket.processing_by_user.name}</strong>{ticket.processing_at && ` (${formatDateTimeLocal(ticket.processing_at)})`}</span>
-              )}
+          {/* Reply thread */}
+          {replies.length > 0 && (
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              {replies.map((r: any) => (
+                <div
+                  key={r.id}
+                  style={{
+                    padding: '10px 16px',
+                    background: r.is_admin ? '#f0fdf4' : '#fff',
+                    borderBottom: '1px solid #f8fafc',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4, fontSize: '12px' }}>
+                    {r.is_admin ? (
+                      <ShieldCheck size={13} style={{ color: '#16a34a' }} />
+                    ) : (
+                      <UserCheck size={13} style={{ color: '#3b82f6' }} />
+                    )}
+                    <strong style={{ color: r.is_admin ? '#16a34a' : '#3b82f6' }}>
+                      {r.user?.name || (r.is_admin ? 'Admin' : 'Bạn')}
+                    </strong>
+                    <span style={{ color: '#94a3b8' }}>{formatDateTimeLocal(r.created_at)}</span>
+                  </div>
+                  <p style={{ margin: 0, fontSize: '13px', whiteSpace: 'pre-wrap', lineHeight: 1.5 }}>{r.message}</p>
+                  {r.image_url && (
+                    <img src={resolveUrl(r.image_url)} alt='' style={{ maxHeight: 120, borderRadius: 8, marginTop: 6, border: '1px solid #e2e8f0' }} />
+                  )}
+                </div>
+              ))}
             </div>
           )}
 
-          {/* Created at */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px', color: '#94a3b8' }}>
-            <Clock3 size={12} />
-            <span>Tạo lúc: {formatDateTimeLocal(ticket.created_at)}</span>
-          </div>
+          {/* Reply input — chỉ khi chưa đóng */}
+          {!isClosed ? (
+            <div style={{ padding: '12px 16px', borderTop: '1px solid #e2e8f0', background: '#fafbfc' }}>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <textarea
+                  rows={2}
+                  value={replyText}
+                  onChange={e => setReplyText(e.target.value)}
+                  placeholder='Nhập phản hồi...'
+                  maxLength={2000}
+                  style={{
+                    flex: 1, padding: '8px 10px', borderRadius: 8, border: '1px solid #e2e8f0',
+                    fontSize: '13px', resize: 'vertical', fontFamily: 'inherit', outline: 'none',
+                  }}
+                />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  <IconButton
+                    size='small'
+                    onClick={() => fileRef.current?.click()}
+                    sx={{ border: '1px solid #e2e8f0', borderRadius: 2 }}
+                    title='Đính kèm ảnh'
+                  >
+                    <ImageIcon size={16} />
+                  </IconButton>
+                  <Button
+                    size='small' variant='contained'
+                    onClick={handleReply}
+                    disabled={reply.isPending || !replyText.trim()}
+                    sx={{ minWidth: 36, p: '6px', color: '#fff' }}
+                  >
+                    <Send size={16} />
+                  </Button>
+                </div>
+              </div>
+              {replyPreview && (
+                <div style={{ position: 'relative', display: 'inline-block', marginTop: 8 }}>
+                  <img src={replyPreview} alt='' style={{ maxHeight: 80, borderRadius: 6, border: '1px solid #e2e8f0' }} />
+                  <IconButton
+                    size='small'
+                    onClick={() => { setReplyImage(null); setReplyPreview('') }}
+                    sx={{ position: 'absolute', top: -6, right: -6, bgcolor: '#fff', border: '1px solid #e2e8f0', width: 20, height: 20 }}
+                  >
+                    <Trash2 size={10} />
+                  </IconButton>
+                </div>
+              )}
+              <input ref={fileRef} type='file' hidden accept='image/*' onChange={e => {
+                const f = e.target.files?.[0]
+
+                if (f) { setReplyImage(f); setReplyPreview(URL.createObjectURL(f)) }
+                e.target.value = ''
+              }} />
+            </div>
+          ) : (
+            <div style={{ padding: '12px 16px', textAlign: 'center', fontSize: '13px', color: '#94a3b8', background: '#fafbfc', borderTop: '1px solid #e2e8f0' }}>
+              Ticket đã {statusLabel.toLowerCase()} — không thể phản hồi thêm.
+            </div>
+          )}
         </div>
       </DialogContent>
-      <DialogActions sx={{ px: 3, py: 2 }}>
-        <Button onClick={onClose} variant='contained' sx={{ color: '#fff' }}>
-          Đóng
-        </Button>
-      </DialogActions>
     </Dialog>
   )
 }
