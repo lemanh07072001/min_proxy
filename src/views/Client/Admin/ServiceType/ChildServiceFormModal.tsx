@@ -322,14 +322,20 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
       price_per_unit: pricingMode === 'per_unit' ? (parseInt(pricePerUnit) || null) : null,
       cost_per_unit: pricingMode === 'per_unit' ? (parseInt(costPerUnit) || null) : null,
       price: pricingMode === 'per_unit' ? (parseInt(pricePerUnit) || 0) : parseInt(priceFields[0]?.value || '0'),
-      price_by_duration: pricingMode === 'per_unit' ? [] : priceFields.map(p => ({
-        key: p.key,
-        value: parseInt(p.value),
-        cost: parseInt(p.cost),
-      })),
+      price_by_duration: pricingMode === 'per_unit' ? [] : priceFields.map(p => {
+        const parentPerUnit = selectedProduct?.pricing_mode === 'per_unit'
+        const computedCost = parentPerUnit ? (parseInt(costPerUnit) || 0) * (parseInt(p.key) || 0) : (parseInt(p.cost) || 0)
+
+        return { key: p.key, value: parseInt(p.value), cost: computedCost }
+      }),
       cost_price: pricingMode === 'per_unit'
         ? (parseInt(costPerUnit) || 0)
-        : Math.min(...priceFields.map(p => parseInt(p.cost) || 0).filter(v => v > 0), 0),
+        : (() => {
+            const parentPerUnit = selectedProduct?.pricing_mode === 'per_unit'
+            const costs = priceFields.map(p => parentPerUnit ? (parseInt(costPerUnit) || 0) * (parseInt(p.key) || 0) : (parseInt(p.cost) || 0)).filter(v => v > 0)
+
+            return costs.length > 0 ? Math.min(...costs) : 0
+          })(),
       proxy_type: data.proxy_type || 'residential',
       country: data.country || '',
       api_type: 'buy_api',
@@ -360,7 +366,12 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
         ...(selectedSupplierId ? { supplier_product_id: selectedSupplierId } : {}),
         supplier_prices: pricingMode === 'per_unit'
           ? { per_unit: parseInt(costPerUnit) || 0 }
-          : Object.fromEntries(priceFields.map(p => [p.key, parseInt(p.cost)])),
+          : Object.fromEntries(priceFields.map(p => {
+              const parentPerUnit = selectedProduct?.pricing_mode === 'per_unit'
+              const cost = parentPerUnit ? (parseInt(costPerUnit) || 0) * (parseInt(p.key) || 0) : (parseInt(p.cost) || 0)
+
+              return [p.key, cost]
+            })),
       }
     }
 
@@ -649,49 +660,77 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
                 </div>
               )}
 
-              {/* Bảng giá fixed — giá nhập (read-only) | giá bán (editable) */}
-              {pricingMode === 'fixed' && priceFields.length > 0 && (
+              {/* Bảng giá fixed */}
+              {pricingMode === 'fixed' && priceFields.length > 0 && (() => {
+                // Mẹ per_unit → giá nhập = costPerUnit × số ngày (tính realtime)
+                const parentIsPerUnit = selectedProduct?.pricing_mode === 'per_unit'
+                const parentCostPerDay = parseInt(costPerUnit) || 0
+                const unitLabel = timeUnit === 'month' ? 'tháng' : 'ngày'
+
+                return (
                 <div>
-                  <div style={{ fontSize: '13px', fontWeight: 600, color: '#1e293b', marginBottom: 8 }}>
-                    Bảng giá
+                  <div style={{ fontSize: '13px', fontWeight: 600, color: '#1e293b', marginBottom: 4 }}>
+                    Bảng giá mốc cố định
                   </div>
+                  {parentIsPerUnit && parentCostPerDay > 0 && (
+                    <div style={{ fontSize: '11.5px', color: '#3b82f6', background: '#eff6ff', padding: '6px 10px', borderRadius: 8, marginBottom: 8 }}>
+                      Site mẹ tính giá tự do: <strong>{parentCostPerDay.toLocaleString('vi-VN')}đ/{unitLabel}</strong> → Giá nhập mỗi mốc = đơn giá × số {unitLabel}
+                    </div>
+                  )}
                   <div style={{ border: '1px solid #e2e8f0', borderRadius: 10, overflow: 'hidden' }}>
                     {/* Header */}
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', background: '#f8fafc', padding: '8px 12px', fontSize: '12px', fontWeight: 600, color: '#64748b', borderBottom: '1px solid #e2e8f0' }}>
-                      <span>Thời gian</span>
-                      <span>Giá nhập (site mẹ)</span>
+                    <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr 1fr 1fr', background: '#f8fafc', padding: '8px 12px', fontSize: '12px', fontWeight: 600, color: '#64748b', borderBottom: '1px solid #e2e8f0' }}>
+                      <span>Số {unitLabel}</span>
+                      <span>Giá nhập{parentIsPerUnit ? ' (tự tính)' : ' (site mẹ)'}</span>
                       <span>Giá bán (của bạn)</span>
                       <span>Lợi nhuận</span>
                     </div>
                     {/* Rows */}
                     {priceFields.map((field, idx) => {
-                      const cost = parseInt(field.cost) || 0
+                      // Nếu mẹ per_unit → cost tính realtime, không dùng field.cost
+                      const days = parseInt(field.key) || 0
+                      const cost = parentIsPerUnit ? (parentCostPerDay * days) : (parseInt(field.cost) || 0)
                       const sell = parseInt(field.value) || 0
                       const profit = sell - cost
                       const profitPct = cost > 0 ? Math.round((profit / cost) * 100) : 0
 
                       return (
-                        <div key={field.key} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', alignItems: 'center', padding: '8px 12px', borderBottom: idx < priceFields.length - 1 ? '1px solid #f1f5f9' : 'none' }}>
-                          {field.cost ? (
-                            <span style={{ fontSize: '13px', fontWeight: 600, color: '#1e293b' }}>{getDurationLabel(field.key)}</span>
-                          ) : (
+                        <div key={idx} style={{ display: 'grid', gridTemplateColumns: '100px 1fr 1fr 1fr', alignItems: 'center', padding: '8px 12px', borderBottom: idx < priceFields.length - 1 ? '1px solid #f1f5f9' : 'none' }}>
+                          {/* Số ngày — editable nếu mốc mới (cost trống) hoặc mẹ per_unit */}
+                          {(!field.cost && !parentIsPerUnit) ? (
                             <TextField
                               size='small'
-                              type='text'
                               value={field.key}
                               onChange={e => {
                                 const raw = e.target.value.replace(/[^0-9]/g, '')
 
                                 setPriceFields(prev => prev.map((p, i) => i === idx ? { ...p, key: raw } : p))
                               }}
-                              placeholder='Số ngày'
-                              sx={{ '& input': { fontSize: '13px', padding: '6px 10px' }, width: 80 }}
+                              placeholder='Ngày'
+                              sx={{ '& input': { fontSize: '13px', padding: '6px 10px' }, width: 70 }}
                             />
+                          ) : parentIsPerUnit ? (
+                            <TextField
+                              size='small'
+                              value={field.key}
+                              onChange={e => {
+                                const raw = e.target.value.replace(/[^0-9]/g, '')
+
+                                setPriceFields(prev => prev.map((p, i) => i === idx ? { ...p, key: raw } : p))
+                              }}
+                              placeholder='Nhập'
+                              sx={{ '& input': { fontSize: '13px', padding: '6px 10px', fontWeight: 600 }, width: 70 }}
+                            />
+                          ) : (
+                            <span style={{ fontSize: '13px', fontWeight: 600, color: '#1e293b' }}>{getDurationLabel(field.key)}</span>
                           )}
-                          <span style={{ fontSize: '13px', color: '#64748b' }}>{cost.toLocaleString('vi-VN')}đ</span>
+                          {/* Giá nhập */}
+                          <span style={{ fontSize: '13px', color: cost > 0 ? '#64748b' : '#cbd5e1' }}>
+                            {cost > 0 ? `${cost.toLocaleString('vi-VN')}đ` : (parentIsPerUnit && days === 0 ? 'Nhập số ngày' : '—')}
+                          </span>
+                          {/* Giá bán */}
                           <TextField
                             size='small'
-                            type='text'
                             value={field.value ? parseInt(field.value).toLocaleString('vi-VN') : ''}
                             onChange={e => {
                               const raw = e.target.value.replace(/[^0-9]/g, '')
@@ -700,22 +739,26 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
                             }}
                             placeholder='Nhập giá bán'
                             sx={{ '& input': { fontSize: '13px', padding: '6px 10px' } }}
-                            error={!!field.value && parseInt(field.value) <= cost}
+                            error={!!field.value && cost > 0 && sell <= cost}
                           />
+                          {/* Lợi nhuận */}
                           <span style={{
                             fontSize: '13px', fontWeight: 600,
                             color: profit > 0 ? '#22c55e' : profit < 0 ? '#ef4444' : '#94a3b8'
                           }}>
-                            {sell > 0 ? `+${profit.toLocaleString('vi-VN')}đ (${profitPct}%)` : '—'}
+                            {sell > 0 && cost > 0 ? `+${profit.toLocaleString('vi-VN')}đ (${profitPct}%)` : '—'}
                           </span>
                         </div>
                       )
                     })}
                   </div>
                   <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: 6 }}>
-                    Giá nhập lấy tự động từ site mẹ, cập nhật mỗi giờ. Phần chênh lệch là lợi nhuận của bạn.
+                    {parentIsPerUnit
+                      ? `Giá nhập tự tính: ${parentCostPerDay.toLocaleString('vi-VN')}đ/${unitLabel} × số ${unitLabel}. Bạn tự đặt giá bán cho từng mốc.`
+                      : 'Giá nhập lấy tự động từ site mẹ. Phần chênh lệch là lợi nhuận của bạn.'
+                    }
                   </div>
-                  {/* Thêm/xóa mốc giá khi site con tự chọn fixed */}
+                  {/* Thêm/xóa mốc */}
                   <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
                     <button
                       type='button'
@@ -735,7 +778,8 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
                     )}
                   </div>
                 </div>
-              )}
+                )
+              })()}
 
               {/* Thông tin SP */}
               <Grid2 container spacing={1.5}>
