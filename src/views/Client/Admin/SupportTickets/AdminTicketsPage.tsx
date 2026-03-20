@@ -45,7 +45,6 @@ import {
 import { useAdminTickets, useUpdateTicketStatus, useMarkTicketViewed } from '@/hooks/apis/useTickets'
 import CustomTextField from '@/@core/components/mui/TextField'
 import ResolveTicketDialog from './ResolveTicketDialog'
-import TicketDetailDialog from '../../SupportTickets/TicketDetailDialog'
 
 const selectSx = {
   minWidth: '140px',
@@ -59,7 +58,6 @@ export default function AdminTicketsPage() {
   const [statusFilter, setStatusFilter] = useState<string>('')
   const [typeFilter, setTypeFilter] = useState<string>('')
   const [selectedTicket, setSelectedTicket] = useState<any>(null)
-  const [isResolveOpen, setIsResolveOpen] = useState(false)
   const [previewImage, setPreviewImage] = useState('')
 
   const resolveUrl = (path: string) => {
@@ -78,9 +76,9 @@ export default function AdminTicketsPage() {
   const markViewed = useMarkTicketViewed()
   const viewTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  // Auto mark viewed sau 3 giây khi admin mở detail dialog
+  // Auto mark viewed sau 3 giây khi admin mở ticket
   useEffect(() => {
-    if (selectedTicket && !isResolveOpen) {
+    if (selectedTicket) {
       viewTimerRef.current = setTimeout(() => {
         markViewed.mutate(selectedTicket.id)
       }, 3000)
@@ -93,7 +91,7 @@ export default function AdminTicketsPage() {
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedTicket, isResolveOpen])
+  }, [selectedTicket])
 
   const handleApplyFilters = useCallback(() => {
     setStatusFilter(statusInput)
@@ -165,10 +163,7 @@ export default function AdminTicketsPage() {
                 <IconButton
                   size='small'
                   color='success'
-                  onClick={() => {
-                    setSelectedTicket(row.original)
-                    setIsResolveOpen(true)
-                  }}
+                  onClick={() => setSelectedTicket(row.original)}
                 >
                   <CheckCircle size={16} />
                 </IconButton>
@@ -492,20 +487,10 @@ return viewed ? (
         </div>
       </div>
 
-      {/* Detail dialog (read-only) */}
-      <TicketDetailDialog
-        open={!!selectedTicket && !isResolveOpen}
-        onClose={() => setSelectedTicket(null)}
-        ticket={selectedTicket}
-      />
-
-      {/* Resolve dialog */}
+      {/* Admin ticket dialog — xem chi tiết + reply + resolve */}
       <ResolveTicketDialog
-        open={isResolveOpen}
-        onClose={() => {
-          setIsResolveOpen(false)
-          setSelectedTicket(null)
-        }}
+        open={!!selectedTicket}
+        onClose={() => setSelectedTicket(null)}
         ticket={selectedTicket}
       />
 
