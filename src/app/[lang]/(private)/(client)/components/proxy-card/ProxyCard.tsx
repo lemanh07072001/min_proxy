@@ -133,8 +133,8 @@ return
           <div className='card-header-column'>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
               <div style={{ flex: 1 }}>
-                <h3 className='provider-title-column'>{provider?.name ?? provider?.code}</h3>
-                <span style={{ fontFamily: 'monospace', fontSize: '11px', fontWeight: 500, color: '#94a3b8', lineHeight: 1 }}>{provider?.id}#{provider?.code || ''}</span>
+                <h3 className='provider-title-column' style={{ marginBottom: 1 }}>{provider?.name ?? provider?.code}</h3>
+                <span style={{ fontFamily: 'monospace', fontSize: '10.5px', fontWeight: 500, color: '#b0b8c4', lineHeight: 1, display: 'block' }}>{provider?.id}#{provider?.code || ''}</span>
               </div>
               {visibleTags.length > 0 && (
                 <div style={{ display: 'flex', gap: '4px', flexShrink: 0 }}>

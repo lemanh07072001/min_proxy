@@ -40,8 +40,8 @@ const NavbarContent = () => {
   const { openAuthModal } = useModalContext()
   const { primaryHover } = useBranding()
 
-  const isAuthenticated = session.status === 'authenticated'
-  const isLoading = session.status === 'loading'
+  // Giữ UI ổn định khi refetch: nếu đã có session data → coi như authenticated
+  const isAuthenticated = session.status === 'authenticated' || (session.status === 'loading' && !!session.data)
   const { data: pendingData } = usePendingBankQr(isAuthenticated)
   const pendingRecord = pendingData?.data ?? null
 
@@ -61,7 +61,7 @@ const NavbarContent = () => {
 
       </div>
       <div className='flex items-center gap-2'>
-        {(isAuthenticated || isLoading) && pendingRecord && (
+        {isAuthenticated && pendingRecord && (
           <Box
             onClick={handleNavigateRecharge}
             sx={{
@@ -97,7 +97,7 @@ const NavbarContent = () => {
           </Box>
         )}
 
-        {(isAuthenticated || isLoading) ? (
+        {isAuthenticated ? (
           <Button
             variant='outlined'
             onClick={handleNavigateRecharge}

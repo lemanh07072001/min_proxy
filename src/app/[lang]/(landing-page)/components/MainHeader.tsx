@@ -129,7 +129,7 @@ const MainHeader = () => {
 
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               <LanguageDropdown />
-              {session && session.status === 'authenticated' ? (
+              {(session?.status === 'authenticated' || (session?.status === 'loading' && !!session?.data)) ? (
                 <UserDropdown />
               ) : session?.status === 'unauthenticated' ? (
                 <CustomIconButton aria-label='login' color='primary' size='small' onClick={handleOpenModalLogin}>
