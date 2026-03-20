@@ -147,9 +147,9 @@ export default function TicketDetailDialog({ open, onClose, ticket }: Props) {
           {replies.length > 0 && (
             <div style={{ display: 'flex', flexDirection: 'column', padding: '8px 12px', gap: 8 }}>
               {replies.map((r: any) => {
-                const isMe = !r.is_admin && r.user_id === currentUserId
-                const isMySide = !r.is_admin // User side: tin của user (mình) bên phải, admin bên trái
-                const displayName = r.is_admin ? 'Admin' : (isMe ? 'Bạn' : (r.user?.name || 'User'))
+                const isMe = r.user_id === currentUserId
+                const isMySide = isMe // Tin của mình bên phải, người khác bên trái
+                const displayName = isMe ? 'Bạn' : (r.is_admin ? 'Admin' : (r.user?.name || 'User'))
 
                 return (
                 <div key={r.id} style={{ display: 'flex', justifyContent: isMySide ? 'flex-end' : 'flex-start' }}>

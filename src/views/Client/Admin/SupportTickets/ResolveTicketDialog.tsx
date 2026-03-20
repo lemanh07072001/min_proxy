@@ -223,10 +223,8 @@ export default function ResolveTicketDialog({ open, onClose, ticket }: Props) {
               {replies.map((r: any) => {
                 // Admin side: tin admin (mình hoặc admin khác) bên phải, user bên trái
                 const isMe = r.user_id === currentUserId
-                const isMySide = r.is_admin // Admin view: admin bên phải, user bên trái
-                const displayName = r.is_admin
-                  ? (isMe ? 'Bạn' : (r.user?.name || 'Admin'))
-                  : (r.user?.name || 'User')
+                const isMySide = isMe // Tin của mình bên phải, người khác bên trái
+                const displayName = isMe ? 'Bạn' : (r.user?.name || (r.is_admin ? 'Admin' : 'User'))
 
                 return (
                 <div key={r.id} style={{ display: 'flex', justifyContent: isMySide ? 'flex-end' : 'flex-start', marginBottom: 10 }}>
