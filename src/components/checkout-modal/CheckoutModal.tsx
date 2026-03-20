@@ -468,7 +468,25 @@ return (
             </div>
             <div className='summary-row'>
               <span className='summary-label'>Giá:</span>
-              <span className='summary-value'>{unitPrice.toLocaleString('vi-VN')}đ</span>
+              <span className='summary-value'>
+                {unitPrice.toLocaleString('vi-VN')}đ
+                {(() => {
+                  const disc = !isPerUnit ? calculateDiscount(selectedDuration, unitPrice) : null
+
+                  if (!disc || disc <= 0) return null
+                  const sorted = [...priceOptions].sort((a, b) => parseInt(a.key) - parseInt(b.key))
+                  const base = sorted[0]
+                  const baseDays = parseInt(base.key) || 1
+                  const currentDays = parseInt(selectedDuration) || 0
+                  const originalPrice = (base.price / baseDays) * currentDays
+
+                  return (
+                    <span style={{ fontSize: '11px', color: '#22c55e', fontWeight: 600, marginLeft: 6 }}>
+                      Tiết kiệm {disc}% <span style={{ textDecoration: 'line-through', color: '#94a3b8', fontWeight: 400 }}>({originalPrice.toLocaleString('vi-VN')}đ)</span>
+                    </span>
+                  )
+                })()}
+              </span>
             </div>
             <div className='summary-row'>
               <span className='summary-label'>Số lượng:</span>

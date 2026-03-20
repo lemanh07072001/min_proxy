@@ -106,6 +106,29 @@ return defaultProtocols.map(p => p.id)
   const headerPrice = isPerUnit ? (provider.price_per_unit || 0) : (priceOptions[0]?.price || parseInt(provider?.price, 10) || 0)
   const headerPriceSuffix = isPerUnit ? `/${provider.time_unit === 'month' ? 'tháng' : 'ngày'}` : ''
 
+  // Tính % tiết kiệm tối đa
+  const maxDiscount = useMemo(() => {
+    if (isPerUnit || priceOptions.length <= 1) return 0
+    const sorted = [...priceOptions].sort((a, b) => parseInt(a.key) - parseInt(b.key))
+    const base = sorted[0]
+    const baseDays = parseInt(base.key) || 1
+
+    let max = 0
+
+    sorted.slice(1).forEach(opt => {
+      const days = parseInt(opt.key) || 0
+      const origPrice = (base.price / baseDays) * days
+
+      if (opt.price < origPrice) {
+        const pct = Math.round((1 - opt.price / origPrice) * 100)
+
+        if (pct > max) max = pct
+      }
+    })
+
+    return max
+  }, [priceOptions, isPerUnit])
+
   const handleBuy = () => {
     if (session.status !== 'authenticated') {
       openAuthModal('login')
@@ -226,9 +249,16 @@ return
 
         {/* Footer: giá (trái) + button (phải) — cùng 1 hàng */}
         <div className='card-footer'>
-          <div className='price-amount'>
-            {(priceOptions.length > 1 || isPerUnit) && <span style={{ fontSize: '12px', fontWeight: 500, color: '#94a3b8', marginRight: '2px' }}>từ </span>}
-            {headerPrice.toLocaleString('vi-VN')}đ{headerPriceSuffix}
+          <div>
+            <div className='price-amount'>
+              {(priceOptions.length > 1 || isPerUnit) && <span style={{ fontSize: '12px', fontWeight: 500, color: '#94a3b8', marginRight: '2px' }}>từ </span>}
+              {headerPrice.toLocaleString('vi-VN')}đ{headerPriceSuffix}
+            </div>
+            {maxDiscount > 0 && (
+              <div style={{ fontSize: '10.5px', fontWeight: 600, color: '#22c55e', marginTop: 1 }}>
+                Tiết kiệm đến {maxDiscount}%
+              </div>
+            )}
           </div>
           {isAvailable ? (
             <button type='button' className='buy-button' onClick={handleBuy} style={{ padding: '8px 18px' }}>

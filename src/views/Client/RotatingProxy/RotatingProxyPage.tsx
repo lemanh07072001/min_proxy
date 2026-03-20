@@ -357,6 +357,28 @@ return `${opt.key} ngày`
   // Giá hiển thị ở header (giá thấp nhất)
   const headerPrice = priceOptions[0]?.price || plan.price || 0
 
+  // Tính % tiết kiệm tối đa
+  const maxDiscount = useMemo(() => {
+    if (plan.pricing_mode === 'per_unit' || priceOptions.length <= 1) return 0
+    const sorted = [...priceOptions].sort((a, b) => parseInt(a.key) - parseInt(b.key))
+    const base = sorted[0]
+    const baseDays = parseInt(base.key) || 1
+    let max = 0
+
+    sorted.slice(1).forEach(opt => {
+      const days = parseInt(opt.key) || 0
+      const origPrice = (base.price / baseDays) * days
+
+      if (opt.price < origPrice) {
+        const pct = Math.round((1 - opt.price / origPrice) * 100)
+
+        if (pct > max) max = pct
+      }
+    })
+
+    return max
+  }, [priceOptions, plan.pricing_mode])
+
   const visibleTags = useMemo(() => {
     if (!plan?.tag) return []
 
@@ -529,9 +551,16 @@ return
 
 
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginTop: 'auto', paddingTop: 12, borderTop: '1px solid #f1f5f9' }}>
-          <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--primary-hover, #e53e3e)', whiteSpace: 'nowrap' }}>
-            {priceOptions.length > 1 && <span style={{ fontSize: '12px', fontWeight: 500, color: '#94a3b8', marginRight: '2px' }}>từ </span>}
-            {headerPrice.toLocaleString('vi-VN')}đ
+          <div>
+            <div style={{ fontSize: '16px', fontWeight: 700, color: 'var(--primary-hover, #e53e3e)', whiteSpace: 'nowrap' }}>
+              {priceOptions.length > 1 && <span style={{ fontSize: '12px', fontWeight: 500, color: '#94a3b8', marginRight: '2px' }}>từ </span>}
+              {headerPrice.toLocaleString('vi-VN')}đ
+            </div>
+            {maxDiscount > 0 && (
+              <div style={{ fontSize: '10.5px', fontWeight: 600, color: '#22c55e', marginTop: 1 }}>
+                Tiết kiệm đến {maxDiscount}%
+              </div>
+            )}
           </div>
           {isAvailable ? (
             <button type='button' className='buy-button' onClick={handleBuy} style={{ padding: '8px 18px' }}>
