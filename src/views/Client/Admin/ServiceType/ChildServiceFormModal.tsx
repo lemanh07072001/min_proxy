@@ -60,6 +60,7 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
   const [timeUnit, setTimeUnit] = useState<'day' | 'month'>('day')
   const [pricePerUnit, setPricePerUnit] = useState('')
   const [costPerUnit, setCostPerUnit] = useState('')
+  const [allowCustomAuth, setAllowCustomAuth] = useState(false)
 
   // All supplier products (imported + available)
   const allSupplierProducts = useMemo(() => {
@@ -148,6 +149,7 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
       setTimeUnit(serviceData.time_unit || 'day')
       setPricePerUnit(serviceData.price_per_unit?.toString() || '')
       setCostPerUnit(serviceData.cost_per_unit?.toString() || '')
+      setAllowCustomAuth(!!meta.allow_custom_auth)
 
       let parsedProtocols = serviceData.protocols
 
@@ -231,6 +233,7 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
       setSelectedSupplierId(null)
       setSelectedSupplierCode(null)
       setPriceFields([])
+      setAllowCustomAuth(false)
       setPricingMode('fixed')
       setTimeUnit('day')
       setPricePerUnit('')
@@ -325,7 +328,10 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
       price_per_unit: pricingMode === 'per_unit' ? (parseInt(pricePerUnit) || null) : null,
       cost_per_unit: pricingMode === 'per_unit' ? (parseInt(costPerUnit) || null) : null,
       price: pricingMode === 'per_unit' ? (parseInt(pricePerUnit) || 0) : parseInt(priceFields[0]?.value || '0'),
-      price_by_duration: pricingMode === 'per_unit' ? [] : priceFields.map(p => {
+      // per_unit: giữ price_by_duration cũ nếu có, không xóa mốc
+      price_by_duration: pricingMode === 'per_unit'
+        ? (serviceData?.price_by_duration || [])
+        : priceFields.map(p => {
         const parentPerUnit = parentPricingMode === 'per_unit'
         const computedCost = parentPerUnit ? (parseInt(costPerUnit) || 0) * (parseInt(p.key) || 0) : (parseInt(p.cost) || 0)
 
@@ -368,6 +374,7 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
         ...(selectedSupplierCode ? { supplier_product_code: selectedSupplierCode } : {}),
         ...(selectedSupplierId ? { supplier_product_id: selectedSupplierId } : {}),
         parent_pricing_mode: parentPricingMode,
+        allow_custom_auth: allowCustomAuth,
         supplier_prices: pricingMode === 'per_unit'
           ? { per_unit: parseInt(costPerUnit) || 0 }
           : Object.fromEntries(priceFields.map(p => {
@@ -862,6 +869,30 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
                       )}
                     />
                   </Grid2>
+
+                  {/* User:Pass mode — cho admin chọn */}
+                  {(watchAll.auth_type === 'userpass' || watchAll.auth_type === 'both') && (
+                    <Grid2 size={{ xs: 12 }}>
+                      <div style={{ border: '1px solid #e2e8f0', borderRadius: 10, padding: '10px 14px', background: '#fafbfc' }}>
+                        <div style={{ fontSize: '12px', fontWeight: 700, color: '#1e293b', marginBottom: 6 }}>User:Pass cho khách hàng</div>
+                        <div style={{ display: 'flex', gap: 8, marginBottom: 6 }}>
+                          <button type='button' onClick={() => setAllowCustomAuth(false)} style={{ padding: '5px 12px', fontSize: '12px', fontWeight: 600, borderRadius: 7, border: '1.5px solid', cursor: 'pointer', background: !allowCustomAuth ? '#1e293b' : '#fff', color: !allowCustomAuth ? '#fff' : '#64748b', borderColor: !allowCustomAuth ? '#1e293b' : '#e2e8f0' }}>
+                            Random tự động
+                          </button>
+                          <button type='button' onClick={() => setAllowCustomAuth(true)} style={{ padding: '5px 12px', fontSize: '12px', fontWeight: 600, borderRadius: 7, border: '1.5px solid', cursor: 'pointer', background: allowCustomAuth ? '#1e293b' : '#fff', color: allowCustomAuth ? '#fff' : '#64748b', borderColor: allowCustomAuth ? '#1e293b' : '#e2e8f0' }}>
+                            Khách tự nhập
+                          </button>
+                        </div>
+                        <div style={{ padding: '6px 10px', borderRadius: 8, fontSize: '11.5px', border: '1px solid', background: allowCustomAuth ? '#eff6ff' : '#f0fdf4', borderColor: allowCustomAuth ? '#bfdbfe' : '#bbf7d0' }}>
+                          {allowCustomAuth
+                            ? <><strong style={{ color: '#1e40af' }}>Khách sẽ thấy:</strong> 2 ô nhập Username + Password</>
+                            : <><strong style={{ color: '#166534' }}>Khách sẽ thấy:</strong> 🔑 User:Pass tạo tự động sau khi mua</>
+                          }
+                        </div>
+                      </div>
+                    </Grid2>
+                  )}
+
                   <Grid2 size={{ xs: 6 }}>
                     <Controller
                       name='bandwidth'
