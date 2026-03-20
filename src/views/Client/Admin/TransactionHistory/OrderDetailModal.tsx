@@ -199,6 +199,16 @@ return p || '-'
         }
       },
       {
+        header: 'ID NCC',
+        size: 80,
+        cell: ({ row }: { row: any }) => {
+          const id = row.original.provider_item_id
+          return id ? (
+            <span style={{ fontFamily: 'monospace', fontSize: '11px', color: '#8b5cf6' }}>{id}</span>
+          ) : <span style={{ color: '#cbd5e1', fontSize: '11px' }}>—</span>
+        }
+      },
+      {
         header: 'Trạng thái', size: 100,
         cell: ({ row }: { row: any }) => {
           const s = row.original?.status
@@ -293,12 +303,13 @@ return p || '-'
             </div>
           </div>
 
-          {/* Tabs */}
+          {/* Tabs — sticky */}
           <Tabs
             value={tabIndex}
             onChange={(_, v) => setTabIndex(v)}
             sx={{
               borderBottom: '1px solid #f1f5f9', px: '20px',
+              position: 'sticky', top: 0, zIndex: 10, bgcolor: 'background.paper',
               '& .MuiTab-root': { textTransform: 'none', fontWeight: 600, fontSize: '13px', minHeight: 42 }
             }}
           >
@@ -526,13 +537,17 @@ function OrderLogsTimeline({ logs, isLoading }: { logs: OrderLog[]; isLoading: b
               {(log.request_body || log.context?.request_params) && (
                 <details style={{ marginTop: 6 }} open={isError}>
                   <summary style={{ fontSize: '11px', color: '#3b82f6', cursor: 'pointer', fontWeight: 500 }}>Request payload</summary>
-                  <pre style={{
-                    fontSize: '11px', color: '#93c5fd', background: '#0f172a',
-                    padding: '8px 10px', borderRadius: 6, marginTop: 4,
-                    overflow: 'auto', maxHeight: 150, whiteSpace: 'pre-wrap', wordBreak: 'break-all'
-                  }}>
-                    {JSON.stringify(log.request_body || log.context?.request_params, null, 2)}
-                  </pre>
+                  <textarea
+                    readOnly
+                    value={JSON.stringify(log.request_body || log.context?.request_params, null, 2)}
+                    style={{
+                      fontSize: '11px', color: '#93c5fd', background: '#0f172a',
+                      padding: '8px 10px', borderRadius: 6, marginTop: 4,
+                      width: '100%', minHeight: 60, maxHeight: 400,
+                      border: '1px solid #1e293b', resize: 'both',
+                      fontFamily: 'monospace', whiteSpace: 'pre', overflow: 'auto',
+                    }}
+                  />
                 </details>
               )}
 
@@ -542,19 +557,23 @@ function OrderLogsTimeline({ logs, isLoading }: { logs: OrderLog[]; isLoading: b
                   <summary style={{ fontSize: '11px', color: isError ? '#ef4444' : '#22c55e', cursor: 'pointer', fontWeight: 500 }}>
                     Response {log.duration_ms ? `(${log.duration_ms}ms)` : ''}
                   </summary>
-                  <pre style={{
-                    fontSize: '11px', color: isError ? '#fca5a5' : '#86efac', background: '#0f172a',
-                    padding: '8px 10px', borderRadius: 6, marginTop: 4,
-                    overflow: 'auto', maxHeight: 150, whiteSpace: 'pre-wrap', wordBreak: 'break-all'
-                  }}>
-                    {(() => {
+                  <textarea
+                    readOnly
+                    value={(() => {
                       const raw = log.response_body || log.context?.response
                       if (typeof raw === 'string') {
                         try { return JSON.stringify(JSON.parse(raw), null, 2) } catch { return raw }
                       }
                       return JSON.stringify(raw, null, 2)
                     })()}
-                  </pre>
+                    style={{
+                      fontSize: '11px', color: isError ? '#fca5a5' : '#86efac', background: '#0f172a',
+                      padding: '8px 10px', borderRadius: 6, marginTop: 4,
+                      width: '100%', minHeight: 60, maxHeight: 400,
+                      border: '1px solid #1e293b', resize: 'both',
+                      fontFamily: 'monospace', whiteSpace: 'pre', overflow: 'auto',
+                    }}
+                  />
                 </details>
               )}
             </div>
