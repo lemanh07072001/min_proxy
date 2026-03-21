@@ -327,7 +327,8 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
       pricing_mode: pricingMode,
       time_unit: timeUnit,
       price_per_unit: pricingMode === 'per_unit' ? (parseInt(pricePerUnit) || null) : null,
-      cost_per_unit: pricingMode === 'per_unit' ? (parseInt(costPerUnit) || null) : null,
+      // Luôn giữ cost_per_unit — cần để tính giá nhập khi đổi mode
+      cost_per_unit: parseInt(costPerUnit) || null,
       price: pricingMode === 'per_unit' ? (parseInt(pricePerUnit) || 0) : parseInt(priceFields[0]?.value || '0'),
       // per_unit: giữ price_by_duration cũ nếu có, không xóa mốc
       price_by_duration: pricingMode === 'per_unit'
