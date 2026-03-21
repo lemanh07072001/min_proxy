@@ -530,6 +530,7 @@ export default function SiteSettingsForm() {
                   value={branding.site_name}
                   onChange={e => updateBrandingField('site_name', e.target.value)}
                   placeholder='VD: My Proxy Site'
+                  helperText='Hiện ở: sidebar menu, header, footer, tab trình duyệt (fallback khi chưa có SEO title)'
                   sx={{ flex: 1 }}
                 />
                 <TextField
@@ -538,6 +539,7 @@ export default function SiteSettingsForm() {
                   value={branding.site_description}
                   onChange={e => updateBrandingField('site_description', e.target.value)}
                   placeholder='VD: Dịch vụ Proxy Chất Lượng Cao'
+                  helperText='Hiện ở: dưới tên site, fallback cho SEO description khi tab SEO để trống'
                   sx={{ flex: 2 }}
                 />
               </div>
@@ -1053,7 +1055,7 @@ export default function SiteSettingsForm() {
                 severity='info'
                 sx={{ fontSize: '13px', '& .MuiAlert-message': { fontSize: '13px' } }}
               >
-                SEO giúp Google hiểu nội dung site. Mỗi ngôn ngữ cần title và mô tả riêng.
+                <strong>Title</strong> = tiêu đề xanh trên Google. <strong>Description</strong> = đoạn mô tả bên dưới. <strong>Keywords</strong> = từ khóa giúp Google hiểu nội dung. Để trống = dùng tên + mô tả ở tab Thương hiệu.
               </Alert>
 
               {/* Language sub-tabs */}
@@ -1130,16 +1132,16 @@ export default function SiteSettingsForm() {
               {/* Google verification */}
               <div>
                 <h6 style={sectionTitleSx}>Google Search Console</h6>
-                <p style={sectionDescSx}>Xác minh quyền sở hữu site với Google</p>
+                <p style={sectionDescSx}>Xác minh bạn là chủ site → mở khoá công cụ SEO: xem lượt tìm kiếm, request Google index lại, phát hiện lỗi crawl</p>
               </div>
               <TextField
                 size='small'
                 label='Mã xác minh Google Search Console'
                 value={branding.google_verification}
                 onChange={e => updateBrandingField('google_verification', e.target.value)}
-                placeholder='google-site-verification=xxx'
+                placeholder='e5EmD9db9R0m8F4FPV9q...'
                 fullWidth
-                helperText='Lấy mã từ Google Search Console > Settings > Ownership verification'
+                helperText='Chỉ dán phần mã (không dán cả thẻ meta). Lấy từ: Google Search Console → Cài đặt → Xác minh quyền sở hữu → Thẻ HTML → copy phần content'
               />
 
               {/* GTM */}
@@ -1150,7 +1152,7 @@ export default function SiteSettingsForm() {
                 onChange={e => updateBrandingField('gtm_id', e.target.value)}
                 placeholder='GTM-XXXXXXX'
                 fullWidth
-                helperText='Dùng để cài Google Analytics, Facebook Pixel, v.v.'
+                helperText='Quản lý tracking (Analytics, Pixel, TikTok...) tập trung. Tạo tại tagmanager.google.com → chọn Web → copy mã GTM-XXX. Không bắt buộc.'
               />
 
               {/* Thông tin tổ chức đã chuyển sang tab "Hỗ trợ & Liên hệ" */}
@@ -1337,7 +1339,7 @@ export default function SiteSettingsForm() {
               {/* ── Section 2: Nút liên hệ sidebar ── */}
               <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: 20 }}>
                 <h6 style={sectionTitleSx}>Nút liên hệ nhanh</h6>
-                <p style={sectionDescSx}>Hiển thị ở <strong>cột phải trang chủ</strong> (mục "Bạn cần hỗ trợ?") — các nút Zalo, Telegram, Facebook... để khách nhấn vào liên hệ trực tiếp.</p>
+                <p style={sectionDescSx}>Hiển thị ở <strong>2 nơi</strong>: (1) cột phải trang chủ "Bạn cần hỗ trợ?" + (2) <strong>nút nổi góc phải dưới mọi trang</strong>. Thêm link Zalo, Telegram, Facebook... để khách nhấn liên hệ trực tiếp. Không thêm = không hiện.</p>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 {supportLinks.map((link, idx) => (
