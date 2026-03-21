@@ -546,7 +546,7 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
 
               {/* Tên + Code + Trạng thái */}
               <Grid2 container spacing={1.5}>
-                <Grid2 size={{ xs: 12, sm: 5 }}>
+                <Grid2 size={{ xs: 12, sm: 6 }}>
                   <Controller
                     name='name'
                     control={control}
@@ -557,35 +557,7 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
                     )}
                   />
                 </Grid2>
-                <Grid2 size={{ xs: 6, sm: 2 }}>
-                  <Controller
-                    name='code'
-                    control={control}
-                    render={({ field }) => (
-                      <CustomTextField
-                        {...field}
-                        fullWidth
-                        label='Code (site bạn)'
-                        placeholder='Tự tạo'
-                        error={!!errors.code}
-                        helperText={serviceId ? `ID: ${serviceId}` : ''}
-                      />
-                    )}
-                  />
-                </Grid2>
-                <Grid2 size={{ xs: 6, sm: 3 }}>
-                  <TextField
-                    fullWidth
-                    size='small'
-                    label='Code site mẹ'
-                    value={selectedSupplierCode || ''}
-                    onChange={(e) => setSelectedSupplierCode(e.target.value || null)}
-                    placeholder={isEditMode ? 'Code SP trên site mẹ' : 'Tự động'}
-                    helperText={selectedSupplierId ? `ID mẹ: ${selectedSupplierId}` : ''}
-                    sx={{ '& input': { fontSize: '13px', fontFamily: 'monospace' } }}
-                  />
-                </Grid2>
-                <Grid2 size={{ xs: 6, sm: 2 }}>
+                <Grid2 size={{ xs: 8, sm: 3 }}>
                   <Controller
                     name='status'
                     control={control}
@@ -595,6 +567,34 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
                         <MenuItem value='inactive'>Tạm ẩn</MenuItem>
                       </CustomTextField>
                     )}
+                  />
+                </Grid2>
+                <Grid2 size={{ xs: 4, sm: 3 }}>
+                  <Controller
+                    name='code'
+                    control={control}
+                    render={({ field }) => (
+                      <CustomTextField
+                        {...field}
+                        fullWidth
+                        label='Code'
+                        placeholder='Tự tạo'
+                        error={!!errors.code}
+                        helperText={serviceId ? `ID: ${serviceId}` : 'Mã site bạn'}
+                      />
+                    )}
+                  />
+                </Grid2>
+                <Grid2 size={{ xs: 12, sm: 6 }}>
+                  <TextField
+                    fullWidth
+                    size='small'
+                    label='Code sản phẩm trên site mẹ'
+                    value={selectedSupplierCode || ''}
+                    onChange={(e) => setSelectedSupplierCode(e.target.value || null)}
+                    placeholder={isEditMode ? 'Nhập code SP trên site mẹ' : 'Tự động khi chọn SP'}
+                    helperText={selectedSupplierId ? `ID trên site mẹ: ${selectedSupplierId}` : 'Dùng để mua hàng từ site mẹ — sửa nếu site mẹ đổi code'}
+                    sx={{ '& input': { fontSize: '13px', fontFamily: 'monospace' } }}
                   />
                 </Grid2>
               </Grid2>
