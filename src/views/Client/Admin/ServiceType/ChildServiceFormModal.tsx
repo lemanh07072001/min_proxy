@@ -703,7 +703,7 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
                       </button>
                     </div>
 
-                    {/* Bảng mốc từ site mẹ — admin chọn áp dụng hay không */}
+                    {/* Bảng mốc từ site mẹ — admin chọn áp dụng + nhập giá bán */}
                     {(() => {
                       const supplierTiers = selectedProduct?.supplier_discount_tiers || []
                       const costBase = parseInt(costPerUnit) || 0
@@ -712,7 +712,6 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
 
                       if (supplierTiers.length === 0 && costBase <= 0) return null
 
-                      // Helper: tìm giá nhập tại mốc ngày
                       const getCostAt = (days: number) => {
                         for (const st of supplierTiers) {
                           const sMin = parseInt(st.min as any) || 0
@@ -723,7 +722,6 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
                         return costBase
                       }
 
-                      // Tạo mảng mốc: 1 ngày + tất cả mốc từ mẹ
                       const allMilestones = [
                         { days: 1, costDisc: 0, cost: costBase },
                         ...supplierTiers.filter(t => t.min && t.discount).map(t => ({
@@ -733,37 +731,77 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
                         }))
                       ]
 
-                      // Tìm discount bán tương ứng nếu admin đã set
-                      const findSellDisc = (days: number) => {
-                        for (const dt of discountTiers) {
+                      // Tìm discount tier đang áp cho mốc ngày
+                      const findTierIdx = (days: number) => {
+                        return discountTiers.findIndex(dt => {
                           const min = parseInt(dt.min) || 0
                           const max = parseInt(dt.max) || Infinity
-                          if (days >= min && days <= max) return parseInt(dt.discount) || 0
-                        }
-                        return 0
+                          return days >= min && days <= max
+                        })
+                      }
+
+                      // Áp nhanh: tạo discount tier từ mốc site mẹ
+                      const applyMilestone = (m: typeof allMilestones[0]) => {
+                        if (m.costDisc === 0) return // mốc 1 ngày không cần
+                        // Check đã có tier chưa
+                        const existing = findTierIdx(m.days)
+                        if (existing >= 0) return // đã có
+
+                        // Tìm max của mốc trước
+                        const nextMilestone = allMilestones.find(mm => mm.days > m.days)
+                        const maxDay = nextMilestone ? String(nextMilestone.days - 1) : ''
+
+                        // Gợi ý % giảm = giữ lợi nhuận tương đương mốc 1 ngày
+                        const profitAt1 = sellBase - costBase
+                        const suggestedSell = m.cost + profitAt1
+                        const suggestedDisc = sellBase > 0 ? Math.round((1 - suggestedSell / sellBase) * 100) : 0
+
+                        setDiscountTiers(prev => [...prev, {
+                          min: String(m.days),
+                          max: maxDay,
+                          discount: String(Math.max(0, suggestedDisc))
+                        }])
+                      }
+
+                      // Bỏ mốc
+                      const removeMilestone = (days: number) => {
+                        const idx = findTierIdx(days)
+                        if (idx >= 0) setDiscountTiers(prev => prev.filter((_, i) => i !== idx))
                       }
 
                       return (
                         <div style={{ border: '1px solid #e0e7ff', borderRadius: 8, overflow: 'hidden', marginBottom: 8 }}>
-                          <div style={{ background: '#eef2ff', padding: '6px 10px', fontSize: '11px', fontWeight: 600, color: '#4338ca' }}>
-                            Các mốc giá từ site mẹ — xem trước lãi/lỗ ở mỗi mốc
+                          <div style={{ background: '#eef2ff', padding: '6px 10px', fontSize: '11px', fontWeight: 600, color: '#4338ca', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span>Các mốc giá từ site mẹ — bấm "Áp dụng" để thêm mức giảm giá</span>
+                            <button type='button' onClick={() => {
+                              // Áp tất cả mốc cùng lúc
+                              allMilestones.filter(m => m.costDisc > 0).forEach(m => applyMilestone(m))
+                            }} style={{ fontSize: 10, padding: '2px 8px', borderRadius: 4, border: '1px solid #a5b4fc', background: '#e0e7ff', cursor: 'pointer', color: '#4338ca', fontWeight: 600 }}>
+                              Áp dụng tất cả
+                            </button>
                           </div>
-                          <div style={{ display: 'grid', gridTemplateColumns: '60px 1fr 1fr 1fr 1fr', gap: 2, padding: '4px 10px', fontSize: '10px', fontWeight: 600, color: '#64748b', background: '#f8fafc' }}>
+                          <div style={{ display: 'grid', gridTemplateColumns: '55px 1fr 1fr 1fr 80px', gap: 2, padding: '4px 10px', fontSize: '10px', fontWeight: 600, color: '#64748b', background: '#f8fafc' }}>
                             <span>Mốc</span>
-                            <span>Giá gốc (bạn trả)</span>
-                            <span>Giá bán (bạn thu)</span>
+                            <span>Trả site mẹ</span>
+                            <span>Bán cho khách</span>
                             <span>Lợi nhuận</span>
-                            <span>Tình trạng</span>
+                            <span></span>
                           </div>
                           {allMilestones.map((m, i) => {
-                            const sellDisc = findSellDisc(m.days)
+                            const tierIdx = findTierIdx(m.days)
+                            const isApplied = tierIdx >= 0
+                            const sellDisc = isApplied ? (parseInt(discountTiers[tierIdx].discount) || 0) : 0
                             const sellPrice = sellDisc > 0 ? Math.round(sellBase * (1 - sellDisc / 100)) : sellBase
                             const profit = sellPrice - m.cost
                             const isLoss = profit < 0
-                            const noSellDisc = sellDisc === 0 && m.costDisc > 0
+                            const isFirst = i === 0
 
                             return (
-                              <div key={i} style={{ display: 'grid', gridTemplateColumns: '60px 1fr 1fr 1fr 1fr', gap: 2, alignItems: 'center', padding: '6px 10px', borderTop: '1px solid #f1f5f9', background: isLoss ? '#fef2f2' : undefined }}>
+                              <div key={i} style={{
+                                display: 'grid', gridTemplateColumns: '55px 1fr 1fr 1fr 80px', gap: 2,
+                                alignItems: 'center', padding: '6px 10px', borderTop: '1px solid #f1f5f9',
+                                background: isLoss ? '#fef2f2' : isApplied ? '#f0fdf4' : undefined
+                              }}>
                                 <span style={{ fontSize: 12, fontWeight: 700, color: '#334155' }}>
                                   {m.days} {unitLabel}
                                 </span>
@@ -778,8 +816,20 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
                                 <span style={{ fontSize: 11, fontWeight: 700, color: isLoss ? '#ef4444' : '#16a34a' }}>
                                   {profit > 0 ? '+' : ''}{profit.toLocaleString('vi-VN')}đ
                                 </span>
-                                <span style={{ fontSize: 10, color: isLoss ? '#ef4444' : noSellDisc ? '#f59e0b' : '#94a3b8' }}>
-                                  {isLoss ? '⚠ Lỗ!' : noSellDisc ? 'Chưa giảm giá bán' : profit > 0 ? '✓ Có lãi' : ''}
+                                <span>
+                                  {isFirst ? (
+                                    <span style={{ fontSize: 10, color: '#94a3b8' }}>Giá gốc</span>
+                                  ) : isApplied ? (
+                                    <button type='button' onClick={() => removeMilestone(m.days)}
+                                      style={{ fontSize: 10, padding: '2px 8px', borderRadius: 4, border: '1px solid #fecaca', background: '#fef2f2', cursor: 'pointer', color: '#ef4444', fontWeight: 600 }}>
+                                      Bỏ
+                                    </button>
+                                  ) : (
+                                    <button type='button' onClick={() => applyMilestone(m)}
+                                      style={{ fontSize: 10, padding: '2px 8px', borderRadius: 4, border: '1px solid #bbf7d0', background: '#f0fdf4', cursor: 'pointer', color: '#16a34a', fontWeight: 600 }}>
+                                      Áp dụng
+                                    </button>
+                                  )}
                                 </span>
                               </div>
                             )
@@ -787,12 +837,6 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
                         </div>
                       )
                     })()}
-
-                    {discountTiers.length === 0 && (
-                      <div style={{ fontSize: '11px', color: '#94a3b8', textAlign: 'center', padding: '6px 0' }}>
-                        Chưa set giảm giá — khách mua bao nhiêu {timeUnit === 'month' ? 'tháng' : 'ngày'} cũng cùng 1 đơn giá. Thêm mức giảm bên dưới nếu muốn.
-                      </div>
-                    )}
 
                     {discountTiers.length > 0 && (() => {
                       const unitLabel = timeUnit === 'month' ? 'tháng' : 'ngày'
