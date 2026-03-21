@@ -179,7 +179,8 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
         concurrent_connections: serviceData.concurrent_connections?.toString() || '',
       })
     }
-  }, [serviceData, isEditMode, reset, allSupplierProducts])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [serviceData, isEditMode, reset, allSupplierProducts, open])
 
   // When selecting a supplier product (new import)
   useEffect(() => {

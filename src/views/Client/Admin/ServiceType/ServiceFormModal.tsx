@@ -375,7 +375,8 @@ return { values: {}, errors: formattedErrors }
         setPurchaseOptions([])
       }
     }
-  }, [serviceData, isEditMode, reset])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [serviceData, isEditMode, reset, open])
 
   // Reset form when modal opens for create
   useEffect(() => {
