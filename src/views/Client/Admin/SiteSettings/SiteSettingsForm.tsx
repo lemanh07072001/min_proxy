@@ -450,8 +450,8 @@ export default function SiteSettingsForm() {
   const availableTabs = [
     { label: 'Thương hiệu', icon: <Palette size={16} /> },
     { label: 'Màu sắc', icon: <Palette size={16} /> },
-    { label: 'SEO', icon: <Search size={16} /> },
-    { label: 'Nâng cao', icon: <Code size={16} /> },
+    { label: 'Hiển thị Google', icon: <Search size={16} /> },
+    { label: 'Nâng cao (tuỳ chọn)', icon: <Code size={16} /> },
     { label: 'Hỗ trợ & Liên hệ', icon: <Headphones size={16} /> },
     { label: 'Thanh toán', icon: <CreditCard size={16} /> },
     ...(isChild ? [{ label: 'Nhà cung cấp', icon: <Truck size={16} /> }] : []),
@@ -491,6 +491,19 @@ export default function SiteSettingsForm() {
             </Button>
           </div>
         </div>
+
+        {/* Hướng dẫn nhanh — hiện khi chưa có tên site */}
+        {!branding.site_name && (
+          <div style={{ margin: '12px 16px 0', padding: '12px 16px', background: '#fffbeb', border: '1px solid #fcd34d', borderRadius: 10, fontSize: '13px', color: '#92400e', lineHeight: 1.6 }}>
+            <strong>Bắt đầu setup site:</strong> Điền lần lượt từ trái sang phải →
+            <strong> Thương hiệu</strong> (tên + logo) →
+            <strong> Màu sắc</strong> (chọn màu chủ đạo) →
+            <strong> Hiển thị Google</strong> (tiêu đề khi tìm kiếm) →
+            <strong> Hỗ trợ & Liên hệ</strong> (Zalo, Telegram...) →
+            <strong> Thanh toán</strong> (ngân hàng nhận tiền).
+            Tab "Nâng cao" có thể bỏ qua.
+          </div>
+        )}
 
         {/* Tabs */}
         <Box sx={{ borderBottom: 1, borderColor: 'divider', px: 2 }}>
@@ -547,7 +560,7 @@ export default function SiteSettingsForm() {
               {/* Logo + Favicon + OG Image */}
               <div>
                 <h6 style={sectionTitleSx}>Hình ảnh</h6>
-                <p style={sectionDescSx}>Upload ảnh xong tự động lưu. Xóa ảnh sẽ về hình mặc định của hệ thống.</p>
+                <p style={sectionDescSx}>Upload ảnh xong <strong>tự động lưu</strong> (không cần nhấn Lưu). Xóa ảnh = về hình mặc định.</p>
               </div>
               <div style={{ display: 'flex', gap: 24 }}>
                 {/* Logo */}
@@ -1046,8 +1059,8 @@ export default function SiteSettingsForm() {
           {activeTab === 2 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
               <div>
-                <h6 style={sectionTitleSx}>SEO đa ngôn ngữ</h6>
-                <p style={sectionDescSx}>Nội dung hiển thị trên Google khi người dùng tìm kiếm. Mỗi ngôn ngữ cần tiêu đề và mô tả riêng để SEO tốt hơn. Để trống sẽ dùng tên + mô tả ở tab Thương hiệu.</p>
+                <h6 style={sectionTitleSx}>Nội dung hiển thị trên Google</h6>
+                <p style={sectionDescSx}>Khi khách tìm kiếm trên Google, họ sẽ thấy <strong>tiêu đề</strong> và <strong>mô tả</strong> bạn nhập ở đây. Mỗi ngôn ngữ cần nhập riêng. Để trống = dùng tên + mô tả ở tab Thương hiệu.</p>
               </div>
 
               <Alert
@@ -1055,7 +1068,7 @@ export default function SiteSettingsForm() {
                 severity='info'
                 sx={{ fontSize: '13px', '& .MuiAlert-message': { fontSize: '13px' } }}
               >
-                <strong>Title</strong> = tiêu đề xanh trên Google. <strong>Description</strong> = đoạn mô tả bên dưới. <strong>Keywords</strong> = từ khóa giúp Google hiểu nội dung. Để trống = dùng tên + mô tả ở tab Thương hiệu.
+                <strong>Title</strong> = dòng chữ xanh lớn trên Google (khách click vào đây). <strong>Description</strong> = đoạn mô tả nhỏ bên dưới. <strong>Keywords</strong> = từ khóa giúp Google tìm thấy site bạn. Sau khi lưu, Google cập nhật trong 1-3 ngày.
               </Alert>
 
               {/* Language sub-tabs */}
@@ -1129,6 +1142,9 @@ export default function SiteSettingsForm() {
           {/* ═══════════════ Tab 3: Nâng cao ═══════════════ */}
           {activeTab === 3 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+              <Alert icon={<Info size={16} />} severity='warning' sx={{ fontSize: '13px', '& .MuiAlert-message': { fontSize: '13px' } }}>
+                Tab này <strong>không bắt buộc</strong>. Bỏ qua nếu bạn chưa cần — site vẫn hoạt động bình thường. Quay lại setup khi cần tracking hoặc kết nối Google.
+              </Alert>
               {/* Google verification */}
               <div>
                 <h6 style={sectionTitleSx}>Google Search Console</h6>
