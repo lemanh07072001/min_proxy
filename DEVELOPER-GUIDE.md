@@ -2944,3 +2944,17 @@ Các phần dưới đây nằm ngoài scope "flow mua proxy" nhưng có thể c
 **Sửa:** Bỏ chặn mua dựa trên FE balance check. Warning "Số dư không đủ" vẫn hiện nhưng chỉ là cảnh báo tham khảo. BE là nơi quyết định cuối cùng (`lockForUpdate` + check `sodu` real-time). Nếu BE trả lỗi → FE hiện toast.
 
 **Files:** `CheckoutModal.tsx`
+
+### 21/03/2026
+
+#### 13.N+2 Pricing 4 cấp — cost_discount_tiers UI + Provider markup per user
+
+**Vấn đề:** Admin cần set chiết khấu giá gốc NCC theo khoảng ngày (cost_discount_tiers) và markup chung theo NCC per user (Cấp 2a).
+
+**Sửa:**
+- `ServiceFormModal`: thêm section cost_discount_tiers (nền vàng, chỉ hiện khi per_unit + có cost_per_unit)
+- `useUserProviderPricing.ts`: hook CRUD cho user_provider_pricing
+- `ProviderPricingModal`: modal CRUD markup NCC per user (thêm/sửa/xóa/toggle)
+- `UsersPage` + `TableUsers`: thêm nút "Markup NCC" (icon Tags) vào cột thao tác
+
+**Files:** `ServiceFormModal.tsx`, `useUserProviderPricing.ts`, `ProviderPricingModal.tsx`, `UsersPage.tsx`, `TableUsers.tsx`
