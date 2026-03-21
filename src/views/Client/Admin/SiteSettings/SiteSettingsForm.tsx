@@ -530,7 +530,13 @@ export default function SiteSettingsForm() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
               <div>
                 <h6 style={sectionTitleSx}>Thông tin cơ bản</h6>
-                <p style={sectionDescSx}>Hiển thị ở: tab trình duyệt, header trang, kết quả tìm kiếm Google, khi chia sẻ link trên Zalo/Facebook</p>
+                <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10, padding: '12px 16px', fontSize: '12px', color: '#475569', lineHeight: 1.8 }}>
+                  <strong>Tên site</strong> hiện ở: menu trái, header, footer, tab trình duyệt<br/>
+                  <strong>Logo</strong> hiện ở: menu trái (mở rộng), header trang chủ<br/>
+                  <strong>Logo thu gọn</strong> hiện ở: menu trái (thu nhỏ)<br/>
+                  <strong>Favicon</strong> hiện ở: icon tab trình duyệt + icon bên cạnh URL trên Google<br/>
+                  <strong>OG Image</strong> hiện ở: ảnh preview khi chia sẻ link lên Facebook/Zalo
+                </div>
               </div>
 
               {/* Name + Description */}
@@ -1061,13 +1067,34 @@ export default function SiteSettingsForm() {
                 <p style={sectionDescSx}>Khi khách tìm kiếm trên Google, họ sẽ thấy <strong>tiêu đề</strong> và <strong>mô tả</strong> bạn nhập ở đây. Mỗi ngôn ngữ cần nhập riêng. Để trống = dùng tên + mô tả ở tab Thương hiệu.</p>
               </div>
 
-              <Alert
-                icon={<Info size={16} />}
-                severity='info'
-                sx={{ fontSize: '13px', '& .MuiAlert-message': { fontSize: '13px' } }}
-              >
-                <strong>Title</strong> = dòng chữ xanh lớn trên Google (khách click vào đây). <strong>Description</strong> = đoạn mô tả nhỏ bên dưới. <strong>Keywords</strong> = từ khóa giúp Google tìm thấy site bạn. Sau khi lưu, Google cập nhật trong 1-3 ngày.
-              </Alert>
+              {/* Google preview mockup */}
+              {(() => {
+                const previewLang = SEO_LANGUAGES[seoLangTab]?.code || 'vi'
+                const pm = branding.seo_meta?.[previewLang] || {}
+                const pTitle = pm.title || (branding.site_name && branding.site_description ? `${branding.site_name} - ${branding.site_description}` : branding.site_name || 'Tiêu đề site của bạn')
+                const pDesc = pm.description || branding.site_description || 'Mô tả site sẽ hiện ở đây khi khách tìm kiếm trên Google...'
+
+                return (
+                  <div style={{ border: '1px solid #e2e8f0', borderRadius: 10, padding: '14px 16px', background: '#fff' }}>
+                    <div style={{ fontSize: '11px', color: '#94a3b8', marginBottom: 8, fontWeight: 600 }}>Xem trước kết quả Google:</div>
+                    <div style={{ fontFamily: 'Arial, sans-serif' }}>
+                      <div style={{ fontSize: '12px', color: '#202124', display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
+                        {branding.favicon_url && <img src={resolveUrl(branding.favicon_url)} alt='' style={{ width: 16, height: 16, borderRadius: 99 }} />}
+                        <span>{branding.site_name || 'yoursite.com'}</span>
+                      </div>
+                      <div style={{ fontSize: '18px', color: '#1a0dab', fontWeight: 400, marginBottom: 2, cursor: 'pointer' }}>
+                        {pTitle}
+                      </div>
+                      <div style={{ fontSize: '13px', color: '#4d5156', lineHeight: 1.5 }}>
+                        {pDesc.length > 160 ? pDesc.substring(0, 160) + '...' : pDesc}
+                      </div>
+                    </div>
+                    <div style={{ fontSize: '10.5px', color: '#94a3b8', marginTop: 8, borderTop: '1px solid #f1f5f9', paddingTop: 6 }}>
+                      Sau khi lưu, Google cập nhật trong 1-3 ngày. Keywords giúp Google tìm thấy site bạn.
+                    </div>
+                  </div>
+                )
+              })()}
 
               {/* Language sub-tabs */}
               <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
@@ -1259,10 +1286,17 @@ export default function SiteSettingsForm() {
           {activeTab === 3 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
 
+              {/* Tổng quan tab */}
+              <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10, padding: '12px 16px', fontSize: '12px', color: '#475569', lineHeight: 1.8 }}>
+                <strong>Thông tin liên hệ</strong> → hiện ở footer (cuối trang) + giúp Google hiểu doanh nghiệp<br/>
+                <strong>Nút liên hệ nhanh</strong> → hiện ở trang chủ (cột phải) + <strong>nút nổi góc phải dưới mọi trang</strong> (Zalo, Telegram...)<br/>
+                <strong>Video hướng dẫn</strong> → hiện ở trang chủ (cột phải), có ảnh thumbnail YouTube
+              </div>
+
               {/* ── Section 1: Thông tin liên hệ ── */}
               <div>
                 <h6 style={sectionTitleSx}>Thông tin liên hệ</h6>
-                <p style={sectionDescSx}>Hiển thị ở: footer trang, trang liên hệ, kết quả Google (Schema.org). Giúp khách hàng biết cách liên lạc với bạn.</p>
+                <p style={sectionDescSx}>Hiện ở footer cuối trang. Giúp khách liên lạc + Google hiểu doanh nghiệp.</p>
               </div>
               <TextField
                 size='small'
