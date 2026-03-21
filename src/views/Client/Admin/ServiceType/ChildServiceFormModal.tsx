@@ -1197,7 +1197,7 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
                     )}
                     <FeatureRow icon={Shield} iconColor='#6366f1' label='Hỗ trợ' value={previewProtocols} />
                     {watchAll.auth_type && (
-                      <FeatureRow icon={Shield} iconColor='#8b5cf6' label='Xác thực' value={getAuthTypeLabel(watchAll.auth_type)} />
+                      <FeatureRow icon={Shield} iconColor='#8b5cf6' label='Xác thực' value={getAuthTypeLabel(watchAll.auth_type) + ((watchAll.auth_type === 'userpass' || watchAll.auth_type === 'both') ? (allowCustomAuth ? ' (Tự nhập)' : ' (Random)') : '')} />
                     )}
                     {watchAll.bandwidth && (
                       <FeatureRow icon={Wifi} iconColor='#0ea5e9' label='Băng thông' value={watchAll.bandwidth} />

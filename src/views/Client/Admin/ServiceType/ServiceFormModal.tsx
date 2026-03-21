@@ -1482,7 +1482,7 @@ return <Chip key={val} label={p?.label || val} size='small' />
 
                 // Render spec feature rows (dùng chung cả 2 loại card)
                 const specFeatureRows = [
-                  previewData.auth_type && { label: 'Xác thực', value: convertAuthType(previewData.auth_type), icon: Shield, color: 'var(--primary-hover, #f97316)' },
+                  previewData.auth_type && { label: 'Xác thực', value: convertAuthType(previewData.auth_type) + ((previewData.auth_type === 'userpass' || previewData.auth_type === 'both') ? (allowCustomAuth ? ' (Tự nhập)' : ' (Random)') : ''), icon: Shield, color: 'var(--primary-hover, #f97316)' },
                   previewData.bandwidth && { label: 'Băng thông', value: previewData.bandwidth === 'unlimited' ? 'Không giới hạn' : previewData.bandwidth, icon: Wifi, color: '#3b82f6' },
                   watchedType === '1' && previewData.rotation_type && { label: 'Kiểu xoay', value: previewData.rotation_type === 'per_request' ? 'Per request' : previewData.rotation_type === 'sticky' ? 'Sticky session' : previewData.rotation_type === 'time_based' ? 'Time-based' : previewData.rotation_type, icon: RefreshCw, color: '#8b5cf6' },
                   watchedType === '1' && previewData.rotation_interval && { label: 'Thời gian xoay IP', value: previewData.rotation_interval, icon: Clock, color: '#f59e0b' },
