@@ -2,45 +2,13 @@
 
 import React from 'react'
 
-import Image from 'next/image'
-
 import { useParams } from 'next/navigation'
 
-import { Shield, Facebook, Send } from 'lucide-react'
+import { Shield } from 'lucide-react'
 
-import { infoConfigs } from '@/configs/infoConfig'
 import Link from '@/components/Link'
 import { useBranding } from '@/app/contexts/BrandingContext'
-
-const companyLinks = [
-  { label: 'Giới thiệu', href: '#' },
-  { label: 'Chương trình đại lý', href: '#' },
-  { label: 'Đối tác', href: '#' },
-  { label: 'Sitemap', href: '#' }
-]
-
-const productLinks = [
-  { label: 'Proxy tĩnh', href: '#' },
-  { label: 'Proxy xoay', href: '#' }
-]
-
-const locationLinks = [
-  { label: 'TP. Hồ Chí Minh', href: '#' },
-  { label: 'Hà Nội', href: '#' },
-  { label: 'Hưng Yên', href: '#' },
-  { label: 'Tuyên Quang', href: '#' },
-  { label: 'Bình Định', href: '#' }
-]
-
-const getStartedLinks = [
-  { label: 'Trở thành CTV', href: '#' },
-  { label: 'Trở thành đại lý', href: '#' },
-  { label: 'Mua proxy giá rẻ', href: '#' },
-  { label: 'Giao dịch tự động', href: '#' },
-  { label: 'Trợ giúp', href: '#' }
-]
-
-const paymentMethods = ['VISA', 'MC', 'JCB', 'AMEX', 'UNION', 'PAYPAL', 'CRYPTO']
+import { SOCIAL_ICON_MAP } from '@/components/icons/SocialIcons'
 
 const linkStyle: React.CSSProperties = {
   color: 'rgba(255,255,255,0.7)',
@@ -51,21 +19,19 @@ const linkStyle: React.CSSProperties = {
   lineHeight: 1.6
 }
 
-const LinkColumn = ({ title, links }: { title: string; links: { label: string; href: string }[] }) => (
-  <div>
-    <h4 style={{ fontSize: 16, fontWeight: 600, marginBottom: 16, color: 'white' }}>{title}</h4>
-    {links.map(l => (
-      <a key={l.label} href={l.href} style={linkStyle}>
-        {l.label}
-      </a>
-    ))}
-  </div>
-)
-
 const Footer = () => {
   const params = useParams()
   const locale = params.lang as string
-  const { name: appName, social_links } = useBranding()
+  const {
+    name: appName,
+    social_links,
+    organization_phone,
+    organization_email,
+    organization_address,
+    footer_text,
+  } = useBranding()
+
+  const socialLinks = (social_links || []).filter((l: any) => l.url)
 
   return (
     <footer
@@ -110,169 +76,94 @@ const Footer = () => {
             >
               Đăng ký ngay
             </Link>
-            <a
-              href='#'
-              style={{
-                display: 'inline-block',
-                textDecoration: 'none',
-                color: 'white',
-                border: '2px solid rgba(255,255,255,0.3)',
-                padding: '12px 30px',
-                borderRadius: 50,
-                fontWeight: 600,
-                fontSize: 16
-              }}
-            >
-              Liên hệ tư vấn
-            </a>
           </div>
         </div>
       </div>
 
-      {/* Footer Links Grid */}
+      {/* Footer content */}
       <div style={{ padding: '48px 24px', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
         <div
           style={{
             maxWidth: 1140,
             margin: '0 auto',
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
             gap: 32
           }}
         >
-          <LinkColumn title='Công ty' links={companyLinks} />
-          <LinkColumn title='Sản phẩm' links={productLinks} />
-          <LinkColumn title='Địa điểm nổi bật' links={locationLinks} />
-          <LinkColumn title='Bắt đầu' links={getStartedLinks} />
-        </div>
-      </div>
-
-      {/* Bottom Footer */}
-      <div style={{ padding: '24px 24px', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-        <div
-          style={{
-            maxWidth: 1140,
-            margin: '0 auto',
-            display: 'flex',
-            flexWrap: 'wrap',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: 16
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <Shield size={28} color='var(--primary-hover, #ef4444)' />
-            <span style={{ fontSize: 18, fontWeight: 700 }}>{appName}</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
-            <a href='#' style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none', fontSize: 13 }}>
-              Chính sách bảo mật
-            </a>
-            <a href='#' style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none', fontSize: 13 }}>
-              Điều khoản dịch vụ
-            </a>
-            <a href='#' style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none', fontSize: 13 }}>
-              Chính sách hoàn tiền
-            </a>
-          </div>
-        </div>
-      </div>
-
-      {/* Contact + Social */}
-      <div style={{ padding: '20px 24px', borderTop: '1px solid rgba(255,255,255,0.1)', textAlign: 'center' }}>
-        <div style={{ marginBottom: 12, color: 'rgba(255,255,255,0.8)', fontSize: 14 }}>
-          Liên hệ với chúng tôi
-        </div>
-        <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
-          <a
-            href='#'
-            style={{
-              width: 40,
-              height: 40,
-              borderRadius: '50%',
-              backgroundColor: '#1877f2',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'white',
-              textDecoration: 'none'
-            }}
-          >
-            <Facebook size={18} />
-          </a>
-          <a
-            href='#'
-            style={{
-              width: 40,
-              height: 40,
-              borderRadius: '50%',
-              backgroundColor: '#0088cc',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'white',
-              textDecoration: 'none'
-            }}
-          >
-            <Send size={18} />
-          </a>
-        </div>
-      </div>
-
-      {/* Payment Methods */}
-      <div style={{ padding: '16px 24px', borderTop: '1px solid rgba(255,255,255,0.1)', textAlign: 'center' }}>
-        <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
-          {paymentMethods.map(m => (
-            <div
-              key={m}
-              style={{
-                background: 'rgba(255,255,255,0.1)',
-                color: 'white',
-                padding: '6px 14px',
-                borderRadius: 8,
-                fontSize: 12,
-                fontWeight: 600,
-                border: '1px solid rgba(255,255,255,0.2)'
-              }}
-            >
-              {m}
+          {/* Cột 1: Thông tin site */}
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+              <Shield size={24} color='var(--primary-hover, #ef4444)' />
+              <span style={{ fontSize: 18, fontWeight: 700 }}>{appName || 'Proxy Service'}</span>
             </div>
-          ))}
+            {organization_address && (
+              <p style={{ ...linkStyle, marginBottom: 6 }}>📍 {organization_address}</p>
+            )}
+            {organization_phone && (
+              <p style={{ ...linkStyle, marginBottom: 6 }}>📞 {organization_phone}</p>
+            )}
+            {organization_email && (
+              <p style={{ ...linkStyle, marginBottom: 6 }}>✉️ {organization_email}</p>
+            )}
+          </div>
+
+          {/* Cột 2: Sản phẩm */}
+          <div>
+            <h4 style={{ fontSize: 16, fontWeight: 600, marginBottom: 16, color: 'white' }}>Sản phẩm</h4>
+            <Link href={`/${locale}/proxy-tinh`} style={linkStyle}>Proxy tĩnh</Link>
+            <Link href={`/${locale}/proxy-xoay`} style={linkStyle}>Proxy xoay</Link>
+            <Link href={`/${locale}/recharge`} style={linkStyle}>Nạp tiền</Link>
+            <Link href={`/${locale}/api-docs`} style={linkStyle}>API Docs</Link>
+          </div>
+
+          {/* Cột 3: Hỗ trợ */}
+          <div>
+            <h4 style={{ fontSize: 16, fontWeight: 600, marginBottom: 16, color: 'white' }}>Hỗ trợ</h4>
+            <Link href={`/${locale}/support-tickets`} style={linkStyle}>Ticket hỗ trợ</Link>
+            <Link href={`/${locale}/contact`} style={linkStyle}>Liên hệ</Link>
+          </div>
+
+          {/* Cột 4: Mạng xã hội — lấy từ settings */}
+          {socialLinks.length > 0 && (
+            <div>
+              <h4 style={{ fontSize: 16, fontWeight: 600, marginBottom: 16, color: 'white' }}>Kết nối</h4>
+              <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                {socialLinks.map((link: any, i: number) => {
+                  const SvgIcon = SOCIAL_ICON_MAP[link.platform]
+
+                  return (
+                    <a
+                      key={i}
+                      href={link.url}
+                      target='_blank'
+                      rel='noopener noreferrer'
+                      title={link.platform}
+                      style={{ textDecoration: 'none' }}
+                    >
+                      {SvgIcon ? <SvgIcon size={36} /> : (
+                        <div style={{
+                          width: 36, height: 36, borderRadius: 8, background: 'rgba(255,255,255,0.15)',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          color: 'white', fontSize: 12, fontWeight: 600
+                        }}>
+                          {link.platform?.charAt(0)?.toUpperCase()}
+                        </div>
+                      )}
+                    </a>
+                  )
+                })}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Copyright */}
+      {/* Bottom */}
       <div style={{ padding: '16px 24px', textAlign: 'center', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
         <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)' }}>
-          © {new Date().getFullYear()} {appName}. All rights reserved.
+          {footer_text || `© ${new Date().getFullYear()} ${appName || 'Proxy Service'}. All rights reserved.`}
         </div>
-      </div>
-
-      {/* Floating Contact Icons */}
-      <div
-        style={{
-          position: 'fixed',
-          right: 20,
-          bottom: 20,
-          zIndex: 1000,
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 12,
-          marginBottom: 100
-        }}
-      >
-        {(social_links && social_links.length > 0
-          ? social_links.filter(l => l.url).map((link, i) => (
-            <Link href={link.url} key={i} target='_blank'>
-              <span style={{ fontSize: '14px', color: '#94a3b8' }}>{link.platform}</span>
-            </Link>
-          ))
-          : infoConfigs.map(item => (
-            <Link href={item.link} key={item.key} target='_blank'>
-              <Image src={item.icon} alt={item.title || 'Social Icon'} width={80} height={80} />
-            </Link>
-          ))
-        )}
       </div>
     </footer>
   )
