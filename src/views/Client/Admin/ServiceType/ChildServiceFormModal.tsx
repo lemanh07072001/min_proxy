@@ -334,16 +334,15 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
       price_by_duration: pricingMode === 'per_unit'
         ? (serviceData?.price_by_duration || [])
         : priceFields.map(p => {
-        const parentPerUnit = parentPricingMode === 'per_unit'
-        const computedCost = parentPerUnit ? (parseInt(costPerUnit) || 0) * (parseInt(p.key) || 0) : (parseInt(p.cost) || 0)
+        // Ưu tiên field.cost (đã đồng bộ/nhập), fallback tính từ đơn giá mẹ
+        const cost = parseInt(p.cost) || ((parentPricingMode === 'per_unit') ? (parseInt(costPerUnit) || 0) * (parseInt(p.key) || 0) : 0)
 
-        return { key: p.key, value: parseInt(p.value), cost: computedCost }
+        return { key: p.key, value: parseInt(p.value), cost }
       }),
       cost_price: pricingMode === 'per_unit'
         ? (parseInt(costPerUnit) || 0)
         : (() => {
-            const parentPerUnit = parentPricingMode === 'per_unit'
-            const costs = priceFields.map(p => parentPerUnit ? (parseInt(costPerUnit) || 0) * (parseInt(p.key) || 0) : (parseInt(p.cost) || 0)).filter(v => v > 0)
+            const costs = priceFields.map(p => parseInt(p.cost) || ((parentPricingMode === 'per_unit') ? (parseInt(costPerUnit) || 0) * (parseInt(p.key) || 0) : 0)).filter(v => v > 0)
 
             return costs.length > 0 ? Math.min(...costs) : 0
           })(),
@@ -380,8 +379,7 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
         supplier_prices: pricingMode === 'per_unit'
           ? { per_unit: parseInt(costPerUnit) || 0 }
           : Object.fromEntries(priceFields.map(p => {
-              const parentPerUnit = parentPricingMode === 'per_unit'
-              const cost = parentPerUnit ? (parseInt(costPerUnit) || 0) * (parseInt(p.key) || 0) : (parseInt(p.cost) || 0)
+              const cost = parseInt(p.cost) || ((parentPricingMode === 'per_unit') ? (parseInt(costPerUnit) || 0) * (parseInt(p.key) || 0) : 0)
 
               return [p.key, cost]
             })),
@@ -753,9 +751,9 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
                     </div>
                     {/* Rows */}
                     {priceFields.map((field, idx) => {
-                      // Nếu mẹ per_unit → cost tính realtime, không dùng field.cost
                       const days = parseInt(field.key) || 0
-                      const cost = parentIsPerUnit ? (parentCostPerDay * days) : (parseInt(field.cost) || 0)
+                      // Ưu tiên field.cost (đã đồng bộ/lưu), fallback tính từ đơn giá mẹ
+                      const cost = parseInt(field.cost) || (parentIsPerUnit ? (parentCostPerDay * days) : 0)
                       const sell = parseInt(field.value) || 0
                       const profit = sell - cost
                       const profitPct = cost > 0 ? Math.round((profit / cost) * 100) : 0
@@ -779,7 +777,7 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
                             <span style={{ fontSize: '13px', fontWeight: 600, color: '#1e293b' }}>{getDurationLabel(field.key)}</span>
                           )}
                           {/* Giá nhập */}
-                          <span style={{ fontSize: '13px', color: cost > 0 ? '#64748b' : '#cbd5e1' }}>
+                          <span style={{ fontSize: '13px', fontWeight: cost > 0 ? 600 : 400, color: cost > 0 ? '#1e293b' : '#cbd5e1' }}>
                             {cost > 0 ? `${cost.toLocaleString('vi-VN')}đ` : (parentIsPerUnit && days === 0 ? 'Nhập số ngày' : '—')}
                           </span>
                           {/* Giá bán */}
@@ -796,12 +794,19 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
                             error={!!field.value && cost > 0 && sell <= cost}
                           />
                           {/* Lợi nhuận */}
-                          <span style={{
-                            fontSize: '13px', fontWeight: 600,
-                            color: profit > 0 ? '#22c55e' : profit < 0 ? '#ef4444' : '#94a3b8'
-                          }}>
-                            {sell > 0 && cost > 0 ? `+${profit.toLocaleString('vi-VN')}đ (${profitPct}%)` : '—'}
-                          </span>
+                          {sell > 0 && cost > 0 ? (
+                            <div style={{
+                              padding: '3px 8px', borderRadius: 6, fontSize: '12px', fontWeight: 700,
+                              background: profit > 0 ? '#f0fdf4' : '#fef2f2',
+                              color: profit > 0 ? '#16a34a' : '#ef4444',
+                              border: `1px solid ${profit > 0 ? '#bbf7d0' : '#fecaca'}`,
+                            }}>
+                              {profit > 0 ? '+' : ''}{profit.toLocaleString('vi-VN')}đ
+                              <span style={{ fontSize: '10.5px', fontWeight: 500, marginLeft: 3, opacity: 0.8 }}>({profitPct}%)</span>
+                            </div>
+                          ) : (
+                            <span style={{ fontSize: '13px', color: '#94a3b8' }}>—</span>
+                          )}
                         </div>
                       )
                     })}
