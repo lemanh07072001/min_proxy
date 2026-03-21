@@ -1288,7 +1288,7 @@ export default function SiteSettingsForm() {
 
               {/* Tổng quan tab */}
               <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10, padding: '12px 16px', fontSize: '12px', color: '#475569', lineHeight: 1.8 }}>
-                <strong>Thông tin liên hệ</strong> → hiện ở footer (cuối trang) + giúp Google hiểu doanh nghiệp<br/>
+                <strong>Thông tin liên hệ</strong> → hiện ở trang liên hệ + giúp Google hiểu doanh nghiệp (Schema.org)<br/>
                 <strong>Nút liên hệ nhanh</strong> → hiện ở trang chủ (cột phải) + <strong>nút nổi góc phải dưới mọi trang</strong> (Zalo, Telegram...)<br/>
                 <strong>Video hướng dẫn</strong> → hiện ở trang chủ (cột phải), có ảnh thumbnail YouTube
               </div>
@@ -1296,7 +1296,7 @@ export default function SiteSettingsForm() {
               {/* ── Section 1: Thông tin liên hệ ── */}
               <div>
                 <h6 style={sectionTitleSx}>Thông tin liên hệ</h6>
-                <p style={sectionDescSx}>Hiện ở footer cuối trang. Giúp khách liên lạc + Google hiểu doanh nghiệp.</p>
+                <p style={sectionDescSx}>Hiện ở trang liên hệ + Google hiểu doanh nghiệp bạn (tên, SĐT, email, địa chỉ). Không bắt buộc — để trống nếu chưa cần.</p>
               </div>
               <TextField
                 size='small'
@@ -1314,7 +1314,7 @@ export default function SiteSettingsForm() {
                   value={branding.organization_name}
                   onChange={e => updateBrandingField('organization_name', e.target.value)}
                   placeholder='VD: Công ty TNHH ABC'
-                  helperText='Hiển thị ở footer, Schema.org'
+                  helperText='Hiện ở trang liên hệ + Google Schema.org'
                   sx={{ flex: 2 }}
                 />
                 <TextField
@@ -1323,7 +1323,7 @@ export default function SiteSettingsForm() {
                   value={branding.organization_phone}
                   onChange={e => updateBrandingField('organization_phone', e.target.value)}
                   placeholder='VD: 0563072397'
-                  helperText='Hiển thị ở footer, trang liên hệ'
+                  helperText='Hiện ở trang liên hệ'
                   sx={{ flex: 1 }}
                 />
                 <TextField
@@ -1332,7 +1332,7 @@ export default function SiteSettingsForm() {
                   value={branding.organization_email}
                   onChange={e => updateBrandingField('organization_email', e.target.value)}
                   placeholder='VD: contact@domain.com'
-                  helperText='Hiển thị ở footer, trang liên hệ'
+                  helperText='Hiện ở trang liên hệ'
                   sx={{ flex: 1 }}
                 />
               </div>
@@ -1343,7 +1343,7 @@ export default function SiteSettingsForm() {
                   value={branding.organization_address}
                   onChange={e => updateBrandingField('organization_address', e.target.value)}
                   placeholder='VD: 123 Đường ABC, Quận 1, TP.HCM'
-                  helperText='Hiển thị ở footer, Google Maps'
+                  helperText='Hiện ở trang liên hệ'
                   sx={{ flex: 2 }}
                 />
                 <TextField
@@ -1362,7 +1362,7 @@ export default function SiteSettingsForm() {
                   value={branding.working_hours}
                   onChange={e => updateBrandingField('working_hours', e.target.value)}
                   placeholder='VD: 8:00 - 22:00 (T2-T7)'
-                  helperText='Hiển thị ở footer, trang liên hệ'
+                  helperText='Hiện ở trang liên hệ'
                   sx={{ flex: 1 }}
                 />
                 <TextField
@@ -1371,7 +1371,7 @@ export default function SiteSettingsForm() {
                   value={branding.tax_id}
                   onChange={e => updateBrandingField('tax_id', e.target.value)}
                   placeholder='VD: 0123456789'
-                  helperText='Hiển thị ở footer'
+                  helperText='Hiện ở trang liên hệ'
                   sx={{ flex: 1 }}
                 />
               </div>
