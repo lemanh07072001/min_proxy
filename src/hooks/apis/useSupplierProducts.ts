@@ -9,7 +9,7 @@ export interface SupplierProduct {
   type: string
   durations: string[]
   protocols: string[]
-  supplier_prices: Record<string, number>
+  provider_prices: Record<string, number>
   country: string | null
 
   // Nếu đã import
@@ -52,8 +52,8 @@ export const useImportSupplierProduct = () => {
 
   return useMutation({
     mutationFn: async (data: {
-      supplier_product_id?: number
-      supplier_product_code?: string
+      provider_product_id?: number
+      provider_product_code?: string
       name: string
       sell_prices: Record<string, number>
     }) => {

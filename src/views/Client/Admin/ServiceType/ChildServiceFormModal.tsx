@@ -116,8 +116,8 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
         ? JSON.parse(serviceData.metadata || '{}')
         : (serviceData.metadata || {})
 
-      const supplierId = meta.supplier_product_id || null
-      let supplierCode = meta.supplier_product_code || null
+      const supplierId = meta.provider_product_id || null
+      let supplierCode = meta.provider_product_code || null
 
       setSelectedSupplierId(supplierId)
 
@@ -136,7 +136,7 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
       if (typeof prices === 'string') try { prices = JSON.parse(prices) } catch { prices = [] }
 
       if (prices && Array.isArray(prices)) {
-        const supplierPrices = meta.supplier_prices || {}
+        const supplierPrices = meta.provider_prices || {}
 
         setPriceFields(prices.map((p: any) => ({
           key: p.key || '',
@@ -219,7 +219,7 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
       setPriceFields([])
     } else {
       // Fixed: set price fields từ supplier prices
-      const prices = selectedProduct.supplier_prices || {}
+      const prices = selectedProduct.provider_prices || {}
       setPriceFields(
         Object.entries(prices).map(([key, cost]) => ({
           key,
@@ -385,15 +385,15 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
 
       submitData.metadata = {
         ...existingMeta,
-        ...(selectedSupplierCode ? { supplier_product_code: selectedSupplierCode } : {}),
-        ...(selectedSupplierId ? { supplier_product_id: selectedSupplierId } : {}),
+        ...(selectedSupplierCode ? { provider_product_code: selectedSupplierCode } : {}),
+        ...(selectedSupplierId ? { provider_product_id: selectedSupplierId } : {}),
         parent_pricing_mode: parentPricingMode,
         allow_custom_auth: allowCustomAuth,
         custom_fields: purchaseOptions.filter(o => o.param && o.label && o.options.some(opt => opt.value)).map(o => ({
           param: o.param, label: o.label, type: 'select' as const, required: o.required,
           default: o.default || o.options[0]?.value || '', options: o.options.filter(opt => opt.value),
         })),
-        supplier_prices: pricingMode === 'per_unit'
+        provider_prices: pricingMode === 'per_unit'
           ? { per_unit: parseInt(costPerUnit) || 0 }
           : Object.fromEntries(priceFields.map(p => {
               const cost = parseInt(p.cost) || ((parentPricingMode === 'per_unit') ? (parseInt(costPerUnit) || 0) * (parseInt(p.key) || 0) : 0)
@@ -526,7 +526,7 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
                     {(supplierData?.available || []).map(p => (
                       <MenuItem key={p.supplier_id} value={p.supplier_id}>
                         {p.supplier_code && <span style={{ fontFamily: 'monospace', fontSize: 11, color: '#94a3b8', marginRight: 6 }}>[{p.supplier_code}]</span>}
-                        {p.name} ({p.type}) — {Object.values(p.supplier_prices).map(pr => `${pr.toLocaleString('vi-VN')}đ`).join(' / ')}
+                        {p.name} ({p.type}) — {Object.values(p.provider_prices).map(pr => `${pr.toLocaleString('vi-VN')}đ`).join(' / ')}
                       </MenuItem>
                     ))}
                     {(supplierData?.imported || []).length > 0 && (
@@ -561,9 +561,9 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
                 </div>
               )}
 
-              {/* Tên + Code site con + trạng thái */}
+              {/* Tên + Code site con + Code site mẹ + trạng thái */}
               <Grid2 container spacing={1.5}>
-                <Grid2 size={{ xs: 5 }}>
+                <Grid2 size={{ xs: 12, sm: 4 }}>
                   <Controller
                     name='name'
                     control={control}
@@ -574,7 +574,7 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
                     )}
                   />
                 </Grid2>
-                <Grid2 size={{ xs: 4 }}>
+                <Grid2 size={{ xs: 6, sm: 2 }}>
                   <Controller
                     name='code'
                     control={control}
@@ -583,14 +583,26 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
                         {...field}
                         fullWidth
                         label='Code site con'
-                        placeholder='Để trống sẽ tự tạo'
+                        placeholder='Tự tạo'
                         error={!!errors.code}
-                        helperText={(errors.code?.message as string) || 'Mã riêng của bạn, khác với code site mẹ'}
+                        helperText={(errors.code?.message as string) || 'Mã riêng site bạn'}
                       />
                     )}
                   />
                 </Grid2>
-                <Grid2 size={{ xs: 3 }}>
+                <Grid2 size={{ xs: 6, sm: 3 }}>
+                  <TextField
+                    fullWidth
+                    size='small'
+                    label='Code site mẹ (NCC)'
+                    value={selectedSupplierCode || ''}
+                    onChange={(e) => setSelectedSupplierCode(e.target.value || null)}
+                    placeholder={isEditMode ? 'Nhập code SP site mẹ' : 'Tự động từ SP đã chọn'}
+                    helperText={isEditMode ? 'Sửa nếu site mẹ đổi code' : 'Code dùng để mua hàng từ site mẹ'}
+                    sx={{ '& input': { fontSize: '13px' } }}
+                  />
+                </Grid2>
+                <Grid2 size={{ xs: 6, sm: 3 }}>
                   <Controller
                     name='status'
                     control={control}
@@ -710,8 +722,8 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
                         cost: String((parseInt(p.key) || 0) * parentCostPerDay)
                       })))
                       setSyncStatus('done')
-                    } else if (selectedProduct?.supplier_prices) {
-                      const sp = selectedProduct.supplier_prices
+                    } else if (selectedProduct?.provider_prices) {
+                      const sp = selectedProduct.provider_prices
                       setPriceFields(prev => prev.map(p => ({
                         ...p,
                         cost: String(sp[p.key] || p.cost || '')
