@@ -572,37 +572,32 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
                 </Grid2>
               </Grid2>
 
-              {/* Hàng 2: Code site con + Code site mẹ */}
-              <Grid2 container spacing={1.5} sx={{ mt: 0.5 }}>
-                <Grid2 size={{ xs: 12, sm: 6 }}>
-                  <Controller
-                    name='code'
-                    control={control}
-                    render={({ field }) => (
-                      <CustomTextField
-                        {...field}
-                        fullWidth
-                        label='Code sản phẩm (site bạn)'
-                        placeholder='Để trống sẽ tự tạo'
-                        error={!!errors.code}
-                        helperText={serviceId ? `ID: ${serviceId}` : 'Mã riêng trên site của bạn'}
-                      />
-                    )}
-                  />
-                </Grid2>
-                <Grid2 size={{ xs: 12, sm: 6 }}>
-                  <TextField
-                    fullWidth
-                    size='small'
-                    label='Code sản phẩm (site mẹ)'
-                    value={selectedSupplierCode || ''}
-                    onChange={(e) => setSelectedSupplierCode(e.target.value || null)}
-                    placeholder={isEditMode ? 'Nhập code SP trên site mẹ' : 'Tự động khi chọn SP'}
-                    helperText={selectedSupplierId ? `ID trên site mẹ: ${selectedSupplierId}` : 'Dùng để mua hàng từ site mẹ'}
-                    sx={{ '& input': { fontSize: '13px', fontFamily: 'monospace' } }}
-                  />
-                </Grid2>
-              </Grid2>
+              {/* Hàng 2: Code site con + Code site mẹ — cùng 1 hàng, cùng style */}
+              <div style={{ display: 'flex', gap: 12, marginTop: 6 }}>
+                <Controller
+                  name='code'
+                  control={control}
+                  render={({ field }) => (
+                    <CustomTextField
+                      {...field}
+                      fullWidth
+                      label='Code sản phẩm (site bạn)'
+                      placeholder='Để trống sẽ tự tạo'
+                      error={!!errors.code}
+                      helperText={serviceId ? `ID: ${serviceId}` : 'Mã riêng trên site của bạn'}
+                    />
+                  )}
+                />
+                <CustomTextField
+                  fullWidth
+                  label='Code sản phẩm (site mẹ)'
+                  value={selectedSupplierCode || ''}
+                  onChange={(e: any) => setSelectedSupplierCode(e.target.value || null)}
+                  placeholder={isEditMode ? 'Nhập code SP trên site mẹ' : 'Tự động khi chọn SP'}
+                  helperText={selectedSupplierId ? `ID trên site mẹ: ${selectedSupplierId}` : 'Dùng để mua hàng từ site mẹ'}
+                  sx={{ '& input': { fontFamily: 'monospace' } }}
+                />
+              </div>
 
               {/* Chế độ giá — site con được chọn riêng */}
               {(selectedProduct || isEditMode) && (
@@ -820,22 +815,22 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
                                 <span style={{ fontSize: 11, fontWeight: 600, color: '#1e293b' }}>
                                   {isApplied ? (
                                     <>
-                                      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                                        <span>{sellPrice.toLocaleString('vi-VN')}đ</span>
-                                        <span style={{ fontSize: 9, color: '#64748b' }}>giảm</span>
-                                        <input type='number' value={discountTiers[tierIdx].discount}
-                                          onChange={e => setDiscountTiers(prev => prev.map((t, ti) => ti === tierIdx ? { ...t, discount: e.target.value } : t))}
-                                          style={{ width: 36, padding: '2px 4px', border: '1px solid #bbf7d0', borderRadius: 4, fontSize: 11, textAlign: 'center', fontWeight: 600, color: '#16a34a', background: '#f0fdf4' }}
-                                        />
-                                        <span style={{ fontSize: 9, color: '#64748b' }}>%</span>
-                                      </div>
+                                      <input type='number' value={sellPrice || ''}
+                                        onChange={e => {
+                                          const val = parseInt(e.target.value) || 0
+                                          const newDisc = sellBase > 0 ? Math.round((1 - val / sellBase) * 100) : 0
+                                          setDiscountTiers(prev => prev.map((t, ti) => ti === tierIdx ? { ...t, discount: String(Math.max(0, newDisc)) } : t))
+                                        }}
+                                        style={{ width: 80, padding: '4px 6px', border: '1px solid #e2e8f0', borderRadius: 4, fontSize: 12, fontWeight: 600, textAlign: 'right' }}
+                                      />
                                       <div style={{ fontSize: 10, color: '#94a3b8', fontWeight: 400 }}>
                                         Tổng: {(sellPrice * m.days).toLocaleString('vi-VN')}đ
+                                        {sellDisc > 0 && <span style={{ color: '#16a34a', marginLeft: 3 }}>(-{sellDisc}%)</span>}
                                       </div>
                                     </>
                                   ) : (
                                     <>
-                                      <span>{sellBase.toLocaleString('vi-VN')}đ/{unitLabel}</span>
+                                      <span>{sellBase.toLocaleString('vi-VN')}đ</span>
                                       <div style={{ fontSize: 10, color: '#94a3b8', fontWeight: 400 }}>
                                         Tổng: {(sellBase * m.days).toLocaleString('vi-VN')}đ
                                       </div>
@@ -844,11 +839,13 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
                                 </span>
                                 <span>
                                   <span style={{ fontSize: 11, fontWeight: 700, color: isLoss ? '#ef4444' : '#16a34a' }}>
-                                    {profit > 0 ? '+' : ''}{profit.toLocaleString('vi-VN')}đ/{unitLabel}
+                                    {profit > 0 ? '+' : ''}{profit.toLocaleString('vi-VN')}đ
                                   </span>
-                                  <div style={{ fontSize: 10, fontWeight: 600, color: isLoss ? '#ef4444' : '#16a34a' }}>
-                                    Tổng: {((profit) * m.days) > 0 ? '+' : ''}{(profit * m.days).toLocaleString('vi-VN')}đ
-                                  </div>
+                                  {m.cost > 0 && (
+                                    <div style={{ fontSize: 10, fontWeight: 600, color: isLoss ? '#ef4444' : '#16a34a' }}>
+                                      {profit >= 0 ? '+' : ''}{Math.round((profit / m.cost) * 100)}% so với gốc
+                                    </div>
+                                  )}
                                 </span>
                                 <span>
                                   {isFirst ? (
