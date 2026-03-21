@@ -813,11 +813,29 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
                                   </div>
                                 </span>
                                 <span style={{ fontSize: 11, fontWeight: 600, color: '#1e293b' }}>
-                                  <span>{sellPrice.toLocaleString('vi-VN')}đ/{unitLabel}</span>
-                                  {sellDisc > 0 && <span style={{ fontSize: 9, color: '#16a34a', marginLeft: 2 }}>(-{sellDisc}%)</span>}
-                                  <div style={{ fontSize: 10, color: '#94a3b8', fontWeight: 400 }}>
-                                    Tổng: {(sellPrice * m.days).toLocaleString('vi-VN')}đ
-                                  </div>
+                                  {isApplied ? (
+                                    <>
+                                      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                                        <span>{sellPrice.toLocaleString('vi-VN')}đ</span>
+                                        <span style={{ fontSize: 9, color: '#64748b' }}>giảm</span>
+                                        <input type='number' value={discountTiers[tierIdx].discount}
+                                          onChange={e => setDiscountTiers(prev => prev.map((t, ti) => ti === tierIdx ? { ...t, discount: e.target.value } : t))}
+                                          style={{ width: 36, padding: '2px 4px', border: '1px solid #bbf7d0', borderRadius: 4, fontSize: 11, textAlign: 'center', fontWeight: 600, color: '#16a34a', background: '#f0fdf4' }}
+                                        />
+                                        <span style={{ fontSize: 9, color: '#64748b' }}>%</span>
+                                      </div>
+                                      <div style={{ fontSize: 10, color: '#94a3b8', fontWeight: 400 }}>
+                                        Tổng: {(sellPrice * m.days).toLocaleString('vi-VN')}đ
+                                      </div>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <span>{sellBase.toLocaleString('vi-VN')}đ/{unitLabel}</span>
+                                      <div style={{ fontSize: 10, color: '#94a3b8', fontWeight: 400 }}>
+                                        Tổng: {(sellBase * m.days).toLocaleString('vi-VN')}đ
+                                      </div>
+                                    </>
+                                  )}
                                 </span>
                                 <span>
                                   <span style={{ fontSize: 11, fontWeight: 700, color: isLoss ? '#ef4444' : '#16a34a' }}>
