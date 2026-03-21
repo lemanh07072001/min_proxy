@@ -806,15 +806,26 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
                                   {m.days} {unitLabel}
                                 </span>
                                 <span style={{ fontSize: 11, color: '#6366f1' }}>
-                                  {m.cost.toLocaleString('vi-VN')}đ
+                                  <span>{m.cost.toLocaleString('vi-VN')}đ/{unitLabel}</span>
                                   {m.costDisc > 0 && <span style={{ fontSize: 9, color: '#94a3b8', marginLeft: 2 }}>(-{m.costDisc}%)</span>}
+                                  <div style={{ fontSize: 10, color: '#94a3b8', fontWeight: 400 }}>
+                                    Tổng: {(m.cost * m.days).toLocaleString('vi-VN')}đ
+                                  </div>
                                 </span>
                                 <span style={{ fontSize: 11, fontWeight: 600, color: '#1e293b' }}>
-                                  {sellPrice.toLocaleString('vi-VN')}đ
+                                  <span>{sellPrice.toLocaleString('vi-VN')}đ/{unitLabel}</span>
                                   {sellDisc > 0 && <span style={{ fontSize: 9, color: '#16a34a', marginLeft: 2 }}>(-{sellDisc}%)</span>}
+                                  <div style={{ fontSize: 10, color: '#94a3b8', fontWeight: 400 }}>
+                                    Tổng: {(sellPrice * m.days).toLocaleString('vi-VN')}đ
+                                  </div>
                                 </span>
-                                <span style={{ fontSize: 11, fontWeight: 700, color: isLoss ? '#ef4444' : '#16a34a' }}>
-                                  {profit > 0 ? '+' : ''}{profit.toLocaleString('vi-VN')}đ
+                                <span>
+                                  <span style={{ fontSize: 11, fontWeight: 700, color: isLoss ? '#ef4444' : '#16a34a' }}>
+                                    {profit > 0 ? '+' : ''}{profit.toLocaleString('vi-VN')}đ/{unitLabel}
+                                  </span>
+                                  <div style={{ fontSize: 10, fontWeight: 600, color: isLoss ? '#ef4444' : '#16a34a' }}>
+                                    Tổng: {((profit) * m.days) > 0 ? '+' : ''}{(profit * m.days).toLocaleString('vi-VN')}đ
+                                  </div>
                                 </span>
                                 <span>
                                   {isFirst ? (
