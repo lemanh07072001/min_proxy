@@ -14,8 +14,7 @@ import Typography from '@mui/material/Typography'
 import Chip from '@mui/material/Chip'
 import Switch from '@mui/material/Switch'
 import Tooltip from '@mui/material/Tooltip'
-import { Trash2, Plus, Pencil, X } from 'lucide-react'
-import { toast } from 'react-toastify'
+import { Trash2, Plus, Pencil, X, CheckCircle, AlertCircle } from 'lucide-react'
 
 import {
   useUserProviderPricing,
@@ -42,6 +41,8 @@ export default function ProviderPricingModal({ open, onClose, userId, userName }
   const [newMarkup, setNewMarkup] = useState('')
   const [newNote, setNewNote] = useState('')
 
+  const [inlineMsg, setInlineMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+
   // Editing inline
   const [editingId, setEditingId] = useState<number | null>(null)
   const [editMarkup, setEditMarkup] = useState('')
@@ -54,11 +55,17 @@ export default function ProviderPricingModal({ open, onClose, userId, userName }
       setNewProviderId('')
       setNewMarkup('')
       setNewNote('')
+      setInlineMsg(null)
     }
   }, [open])
 
   const items = data?.data || []
   const availableProviders = data?.available_providers || []
+
+  const showMsg = (type: 'success' | 'error', text: string) => {
+    setInlineMsg({ type, text })
+    setTimeout(() => setInlineMsg(null), 3000)
+  }
 
   const handleAdd = async () => {
     if (!newProviderId || !newMarkup) return
@@ -69,14 +76,14 @@ export default function ProviderPricingModal({ open, onClose, userId, userName }
         markup_percent: parseFloat(newMarkup),
         note: newNote || undefined
       })
-      toast.success('Đã thêm provider pricing')
+      showMsg('success', 'Đã thêm thành công')
       setIsAdding(false)
       setNewProviderId('')
       setNewMarkup('')
       setNewNote('')
       refetch()
     } catch (err: any) {
-      toast.error(err?.response?.data?.message || 'Lỗi thêm markup')
+      showMsg('error', err?.response?.data?.message || 'Lỗi, thử lại')
     }
   }
 
@@ -87,22 +94,22 @@ export default function ProviderPricingModal({ open, onClose, userId, userName }
         markup_percent: parseFloat(editMarkup),
         note: editNote || undefined
       })
-      toast.success('Đã cập nhật markup')
+      showMsg('success', 'Đã cập nhật')
       setEditingId(null)
       refetch()
     } catch (err: any) {
-      toast.error(err?.response?.data?.message || 'Lỗi cập nhật')
+      showMsg('error', err?.response?.data?.message || 'Lỗi cập nhật')
     }
   }
 
   const handleDelete = async (id: number) => {
-    if (!confirm('Xóa provider pricing này?')) return
+    if (!confirm('Xóa nhà cung cấp này?')) return
     try {
       await deleteMutation.mutateAsync(id)
-      toast.success('Đã xóa provider pricing')
+      showMsg('success', 'Đã xóa')
       refetch()
     } catch (err: any) {
-      toast.error(err?.response?.data?.message || 'Lỗi xóa')
+      showMsg('error', err?.response?.data?.message || 'Lỗi xóa')
     }
   }
 
@@ -112,10 +119,9 @@ export default function ProviderPricingModal({ open, onClose, userId, userName }
         id: item.id,
         is_enabled: !item.is_enabled
       })
-      toast.success(item.is_enabled ? 'Đã tắt' : 'Đã bật')
       refetch()
     } catch {
-      toast.error('Lỗi cập nhật')
+      showMsg('error', 'Lỗi cập nhật')
     }
   }
 
@@ -130,6 +136,21 @@ export default function ProviderPricingModal({ open, onClose, userId, userName }
       </DialogTitle>
 
       <DialogContent dividers sx={{ p: 2 }}>
+        {/* Inline feedback */}
+        {inlineMsg && (
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 6, padding: '8px 12px', borderRadius: 8, marginBottom: 8,
+            background: inlineMsg.type === 'success' ? '#f0fdf4' : '#fef2f2',
+            border: `1px solid ${inlineMsg.type === 'success' ? '#bbf7d0' : '#fecaca'}`,
+            color: inlineMsg.type === 'success' ? '#15803d' : '#dc2626',
+            fontSize: 13, fontWeight: 500,
+            animation: 'fadeIn 0.2s ease',
+          }}>
+            {inlineMsg.type === 'success' ? <CheckCircle size={15} /> : <AlertCircle size={15} />}
+            {inlineMsg.text}
+          </div>
+        )}
+
         {isLoading && <Typography color='text.secondary' sx={{ textAlign: 'center', py: 3 }}>Đang tải...</Typography>}
 
         {!isLoading && items.length === 0 && !isAdding && (
