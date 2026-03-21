@@ -450,8 +450,7 @@ export default function SiteSettingsForm() {
   const availableTabs = [
     { label: 'Thương hiệu', icon: <Palette size={16} /> },
     { label: 'Màu sắc', icon: <Palette size={16} /> },
-    { label: 'Hiển thị Google', icon: <Search size={16} /> },
-    { label: 'Nâng cao (tuỳ chọn)', icon: <Code size={16} /> },
+    { label: 'Google & Quảng bá', icon: <Search size={16} /> },
     { label: 'Hỗ trợ & Liên hệ', icon: <Headphones size={16} /> },
     { label: 'Thanh toán', icon: <CreditCard size={16} /> },
     ...(isChild ? [{ label: 'Nhà cung cấp', icon: <Truck size={16} /> }] : []),
@@ -498,10 +497,9 @@ export default function SiteSettingsForm() {
             <strong>Bắt đầu setup site:</strong> Điền lần lượt từ trái sang phải →
             <strong> Thương hiệu</strong> (tên + logo) →
             <strong> Màu sắc</strong> (chọn màu chủ đạo) →
-            <strong> Hiển thị Google</strong> (tiêu đề khi tìm kiếm) →
+            <strong> Google & Quảng bá</strong> (nội dung khi khách tìm kiếm) →
             <strong> Hỗ trợ & Liên hệ</strong> (Zalo, Telegram...) →
             <strong> Thanh toán</strong> (ngân hàng nhận tiền).
-            Tab "Nâng cao" có thể bỏ qua.
           </div>
         )}
 
@@ -1136,19 +1134,11 @@ export default function SiteSettingsForm() {
                   </div>
                 )
               })}
-            </div>
-          )}
 
-          {/* ═══════════════ Tab 3: Nâng cao ═══════════════ */}
-          {activeTab === 3 && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-              <Alert icon={<Info size={16} />} severity='warning' sx={{ fontSize: '13px', '& .MuiAlert-message': { fontSize: '13px' } }}>
-                Tab này <strong>không bắt buộc</strong>. Bỏ qua nếu bạn chưa cần — site vẫn hoạt động bình thường. Quay lại setup khi cần tracking hoặc kết nối Google.
-              </Alert>
-              {/* Google verification */}
-              <div>
-                <h6 style={sectionTitleSx}>Google Search Console</h6>
-                <p style={sectionDescSx}>Xác minh bạn là chủ site → mở khoá công cụ SEO: xem lượt tìm kiếm, request Google index lại, phát hiện lỗi crawl</p>
+              {/* ── Kết nối Google (gộp từ tab Nâng cao) ── */}
+              <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: 20 }}>
+                <h6 style={sectionTitleSx}>Kết nối Google <span style={{ fontWeight: 400, color: '#94a3b8', fontSize: '12px' }}>(tuỳ chọn — bỏ qua nếu chưa cần)</span></h6>
+                <p style={sectionDescSx}>Xác minh chủ site + cài tracking. Không ảnh hưởng hoạt động site nếu để trống.</p>
               </div>
               <TextField
                 size='small'
@@ -1265,8 +1255,8 @@ export default function SiteSettingsForm() {
             </div>
           )}
 
-          {/* ═══════════════ Tab 4: Hỗ trợ & Liên hệ ═══════════════ */}
-          {activeTab === 4 && (
+          {/* ═══════════════ Tab 3: Hỗ trợ & Liên hệ ═══════════════ */}
+          {activeTab === 3 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
 
               {/* ── Section 1: Thông tin liên hệ ── */}
@@ -1477,7 +1467,7 @@ export default function SiteSettingsForm() {
           )}
 
           {/* ═══════════════ Tab 5: Thanh toán ═══════════════ */}
-          {activeTab === 5 && (
+          {activeTab === 4 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
 
               {/* ── Section 1: Ngân hàng nhận tiền ── */}
@@ -1665,7 +1655,7 @@ export default function SiteSettingsForm() {
           )}
 
           {/* ═══════════════ Tab 6: Nhà cung cấp (only if isChild) ═══════════════ */}
-          {isChild && activeTab === 6 && (
+          {isChild && activeTab === 5 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
               <div>
                 <h6 style={sectionTitleSx}>Kết nối nhà cung cấp (site mẹ)</h6>
