@@ -49,7 +49,7 @@ export default function LayoutProvider({ children }: LayoutProviderProps) {
         pauseOnHover
         theme="light"
         limit={3}
-        style={{ zIndex: 1400 }}
+        style={{ zIndex: 99999 }}
       />
 
       {/* ScrollToTop được đặt ở đây để tránh re-render */}

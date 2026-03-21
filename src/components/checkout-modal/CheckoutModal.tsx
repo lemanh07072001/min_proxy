@@ -279,47 +279,65 @@ return pct > 0 ? Math.round(pct) : null
             <div className='checkout-section'>
               <label className='checkout-section-label'>
                 <Clock size={16} />
-                {timeUnit === 'month' ? 'SỐ THÁNG' : 'SỐ NGÀY'}
+                {timeUnit === 'month' ? 'CHỌN SỐ THÁNG' : 'CHỌN SỐ NGÀY'}
               </label>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <input
-                  type='number'
-                  min={1}
-                  max={365}
-                  value={customDuration}
-                  onChange={(e) => setCustomDuration(Math.max(1, parseInt(e.target.value) || 1))}
-                  style={{
-                    width: 80, padding: '8px 12px', borderRadius: 8,
-                    border: '1px solid #e2e8f0', fontSize: 14, textAlign: 'center'
-                  }}
-                />
-                <span style={{ fontSize: 13, color: '#64748b' }}>
-                  × {effectivePricePerUnit.toLocaleString('vi-VN')}đ/{timeUnit === 'month' ? 'tháng' : 'ngày'}
-                  = <strong style={{ color: '#0f172a' }}>{unitPrice.toLocaleString('vi-VN')}đ</strong>
-                </span>
-              </div>
 
-              {/* Discount badge */}
-              {discountPct > 0 && (
-                <div style={{ marginTop: 6, padding: '6px 10px', borderRadius: 8, background: '#f0fdf4', border: '1px solid #bbf7d0', fontSize: '12px' }}>
-                  <strong style={{ color: '#16a34a' }}>Giảm {discountPct}%</strong>
-                  <span style={{ color: '#64748b' }}> — đơn giá {pricePerUnit.toLocaleString('vi-VN')}đ → </span>
-                  <strong style={{ color: '#16a34a' }}>{effectivePricePerUnit.toLocaleString('vi-VN')}đ/{timeUnit === 'month' ? 'tháng' : 'ngày'}</strong>
-                  <span style={{ color: '#94a3b8', marginLeft: 6, textDecoration: 'line-through' }}>
-                    {fullPriceTotal.toLocaleString('vi-VN')}đ
-                  </span>
-                  <span style={{ color: '#16a34a', fontWeight: 600, marginLeft: 4 }}>
-                    tiết kiệm {(fullPriceTotal - unitPrice).toLocaleString('vi-VN')}đ
-                  </span>
+              {/* Mốc nhanh theo discount tiers */}
+              {discountTiers.length > 0 && (
+                <div className='perunit-tiers'>
+                  {/* Mốc 1 (không CK) */}
+                  {(() => {
+                    const unitLabel = timeUnit === 'month' ? 'tháng' : 'ngày'
+                    return <>
+                      <button type='button' className={`perunit-tier ${customDuration === 1 ? 'active' : ''}`} onClick={() => setCustomDuration(1)}>
+                        <span className='perunit-tier-top'><span className='perunit-tier-days'>1</span><span className='perunit-tier-unit'>{unitLabel}</span></span>
+                        <span className='perunit-tier-price'>{pricePerUnit.toLocaleString('vi-VN')}đ</span>
+                      </button>
+                      {discountTiers.filter(t => t.min && t.discount).map((tier, i) => {
+                        const minDays = parseInt(tier.min) || 1
+                        const disc = parseInt(tier.discount) || 0
+                        const tierPrice = Math.round(pricePerUnit * (1 - disc / 100))
+
+                        return (
+                          <button type='button' key={i} className={`perunit-tier ${customDuration === minDays ? 'active' : ''}`} onClick={() => setCustomDuration(minDays)}>
+                            <span className='perunit-tier-badge'>-{disc}%</span>
+                            <span className='perunit-tier-top'><span className='perunit-tier-days'>{minDays}</span><span className='perunit-tier-unit'>{unitLabel}</span></span>
+                            <span className='perunit-tier-price'>{tierPrice.toLocaleString('vi-VN')}đ</span>
+                          </button>
+                        )
+                      })}
+                    </>
+                  })()}
                 </div>
               )}
 
-              {/* Bảng chiết khấu tham khảo */}
-              {discountTiers.length > 0 && !discountPct && (
-                <div style={{ marginTop: 6, fontSize: '11.5px', color: '#64748b' }}>
-                  Mua nhiều giảm giá: {discountTiers.filter(t => t.min && t.discount).map((t, i) => (
-                    <span key={i}>{i > 0 ? ', ' : ''}<strong>{t.min}{t.max ? `-${t.max}` : '+'}</strong> {timeUnit === 'month' ? 'tháng' : 'ngày'} giảm <strong>{t.discount}%</strong></span>
-                  ))}
+              {/* Input tự nhập + tổng giá */}
+              <div className='perunit-input-row'>
+                <span className='perunit-input-label'>Hoặc nhập:</span>
+                <div className='perunit-input-wrap'>
+                  <input
+                    type='number'
+                    min={1}
+                    max={365}
+                    value={customDuration}
+                    onChange={(e) => setCustomDuration(Math.max(1, parseInt(e.target.value) || 1))}
+                    className='perunit-input'
+                  />
+                  <span className='perunit-input-unit'>{timeUnit === 'month' ? 'tháng' : 'ngày'}</span>
+                </div>
+                <span className='perunit-calc'>
+                  = <strong>{unitPrice.toLocaleString('vi-VN')}đ</strong>
+                </span>
+              </div>
+
+              {/* Discount info */}
+              {discountPct > 0 && (
+                <div className='perunit-saving'>
+                  <span className='perunit-saving-pct'>-{discountPct}%</span>
+                  <span className='perunit-saving-detail'>
+                    <s>{fullPriceTotal.toLocaleString('vi-VN')}đ</s>
+                    {' '}tiết kiệm <strong>{(fullPriceTotal - unitPrice).toLocaleString('vi-VN')}đ</strong>
+                  </span>
                 </div>
               )}
             </div>

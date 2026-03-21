@@ -12,9 +12,7 @@ import {
   MenuItem,
   Chip,
   CircularProgress,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
+
   Switch,
   FormControlLabel,
   Typography,
@@ -117,6 +115,13 @@ return true
   metadata_json: yup.string().nullable(),
 })
 
+const COUNTRY_NAMES: Record<string, string> = {
+  vi: 'Việt Nam', kr: 'Hàn Quốc', us: 'Mỹ', jp: 'Nhật Bản', sg: 'Singapore',
+  th: 'Thái Lan', id: 'Indonesia', my: 'Malaysia', ph: 'Philippines', in: 'Ấn Độ',
+  cn: 'Trung Quốc', tw: 'Đài Loan', hk: 'Hồng Kông', de: 'Đức', gb: 'Anh',
+  fr: 'Pháp', au: 'Úc', ca: 'Canada', br: 'Brazil', ru: 'Nga',
+}
+
 interface ServiceFormModalProps {
   open: boolean
   onClose: () => void
@@ -148,7 +153,7 @@ export default function ServiceFormModal({ open, onClose, serviceId, initialData
   const [timeUnit, setTimeUnit] = useState<'day' | 'month'>('day')
   const [pricePerUnit, setPricePerUnit] = useState('')
   const [costPerUnit, setCostPerUnit] = useState('')
-  const [techExpanded, setTechExpanded] = useState(false)
+
   const [formErrors, setFormErrors] = useState<string[]>([])
   const [formSuccess, setFormSuccess] = useState('')
 
@@ -163,6 +168,7 @@ export default function ServiceFormModal({ open, onClose, serviceId, initialData
   const [purchaseOptions, setPurchaseOptions] = useState<PurchaseOption[]>([])
   const [allowCustomAuth, setAllowCustomAuth] = useState(false)
   const [discountTiers, setDiscountTiers] = useState<Array<{ min: string; max: string; discount: string }>>([])
+  const [costDiscountTiers, setCostDiscountTiers] = useState<Array<{ min: string; max: string; discount: string }>>([])
 
 
   // Derive dynamic options from existing service types
@@ -185,14 +191,6 @@ export default function ServiceFormModal({ open, onClose, serviceId, initialData
       label: protocol.toUpperCase()
     }))
   }, [serviceTypes])
-
-  const COUNTRY_NAMES: Record<string, string> = {
-    vi: 'Việt Nam', kr: 'Hàn Quốc', us: 'Mỹ', jp: 'Nhật Bản', sg: 'Singapore',
-    th: 'Thái Lan', id: 'Indonesia', my: 'Malaysia', ph: 'Philippines', in: 'Ấn Độ',
-    cn: 'Trung Quốc', tw: 'Đài Loan', hk: 'Hồng Kông', de: 'Đức', gb: 'Anh',
-    fr: 'Pháp', au: 'Úc', ca: 'Canada', br: 'Brazil', ru: 'Nga',
-  }
-
 
 
   const ipVersionOptions = useMemo(() => {
@@ -279,8 +277,6 @@ return { values: {}, errors: formattedErrors }
     }
   })
 
-  const watchedStatus = watch('status')
-
   // Load service data when editing
   useEffect(() => {
     if (serviceData && isEditMode) {
@@ -366,6 +362,7 @@ return { values: {}, errors: formattedErrors }
       const meta = serviceData.metadata || {}
       setAllowCustomAuth(!!meta.allow_custom_auth)
       setDiscountTiers(meta.discount_tiers || [])
+      setCostDiscountTiers(meta.cost_discount_tiers || [])
       if (meta.custom_fields && Array.isArray(meta.custom_fields)) {
         setPurchaseOptions(meta.custom_fields.map((f: any) => ({
           param: f.param || '',
@@ -420,7 +417,7 @@ return { values: {}, errors: formattedErrors }
       setTimeUnit('day')
       setPricePerUnit('')
       setCostPerUnit('')
-      setTechExpanded(false)
+
       setFormErrors([])
     }
   }, [open, isEditMode, reset])
@@ -471,6 +468,7 @@ return { values: {}, errors: formattedErrors }
       ...(metadata || {}),
       allow_custom_auth: allowCustomAuth,
       discount_tiers: pricingMode === 'per_unit' ? discountTiers.filter(t => t.min && t.discount) : undefined,
+      cost_discount_tiers: pricingMode === 'per_unit' ? costDiscountTiers.filter(t => t.min && t.discount) : undefined,
     }
 
     const submitData: any = {
@@ -504,26 +502,16 @@ return { values: {}, errors: formattedErrors }
         const res = error?.response?.data
         const errors: string[] = []
 
-        // Fields nằm trong Accordion "Cấu hình kỹ thuật"
-        const techFields = ['provider_id', 'api_provider', 'cost_price', 'code', 'body_api']
-
         // Parse validation errors object từ Laravel → set lỗi trực tiếp vào field
         if (res?.errors && typeof res.errors === 'object') {
-          let hasTechError = false
-
           Object.entries(res.errors).forEach(([field, fieldErrors]: [string, any]) => {
             const msg = Array.isArray(fieldErrors) ? fieldErrors[0] : fieldErrors
-
-            // Map BE field name → FE field name
             const feField = field === 'api_body' ? 'body_api' : field
 
             setError(feField as any, { type: 'server', message: msg })
             errors.push(msg)
-            if (techFields.includes(feField)) hasTechError = true
           })
 
-          // Auto mở accordion nếu lỗi nằm trong đó
-          if (hasTechError) setTechExpanded(true)
         } else if (res?.message) {
           errors.push(res.message)
         } else {
@@ -541,11 +529,6 @@ return { values: {}, errors: formattedErrors }
   const onError = (validationErrors: any) => {
     console.error('Form validation errors:', validationErrors)
 
-    // Auto mở accordion nếu lỗi ở tech fields
-    const techFields = ['provider_id', 'api_provider', 'cost_price', 'code', 'body_api']
-
-    if (Object.keys(validationErrors).some(f => techFields.includes(f))) setTechExpanded(true)
-
     const messages = Object.values(validationErrors)
       .map((error: any) => error?.message)
       .filter(Boolean) as string[]
@@ -561,9 +544,22 @@ return { values: {}, errors: formattedErrors }
   const staticPlaceholder = 'Proxy IPv4 dân cư Việt Nam, tốc độ cao, uptime 99.5%. Hỗ trợ HTTP/SOCKS5. Phù hợp cho SEO, social media marketing, và scraping. Băng thông không giới hạn.'
   const rotatingPlaceholder = 'Proxy xoay tự động mỗi 5-30 phút, pool 10,000+ IP Việt Nam. Phù hợp cho crawl data, multi-account, và automation. Hỗ trợ sticky session theo thời gian.'
 
-  const watchedType = watch('type')
-  const watchedRotationType = watch('rotation_type')
-  const watchedTag = watch('tag')
+  // Gộp tất cả watch vào 1 lần — tránh re-render nhiều lần
+  const previewFields = ['name', 'type', 'tag', 'status', 'rotation_type', 'protocols', 'auth_type', 'bandwidth',
+    'rotation_interval', 'pool_size', 'request_limit', 'concurrent_connections', 'note', 'code',
+    'country', 'ip_version', 'proxy_type', 'is_purchasable'] as const
+  const previewData = watch(previewFields as any)
+  // Map array back to object for preview usage
+  const previewObj = useMemo(() => {
+    const obj: any = {}
+    previewFields.forEach((f, i) => { obj[f] = (previewData as any)?.[i] })
+    return obj
+  }, [previewData])
+
+  const watchedType = previewObj.type
+  const watchedRotationType = previewObj.rotation_type
+  const watchedTag = previewObj.tag
+  const watchedStatus = previewObj.status
 
   const { data: countries } = useCountries()
 
@@ -573,9 +569,6 @@ return { values: {}, errors: formattedErrors }
 
     setValue('tag', updated.join(', '))
   }
-
-  // Preview data
-  const previewData = watch()
   const notePlaceholder = watchedType === '1' ? rotatingPlaceholder : staticPlaceholder
 
   return (
@@ -711,6 +704,23 @@ return { values: {}, errors: formattedErrors }
                   <span style={{ fontSize: '13px', fontWeight: 700, color: '#1e293b' }}>Thông tin cơ bản</span>
                 </div>
               <Grid2 container spacing={1}>
+                <Grid2 size={{ xs: 6, sm: 3 }}>
+                  <Controller
+                    name='provider_id'
+                    control={control}
+                    render={({ field }) => (
+                      <CustomTextField {...field} fullWidth select label='Nhà cung cấp' disabled={loadingProviders}>
+                        <MenuItem value=''><em>{loadingProviders ? '...' : '—'}</em></MenuItem>
+                        {providers?.map((provider: any) => (
+                          <MenuItem key={provider.id} value={provider.id}>
+                            {provider.provider_code ? `[${provider.provider_code}] ` : ''}{provider.title || provider.name}
+                          </MenuItem>
+                        ))}
+                      </CustomTextField>
+                    )}
+                  />
+                </Grid2>
+
                 <Grid2 size={{ xs: 12, sm: 3 }}>
                   <Controller
                     name='name'
@@ -997,7 +1007,7 @@ return <Chip key={val} label={p?.label || val} size='small' />
                 </Grid2>
 
                 {/* User:Pass mode — cho admin chọn + preview */}
-                {(watch('auth_type') === 'userpass' || watch('auth_type') === 'both') && (
+                {(previewObj.auth_type === 'userpass' || previewObj.auth_type === 'both') && (
                   <Grid2 size={{ xs: 12 }}>
                     <div style={{ border: '1px solid #e2e8f0', borderRadius: 10, padding: '12px 14px', background: '#fafbfc' }}>
                     <div style={{ fontSize: '12px', fontWeight: 700, color: '#1e293b', marginBottom: 8 }}>User:Pass cho khách hàng</div>
@@ -1351,8 +1361,8 @@ return <Chip key={val} label={p?.label || val} size='small' />
                       <div style={{ border: '1px solid #e2e8f0', borderRadius: 10, padding: '12px 14px', background: '#fafbfc' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                           <div>
-                            <div style={{ fontSize: '13px', fontWeight: 700, color: '#1e293b' }}>Chiết khấu theo số {timeUnit === 'month' ? 'tháng' : 'ngày'}</div>
-                            <div style={{ fontSize: '11px', color: '#94a3b8' }}>Khách mua càng nhiều ngày → giảm giá càng sâu. Không bắt buộc.</div>
+                            <div style={{ fontSize: '13px', fontWeight: 700, color: '#1e293b' }}>Chiết khấu giá BÁN theo số {timeUnit === 'month' ? 'tháng' : 'ngày'}</div>
+                            <div style={{ fontSize: '11px', color: '#94a3b8', lineHeight: 1.5 }}>Giảm giá bán cho <strong>khách thường + site con</strong> khi mua nhiều {timeUnit === 'month' ? 'tháng' : 'ngày'}. Không áp cho đại lý.{parseInt(pricePerUnit) > 0 && <><br/>VD: Giá bán {parseInt(pricePerUnit).toLocaleString('vi-VN')}đ, giảm 10% → khách trả {Math.round(parseInt(pricePerUnit) * 0.9).toLocaleString('vi-VN')}đ/{timeUnit === 'month' ? 'tháng' : 'ngày'}.</>}</div>
                           </div>
                           <Button
                             size='small' variant='outlined'
@@ -1365,17 +1375,17 @@ return <Chip key={val} label={p?.label || val} size='small' />
 
                         {discountTiers.length === 0 && (
                           <div style={{ fontSize: '12px', color: '#94a3b8', textAlign: 'center', padding: '8px 0' }}>
-                            Chưa có chiết khấu — khách trả full đơn giá bất kể số {timeUnit === 'month' ? 'tháng' : 'ngày'}.
+                            Chưa có chiết khấu — khách thường trả full đơn giá bán bất kể số {timeUnit === 'month' ? 'tháng' : 'ngày'}.
                           </div>
                         )}
 
                         {discountTiers.length > 0 && (
                           <div style={{ border: '1px solid #e2e8f0', borderRadius: 8, overflow: 'hidden' }}>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr 60px', background: '#f1f5f9', padding: '6px 10px', fontSize: '11px', fontWeight: 600, color: '#64748b' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1.2fr 40px', gap: '6px', background: '#f1f5f9', padding: '6px 10px', fontSize: '11px', fontWeight: 600, color: '#64748b' }}>
                               <span>Từ ({timeUnit === 'month' ? 'tháng' : 'ngày'})</span>
                               <span>Đến ({timeUnit === 'month' ? 'tháng' : 'ngày'})</span>
-                              <span>Chiết khấu (%)</span>
-                              <span>Giá sau CK</span>
+                              <span>Giảm (%)</span>
+                              <span>Giá bán sau CK</span>
                               <span></span>
                             </div>
                             {discountTiers.map((tier, idx) => {
@@ -1384,7 +1394,7 @@ return <Chip key={val} label={p?.label || val} size='small' />
                               const discountedPrice = basePrice > 0 && disc > 0 ? Math.round(basePrice * (1 - disc / 100)) : basePrice
 
                               return (
-                                <div key={idx} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr 60px', alignItems: 'center', padding: '6px 10px', borderTop: '1px solid #f1f5f9' }}>
+                                <div key={idx} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1.2fr 40px', gap: '6px', alignItems: 'center', padding: '6px 10px', borderTop: '1px solid #f1f5f9' }}>
                                   <CustomTextField size='small' type='number' placeholder='VD: 5' value={tier.min}
                                     onChange={(e: any) => setDiscountTiers(prev => prev.map((t, i) => i === idx ? { ...t, min: e.target.value } : t))}
                                     sx={{ '& input': { fontSize: '12px', padding: '5px 8px' } }}
@@ -1429,6 +1439,72 @@ return <Chip key={val} label={p?.label || val} size='small' />
                     </Grid2>
                   )}
 
+                  {/* Chiết khấu giá GỐC NCC theo khoảng ngày */}
+                  {pricingMode === 'per_unit' && parseInt(costPerUnit) > 0 && (
+                    <Grid2 size={{ xs: 12 }}>
+                      <div style={{ border: '1px solid #fde68a', borderRadius: 10, padding: '12px 14px', background: '#fffbeb' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                          <div>
+                            <div style={{ fontSize: '13px', fontWeight: 700, color: '#92400e' }}>Chiết khấu giá GỐC (NCC) theo số {timeUnit === 'month' ? 'tháng' : 'ngày'}</div>
+                            <div style={{ fontSize: '11px', color: '#b45309', lineHeight: 1.5 }}>Chỉ áp cho <strong>đại lý (reseller)</strong>. Nhập chính sách giá từ NCC — giá vốn giảm khi mua nhiều {timeUnit === 'month' ? 'tháng' : 'ngày'}.{parseInt(costPerUnit) > 0 && <><br/>VD: Gốc {parseInt(costPerUnit).toLocaleString('vi-VN')}đ, giảm 20% → vốn {Math.round(parseInt(costPerUnit) * 0.8).toLocaleString('vi-VN')}đ, đại lý markup 15% → trả {Math.round(parseInt(costPerUnit) * 0.8 * 1.15).toLocaleString('vi-VN')}đ/{timeUnit === 'month' ? 'tháng' : 'ngày'}.</>}</div>
+                          </div>
+                          <Button
+                            size='small' variant='outlined' color='warning'
+                            onClick={() => setCostDiscountTiers(prev => [...prev, { min: '', max: '', discount: '' }])}
+                            sx={{ fontSize: '11px', textTransform: 'none' }}
+                          >
+                            + Thêm mức
+                          </Button>
+                        </div>
+
+                        {costDiscountTiers.length === 0 && (
+                          <div style={{ fontSize: '12px', color: '#b45309', textAlign: 'center', padding: '8px 0' }}>
+                            Chưa có chiết khấu NCC — đại lý mua với giá gốc cố định ({parseInt(costPerUnit) > 0 ? `${parseInt(costPerUnit).toLocaleString('vi-VN')}đ` : '...'} × markup%) bất kể số {timeUnit === 'month' ? 'tháng' : 'ngày'}.
+                          </div>
+                        )}
+
+                        {costDiscountTiers.length > 0 && (
+                          <div style={{ border: '1px solid #fde68a', borderRadius: 8, overflow: 'hidden' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1.2fr 40px', gap: '6px', background: '#fef3c7', padding: '6px 10px', fontSize: '11px', fontWeight: 600, color: '#92400e' }}>
+                              <span>Từ ({timeUnit === 'month' ? 'tháng' : 'ngày'})</span>
+                              <span>Đến ({timeUnit === 'month' ? 'tháng' : 'ngày'})</span>
+                              <span>Giảm (%)</span>
+                              <span>Giá gốc sau CK</span>
+                              <span></span>
+                            </div>
+                            {costDiscountTiers.map((tier, idx) => {
+                              const baseCost = parseInt(costPerUnit) || 0
+                              const disc = parseInt(tier.discount) || 0
+                              const discountedCost = baseCost > 0 && disc > 0 ? Math.round(baseCost * (1 - disc / 100)) : baseCost
+
+                              return (
+                                <div key={idx} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1.2fr 40px', gap: '6px', alignItems: 'center', padding: '6px 10px', borderTop: '1px solid #fef3c7' }}>
+                                  <CustomTextField size='small' type='number' placeholder='VD: 5' value={tier.min}
+                                    onChange={(e: any) => setCostDiscountTiers(prev => prev.map((t, i) => i === idx ? { ...t, min: e.target.value } : t))}
+                                    sx={{ '& input': { fontSize: '12px', padding: '5px 8px' } }}
+                                  />
+                                  <CustomTextField size='small' type='number' placeholder='VD: 9 (trống = ∞)' value={tier.max}
+                                    onChange={(e: any) => setCostDiscountTiers(prev => prev.map((t, i) => i === idx ? { ...t, max: e.target.value } : t))}
+                                    sx={{ '& input': { fontSize: '12px', padding: '5px 8px' } }}
+                                  />
+                                  <CustomTextField size='small' type='number' placeholder='VD: 10' value={tier.discount}
+                                    onChange={(e: any) => setCostDiscountTiers(prev => prev.map((t, i) => i === idx ? { ...t, discount: e.target.value } : t))}
+                                    sx={{ '& input': { fontSize: '12px', padding: '5px 8px' } }}
+                                  />
+                                  <span style={{ fontSize: '12px', fontWeight: 600, color: disc > 0 ? '#d97706' : '#94a3b8' }}>
+                                    {baseCost > 0 && disc > 0 ? `${discountedCost.toLocaleString('vi-VN')}đ/${timeUnit === 'month' ? 'th' : 'ng'}` : '—'}
+                                  </span>
+                                  <button type='button' onClick={() => setCostDiscountTiers(prev => prev.filter((_, i) => i !== idx))}
+                                    style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: 14 }}>✕</button>
+                                </div>
+                              )
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    </Grid2>
+                  )}
+
                   {/* Khi per_unit: hiện mốc giá cũ đã lưu (read-only) */}
                   {pricingMode === 'per_unit' && priceFields.filter(f => f.key && f.value).length > 0 && (
                     <Grid2 size={{ xs: 12 }}>
@@ -1462,96 +1538,59 @@ return <Chip key={val} label={p?.label || val} size='small' />
                 </Grid2>
               </div>
 
-              {/* ========== Section 3: Cấu hình kỹ thuật (collapsed) ========== */}
-              <Accordion
-                expanded={techExpanded}
-                onChange={() => setTechExpanded(!techExpanded)}
-                sx={{
-                  border: '1px solid #e2e8f0',
-                  borderRadius: '8px !important',
-                  boxShadow: 'none',
-                  '&:before': { display: 'none' },
-                  mb: 2
-                }}
-              >
-                <AccordionSummary
-                  expandIcon={<ChevronDown size={18} />}
-                  sx={{
-                    backgroundColor: '#f8fafc',
-                    borderRadius: '8px',
-                    minHeight: '44px !important',
-                    '& .MuiAccordionSummary-content': { margin: '8px 0 !important' }
-                  }}
-                >
-                  <Typography variant='subtitle1' fontWeight={700} color='#475569'>
-                    Cấu hình kỹ thuật
-                  </Typography>
-                  <Typography variant='caption' sx={{ ml: 1, color: '#94a3b8', alignSelf: 'center' }}>
-                    (dành cho developer)
-                  </Typography>
-                </AccordionSummary>
-                <AccordionDetails sx={{ pt: 1.5 }}>
-                  <Grid2 container spacing={1}>
-                    <Grid2 size={{ xs: 6, sm: 4 }}>
-                      <Controller
-                        name='provider_id'
-                        control={control}
-                        render={({ field }) => (
-                          <CustomTextField {...field} fullWidth select label='Nhà cung cấp' disabled={loadingProviders}>
-                            <MenuItem value=''><em>{loadingProviders ? '...' : '—'}</em></MenuItem>
-                            {providers?.map((provider: any) => (
-                              <MenuItem key={provider.id} value={provider.id}>{provider.title || provider.name}</MenuItem>
-                            ))}
-                          </CustomTextField>
-                        )}
-                      />
-                    </Grid2>
-
-                    <Grid2 size={{ xs: 6, sm: 4 }}>
-                      <Controller
-                        name='api_provider'
-                        control={control}
-                        render={({ field }) => (
-                          <CustomTextField {...field} fullWidth label='API Endpoint' placeholder='URL đối tác' />
-                        )}
-                      />
-                    </Grid2>
-
-                    <Grid2 size={{ xs: 12 }}>
-                      <Controller
-                        name='body_api'
-                        control={control}
-                        render={({ field }) => (
-                          <CustomTextField
-                            {...field}
-                            rows={3}
-                            fullWidth
-                            multiline
-                            label='Body API (JSON)'
-                            error={!!errors.body_api}
-                            helperText={errors.body_api?.message}
-                          />
-                        )}
-                      />
-                    </Grid2>
-
-                    <Grid2 size={{ xs: 12 }}>
-                      <div style={{ display: 'flex', gap: '8px' }}>
-                        <Button
-                          onClick={() => setIsMultiInputModalOpen(true)}
-                          variant='contained'
-                          color='secondary'
-                          size='small'
-                          className='text-white'
-                          startIcon={<Plus size={14} />}
-                        >
-                          Thêm nhiều trường
-                        </Button>
-                      </div>
-                    </Grid2>
+              {/* ========== Section 3: Cấu hình API ========== */}
+              <div style={{ background: '#fafbfc', borderRadius: '10px', padding: '14px 16px', marginBottom: '14px', border: '1px solid #f1f5f9' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                  <div style={{ width: '26px', height: '26px', borderRadius: '7px', background: '#f0fdf4', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Globe size={13} color='#16a34a' />
+                  </div>
+                  <span style={{ fontSize: '13px', fontWeight: 700, color: '#1e293b' }}>Cấu hình API</span>
+                </div>
+                <Grid2 container spacing={1}>
+                  <Grid2 size={{ xs: 6, sm: 4 }}>
+                    <Controller
+                      name='api_provider'
+                      control={control}
+                      render={({ field }) => (
+                        <CustomTextField {...field} fullWidth label='API Endpoint' placeholder='URL đối tác' />
+                      )}
+                    />
                   </Grid2>
-                </AccordionDetails>
-              </Accordion>
+
+                  <Grid2 size={{ xs: 12 }}>
+                    <Controller
+                      name='body_api'
+                      control={control}
+                      render={({ field }) => (
+                        <CustomTextField
+                          {...field}
+                          rows={3}
+                          fullWidth
+                          multiline
+                          label='Body API (JSON)'
+                          error={!!errors.body_api}
+                          helperText={errors.body_api?.message}
+                        />
+                      )}
+                    />
+                  </Grid2>
+
+                  <Grid2 size={{ xs: 12 }}>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <Button
+                        onClick={() => setIsMultiInputModalOpen(true)}
+                        variant='contained'
+                        color='secondary'
+                        size='small'
+                        className='text-white'
+                        startIcon={<Plus size={14} />}
+                      >
+                        Thêm nhiều trường
+                      </Button>
+                    </div>
+                  </Grid2>
+                </Grid2>
+              </div>
             </form>
           )}
           </Box>
@@ -1571,23 +1610,23 @@ return <Chip key={val} label={p?.label || val} size='small' />
                 const convertAuthType = (t: string) => { switch (t) { case 'userpass': return 'User:Pass'; case 'ip_whitelist': return 'IP Whitelist'; case 'both': return 'User:Pass + IP'; default: return t || '' } }
                 const validPrices = priceFields.filter((f: any) => f.key && f.value && parseInt(f.value, 10) > 0)
                 const firstPrice = validPrices.length > 0 ? parseInt(validPrices[0].value, 10) : 0
-                const isAvailable = previewData.is_purchasable !== false
+                const isAvailable = previewObj.is_purchasable !== false
 
                 // Render spec feature rows (dùng chung cả 2 loại card)
                 const specFeatureRows = [
-                  previewData.auth_type && { label: 'Xác thực', value: convertAuthType(previewData.auth_type) + ((previewData.auth_type === 'userpass' || previewData.auth_type === 'both') ? (allowCustomAuth ? ' (Tự nhập)' : ' (Random)') : ''), icon: Shield, color: 'var(--primary-hover, #f97316)' },
-                  previewData.bandwidth && { label: 'Băng thông', value: previewData.bandwidth === 'unlimited' ? 'Không giới hạn' : previewData.bandwidth, icon: Wifi, color: '#3b82f6' },
-                  watchedType === '1' && previewData.rotation_type && { label: 'Kiểu xoay', value: previewData.rotation_type === 'per_request' ? 'Per request' : previewData.rotation_type === 'sticky' ? 'Sticky session' : previewData.rotation_type === 'time_based' ? 'Time-based' : previewData.rotation_type, icon: RefreshCw, color: '#8b5cf6' },
-                  watchedType === '1' && previewData.rotation_interval && { label: 'Thời gian xoay IP', value: previewData.rotation_interval, icon: Clock, color: '#f59e0b' },
-                  watchedType === '1' && previewData.pool_size && { label: 'Pool size', value: previewData.pool_size, icon: Globe, color: '#06b6d4' },
-                  previewData.request_limit && { label: 'Giới hạn request', value: previewData.request_limit, icon: Zap, color: '#22c55e' },
-                  previewData.concurrent_connections && { label: 'Kết nối đồng thời', value: previewData.concurrent_connections, icon: Users, color: '#ef4444' },
+                  previewObj.auth_type && { label: 'Xác thực', value: convertAuthType(previewObj.auth_type) + ((previewObj.auth_type === 'userpass' || previewObj.auth_type === 'both') ? (allowCustomAuth ? ' (Tự nhập)' : ' (Random)') : ''), icon: Shield, color: 'var(--primary-hover, #f97316)' },
+                  previewObj.bandwidth && { label: 'Băng thông', value: previewObj.bandwidth === 'unlimited' ? 'Không giới hạn' : previewObj.bandwidth, icon: Wifi, color: '#3b82f6' },
+                  watchedType === '1' && previewObj.rotation_type && { label: 'Kiểu xoay', value: previewObj.rotation_type === 'per_request' ? 'Per request' : previewObj.rotation_type === 'sticky' ? 'Sticky session' : previewObj.rotation_type === 'time_based' ? 'Time-based' : previewObj.rotation_type, icon: RefreshCw, color: '#8b5cf6' },
+                  watchedType === '1' && previewObj.rotation_interval && { label: 'Thời gian xoay IP', value: previewObj.rotation_interval, icon: Clock, color: '#f59e0b' },
+                  watchedType === '1' && previewObj.pool_size && { label: 'Pool size', value: previewObj.pool_size, icon: Globe, color: '#06b6d4' },
+                  previewObj.request_limit && { label: 'Giới hạn request', value: previewObj.request_limit, icon: Zap, color: '#22c55e' },
+                  previewObj.concurrent_connections && { label: 'Kết nối đồng thời', value: previewObj.concurrent_connections, icon: Users, color: '#ef4444' },
                 ].filter(Boolean)
 
                 const hasSpecs = specFeatureRows.length > 0
 
                 // Render tags
-                const tagElements = previewData.tag ? previewData.tag.split(',').map((t: string) => t.trim()).filter(Boolean) : []
+                const tagElements = previewObj.tag ? previewObj.tag.split(',').map((t: string) => t.trim()).filter(Boolean) : []
 
                 const visibleTagEls = tagElements.filter((tag: string) => { const cfg = getTagStyle(tag);
 
@@ -1610,8 +1649,8 @@ return <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap:
 
                 // Note preview (đoạn text ngắn dưới title — giống ProxyCard/PlanCard)
                 const renderNotePreview = () => {
-                  if (!previewData.note || previewData.note === '<p></p>') return null
-                  const text = previewData.note.replace(/<[^>]+>/g, '').trim()
+                  if (!previewObj.note || previewObj.note === '<p></p>') return null
+                  const text = previewObj.note.replace(/<[^>]+>/g, '').trim()
 
                   if (!text) return null
                   const preview = text.length > 80 ? text.substring(0, 80) + '...' : text
@@ -1656,7 +1695,7 @@ return <p style={{ fontSize: '13px', color: '#64748b', margin: '0 0 8px', lineHe
                         {/* Header: title + tags */}
                         <div style={{ marginBottom: '12px', paddingBottom: '10px', borderBottom: '1px solid #f1f5f9', paddingTop: '4px' }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
-                            <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#1e293b', margin: 0, textAlign: 'left', flex: 1 }}>{previewData.name || 'Tên sản phẩm'} <span style={{ fontFamily: 'monospace', fontSize: '11px', fontWeight: 500, color: '#94a3b8' }}>{serviceId ? `${serviceId}#` : ''}{previewData.code || ''}</span></h3>
+                            <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#1e293b', margin: 0, textAlign: 'left', flex: 1 }}>{previewObj.name || 'Tên sản phẩm'} <span style={{ fontFamily: 'monospace', fontSize: '11px', fontWeight: 500, color: '#94a3b8' }}>{serviceId ? `${serviceId}#` : ''}{previewObj.code || ''}</span></h3>
                             {renderInlineTags()}
                           </div>
                         </div>
@@ -1667,22 +1706,22 @@ return <p style={{ fontSize: '13px', color: '#64748b', margin: '0 0 8px', lineHe
                         {/* Feature rows — giống plan-features trong PlanCard */}
                         <div style={{ marginBottom: '4px', flex: 1 }}>
                           {/* IP info row */}
-                          {(previewData.ip_version || previewData.country) && (
+                          {(previewObj.ip_version || previewObj.country) && (
                             <div className='feature-row'>
                               <div className='feature-icons'><MapPin size={16} color='#6366f1' /></div>
                               <div className='feature-content'>
                                 <span className='feature-label'>Loại IP:</span>
-                                <span className='feature-value' style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>Rotating {convertIpVersion(previewData.ip_version || '')} — {previewData.country && <img src={`https://flagcdn.com/w40/${fixCountryCode(previewData.country)}.png`} alt='' style={{ width: 18, height: 13, objectFit: 'cover', borderRadius: 2 }} />}{COUNTRY_NAMES[previewData.country] || previewData.country || 'N/A'}</span>
+                                <span className='feature-value' style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>Rotating {convertIpVersion(previewObj.ip_version || '')} — {previewObj.country && <img src={`https://flagcdn.com/w40/${fixCountryCode(previewObj.country)}.png`} alt='' style={{ width: 18, height: 13, objectFit: 'cover', borderRadius: 2 }} />}{COUNTRY_NAMES[previewObj.country] || previewObj.country || 'N/A'}</span>
                               </div>
                             </div>
                           )}
                           {/* Protocol static row */}
-                          {Array.isArray(previewData.protocols) && previewData.protocols.length > 0 && (
+                          {Array.isArray(previewObj.protocols) && previewObj.protocols.length > 0 && (
                             <div className='feature-row'>
                               <div className='feature-icons'><Shield size={16} color='var(--primary-hover, #f97316)' /></div>
                               <div className='feature-content'>
                                 <span className='feature-label'>Hỗ trợ:</span>
-                                <span className='feature-value'>{previewData.protocols.map((p: string) => p.toUpperCase()).join('/')}</span>
+                                <span className='feature-value'>{previewObj.protocols.map((p: string) => p.toUpperCase()).join('/')}</span>
                               </div>
                             </div>
                           )}
@@ -1727,7 +1766,7 @@ return multiInputFields.filter((f: any) => f.key && f.value).map((input: any, i:
                           {/* Header: title + tags */}
                           <div style={{ marginBottom: '10px', paddingBottom: '8px', borderBottom: '1px solid #f1f5f9' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
-                              <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#1e293b', margin: 0, flex: 1 }}>{previewData.name || 'Tên sản phẩm'} <span style={{ fontFamily: 'monospace', fontSize: '11px', fontWeight: 500, color: '#94a3b8' }}>{serviceId ? `${serviceId}#` : ''}{previewData.code || ''}</span></h3>
+                              <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#1e293b', margin: 0, flex: 1 }}>{previewObj.name || 'Tên sản phẩm'} <span style={{ fontFamily: 'monospace', fontSize: '11px', fontWeight: 500, color: '#94a3b8' }}>{serviceId ? `${serviceId}#` : ''}{previewObj.code || ''}</span></h3>
                               {renderInlineTags()}
                             </div>
                           </div>
@@ -1737,22 +1776,22 @@ return multiInputFields.filter((f: any) => f.key && f.value).map((input: any, i:
 
                           {/* Product info as feature rows — giống ProxyCard */}
                           <div style={{ marginBottom: '8px' }}>
-                            {(previewData.ip_version || previewData.country) && (
+                            {(previewObj.ip_version || previewObj.country) && (
                               <div className='feature-row'>
                                 <div className='feature-icons'><MapPin size={16} color='#6366f1' /></div>
                                 <div className='feature-content'>
                                   <span className='feature-label'>Loại IP:</span>
-                                  <span className='feature-value' style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>Static {convertIpVersion(previewData.ip_version || '')} — {previewData.country && <img src={`https://flagcdn.com/w40/${fixCountryCode(previewData.country)}.png`} alt='' style={{ width: 18, height: 13, objectFit: 'cover', borderRadius: 2 }} />}{COUNTRY_NAMES[previewData.country] || previewData.country || 'N/A'}</span>
+                                  <span className='feature-value' style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>Static {convertIpVersion(previewObj.ip_version || '')} — {previewObj.country && <img src={`https://flagcdn.com/w40/${fixCountryCode(previewObj.country)}.png`} alt='' style={{ width: 18, height: 13, objectFit: 'cover', borderRadius: 2 }} />}{COUNTRY_NAMES[previewObj.country] || previewObj.country || 'N/A'}</span>
                                 </div>
                               </div>
                             )}
                             {/* Protocol static row */}
-                            {Array.isArray(previewData.protocols) && previewData.protocols.length > 0 && (
+                            {Array.isArray(previewObj.protocols) && previewObj.protocols.length > 0 && (
                               <div className='feature-row'>
                                 <div className='feature-icons'><Shield size={16} color='var(--primary-hover, #f97316)' /></div>
                                 <div className='feature-content'>
                                   <span className='feature-label'>Hỗ trợ:</span>
-                                  <span className='feature-value'>{previewData.protocols.map((p: string) => p.toUpperCase()).join('/')}</span>
+                                  <span className='feature-value'>{previewObj.protocols.map((p: string) => p.toUpperCase()).join('/')}</span>
                                 </div>
                               </div>
                             )}

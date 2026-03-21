@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState, useCallback, useDeferredValue } from 'react'
+import { useMemo, useState, useCallback, useDeferredValue, memo } from 'react'
 
 import Image from 'next/image'
 
@@ -17,7 +17,8 @@ import {
   BadgeMinus,
   Search,
   Loader2,
-  History
+  History,
+  Tags
 } from 'lucide-react'
 
 import {
@@ -57,6 +58,7 @@ interface TableUsersProps {
   onEditUser?: (user: any) => void
   onAdjustBalance?: (user: any) => void
   onViewTransactions?: (user: any) => void
+  onProviderPricing?: (user: any) => void
 }
 
 const formatVND = (value: number) => {
@@ -102,7 +104,7 @@ function StatCard({ title, value, icon: Icon, color }: { title: string; value: s
   )
 }
 
-export default function TableUsers({ onEditUser, onAdjustBalance, onViewTransactions }: TableUsersProps) {
+export default memo(function TableUsers({ onEditUser, onAdjustBalance, onViewTransactions, onProviderPricing }: TableUsersProps) {
   // API fetch limit (mặc định 100, tối đa 20000)
   const [fetchLimit, setFetchLimit] = useState(100)
   const [fetchLimitInput, setFetchLimitInput] = useState('100')
@@ -292,6 +294,12 @@ return (
                 </IconButton>
               </Tooltip>
 
+              <Tooltip title='Provider Pricing'>
+                <IconButton size='small' color='warning' onClick={() => onProviderPricing?.(user)}>
+                  <Tags size={17} />
+                </IconButton>
+              </Tooltip>
+
               <Tooltip title={user?.is_banned ? 'Mở khóa' : 'Khóa tài khoản'}>
                 <IconButton
                   size='small'
@@ -310,10 +318,10 @@ return (
             </div>
           )
         },
-        size: 220
+        size: 260
       }
     ],
-    [onEditUser, onAdjustBalance, onViewTransactions, handleOpenBanDialog, handleOpenResetPwDialog]
+    [onEditUser, onAdjustBalance, onViewTransactions, onProviderPricing, handleOpenBanDialog, handleOpenResetPwDialog]
   )
 
   const table = useReactTable({
@@ -601,4 +609,4 @@ return (
       </Dialog>
     </>
   )
-}
+})

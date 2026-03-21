@@ -1,47 +1,38 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback, useRef } from 'react'
 
 import TableUsers from '@/views/Client/Admin/Users/TableUsers'
 import ModalEditUser from '@/views/Client/Admin/Users/ModalEditUser'
 import ModalBalanceAdjust from '@/views/Client/Admin/Users/ModalBalanceAdjust'
 import UserTransactionModal from '@/views/Client/Admin/Users/UserTransactionModal'
+import ProviderPricingModal from '@/views/Client/Admin/Users/ProviderPricingModal'
 
 export default function UsersPage() {
-  const [editModalOpen, setEditModalOpen] = useState(false)
-  const [balanceModalOpen, setBalanceModalOpen] = useState(false)
-  const [transactionModalOpen, setTransactionModalOpen] = useState(false)
-  const [selectedUser, setSelectedUser] = useState<any>(null)
+  const [modalState, setModalState] = useState<{
+    type: 'edit' | 'balance' | 'transaction' | 'providerPricing' | null
+    user: any
+  }>({ type: null, user: null })
 
-  const handleEditUser = (user: any) => {
-    setSelectedUser(user)
-    setEditModalOpen(true)
-  }
+  const handleEditUser = useCallback((user: any) => {
+    setModalState({ type: 'edit', user })
+  }, [])
 
-  const handleAdjustBalance = (user: any) => {
-    setSelectedUser(user)
-    setBalanceModalOpen(true)
-  }
+  const handleAdjustBalance = useCallback((user: any) => {
+    setModalState({ type: 'balance', user })
+  }, [])
 
-  const handleViewTransactions = (user: any) => {
-    setSelectedUser(user)
-    setTransactionModalOpen(true)
-  }
+  const handleViewTransactions = useCallback((user: any) => {
+    setModalState({ type: 'transaction', user })
+  }, [])
 
-  const handleCloseEditModal = () => {
-    setEditModalOpen(false)
-    setSelectedUser(null)
-  }
+  const handleProviderPricing = useCallback((user: any) => {
+    setModalState({ type: 'providerPricing', user })
+  }, [])
 
-  const handleCloseBalanceModal = () => {
-    setBalanceModalOpen(false)
-    setSelectedUser(null)
-  }
-
-  const handleCloseTransactionModal = () => {
-    setTransactionModalOpen(false)
-    setSelectedUser(null)
-  }
+  const handleClose = useCallback(() => {
+    setModalState({ type: null, user: null })
+  }, [])
 
   return (
     <>
@@ -49,15 +40,22 @@ export default function UsersPage() {
         onEditUser={handleEditUser}
         onAdjustBalance={handleAdjustBalance}
         onViewTransactions={handleViewTransactions}
+        onProviderPricing={handleProviderPricing}
       />
-      <ModalEditUser open={editModalOpen} onClose={handleCloseEditModal} userData={selectedUser} />
-      <ModalBalanceAdjust open={balanceModalOpen} onClose={handleCloseBalanceModal} userData={selectedUser} />
-      <UserTransactionModal
-        open={transactionModalOpen}
-        onClose={handleCloseTransactionModal}
-        userId={selectedUser?.id}
-        userName={`${selectedUser?.name || ''} (${selectedUser?.email || ''})`}
-      />
+      {modalState.type === 'edit' && <ModalEditUser open onClose={handleClose} userData={modalState.user} />}
+      {modalState.type === 'balance' && <ModalBalanceAdjust open onClose={handleClose} userData={modalState.user} />}
+      {modalState.type === 'transaction' && <UserTransactionModal
+        open
+        onClose={handleClose}
+        userId={modalState.user?.id}
+        userName={`${modalState.user?.name || ''} (${modalState.user?.email || ''})`}
+      />}
+      {modalState.type === 'providerPricing' && <ProviderPricingModal
+        open
+        onClose={handleClose}
+        userId={modalState.user?.id}
+        userName={`${modalState.user?.name || ''} (${modalState.user?.email || ''})`}
+      />}
     </>
   )
 }
