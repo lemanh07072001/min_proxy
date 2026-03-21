@@ -25,7 +25,7 @@ export async function getServerBranding(): Promise<BrandingSettings> {
 
     const res = await fetch(`${apiUrl}/get-branding-settings`, isDev
       ? { cache: 'no-store' }
-      : { next: { revalidate: false, tags: ['branding'] } }
+      : { next: { revalidate: 300, tags: ['branding'] } }  // Cache 5 phút + on-demand revalidate
     )
 
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
