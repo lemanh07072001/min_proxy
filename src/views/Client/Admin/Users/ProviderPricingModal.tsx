@@ -112,15 +112,18 @@ export default function ProviderPricingModal({ open, onClose, userId, userName }
         id: item.id,
         is_enabled: !item.is_enabled
       })
+      toast.success(item.is_enabled ? 'Đã tắt' : 'Đã bật')
       refetch()
-    } catch {}
+    } catch {
+      toast.error('Lỗi cập nhật')
+    }
   }
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth='sm' fullWidth>
       <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', pb: 1 }}>
         <div>
-          <Typography variant='subtitle1' fontWeight={700}>Provider Pricing</Typography>
+          <Typography variant='subtitle1' fontWeight={700}>Giá theo nhà cung cấp</Typography>
           <Typography variant='caption' color='text.secondary'>{userName}</Typography>
         </div>
         <IconButton size='small' onClick={onClose}><X size={18} /></IconButton>
@@ -131,12 +134,12 @@ export default function ProviderPricingModal({ open, onClose, userId, userName }
 
         {!isLoading && items.length === 0 && !isAdding && (
           <div style={{ textAlign: 'center', padding: '24px 0', color: '#94a3b8' }}>
-            <Typography variant='body2'>Chưa có markup provider nào cho user này.</Typography>
-            <Typography variant='caption' sx={{ display: 'block', mb: 2 }}>Thêm provider để user mua với giá gốc + N% markup.</Typography>
+            <Typography variant='body2'>Chưa thiết lập giá riêng cho user này.</Typography>
+            <Typography variant='caption' sx={{ display: 'block', mb: 2 }}>Thêm nhà cung cấp để user mua với giá gốc + % chênh lệch bạn muốn lãi.</Typography>
             {availableProviders.length > 0 && (
               <Button startIcon={<Plus size={14} />} size='small' variant='contained'
                 onClick={() => setIsAdding(true)} sx={{ fontSize: '12px', textTransform: 'none' }}>
-                Add Provider
+                Thêm nhà cung cấp
               </Button>
             )}
           </div>
@@ -147,7 +150,7 @@ export default function ProviderPricingModal({ open, onClose, userId, userName }
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
             <Button startIcon={<Plus size={14} />} size='small' variant='outlined'
               onClick={() => setIsAdding(true)} sx={{ fontSize: '12px', textTransform: 'none' }}>
-              Add Provider
+              Thêm nhà cung cấp
             </Button>
           </div>
         )}
@@ -166,7 +169,7 @@ export default function ProviderPricingModal({ open, onClose, userId, userName }
               </div>
               {editingId === item.id ? (
                 <div style={{ display: 'flex', gap: 6, marginTop: 6, alignItems: 'center' }}>
-                  <TextField size='small' type='number' label='Markup %' value={editMarkup}
+                  <TextField size='small' type='number' label='% chênh lệch' value={editMarkup}
                     onChange={e => setEditMarkup(e.target.value)}
                     sx={{ width: 110, '& input': { fontSize: '13px', py: '6px' } }}
                   />
@@ -185,7 +188,7 @@ export default function ProviderPricingModal({ open, onClose, userId, userName }
               ) : (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 2 }}>
                   <Typography variant='caption' color='text.secondary'>
-                    Markup: <strong style={{ color: '#d97706' }}>{item.markup_percent}%</strong>
+                    Chênh lệch: <strong style={{ color: '#d97706' }}>+{item.markup_percent}%</strong> so với giá gốc
                   </Typography>
                   {item.note && (
                     <Typography variant='caption' color='text.secondary'>
@@ -223,7 +226,7 @@ export default function ProviderPricingModal({ open, onClose, userId, userName }
         {/* Form thêm mới */}
         {isAdding && (
           <div style={{ border: '1px solid #bfdbfe', borderRadius: 8, padding: 12, background: '#eff6ff', marginTop: 8 }}>
-            <Typography variant='caption' fontWeight={600} sx={{ mb: 1, display: 'block' }}>Add Provider Markup</Typography>
+            <Typography variant='caption' fontWeight={600} sx={{ mb: 1, display: 'block' }}>Thêm nhà cung cấp</Typography>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
               <TextField select size='small' label='Nhà cung cấp' value={newProviderId}
                 onChange={e => setNewProviderId(Number(e.target.value))}
@@ -233,7 +236,7 @@ export default function ProviderPricingModal({ open, onClose, userId, userName }
                   <MenuItem key={p.id} value={p.id}>{p.name}</MenuItem>
                 ))}
               </TextField>
-              <TextField size='small' type='number' label='Markup %' value={newMarkup}
+              <TextField size='small' type='number' label='% chênh lệch' value={newMarkup}
                 onChange={e => setNewMarkup(e.target.value)} placeholder='VD: 15'
                 sx={{ width: 110, '& input': { fontSize: '13px', py: '6px' } }}
               />

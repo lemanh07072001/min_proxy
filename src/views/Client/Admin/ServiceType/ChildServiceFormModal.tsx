@@ -750,10 +750,10 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
                           </div>
                           <div style={{ display: 'grid', gridTemplateColumns: '60px 1fr 1fr 1fr 1fr', gap: 2, padding: '4px 10px', fontSize: '10px', fontWeight: 600, color: '#64748b', background: '#f8fafc' }}>
                             <span>Mốc</span>
-                            <span>Nhập (site mẹ)</span>
-                            <span>Bán (bạn set)</span>
-                            <span>Lãi/ngày</span>
-                            <span>Ghi chú</span>
+                            <span>Giá gốc (bạn trả)</span>
+                            <span>Giá bán (bạn thu)</span>
+                            <span>Lợi nhuận</span>
+                            <span>Tình trạng</span>
                           </div>
                           {allMilestones.map((m, i) => {
                             const sellDisc = findSellDisc(m.days)
@@ -816,10 +816,10 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
                           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr 1fr 32px', gap: 2, background: '#f8fafc', padding: '5px 8px', fontSize: '10px', fontWeight: 600, color: '#64748b' }}>
                             <span>Từ ({unitLabel})</span>
                             <span>Đến ({unitLabel})</span>
-                            <span>Giảm %</span>
-                            <span>Bán/ng</span>
-                            <span>Nhập/ng</span>
-                            <span>Lãi/ng</span>
+                            <span>Giảm giá (%)</span>
+                            <span>Bán/{unitLabel}</span>
+                            <span>Gốc/{unitLabel}</span>
+                            <span>Lợi nhuận</span>
                             <span></span>
                           </div>
                           {discountTiers.map((tier, idx) => {

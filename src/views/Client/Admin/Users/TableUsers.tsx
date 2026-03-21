@@ -294,7 +294,7 @@ return (
                 </IconButton>
               </Tooltip>
 
-              <Tooltip title='Provider Pricing'>
+              <Tooltip title='Giá theo nhà cung cấp'>
                 <IconButton size='small' color='warning' onClick={() => onProviderPricing?.(user)}>
                   <Tags size={17} />
                 </IconButton>

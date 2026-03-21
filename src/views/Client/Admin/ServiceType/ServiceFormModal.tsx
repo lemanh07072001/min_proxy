@@ -1362,7 +1362,7 @@ return <Chip key={val} label={p?.label || val} size='small' />
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                           <div>
                             <div style={{ fontSize: '13px', fontWeight: 700, color: '#1e293b' }}>Chiết khấu giá BÁN theo số {timeUnit === 'month' ? 'tháng' : 'ngày'}</div>
-                            <div style={{ fontSize: '11px', color: '#94a3b8', lineHeight: 1.5 }}>Giảm giá bán cho <strong>khách thường + site con</strong> khi mua nhiều {timeUnit === 'month' ? 'tháng' : 'ngày'}. Không áp cho đại lý.{parseInt(pricePerUnit) > 0 && <><br/>VD: Giá bán {parseInt(pricePerUnit).toLocaleString('vi-VN')}đ, giảm 10% → khách trả {Math.round(parseInt(pricePerUnit) * 0.9).toLocaleString('vi-VN')}đ/{timeUnit === 'month' ? 'tháng' : 'ngày'}.</>}</div>
+                            <div style={{ fontSize: '11px', color: '#64748b', lineHeight: 1.5 }}>Giảm giá bán cho <strong>khách thường + site con</strong> khi mua nhiều {timeUnit === 'month' ? 'tháng' : 'ngày'}. Không áp cho đại lý.{parseInt(pricePerUnit) > 0 && <><br/>VD: Giá bán {parseInt(pricePerUnit).toLocaleString('vi-VN')}đ, giảm 10% → khách trả {Math.round(parseInt(pricePerUnit) * 0.9).toLocaleString('vi-VN')}đ/{timeUnit === 'month' ? 'tháng' : 'ngày'}.</>}</div>
                           </div>
                           <Button
                             size='small' variant='outlined'
@@ -1384,7 +1384,7 @@ return <Chip key={val} label={p?.label || val} size='small' />
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1.2fr 40px', gap: '6px', background: '#f1f5f9', padding: '6px 10px', fontSize: '11px', fontWeight: 600, color: '#64748b' }}>
                               <span>Từ ({timeUnit === 'month' ? 'tháng' : 'ngày'})</span>
                               <span>Đến ({timeUnit === 'month' ? 'tháng' : 'ngày'})</span>
-                              <span>Giảm (%)</span>
+                              <span>Giảm giá (%)</span>
                               <span>Giá bán sau CK</span>
                               <span></span>
                             </div>
@@ -1399,7 +1399,7 @@ return <Chip key={val} label={p?.label || val} size='small' />
                                     onChange={(e: any) => setDiscountTiers(prev => prev.map((t, i) => i === idx ? { ...t, min: e.target.value } : t))}
                                     sx={{ '& input': { fontSize: '12px', padding: '5px 8px' } }}
                                   />
-                                  <CustomTextField size='small' type='number' placeholder='VD: 9 (trống = ∞)' value={tier.max}
+                                  <CustomTextField size='small' type='number' placeholder='Trống = không giới hạn' value={tier.max}
                                     onChange={(e: any) => setDiscountTiers(prev => prev.map((t, i) => i === idx ? { ...t, max: e.target.value } : t))}
                                     sx={{ '& input': { fontSize: '12px', padding: '5px 8px' } }}
                                   />
@@ -1408,7 +1408,7 @@ return <Chip key={val} label={p?.label || val} size='small' />
                                     sx={{ '& input': { fontSize: '12px', padding: '5px 8px' } }}
                                   />
                                   <span style={{ fontSize: '12px', fontWeight: 600, color: disc > 0 ? '#16a34a' : '#94a3b8' }}>
-                                    {basePrice > 0 && disc > 0 ? `${discountedPrice.toLocaleString('vi-VN')}đ/${timeUnit === 'month' ? 'th' : 'ng'}` : '—'}
+                                    {basePrice > 0 && disc > 0 ? `${discountedPrice.toLocaleString('vi-VN')}đ/${timeUnit === 'month' ? 'tháng' : 'ngày'}` : '—'}
                                   </span>
                                   <button type='button' onClick={() => setDiscountTiers(prev => prev.filter((_, i) => i !== idx))}
                                     style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: 14 }}>✕</button>
@@ -1446,7 +1446,7 @@ return <Chip key={val} label={p?.label || val} size='small' />
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                           <div>
                             <div style={{ fontSize: '13px', fontWeight: 700, color: '#92400e' }}>Chiết khấu giá GỐC (NCC) theo số {timeUnit === 'month' ? 'tháng' : 'ngày'}</div>
-                            <div style={{ fontSize: '11px', color: '#b45309', lineHeight: 1.5 }}>Chỉ áp cho <strong>đại lý (reseller)</strong>. Nhập chính sách giá từ NCC — giá vốn giảm khi mua nhiều {timeUnit === 'month' ? 'tháng' : 'ngày'}.{parseInt(costPerUnit) > 0 && <><br/>VD: Gốc {parseInt(costPerUnit).toLocaleString('vi-VN')}đ, giảm 20% → vốn {Math.round(parseInt(costPerUnit) * 0.8).toLocaleString('vi-VN')}đ, đại lý markup 15% → trả {Math.round(parseInt(costPerUnit) * 0.8 * 1.15).toLocaleString('vi-VN')}đ/{timeUnit === 'month' ? 'tháng' : 'ngày'}.</>}</div>
+                            <div style={{ fontSize: '11px', color: '#92400e', lineHeight: 1.5 }}>Chỉ áp cho <strong>đại lý (reseller)</strong>. Nhập chính sách giá từ NCC — giá vốn giảm khi mua nhiều {timeUnit === 'month' ? 'tháng' : 'ngày'}.{parseInt(costPerUnit) > 0 && <><br/>VD: Gốc {parseInt(costPerUnit).toLocaleString('vi-VN')}đ, giảm 20% → vốn {Math.round(parseInt(costPerUnit) * 0.8).toLocaleString('vi-VN')}đ, đại lý +15% → trả {Math.round(parseInt(costPerUnit) * 0.8 * 1.15).toLocaleString('vi-VN')}đ/{timeUnit === 'month' ? 'tháng' : 'ngày'}.</>}</div>
                           </div>
                           <Button
                             size='small' variant='outlined' color='warning'
@@ -1468,7 +1468,7 @@ return <Chip key={val} label={p?.label || val} size='small' />
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1.2fr 40px', gap: '6px', background: '#fef3c7', padding: '6px 10px', fontSize: '11px', fontWeight: 600, color: '#92400e' }}>
                               <span>Từ ({timeUnit === 'month' ? 'tháng' : 'ngày'})</span>
                               <span>Đến ({timeUnit === 'month' ? 'tháng' : 'ngày'})</span>
-                              <span>Giảm (%)</span>
+                              <span>Giảm giá (%)</span>
                               <span>Giá gốc sau CK</span>
                               <span></span>
                             </div>
@@ -1483,7 +1483,7 @@ return <Chip key={val} label={p?.label || val} size='small' />
                                     onChange={(e: any) => setCostDiscountTiers(prev => prev.map((t, i) => i === idx ? { ...t, min: e.target.value } : t))}
                                     sx={{ '& input': { fontSize: '12px', padding: '5px 8px' } }}
                                   />
-                                  <CustomTextField size='small' type='number' placeholder='VD: 9 (trống = ∞)' value={tier.max}
+                                  <CustomTextField size='small' type='number' placeholder='Trống = không giới hạn' value={tier.max}
                                     onChange={(e: any) => setCostDiscountTiers(prev => prev.map((t, i) => i === idx ? { ...t, max: e.target.value } : t))}
                                     sx={{ '& input': { fontSize: '12px', padding: '5px 8px' } }}
                                   />
@@ -1492,7 +1492,7 @@ return <Chip key={val} label={p?.label || val} size='small' />
                                     sx={{ '& input': { fontSize: '12px', padding: '5px 8px' } }}
                                   />
                                   <span style={{ fontSize: '12px', fontWeight: 600, color: disc > 0 ? '#d97706' : '#94a3b8' }}>
-                                    {baseCost > 0 && disc > 0 ? `${discountedCost.toLocaleString('vi-VN')}đ/${timeUnit === 'month' ? 'th' : 'ng'}` : '—'}
+                                    {baseCost > 0 && disc > 0 ? `${discountedCost.toLocaleString('vi-VN')}đ/${timeUnit === 'month' ? 'tháng' : 'ngày'}` : '—'}
                                   </span>
                                   <button type='button' onClick={() => setCostDiscountTiers(prev => prev.filter((_, i) => i !== idx))}
                                     style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: 14 }}>✕</button>
