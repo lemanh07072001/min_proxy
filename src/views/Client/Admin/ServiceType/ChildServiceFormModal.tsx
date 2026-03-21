@@ -61,6 +61,7 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
   const [pricePerUnit, setPricePerUnit] = useState('')
   const [costPerUnit, setCostPerUnit] = useState('')
   const [allowCustomAuth, setAllowCustomAuth] = useState(false)
+  const [discountTiers, setDiscountTiers] = useState<Array<{ min: string; max: string; discount: string }>>([])
   const [syncStatus, setSyncStatus] = useState<'idle' | 'loading' | 'done' | 'error'>('idle')
   const [purchaseOptions, setPurchaseOptions] = useState<Array<{ param: string; label: string; required: boolean; default: string; options: Array<{ value: string; label: string }> }>>([])
 
@@ -152,6 +153,7 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
       setPricePerUnit(serviceData.price_per_unit?.toString() || '')
       setCostPerUnit(serviceData.cost_per_unit?.toString() || '')
       setAllowCustomAuth(!!meta.allow_custom_auth)
+      setDiscountTiers(meta.discount_tiers || [])
 
       // Load purchase options (custom fields)
       if (meta.custom_fields && Array.isArray(meta.custom_fields)) {
@@ -389,6 +391,7 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
         ...(selectedSupplierId ? { provider_product_id: selectedSupplierId } : {}),
         parent_pricing_mode: parentPricingMode,
         allow_custom_auth: allowCustomAuth,
+        discount_tiers: pricingMode === 'per_unit' ? discountTiers.filter(t => t.min && t.discount) : undefined,
         custom_fields: purchaseOptions.filter(o => o.param && o.label && o.options.some(opt => opt.value)).map(o => ({
           param: o.param, label: o.label, type: 'select' as const, required: o.required,
           default: o.default || o.options[0]?.value || '', options: o.options.filter(opt => opt.value),
@@ -541,29 +544,9 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
                 </div>
               )}
 
-              {/* Phân biệt code site mẹ vs site con */}
-              {(selectedSupplierCode || (isEditMode && selectedSupplierId)) && (
-                <div style={{ display: 'flex', gap: 12, marginBottom: 8 }}>
-                  <div style={{ flex: 1, padding: '8px 12px', borderRadius: 8, background: '#eff6ff', border: '1px solid #bfdbfe', fontSize: 13 }}>
-                    <div style={{ color: '#6b7280', fontSize: 11, fontWeight: 600, marginBottom: 2 }}>Code site mẹ (nhà cung cấp)</div>
-                    <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#1d4ed8' }}>
-                      {selectedSupplierId ? `${selectedSupplierId}#` : ''}{selectedSupplierCode || 'chưa có'}
-                    </span>
-                  </div>
-                  {isEditMode && (
-                    <div style={{ flex: 1, padding: '8px 12px', borderRadius: 8, background: '#f0fdf4', border: '1px solid #bbf7d0', fontSize: 13 }}>
-                      <div style={{ color: '#6b7280', fontSize: 11, fontWeight: 600, marginBottom: 2 }}>Code site con (của bạn)</div>
-                      <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#15803d' }}>
-                        {serviceId ? `${serviceId}#` : ''}{watchAll.code || serviceData?.code || 'chưa có'}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Tên + Code site con + Code site mẹ + trạng thái */}
+              {/* Tên + Code + Trạng thái */}
               <Grid2 container spacing={1.5}>
-                <Grid2 size={{ xs: 12, sm: 4 }}>
+                <Grid2 size={{ xs: 12, sm: 5 }}>
                   <Controller
                     name='name'
                     control={control}
@@ -582,10 +565,10 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
                       <CustomTextField
                         {...field}
                         fullWidth
-                        label='Code site con'
+                        label='Code (site bạn)'
                         placeholder='Tự tạo'
                         error={!!errors.code}
-                        helperText={(errors.code?.message as string) || 'Mã riêng site bạn'}
+                        helperText={serviceId ? `ID: ${serviceId}` : ''}
                       />
                     )}
                   />
@@ -594,15 +577,15 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
                   <TextField
                     fullWidth
                     size='small'
-                    label='Code site mẹ (NCC)'
+                    label='Code site mẹ'
                     value={selectedSupplierCode || ''}
                     onChange={(e) => setSelectedSupplierCode(e.target.value || null)}
-                    placeholder={isEditMode ? 'Nhập code SP site mẹ' : 'Tự động từ SP đã chọn'}
-                    helperText={isEditMode ? 'Sửa nếu site mẹ đổi code' : 'Code dùng để mua hàng từ site mẹ'}
-                    sx={{ '& input': { fontSize: '13px' } }}
+                    placeholder={isEditMode ? 'Code SP trên site mẹ' : 'Tự động'}
+                    helperText={selectedSupplierId ? `ID mẹ: ${selectedSupplierId}` : ''}
+                    sx={{ '& input': { fontSize: '13px', fontFamily: 'monospace' } }}
                   />
                 </Grid2>
-                <Grid2 size={{ xs: 6, sm: 3 }}>
+                <Grid2 size={{ xs: 6, sm: 2 }}>
                   <Controller
                     name='status'
                     control={control}
@@ -701,6 +684,193 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
                   </div>
                   <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: 6 }}>
                     Khách hàng sẽ nhập số {timeUnit === 'month' ? 'tháng' : 'ngày'}, tổng = giá bán × số lượng.
+                  </div>
+
+                  {/* ── Giảm giá khi khách mua nhiều ngày ── */}
+                  <div style={{ marginTop: 10, borderTop: '1px solid #f1f5f9', paddingTop: 10 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                      <div>
+                        <div style={{ fontSize: '12px', fontWeight: 600, color: '#475569' }}>
+                          Giảm giá khi mua nhiều {timeUnit === 'month' ? 'tháng' : 'ngày'}
+                        </div>
+                        <div style={{ fontSize: '10.5px', color: '#94a3b8' }}>
+                          Khách mua càng nhiều {timeUnit === 'month' ? 'tháng' : 'ngày'} → được giảm giá → bạn vẫn có lãi nếu set đúng
+                        </div>
+                      </div>
+                      <button type='button' onClick={() => setDiscountTiers(prev => [...prev, { min: '', max: '', discount: '' }])}
+                        style={{ fontSize: '11px', padding: '3px 10px', borderRadius: 6, border: '1px solid #e2e8f0', background: '#fff', cursor: 'pointer', color: '#475569', whiteSpace: 'nowrap' }}>
+                        + Thêm mức
+                      </button>
+                    </div>
+
+                    {/* Bảng mốc từ site mẹ — admin chọn áp dụng hay không */}
+                    {(() => {
+                      const supplierTiers = selectedProduct?.supplier_discount_tiers || []
+                      const costBase = parseInt(costPerUnit) || 0
+                      const sellBase = parseInt(pricePerUnit) || 0
+                      const unitLabel = timeUnit === 'month' ? 'tháng' : 'ngày'
+
+                      if (supplierTiers.length === 0 && costBase <= 0) return null
+
+                      // Helper: tìm giá nhập tại mốc ngày
+                      const getCostAt = (days: number) => {
+                        for (const st of supplierTiers) {
+                          const sMin = parseInt(st.min as any) || 0
+                          const sMax = parseInt(st.max as any) || Infinity
+                          const sDisc = parseInt(st.discount as any) || 0
+                          if (days >= sMin && days <= sMax && sDisc > 0) return Math.round(costBase * (1 - sDisc / 100))
+                        }
+                        return costBase
+                      }
+
+                      // Tạo mảng mốc: 1 ngày + tất cả mốc từ mẹ
+                      const allMilestones = [
+                        { days: 1, costDisc: 0, cost: costBase },
+                        ...supplierTiers.filter(t => t.min && t.discount).map(t => ({
+                          days: parseInt(t.min as any) || 1,
+                          costDisc: parseInt(t.discount as any) || 0,
+                          cost: getCostAt(parseInt(t.min as any) || 1),
+                        }))
+                      ]
+
+                      // Tìm discount bán tương ứng nếu admin đã set
+                      const findSellDisc = (days: number) => {
+                        for (const dt of discountTiers) {
+                          const min = parseInt(dt.min) || 0
+                          const max = parseInt(dt.max) || Infinity
+                          if (days >= min && days <= max) return parseInt(dt.discount) || 0
+                        }
+                        return 0
+                      }
+
+                      return (
+                        <div style={{ border: '1px solid #e0e7ff', borderRadius: 8, overflow: 'hidden', marginBottom: 8 }}>
+                          <div style={{ background: '#eef2ff', padding: '6px 10px', fontSize: '11px', fontWeight: 600, color: '#4338ca' }}>
+                            Các mốc giá từ site mẹ — xem trước lãi/lỗ ở mỗi mốc
+                          </div>
+                          <div style={{ display: 'grid', gridTemplateColumns: '60px 1fr 1fr 1fr 1fr', gap: 2, padding: '4px 10px', fontSize: '10px', fontWeight: 600, color: '#64748b', background: '#f8fafc' }}>
+                            <span>Mốc</span>
+                            <span>Nhập (site mẹ)</span>
+                            <span>Bán (bạn set)</span>
+                            <span>Lãi/ngày</span>
+                            <span>Ghi chú</span>
+                          </div>
+                          {allMilestones.map((m, i) => {
+                            const sellDisc = findSellDisc(m.days)
+                            const sellPrice = sellDisc > 0 ? Math.round(sellBase * (1 - sellDisc / 100)) : sellBase
+                            const profit = sellPrice - m.cost
+                            const isLoss = profit < 0
+                            const noSellDisc = sellDisc === 0 && m.costDisc > 0
+
+                            return (
+                              <div key={i} style={{ display: 'grid', gridTemplateColumns: '60px 1fr 1fr 1fr 1fr', gap: 2, alignItems: 'center', padding: '6px 10px', borderTop: '1px solid #f1f5f9', background: isLoss ? '#fef2f2' : undefined }}>
+                                <span style={{ fontSize: 12, fontWeight: 700, color: '#334155' }}>
+                                  {m.days} {unitLabel}
+                                </span>
+                                <span style={{ fontSize: 11, color: '#6366f1' }}>
+                                  {m.cost.toLocaleString('vi-VN')}đ
+                                  {m.costDisc > 0 && <span style={{ fontSize: 9, color: '#94a3b8', marginLeft: 2 }}>(-{m.costDisc}%)</span>}
+                                </span>
+                                <span style={{ fontSize: 11, fontWeight: 600, color: '#1e293b' }}>
+                                  {sellPrice.toLocaleString('vi-VN')}đ
+                                  {sellDisc > 0 && <span style={{ fontSize: 9, color: '#16a34a', marginLeft: 2 }}>(-{sellDisc}%)</span>}
+                                </span>
+                                <span style={{ fontSize: 11, fontWeight: 700, color: isLoss ? '#ef4444' : '#16a34a' }}>
+                                  {profit > 0 ? '+' : ''}{profit.toLocaleString('vi-VN')}đ
+                                </span>
+                                <span style={{ fontSize: 10, color: isLoss ? '#ef4444' : noSellDisc ? '#f59e0b' : '#94a3b8' }}>
+                                  {isLoss ? '⚠ Lỗ!' : noSellDisc ? 'Chưa giảm giá bán' : profit > 0 ? '✓ Có lãi' : ''}
+                                </span>
+                              </div>
+                            )
+                          })}
+                        </div>
+                      )
+                    })()}
+
+                    {discountTiers.length === 0 && (
+                      <div style={{ fontSize: '11px', color: '#94a3b8', textAlign: 'center', padding: '6px 0' }}>
+                        Chưa set giảm giá — khách mua bao nhiêu {timeUnit === 'month' ? 'tháng' : 'ngày'} cũng cùng 1 đơn giá. Thêm mức giảm bên dưới nếu muốn.
+                      </div>
+                    )}
+
+                    {discountTiers.length > 0 && (() => {
+                      const unitLabel = timeUnit === 'month' ? 'tháng' : 'ngày'
+                      const sellBase = parseInt(pricePerUnit) || 0
+                      const costBase = parseInt(costPerUnit) || 0
+                      const supplierTiers = selectedProduct?.supplier_discount_tiers || []
+
+                      // Helper: tìm giá nhập tại mốc ngày
+                      const getCostAt = (days: number) => {
+                        for (const st of supplierTiers) {
+                          const sMin = parseInt(st.min as any) || 0
+                          const sMax = parseInt(st.max as any) || Infinity
+                          const sDisc = parseInt(st.discount as any) || 0
+                          if (days >= sMin && days <= sMax && sDisc > 0) return Math.round(costBase * (1 - sDisc / 100))
+                        }
+                        return costBase
+                      }
+
+                      return (
+                        <div style={{ border: '1px solid #e2e8f0', borderRadius: 8, overflow: 'hidden' }}>
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr 1fr 32px', gap: 2, background: '#f8fafc', padding: '5px 8px', fontSize: '10px', fontWeight: 600, color: '#64748b' }}>
+                            <span>Từ ({unitLabel})</span>
+                            <span>Đến ({unitLabel})</span>
+                            <span>Giảm %</span>
+                            <span>Bán/ng</span>
+                            <span>Nhập/ng</span>
+                            <span>Lãi/ng</span>
+                            <span></span>
+                          </div>
+                          {discountTiers.map((tier, idx) => {
+                            const disc = parseInt(tier.discount) || 0
+                            const sellAfter = sellBase > 0 && disc > 0 ? Math.round(sellBase * (1 - disc / 100)) : sellBase
+                            const minDays = parseInt(tier.min) || 1
+                            const costAt = getCostAt(minDays)
+                            const profit = sellAfter > 0 && costAt > 0 ? sellAfter - costAt : 0
+                            const isLoss = profit < 0
+
+                            return (
+                              <div key={idx} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr 1fr 32px', gap: 2, alignItems: 'center', padding: '5px 8px', borderTop: '1px solid #f1f5f9', background: isLoss ? '#fef2f2' : undefined }}>
+                                <input type='number' placeholder='5' value={tier.min}
+                                  onChange={e => setDiscountTiers(prev => prev.map((t, i) => i === idx ? { ...t, min: e.target.value } : t))}
+                                  style={{ width: '100%', padding: '4px 6px', border: '1px solid #e2e8f0', borderRadius: 4, fontSize: 12 }}
+                                />
+                                <input type='number' placeholder='∞' value={tier.max}
+                                  onChange={e => setDiscountTiers(prev => prev.map((t, i) => i === idx ? { ...t, max: e.target.value } : t))}
+                                  style={{ width: '100%', padding: '4px 6px', border: '1px solid #e2e8f0', borderRadius: 4, fontSize: 12 }}
+                                />
+                                <input type='number' placeholder='10' value={tier.discount}
+                                  onChange={e => setDiscountTiers(prev => prev.map((t, i) => i === idx ? { ...t, discount: e.target.value } : t))}
+                                  style={{ width: '100%', padding: '4px 6px', border: '1px solid #e2e8f0', borderRadius: 4, fontSize: 12 }}
+                                />
+                                <span style={{ fontSize: 11, fontWeight: 600, color: disc > 0 ? '#1e293b' : '#94a3b8' }}>
+                                  {sellBase > 0 && disc > 0 ? `${sellAfter.toLocaleString('vi-VN')}đ` : '—'}
+                                </span>
+                                <span style={{ fontSize: 11, color: '#6366f1' }}>
+                                  {costAt > 0 ? `${costAt.toLocaleString('vi-VN')}đ` : '—'}
+                                </span>
+                                <span style={{ fontSize: 11, fontWeight: 700, color: isLoss ? '#ef4444' : profit > 0 ? '#16a34a' : '#94a3b8' }}>
+                                  {profit !== 0 ? `${profit > 0 ? '+' : ''}${profit.toLocaleString('vi-VN')}đ` : '—'}
+                                </span>
+                                <button type='button' onClick={() => setDiscountTiers(prev => prev.filter((_, i) => i !== idx))}
+                                  style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: 13, padding: 0 }}>✕</button>
+                              </div>
+                            )
+                          })}
+                        </div>
+                      )
+                    })()}
+
+                    {/* Giải thích cho admin */}
+                    {discountTiers.length > 0 && (
+                      <div style={{ marginTop: 6, fontSize: '10.5px', color: '#64748b', lineHeight: 1.5 }}>
+                        <strong>Cách đọc:</strong> "Bán/ng" là giá bạn bán cho khách sau giảm.
+                        "Nhập/ng" là giá bạn phải trả site mẹ.
+                        <strong style={{ color: '#16a34a' }}> Lãi xanh = có lời</strong>,
+                        <strong style={{ color: '#ef4444' }}> lãi đỏ = bạn đang bù lỗ!</strong>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
