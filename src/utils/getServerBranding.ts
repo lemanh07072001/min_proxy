@@ -21,12 +21,10 @@ function resolveAssetUrl(path: string | null | undefined): string {
 export async function getServerBranding(): Promise<BrandingSettings> {
   try {
     const apiUrl = process.env.API_URL || siteConfig.apiUrl
-    const isDev = process.env.NODE_ENV === 'development'
 
-    const res = await fetch(`${apiUrl}/get-branding-settings`, isDev
-      ? { cache: 'no-store' }
-      : { next: { revalidate: 300, tags: ['branding'] } }  // Cache 5 phút + on-demand revalidate
-    )
+    // Không cache ở Next.js — BE đã cache 5 phút (Laravel Cache::remember)
+    // Admin lưu → BE xóa cache → request tiếp theo nhận data mới ngay
+    const res = await fetch(`${apiUrl}/get-branding-settings`, { cache: 'no-store' })
 
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
 
