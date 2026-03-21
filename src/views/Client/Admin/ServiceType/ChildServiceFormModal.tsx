@@ -545,8 +545,9 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
               )}
 
               {/* Tên + Code + Trạng thái */}
+              {/* Hàng 1: Tên + Trạng thái */}
               <Grid2 container spacing={1.5}>
-                <Grid2 size={{ xs: 12, sm: 6 }}>
+                <Grid2 size={{ xs: 12, sm: 9 }}>
                   <Controller
                     name='name'
                     control={control}
@@ -557,7 +558,7 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
                     )}
                   />
                 </Grid2>
-                <Grid2 size={{ xs: 8, sm: 3 }}>
+                <Grid2 size={{ xs: 12, sm: 3 }}>
                   <Controller
                     name='status'
                     control={control}
@@ -569,7 +570,11 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
                     )}
                   />
                 </Grid2>
-                <Grid2 size={{ xs: 4, sm: 3 }}>
+              </Grid2>
+
+              {/* Hàng 2: Code site con + Code site mẹ */}
+              <Grid2 container spacing={1.5} sx={{ mt: 0.5 }}>
+                <Grid2 size={{ xs: 12, sm: 6 }}>
                   <Controller
                     name='code'
                     control={control}
@@ -577,10 +582,10 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
                       <CustomTextField
                         {...field}
                         fullWidth
-                        label='Code'
-                        placeholder='Tự tạo'
+                        label='Code sản phẩm (site bạn)'
+                        placeholder='Để trống sẽ tự tạo'
                         error={!!errors.code}
-                        helperText={serviceId ? `ID: ${serviceId}` : 'Mã site bạn'}
+                        helperText={serviceId ? `ID: ${serviceId}` : 'Mã riêng trên site của bạn'}
                       />
                     )}
                   />
@@ -589,11 +594,11 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
                   <TextField
                     fullWidth
                     size='small'
-                    label='Code sản phẩm trên site mẹ'
+                    label='Code sản phẩm (site mẹ)'
                     value={selectedSupplierCode || ''}
                     onChange={(e) => setSelectedSupplierCode(e.target.value || null)}
                     placeholder={isEditMode ? 'Nhập code SP trên site mẹ' : 'Tự động khi chọn SP'}
-                    helperText={selectedSupplierId ? `ID trên site mẹ: ${selectedSupplierId}` : 'Dùng để mua hàng từ site mẹ — sửa nếu site mẹ đổi code'}
+                    helperText={selectedSupplierId ? `ID trên site mẹ: ${selectedSupplierId}` : 'Dùng để mua hàng từ site mẹ'}
                     sx={{ '& input': { fontSize: '13px', fontFamily: 'monospace' } }}
                   />
                 </Grid2>
