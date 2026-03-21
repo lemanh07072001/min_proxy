@@ -39,6 +39,7 @@ interface CheckoutModalProps {
   timeUnit?: 'day' | 'month'
   pricePerUnit?: number
   allowCustomAuth?: boolean
+  discountTiers?: Array<{ min: string; max: string; discount: string }>
   customFields?: Array<{
     param: string
     label: string
@@ -66,6 +67,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({
   timeUnit = 'day',
   pricePerUnit = 0,
   allowCustomAuth = false,
+  discountTiers = [],
   customFields
 }) => {
   const [selectedDuration, setSelectedDuration] = useState(priceOptions[0]?.key || '1')
@@ -121,7 +123,20 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({
 
   const isPerUnit = pricingMode === 'per_unit'
   const selectedOption = priceOptions.find(p => p.key === selectedDuration) || priceOptions[0]
-  const unitPrice = isPerUnit ? (pricePerUnit * customDuration) : (selectedOption?.price || 0)
+
+  // Per_unit: tìm discount tier theo khoảng ngày
+  const activeDiscount = isPerUnit && discountTiers.length > 0
+    ? discountTiers.find(t => {
+        const min = parseInt(t.min) || 0
+        const max = parseInt(t.max) || Infinity
+
+        return customDuration >= min && customDuration <= max
+      })
+    : null
+  const discountPct = parseInt(activeDiscount?.discount || '0') || 0
+  const effectivePricePerUnit = discountPct > 0 ? Math.round(pricePerUnit * (1 - discountPct / 100)) : pricePerUnit
+  const fullPriceTotal = pricePerUnit * customDuration
+  const unitPrice = isPerUnit ? (effectivePricePerUnit * customDuration) : (selectedOption?.price || 0)
   const activeDuration = isPerUnit ? String(customDuration) : selectedDuration
   const total = unitPrice * quantity
 
@@ -279,10 +294,34 @@ return pct > 0 ? Math.round(pct) : null
                   }}
                 />
                 <span style={{ fontSize: 13, color: '#64748b' }}>
-                  × {pricePerUnit.toLocaleString('vi-VN')}đ/{timeUnit === 'month' ? 'tháng' : 'ngày'}
+                  × {effectivePricePerUnit.toLocaleString('vi-VN')}đ/{timeUnit === 'month' ? 'tháng' : 'ngày'}
                   = <strong style={{ color: '#0f172a' }}>{unitPrice.toLocaleString('vi-VN')}đ</strong>
                 </span>
               </div>
+
+              {/* Discount badge */}
+              {discountPct > 0 && (
+                <div style={{ marginTop: 6, padding: '6px 10px', borderRadius: 8, background: '#f0fdf4', border: '1px solid #bbf7d0', fontSize: '12px' }}>
+                  <strong style={{ color: '#16a34a' }}>Giảm {discountPct}%</strong>
+                  <span style={{ color: '#64748b' }}> — đơn giá {pricePerUnit.toLocaleString('vi-VN')}đ → </span>
+                  <strong style={{ color: '#16a34a' }}>{effectivePricePerUnit.toLocaleString('vi-VN')}đ/{timeUnit === 'month' ? 'tháng' : 'ngày'}</strong>
+                  <span style={{ color: '#94a3b8', marginLeft: 6, textDecoration: 'line-through' }}>
+                    {fullPriceTotal.toLocaleString('vi-VN')}đ
+                  </span>
+                  <span style={{ color: '#16a34a', fontWeight: 600, marginLeft: 4 }}>
+                    tiết kiệm {(fullPriceTotal - unitPrice).toLocaleString('vi-VN')}đ
+                  </span>
+                </div>
+              )}
+
+              {/* Bảng chiết khấu tham khảo */}
+              {discountTiers.length > 0 && !discountPct && (
+                <div style={{ marginTop: 6, fontSize: '11.5px', color: '#64748b' }}>
+                  Mua nhiều giảm giá: {discountTiers.filter(t => t.min && t.discount).map((t, i) => (
+                    <span key={i}>{i > 0 ? ', ' : ''}<strong>{t.min}{t.max ? `-${t.max}` : '+'}</strong> {timeUnit === 'month' ? 'tháng' : 'ngày'} giảm <strong>{t.discount}%</strong></span>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 

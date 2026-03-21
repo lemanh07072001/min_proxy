@@ -162,6 +162,8 @@ export default function ServiceFormModal({ open, onClose, serviceId, initialData
   }
   const [purchaseOptions, setPurchaseOptions] = useState<PurchaseOption[]>([])
   const [allowCustomAuth, setAllowCustomAuth] = useState(false)
+  const [discountTiers, setDiscountTiers] = useState<Array<{ min: string; max: string; discount: string }>>([])
+
 
   // Derive dynamic options from existing service types
   const protocols = useMemo(() => {
@@ -363,6 +365,7 @@ return { values: {}, errors: formattedErrors }
       // Load purchase options + allow_custom_auth từ metadata
       const meta = serviceData.metadata || {}
       setAllowCustomAuth(!!meta.allow_custom_auth)
+      setDiscountTiers(meta.discount_tiers || [])
       if (meta.custom_fields && Array.isArray(meta.custom_fields)) {
         setPurchaseOptions(meta.custom_fields.map((f: any) => ({
           param: f.param || '',
@@ -412,6 +415,7 @@ return { values: {}, errors: formattedErrors }
       setPriceFields([{ key: '', value: '', cost: '' }])
       setPurchaseOptions([])
       setAllowCustomAuth(false)
+      setDiscountTiers([])
       setPricingMode('fixed')
       setTimeUnit('day')
       setPricePerUnit('')
@@ -463,7 +467,11 @@ return { values: {}, errors: formattedErrors }
     } : null
 
     // Merge allow_custom_auth vào metadata
-    const metadataFinal = { ...(metadata || {}), allow_custom_auth: allowCustomAuth }
+    const metadataFinal = {
+      ...(metadata || {}),
+      allow_custom_auth: allowCustomAuth,
+      discount_tiers: pricingMode === 'per_unit' ? discountTiers.filter(t => t.min && t.discount) : undefined,
+    }
 
     const submitData: any = {
       ...data,
@@ -1335,6 +1343,90 @@ return <Chip key={val} label={p?.label || val} size='small' />
                         />
                       </Grid2>
                     </>
+                  )}
+
+                  {/* Chiết khấu theo khoảng ngày */}
+                  {pricingMode === 'per_unit' && (
+                    <Grid2 size={{ xs: 12 }}>
+                      <div style={{ border: '1px solid #e2e8f0', borderRadius: 10, padding: '12px 14px', background: '#fafbfc' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                          <div>
+                            <div style={{ fontSize: '13px', fontWeight: 700, color: '#1e293b' }}>Chiết khấu theo số {timeUnit === 'month' ? 'tháng' : 'ngày'}</div>
+                            <div style={{ fontSize: '11px', color: '#94a3b8' }}>Khách mua càng nhiều ngày → giảm giá càng sâu. Không bắt buộc.</div>
+                          </div>
+                          <Button
+                            size='small' variant='outlined'
+                            onClick={() => setDiscountTiers(prev => [...prev, { min: '', max: '', discount: '' }])}
+                            sx={{ fontSize: '11px', textTransform: 'none' }}
+                          >
+                            + Thêm mức
+                          </Button>
+                        </div>
+
+                        {discountTiers.length === 0 && (
+                          <div style={{ fontSize: '12px', color: '#94a3b8', textAlign: 'center', padding: '8px 0' }}>
+                            Chưa có chiết khấu — khách trả full đơn giá bất kể số {timeUnit === 'month' ? 'tháng' : 'ngày'}.
+                          </div>
+                        )}
+
+                        {discountTiers.length > 0 && (
+                          <div style={{ border: '1px solid #e2e8f0', borderRadius: 8, overflow: 'hidden' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr 60px', background: '#f1f5f9', padding: '6px 10px', fontSize: '11px', fontWeight: 600, color: '#64748b' }}>
+                              <span>Từ ({timeUnit === 'month' ? 'tháng' : 'ngày'})</span>
+                              <span>Đến ({timeUnit === 'month' ? 'tháng' : 'ngày'})</span>
+                              <span>Chiết khấu (%)</span>
+                              <span>Giá sau CK</span>
+                              <span></span>
+                            </div>
+                            {discountTiers.map((tier, idx) => {
+                              const basePrice = parseInt(pricePerUnit) || 0
+                              const disc = parseInt(tier.discount) || 0
+                              const discountedPrice = basePrice > 0 && disc > 0 ? Math.round(basePrice * (1 - disc / 100)) : basePrice
+
+                              return (
+                                <div key={idx} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr 60px', alignItems: 'center', padding: '6px 10px', borderTop: '1px solid #f1f5f9' }}>
+                                  <CustomTextField size='small' type='number' placeholder='VD: 5' value={tier.min}
+                                    onChange={(e: any) => setDiscountTiers(prev => prev.map((t, i) => i === idx ? { ...t, min: e.target.value } : t))}
+                                    sx={{ '& input': { fontSize: '12px', padding: '5px 8px' } }}
+                                  />
+                                  <CustomTextField size='small' type='number' placeholder='VD: 9 (trống = ∞)' value={tier.max}
+                                    onChange={(e: any) => setDiscountTiers(prev => prev.map((t, i) => i === idx ? { ...t, max: e.target.value } : t))}
+                                    sx={{ '& input': { fontSize: '12px', padding: '5px 8px' } }}
+                                  />
+                                  <CustomTextField size='small' type='number' placeholder='VD: 10' value={tier.discount}
+                                    onChange={(e: any) => setDiscountTiers(prev => prev.map((t, i) => i === idx ? { ...t, discount: e.target.value } : t))}
+                                    sx={{ '& input': { fontSize: '12px', padding: '5px 8px' } }}
+                                  />
+                                  <span style={{ fontSize: '12px', fontWeight: 600, color: disc > 0 ? '#16a34a' : '#94a3b8' }}>
+                                    {basePrice > 0 && disc > 0 ? `${discountedPrice.toLocaleString('vi-VN')}đ/${timeUnit === 'month' ? 'th' : 'ng'}` : '—'}
+                                  </span>
+                                  <button type='button' onClick={() => setDiscountTiers(prev => prev.filter((_, i) => i !== idx))}
+                                    style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: 14 }}>✕</button>
+                                </div>
+                              )
+                            })}
+                          </div>
+                        )}
+
+                        {/* Preview cho admin */}
+                        {discountTiers.length > 0 && parseInt(pricePerUnit) > 0 && (
+                          <div style={{ marginTop: 8, padding: '8px 10px', background: '#eff6ff', borderRadius: 8, border: '1px solid #bfdbfe', fontSize: '11.5px', color: '#1e40af' }}>
+                            <strong>Khách sẽ thấy khi nhập số {timeUnit === 'month' ? 'tháng' : 'ngày'}:</strong>
+                            {discountTiers.filter(t => t.min && t.discount).map((t, i) => {
+                              const base = parseInt(pricePerUnit) || 0
+                              const disc = parseInt(t.discount) || 0
+                              const price = Math.round(base * (1 - disc / 100))
+
+                              return (
+                                <span key={i}>
+                                  {' '}{i > 0 ? '· ' : ''}{t.min}{t.max ? `-${t.max}` : '+'} {timeUnit === 'month' ? 'tháng' : 'ngày'}: <strong>{price.toLocaleString('vi-VN')}đ (-{disc}%)</strong>
+                                </span>
+                              )
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    </Grid2>
                   )}
 
                   {/* Khi per_unit: hiện mốc giá cũ đã lưu (read-only) */}

@@ -591,6 +591,7 @@ return
         timeUnit={plan.time_unit || 'day'}
         pricePerUnit={plan.price_per_unit || 0}
         allowCustomAuth={!!plan.metadata?.allow_custom_auth}
+        discountTiers={plan.metadata?.discount_tiers || []}
         customFields={plan.metadata?.custom_fields || undefined}
       />
     </>

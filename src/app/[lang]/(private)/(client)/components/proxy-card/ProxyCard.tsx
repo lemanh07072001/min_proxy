@@ -108,7 +108,16 @@ return defaultProtocols.map(p => p.id)
 
   // Tính % tiết kiệm tối đa
   const maxDiscount = useMemo(() => {
-    if (isPerUnit || priceOptions.length <= 1) return 0
+    // Per_unit: max discount từ discount_tiers
+    if (isPerUnit) {
+      const tiers = provider.metadata?.discount_tiers || []
+
+      if (tiers.length === 0) return 0
+
+      return Math.max(...tiers.map((t: any) => parseInt(t.discount) || 0))
+    }
+
+    if (priceOptions.length <= 1) return 0
     const sorted = [...priceOptions].sort((a, b) => parseInt(a.key) - parseInt(b.key))
     const base = sorted[0]
     const baseDays = parseInt(base.key) || 1
@@ -296,6 +305,7 @@ return
         timeUnit={provider.time_unit || 'day'}
         pricePerUnit={provider.price_per_unit || 0}
         allowCustomAuth={!!provider.metadata?.allow_custom_auth}
+        discountTiers={provider.metadata?.discount_tiers || []}
         customFields={provider.metadata?.custom_fields || undefined}
       />
     </>
