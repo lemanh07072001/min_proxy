@@ -176,6 +176,13 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
       setSelectedSupplierCode(supplierCode)
       setSupplierCodeInput(supplierCode || '')
 
+      // Auto-fetch product từ site mẹ theo code để lấy supplier_discount_tiers
+      if (supplierCode && !checkedProduct) {
+        checkProductMutation.mutate(supplierCode, {
+          onSuccess: (data) => setCheckedProduct(data),
+        })
+      }
+
       // Parse price_by_duration
       let prices = serviceData.price_by_duration
 
@@ -765,8 +772,8 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
                     {/* Bảng mốc từ site mẹ — admin chọn áp dụng + nhập giá bán */}
                     {(() => {
                       const supplierTiers = selectedProduct?.supplier_discount_tiers || []
-                      const costBase = parseInt(costPerUnit) || 0
-                      const sellBase = parseInt(pricePerUnit) || 0
+                      const costBase = parseFloat(costPerUnit) || 0
+                      const sellBase = parseFloat(pricePerUnit) || 0
                       const unitLabel = timeUnit === 'month' ? 'tháng' : 'ngày'
 
                       if (supplierTiers.length === 0 && costBase <= 0) return null
@@ -775,17 +782,21 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
                         for (const st of supplierTiers) {
                           const sMin = parseInt(st.min as any) || 0
                           const sMax = parseInt(st.max as any) || Infinity
-                          const sDisc = parseInt(st.discount as any) || 0
-                          if (days >= sMin && days <= sMax && sDisc > 0) return Math.round(costBase * (1 - sDisc / 100))
+                          // Dùng price nếu có (chính xác), fallback tính từ %
+                          const stPrice = (st as any).price ? parseFloat((st as any).price) : 0
+                          const sDisc = parseFloat(st.discount as any) || 0
+                          if (days >= sMin && days <= sMax && (sDisc > 0 || stPrice > 0)) {
+                            return stPrice > 0 ? stPrice : Math.round(costBase * (1 - sDisc / 100) * 100) / 100
+                          }
                         }
                         return costBase
                       }
 
                       const allMilestones = [
                         { days: 1, costDisc: 0, cost: costBase },
-                        ...supplierTiers.filter(t => t.min && t.discount).map(t => ({
+                        ...supplierTiers.filter(t => t.min && (t.discount || (t as any).price)).map(t => ({
                           days: parseInt(t.min as any) || 1,
-                          costDisc: parseInt(t.discount as any) || 0,
+                          costDisc: parseFloat(t.discount as any) || 0,
                           cost: getCostAt(parseInt(t.min as any) || 1),
                         }))
                       ]
@@ -930,8 +941,8 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
 
                     {discountTiers.length > 0 && (() => {
                       const unitLabel = timeUnit === 'month' ? 'tháng' : 'ngày'
-                      const sellBase = parseInt(pricePerUnit) || 0
-                      const costBase = parseInt(costPerUnit) || 0
+                      const sellBase = parseFloat(pricePerUnit) || 0
+                      const costBase = parseFloat(costPerUnit) || 0
                       const supplierTiers = selectedProduct?.supplier_discount_tiers || []
 
                       // Helper: tìm giá nhập tại mốc ngày
@@ -939,8 +950,11 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
                         for (const st of supplierTiers) {
                           const sMin = parseInt(st.min as any) || 0
                           const sMax = parseInt(st.max as any) || Infinity
-                          const sDisc = parseInt(st.discount as any) || 0
-                          if (days >= sMin && days <= sMax && sDisc > 0) return Math.round(costBase * (1 - sDisc / 100))
+                          const stPrice = (st as any).price ? parseFloat((st as any).price) : 0
+                          const sDisc = parseFloat(st.discount as any) || 0
+                          if (days >= sMin && days <= sMax && (sDisc > 0 || stPrice > 0)) {
+                            return stPrice > 0 ? stPrice : Math.round(costBase * (1 - sDisc / 100) * 100) / 100
+                          }
                         }
                         return costBase
                       }
