@@ -297,29 +297,51 @@ return (
       {
         header: 'Giá bán',
         cell: ({ row }: { row: any }) => {
-          const priceData = row.original?.price_by_duration
+          const data = row.original
+          const isPerUnit = data?.pricing_mode === 'per_unit'
 
+          // Per_unit: hiện giá/ngày + chiết khấu
+          if (isPerUnit) {
+            const unitPrice = parseInt(data?.price_per_unit) || 0
+            if (!unitPrice) return <div style={{ color: '#94a3b8' }}>-</div>
+            const unitLabel = data?.time_unit === 'month' ? 'tháng' : 'ngày'
+            const tiers = data?.metadata?.discount_tiers || []
+
+            return (
+              <div style={{ fontSize: '12px', lineHeight: '1.6' }}>
+                <div>
+                  <span style={{ fontWeight: 600, color: '#334155' }}>{unitPrice.toLocaleString('vi-VN')}đ</span>
+                  <span style={{ color: '#94a3b8' }}>/{unitLabel}</span>
+                </div>
+                {tiers.filter((t: any) => t.min && (t.discount || t.price)).map((t: any, i: number) => {
+                  const disc = parseFloat(t.discount) || 0
+                  const tierPrice = t.price ? parseInt(t.price) : Math.round(unitPrice * (1 - disc / 100))
+
+                  return (
+                    <div key={i} style={{ color: '#16a34a', fontSize: '11px' }}>
+                      {t.min}+ {unitLabel}: {tierPrice.toLocaleString('vi-VN')}đ <span style={{ opacity: 0.7 }}>(-{disc}%)</span>
+                    </div>
+                  )
+                })}
+              </div>
+            )
+          }
+
+          // Fixed: hiện mốc giá cố định
+          const priceData = data?.price_by_duration
           if (!priceData) return <div style={{ color: '#94a3b8' }}>-</div>
           let prices: any[] = []
-
-          try {
-            prices = typeof priceData === 'string' ? JSON.parse(priceData) : priceData
-          } catch { return <div style={{ color: '#94a3b8' }}>-</div> }
-
+          try { prices = typeof priceData === 'string' ? JSON.parse(priceData) : priceData } catch { return <div style={{ color: '#94a3b8' }}>-</div> }
           if (!Array.isArray(prices) || prices.length === 0) return <div style={{ color: '#94a3b8' }}>-</div>
           const durationLabels: Record<string, string> = { '1': 'Ngày', '7': 'Tuần', '30': 'Tháng' }
 
-          
-return (
+          return (
             <div style={{ fontSize: '12px', lineHeight: '1.6' }}>
               {['1', '7', '30'].map(d => {
                 const item = prices.find((p: any) => p.key === d || p.duration === d)
-
                 if (!item) return null
                 const price = new Intl.NumberFormat('vi-VN').format(parseInt(item.value || item.price || '0') || 0)
-
-                
-return (
+                return (
                   <div key={d}>
                     <span style={{ color: '#64748b' }}>{durationLabels[d]}: </span>
                     <span style={{ fontWeight: 600, color: '#334155' }}>{price}đ</span>
