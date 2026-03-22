@@ -5,7 +5,7 @@ import { useMemo, useState, useCallback, lazy, Suspense } from 'react'
 import Image from 'next/image'
 import { useParams, useRouter } from 'next/navigation'
 
-import { CircleQuestionMark, BadgeCheck, BadgeMinus, ShoppingCart, ShoppingCartIcon, List, Copy, SquarePen, Trash2, SquarePlus, Search, DollarSign } from 'lucide-react'
+import { CircleQuestionMark, BadgeCheck, BadgeMinus, ShoppingCart, ShoppingCartIcon, List, Copy, SquarePen, Trash2, SquarePlus, Search, DollarSign, Loader2 } from 'lucide-react'
 
 import {
   useReactTable,
@@ -483,10 +483,11 @@ return (
                 onClick={handleOpenCreate}
                 variant='contained'
                 size='small'
-                startIcon={<SquarePlus size={16} />}
-                sx={{ background: 'var(--primary-gradient, linear-gradient(45deg, #FC4336, #F88A4B))', color: '#fff', '&:hover': { opacity: 0.9 } }}
+                disabled={isLoading}
+                startIcon={isLoading ? <Loader2 size={16} className='animate-spin' /> : <SquarePlus size={16} />}
+                sx={{ background: 'var(--primary-gradient, linear-gradient(45deg, #FC4336, #F88A4B))', color: '#fff', '&:hover': { opacity: 0.9 }, '&.Mui-disabled': { opacity: 0.6, color: '#fff' } }}
               >
-                Thêm dịch vụ
+                {isLoading ? 'Đang tải...' : 'Thêm dịch vụ'}
               </Button>
             </div>
           </div>
