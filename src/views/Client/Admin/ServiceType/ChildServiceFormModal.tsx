@@ -38,19 +38,26 @@ interface Props {
 }
 
 // ─── Discount Tier Row cho site con (local state cho ô giá — tránh computed value ghi đè) ───
+// Helpers format VN
+const parseVN = (str: string): number => { if (!str) return 0; return parseFloat(str.replace(/\./g, '').replace(',', '.')) || 0 }
+const formatVN = (num: number): string => { if (!num && num !== 0) return ''; return num.toLocaleString('vi-VN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }
+const sanitizeVN = (str: string): string => str.replace(/[^0-9.,]/g, '')
+
 const ChildDiscountTierRow = memo(function ChildDiscountTierRow({ tier, idx, sellBase, costAt, profit, isLoss, onUpdate, onRemove }: {
   tier: { min: string; max: string; discount: string }
   idx: number; sellBase: number; costAt: number; profit: number; isLoss: boolean
   onUpdate: (idx: number, patch: Partial<{ min: string; max: string; discount: string }>) => void
   onRemove: (idx: number) => void
 }) {
-  const disc = parseInt(tier.discount) || 0
-  const computedPrice = sellBase > 0 && disc > 0 ? Math.round(sellBase * (1 - disc / 100)) : null
-  const [localPrice, setLocalPrice] = useState(computedPrice?.toString() || '')
+  const disc = parseFloat(tier.discount) || 0
+  const computedPrice = sellBase > 0 && disc > 0
+    ? Math.round(sellBase * (1 - disc / 100) * 100) / 100
+    : null
+  const [localPrice, setLocalPrice] = useState(computedPrice ? formatVN(computedPrice) : '')
   const [editingPrice, setEditingPrice] = useState(false)
 
   useEffect(() => {
-    if (!editingPrice) setLocalPrice(computedPrice?.toString() || '')
+    if (!editingPrice) setLocalPrice(computedPrice ? formatVN(computedPrice) : '')
   }, [computedPrice, editingPrice])
 
   const inputStyle = { width: '100%', padding: '4px 6px', border: '1px solid #e2e8f0', borderRadius: 4, fontSize: 12 }
@@ -59,22 +66,22 @@ const ChildDiscountTierRow = memo(function ChildDiscountTierRow({ tier, idx, sel
     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr 1fr 32px', gap: 2, alignItems: 'center', padding: '5px 8px', borderTop: '1px solid #f1f5f9', background: isLoss ? '#fef2f2' : undefined }}>
       <input type='number' placeholder='5' value={tier.min} onChange={e => onUpdate(idx, { min: e.target.value })} style={inputStyle} />
       <input type='number' placeholder='∞' value={tier.max} onChange={e => onUpdate(idx, { max: e.target.value })} style={inputStyle} />
-      <input type='number' placeholder='%' value={tier.discount} onChange={e => onUpdate(idx, { discount: e.target.value })} style={inputStyle} />
-      <input type='number' placeholder='đ' value={localPrice}
+      <input placeholder='VD: 10,5' value={tier.discount} onChange={e => onUpdate(idx, { discount: sanitizeVN(e.target.value) })} style={inputStyle} />
+      <input placeholder='VD: 4.500,00' value={localPrice}
         onFocus={() => setEditingPrice(true)}
-        onChange={e => setLocalPrice(e.target.value)}
+        onChange={e => setLocalPrice(sanitizeVN(e.target.value))}
         onBlur={() => {
           setEditingPrice(false)
-          const price = parseInt(localPrice) || 0
+          const price = parseVN(localPrice)
           if (sellBase > 0 && price > 0) {
-            const pct = Math.round((1 - price / sellBase) * 100)
-            onUpdate(idx, { discount: String(Math.max(0, Math.min(99, pct))) })
+            const pct = Math.round((1 - price / sellBase) * 10000) / 100
+            onUpdate(idx, { discount: String(Math.max(0.01, Math.min(99.99, pct))) })
           }
         }}
         style={{ ...inputStyle, fontWeight: disc > 0 ? 600 : 400, color: disc > 0 ? '#1e293b' : '#94a3b8' }} />
-      <span style={{ fontSize: 11, color: '#6366f1' }}>{costAt > 0 ? `${costAt.toLocaleString('vi-VN')}đ` : '—'}</span>
+      <span style={{ fontSize: 11, color: '#6366f1' }}>{costAt > 0 ? formatVN(costAt) + 'đ' : '—'}</span>
       <span style={{ fontSize: 11, fontWeight: 700, color: isLoss ? '#ef4444' : profit > 0 ? '#16a34a' : '#94a3b8' }}>
-        {profit !== 0 ? `${profit > 0 ? '+' : ''}${profit.toLocaleString('vi-VN')}đ` : '—'}
+        {profit !== 0 ? `${profit > 0 ? '+' : ''}${formatVN(profit)}đ` : '—'}
       </span>
       <button type='button' onClick={() => onRemove(idx)}
         style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: 13, padding: 0 }}>✕</button>

@@ -115,6 +115,21 @@ return true
   metadata_json: yup.string().nullable(),
 })
 
+// ─── Helpers: format số theo chuẩn VN (1.000,50) ───
+// Parse: "1.000,50" → 1000.5 | "1000.5" → 1000.5
+const parseVN = (str: string): number => {
+  if (!str) return 0
+  const cleaned = str.replace(/\./g, '').replace(',', '.')
+  return parseFloat(cleaned) || 0
+}
+// Format: 1000.5 → "1.000,50" (2 chữ số thập phân)
+const formatVN = (num: number): string => {
+  if (!num && num !== 0) return ''
+  return num.toLocaleString('vi-VN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+}
+// Chỉ cho nhập: số, dấu chấm (ngăn nghìn), dấu phẩy (thập phân)
+const sanitizeVN = (str: string): string => str.replace(/[^0-9.,]/g, '')
+
 // ─── Discount Tier Row (local state cho ô giá — tránh computed value ghi đè input) ───
 const DiscountTierRow = memo(function DiscountTierRow({ tier, idx, basePrice, unitLabel, color, onUpdate, onRemove }: {
   tier: { min: string; max: string; discount: string }
@@ -122,37 +137,38 @@ const DiscountTierRow = memo(function DiscountTierRow({ tier, idx, basePrice, un
   onUpdate: (idx: number, patch: Partial<{ min: string; max: string; discount: string }>) => void
   onRemove: (idx: number) => void
 }) {
-  const disc = parseInt(tier.discount) || 0
-  const computedPrice = basePrice > 0 && disc > 0 ? Math.round(basePrice * (1 - disc / 100)) : null
-  const [localPrice, setLocalPrice] = useState(computedPrice?.toString() || '')
+  const disc = parseFloat(tier.discount) || 0
+  const computedPrice = basePrice > 0 && disc > 0
+    ? Math.round(basePrice * (1 - disc / 100) * 100) / 100
+    : null
+  const [localPrice, setLocalPrice] = useState(computedPrice ? formatVN(computedPrice) : '')
   const [editingPrice, setEditingPrice] = useState(false)
 
-  // Sync computed → local khi % thay đổi từ bên ngoài (không phải do user gõ giá)
   useEffect(() => {
-    if (!editingPrice) setLocalPrice(computedPrice?.toString() || '')
+    if (!editingPrice) setLocalPrice(computedPrice ? formatVN(computedPrice) : '')
   }, [computedPrice, editingPrice])
+
+  const inputSx = { '& input': { fontSize: '12px', padding: '5px 8px' } }
 
   return (
     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr 40px', gap: '6px', alignItems: 'center', padding: '6px 10px', borderTop: '1px solid #f1f5f9' }}>
       <CustomTextField size='small' type='number' placeholder='VD: 5' value={tier.min}
-        onChange={(e: any) => onUpdate(idx, { min: e.target.value })}
-        sx={{ '& input': { fontSize: '12px', padding: '5px 8px' } }} />
+        onChange={(e: any) => onUpdate(idx, { min: e.target.value })} sx={inputSx} />
       <CustomTextField size='small' type='number' placeholder='Không giới hạn' value={tier.max}
-        onChange={(e: any) => onUpdate(idx, { max: e.target.value })}
-        sx={{ '& input': { fontSize: '12px', padding: '5px 8px' } }} />
-      <CustomTextField size='small' type='number' placeholder='%' value={tier.discount}
-        onChange={(e: any) => onUpdate(idx, { discount: e.target.value })}
-        sx={{ '& input': { fontSize: '12px', padding: '5px 8px' } }} />
-      <CustomTextField size='small' type='number' placeholder='đ'
+        onChange={(e: any) => onUpdate(idx, { max: e.target.value })} sx={inputSx} />
+      <CustomTextField size='small' placeholder='VD: 10,5' value={tier.discount}
+        onChange={(e: any) => onUpdate(idx, { discount: sanitizeVN(e.target.value) })}
+        sx={inputSx} />
+      <CustomTextField size='small' placeholder='VD: 4.500,00'
         value={localPrice}
         onFocus={() => setEditingPrice(true)}
-        onChange={(e: any) => setLocalPrice(e.target.value)}
+        onChange={(e: any) => setLocalPrice(sanitizeVN(e.target.value))}
         onBlur={() => {
           setEditingPrice(false)
-          const price = parseInt(localPrice) || 0
+          const price = parseVN(localPrice)
           if (basePrice > 0 && price > 0) {
-            const pct = Math.round((1 - price / basePrice) * 100)
-            onUpdate(idx, { discount: String(Math.max(0, Math.min(99, pct))) })
+            const pct = Math.round((1 - price / basePrice) * 10000) / 100
+            onUpdate(idx, { discount: String(Math.max(0.01, Math.min(99.99, pct))) })
           }
         }}
         sx={{ '& input': { fontSize: '12px', padding: '5px 8px', color: disc > 0 ? color : undefined, fontWeight: disc > 0 ? 600 : undefined } }} />
@@ -831,7 +847,7 @@ return { values: {}, errors: formattedErrors }
       pricing_mode: pricingMode,
       time_unit: timeUnit,
       price_per_unit: pricingMode === 'per_unit' ? (parseInt(pricePerUnit) || null) : null,
-      cost_per_unit: pricingMode === 'per_unit' ? (parseInt(costPerUnit) || null) : null,
+      cost_per_unit: pricingMode === 'per_unit' ? (parseFloat(costPerUnit) || null) : null,
     }
     delete submitData.metadata_json
 
@@ -1596,7 +1612,7 @@ return <Chip key={val} label={p?.label || val} size='small' />
                               <span></span>
                             </div>
                             {discountTiers.map((tier, idx) => (
-                              <DiscountTierRow key={idx} tier={tier} idx={idx} basePrice={parseInt(pricePerUnit) || 0}
+                              <DiscountTierRow key={idx} tier={tier} idx={idx} basePrice={parseFloat(pricePerUnit) || 0}
                                 unitLabel={timeUnit === 'month' ? 'tháng' : 'ngày'} color='#16a34a'
                                 onUpdate={(i, patch) => setDiscountTiers(prev => prev.map((t, j) => j === i ? { ...t, ...patch } : t))}
                                 onRemove={(i) => setDiscountTiers(prev => prev.filter((_, j) => j !== i))} />
@@ -1605,17 +1621,17 @@ return <Chip key={val} label={p?.label || val} size='small' />
                         )}
 
                         {/* Preview cho admin */}
-                        {discountTiers.length > 0 && parseInt(pricePerUnit) > 0 && (
+                        {discountTiers.length > 0 && parseFloat(pricePerUnit) > 0 && (
                           <div style={{ marginTop: 8, padding: '8px 10px', background: '#eff6ff', borderRadius: 8, border: '1px solid #bfdbfe', fontSize: '11.5px', color: '#1e40af' }}>
                             <strong>Khách sẽ thấy khi nhập số {timeUnit === 'month' ? 'tháng' : 'ngày'}:</strong>
                             {discountTiers.filter(t => t.min && t.discount).map((t, i) => {
-                              const base = parseInt(pricePerUnit) || 0
-                              const disc = parseInt(t.discount) || 0
-                              const price = Math.round(base * (1 - disc / 100))
+                              const base = parseFloat(pricePerUnit) || 0
+                              const disc = parseFloat(t.discount) || 0
+                              const price = Math.round(base * (1 - disc / 100) * 100) / 100
 
                               return (
                                 <span key={i}>
-                                  {' '}{i > 0 ? '· ' : ''}{t.min}{t.max ? `-${t.max}` : '+'} {timeUnit === 'month' ? 'tháng' : 'ngày'}: <strong>{price.toLocaleString('vi-VN')}đ (-{disc}%)</strong>
+                                  {' '}{i > 0 ? '· ' : ''}{t.min}{t.max ? `-${t.max}` : '+'} {timeUnit === 'month' ? 'tháng' : 'ngày'}: <strong>{formatVN(price)}đ (-{disc}%)</strong>
                                 </span>
                               )
                             })}
@@ -1626,13 +1642,13 @@ return <Chip key={val} label={p?.label || val} size='small' />
                   )}
 
                   {/* Chiết khấu giá GỐC Provider theo khoảng ngày */}
-                  {pricingMode === 'per_unit' && parseInt(costPerUnit) > 0 && (
+                  {pricingMode === 'per_unit' && parseFloat(costPerUnit) > 0 && (
                     <Grid2 size={{ xs: 12 }}>
                       <div style={{ border: '1px solid #fde68a', borderRadius: 10, padding: '12px 14px', background: '#fffbeb' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                           <div>
                             <div style={{ fontSize: '13px', fontWeight: 700, color: '#92400e' }}>Chiết khấu giá GỐC (Provider) theo số {timeUnit === 'month' ? 'tháng' : 'ngày'}</div>
-                            <div style={{ fontSize: '11px', color: '#92400e', lineHeight: 1.5 }}>Chỉ áp cho <strong>đại lý (reseller)</strong>. Nhập chính sách giá từ Provider — giá vốn giảm khi mua nhiều {timeUnit === 'month' ? 'tháng' : 'ngày'}.{parseInt(costPerUnit) > 0 && <><br/>VD: Gốc {parseInt(costPerUnit).toLocaleString('vi-VN')}đ, giảm 20% → vốn {Math.round(parseInt(costPerUnit) * 0.8).toLocaleString('vi-VN')}đ, đại lý +15% → trả {Math.round(parseInt(costPerUnit) * 0.8 * 1.15).toLocaleString('vi-VN')}đ/{timeUnit === 'month' ? 'tháng' : 'ngày'}.</>}</div>
+                            <div style={{ fontSize: '11px', color: '#92400e', lineHeight: 1.5 }}>Chỉ áp cho <strong>đại lý (reseller)</strong>. Nhập chính sách giá từ Provider — giá vốn giảm khi mua nhiều {timeUnit === 'month' ? 'tháng' : 'ngày'}.{parseFloat(costPerUnit) > 0 && <><br/>VD: Gốc {parseFloat(costPerUnit).toLocaleString('vi-VN')}đ, giảm 20% → vốn {Math.round(parseFloat(costPerUnit) * 0.8).toLocaleString('vi-VN')}đ, đại lý +15% → trả {Math.round(parseFloat(costPerUnit) * 0.8 * 1.15).toLocaleString('vi-VN')}đ/{timeUnit === 'month' ? 'tháng' : 'ngày'}.</>}</div>
                           </div>
                           <Button
                             size='small' variant='outlined' color='warning'
@@ -1645,7 +1661,7 @@ return <Chip key={val} label={p?.label || val} size='small' />
 
                         {costDiscountTiers.length === 0 && (
                           <div style={{ fontSize: '12px', color: '#b45309', textAlign: 'center', padding: '8px 0' }}>
-                            Chưa có chiết khấu Provider — đại lý mua với giá gốc cố định ({parseInt(costPerUnit) > 0 ? `${parseInt(costPerUnit).toLocaleString('vi-VN')}đ` : '...'} × markup%) bất kể số {timeUnit === 'month' ? 'tháng' : 'ngày'}.
+                            Chưa có chiết khấu Provider — đại lý mua với giá gốc cố định ({parseFloat(costPerUnit) > 0 ? `${parseFloat(costPerUnit).toLocaleString('vi-VN')}đ` : '...'} × markup%) bất kể số {timeUnit === 'month' ? 'tháng' : 'ngày'}.
                           </div>
                         )}
 
@@ -1659,7 +1675,7 @@ return <Chip key={val} label={p?.label || val} size='small' />
                               <span></span>
                             </div>
                             {costDiscountTiers.map((tier, idx) => (
-                              <DiscountTierRow key={idx} tier={tier} idx={idx} basePrice={parseInt(costPerUnit) || 0}
+                              <DiscountTierRow key={idx} tier={tier} idx={idx} basePrice={parseFloat(costPerUnit) || 0}
                                 unitLabel={timeUnit === 'month' ? 'tháng' : 'ngày'} color='#d97706'
                                 onUpdate={(i, patch) => setCostDiscountTiers(prev => prev.map((t, j) => j === i ? { ...t, ...patch } : t))}
                                 onRemove={(i) => setCostDiscountTiers(prev => prev.filter((_, j) => j !== i))} />
