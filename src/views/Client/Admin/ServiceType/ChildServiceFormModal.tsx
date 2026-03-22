@@ -919,13 +919,21 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
                                   onChange={e => setDiscountTiers(prev => prev.map((t, i) => i === idx ? { ...t, max: e.target.value } : t))}
                                   style={{ width: '100%', padding: '4px 6px', border: '1px solid #e2e8f0', borderRadius: 4, fontSize: 12 }}
                                 />
-                                <input type='number' placeholder='10' value={tier.discount}
+                                <input type='number' placeholder='%' value={tier.discount}
                                   onChange={e => setDiscountTiers(prev => prev.map((t, i) => i === idx ? { ...t, discount: e.target.value } : t))}
                                   style={{ width: '100%', padding: '4px 6px', border: '1px solid #e2e8f0', borderRadius: 4, fontSize: 12 }}
                                 />
-                                <span style={{ fontSize: 11, fontWeight: 600, color: disc > 0 ? '#1e293b' : '#94a3b8' }}>
-                                  {sellBase > 0 && disc > 0 ? `${sellAfter.toLocaleString('vi-VN')}đ` : '—'}
-                                </span>
+                                <input type='number' placeholder='đ'
+                                  value={sellBase > 0 && disc > 0 ? sellAfter : ''}
+                                  onChange={e => {
+                                    const price = parseInt(e.target.value) || 0
+                                    if (sellBase > 0 && price > 0) {
+                                      const pct = Math.round((1 - price / sellBase) * 100)
+                                      setDiscountTiers(prev => prev.map((t, i) => i === idx ? { ...t, discount: String(Math.max(0, Math.min(99, pct))) } : t))
+                                    }
+                                  }}
+                                  style={{ width: '100%', padding: '4px 6px', border: '1px solid #e2e8f0', borderRadius: 4, fontSize: 12, fontWeight: disc > 0 ? 600 : 400, color: disc > 0 ? '#1e293b' : '#94a3b8' }}
+                                />
                                 <span style={{ fontSize: 11, color: '#6366f1' }}>
                                   {costAt > 0 ? `${costAt.toLocaleString('vi-VN')}đ` : '—'}
                                 </span>

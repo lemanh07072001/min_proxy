@@ -1615,11 +1615,11 @@ return <Chip key={val} label={p?.label || val} size='small' />
 
                         {discountTiers.length > 0 && (
                           <div style={{ border: '1px solid #e2e8f0', borderRadius: 8, overflow: 'hidden' }}>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1.2fr 40px', gap: '6px', background: '#f1f5f9', padding: '6px 10px', fontSize: '11px', fontWeight: 600, color: '#64748b' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr 40px', gap: '6px', background: '#f1f5f9', padding: '6px 10px', fontSize: '11px', fontWeight: 600, color: '#64748b' }}>
                               <span>Từ ({timeUnit === 'month' ? 'tháng' : 'ngày'})</span>
                               <span>Đến ({timeUnit === 'month' ? 'tháng' : 'ngày'})</span>
-                              <span>Giảm giá (%)</span>
-                              <span>Giá bán sau CK</span>
+                              <span>Giảm (%)</span>
+                              <span>Giá bán (đ)</span>
                               <span></span>
                             </div>
                             {discountTiers.map((tier, idx) => {
@@ -1628,22 +1628,33 @@ return <Chip key={val} label={p?.label || val} size='small' />
                               const discountedPrice = basePrice > 0 && disc > 0 ? Math.round(basePrice * (1 - disc / 100)) : basePrice
 
                               return (
-                                <div key={idx} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1.2fr 40px', gap: '6px', alignItems: 'center', padding: '6px 10px', borderTop: '1px solid #f1f5f9' }}>
+                                <div key={idx} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr 40px', gap: '6px', alignItems: 'center', padding: '6px 10px', borderTop: '1px solid #f1f5f9' }}>
                                   <CustomTextField size='small' type='number' placeholder='VD: 5' value={tier.min}
                                     onChange={(e: any) => setDiscountTiers(prev => prev.map((t, i) => i === idx ? { ...t, min: e.target.value } : t))}
                                     sx={{ '& input': { fontSize: '12px', padding: '5px 8px' } }}
                                   />
-                                  <CustomTextField size='small' type='number' placeholder='Trống = không giới hạn' value={tier.max}
+                                  <CustomTextField size='small' type='number' placeholder='Không giới hạn' value={tier.max}
                                     onChange={(e: any) => setDiscountTiers(prev => prev.map((t, i) => i === idx ? { ...t, max: e.target.value } : t))}
                                     sx={{ '& input': { fontSize: '12px', padding: '5px 8px' } }}
                                   />
-                                  <CustomTextField size='small' type='number' placeholder='VD: 10' value={tier.discount}
-                                    onChange={(e: any) => setDiscountTiers(prev => prev.map((t, i) => i === idx ? { ...t, discount: e.target.value } : t))}
+                                  <CustomTextField size='small' type='number' placeholder='%' value={tier.discount}
+                                    onChange={(e: any) => {
+                                      const pct = e.target.value
+                                      setDiscountTiers(prev => prev.map((t, i) => i === idx ? { ...t, discount: pct } : t))
+                                    }}
                                     sx={{ '& input': { fontSize: '12px', padding: '5px 8px' } }}
                                   />
-                                  <span style={{ fontSize: '12px', fontWeight: 600, color: disc > 0 ? '#16a34a' : '#94a3b8' }}>
-                                    {basePrice > 0 && disc > 0 ? `${discountedPrice.toLocaleString('vi-VN')}đ/${timeUnit === 'month' ? 'tháng' : 'ngày'}` : '—'}
-                                  </span>
+                                  <CustomTextField size='small' type='number' placeholder='đ'
+                                    value={basePrice > 0 && disc > 0 ? discountedPrice : ''}
+                                    onChange={(e: any) => {
+                                      const price = parseInt(e.target.value) || 0
+                                      if (basePrice > 0 && price > 0) {
+                                        const pct = Math.round((1 - price / basePrice) * 100)
+                                        setDiscountTiers(prev => prev.map((t, i) => i === idx ? { ...t, discount: String(Math.max(0, Math.min(99, pct))) } : t))
+                                      }
+                                    }}
+                                    sx={{ '& input': { fontSize: '12px', padding: '5px 8px', color: disc > 0 ? '#16a34a' : undefined, fontWeight: disc > 0 ? 600 : undefined } }}
+                                  />
                                   <button type='button' onClick={() => setDiscountTiers(prev => prev.filter((_, i) => i !== idx))}
                                     style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: 14 }}>✕</button>
                                 </div>
@@ -1699,11 +1710,11 @@ return <Chip key={val} label={p?.label || val} size='small' />
 
                         {costDiscountTiers.length > 0 && (
                           <div style={{ border: '1px solid #fde68a', borderRadius: 8, overflow: 'hidden' }}>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1.2fr 40px', gap: '6px', background: '#fef3c7', padding: '6px 10px', fontSize: '11px', fontWeight: 600, color: '#92400e' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr 40px', gap: '6px', background: '#fef3c7', padding: '6px 10px', fontSize: '11px', fontWeight: 600, color: '#92400e' }}>
                               <span>Từ ({timeUnit === 'month' ? 'tháng' : 'ngày'})</span>
                               <span>Đến ({timeUnit === 'month' ? 'tháng' : 'ngày'})</span>
-                              <span>Giảm giá (%)</span>
-                              <span>Giá gốc sau CK</span>
+                              <span>Giảm (%)</span>
+                              <span>Giá gốc (đ)</span>
                               <span></span>
                             </div>
                             {costDiscountTiers.map((tier, idx) => {
@@ -1712,22 +1723,33 @@ return <Chip key={val} label={p?.label || val} size='small' />
                               const discountedCost = baseCost > 0 && disc > 0 ? Math.round(baseCost * (1 - disc / 100)) : baseCost
 
                               return (
-                                <div key={idx} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1.2fr 40px', gap: '6px', alignItems: 'center', padding: '6px 10px', borderTop: '1px solid #fef3c7' }}>
+                                <div key={idx} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr 40px', gap: '6px', alignItems: 'center', padding: '6px 10px', borderTop: '1px solid #fef3c7' }}>
                                   <CustomTextField size='small' type='number' placeholder='VD: 5' value={tier.min}
                                     onChange={(e: any) => setCostDiscountTiers(prev => prev.map((t, i) => i === idx ? { ...t, min: e.target.value } : t))}
                                     sx={{ '& input': { fontSize: '12px', padding: '5px 8px' } }}
                                   />
-                                  <CustomTextField size='small' type='number' placeholder='Trống = không giới hạn' value={tier.max}
+                                  <CustomTextField size='small' type='number' placeholder='Không giới hạn' value={tier.max}
                                     onChange={(e: any) => setCostDiscountTiers(prev => prev.map((t, i) => i === idx ? { ...t, max: e.target.value } : t))}
                                     sx={{ '& input': { fontSize: '12px', padding: '5px 8px' } }}
                                   />
-                                  <CustomTextField size='small' type='number' placeholder='VD: 10' value={tier.discount}
-                                    onChange={(e: any) => setCostDiscountTiers(prev => prev.map((t, i) => i === idx ? { ...t, discount: e.target.value } : t))}
+                                  <CustomTextField size='small' type='number' placeholder='%' value={tier.discount}
+                                    onChange={(e: any) => {
+                                      const pct = e.target.value
+                                      setCostDiscountTiers(prev => prev.map((t, i) => i === idx ? { ...t, discount: pct } : t))
+                                    }}
                                     sx={{ '& input': { fontSize: '12px', padding: '5px 8px' } }}
                                   />
-                                  <span style={{ fontSize: '12px', fontWeight: 600, color: disc > 0 ? '#d97706' : '#94a3b8' }}>
-                                    {baseCost > 0 && disc > 0 ? `${discountedCost.toLocaleString('vi-VN')}đ/${timeUnit === 'month' ? 'tháng' : 'ngày'}` : '—'}
-                                  </span>
+                                  <CustomTextField size='small' type='number' placeholder='đ'
+                                    value={baseCost > 0 && disc > 0 ? discountedCost : ''}
+                                    onChange={(e: any) => {
+                                      const price = parseInt(e.target.value) || 0
+                                      if (baseCost > 0 && price > 0) {
+                                        const pct = Math.round((1 - price / baseCost) * 100)
+                                        setCostDiscountTiers(prev => prev.map((t, i) => i === idx ? { ...t, discount: String(Math.max(0, Math.min(99, pct))) } : t))
+                                      }
+                                    }}
+                                    sx={{ '& input': { fontSize: '12px', padding: '5px 8px', color: disc > 0 ? '#d97706' : undefined, fontWeight: disc > 0 ? 600 : undefined } }}
+                                  />
                                   <button type='button' onClick={() => setCostDiscountTiers(prev => prev.filter((_, i) => i !== idx))}
                                     style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: 14 }}>✕</button>
                                 </div>
