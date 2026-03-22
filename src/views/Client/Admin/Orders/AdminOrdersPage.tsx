@@ -545,15 +545,15 @@ return (
                       <XCircle size={16} />
                     </IconButton>
                   </Tooltip>
-                  <Tooltip title='Gửi lại'>
-                    <IconButton size='small' color='success' onClick={() => handleOpenResend(order)}>
-                      <RefreshCw size={16} />
+                  <Tooltip title={(order.delivered_quantity ?? 0) > 0 ? 'Thử lại lấy proxy' : 'Thử lại mua hàng'}>
+                    <IconButton size='small' color='warning' onClick={() => setRetryFailedOrder(order)}>
+                      <RotateCcw size={16} />
                     </IconButton>
                   </Tooltip>
                 </>
               )}
-              {/* Retry cho order processing retry >= max hoặc failed */}
-              {((status === 1 && order.retry >= (order.max_retry ?? 3)) || status === 5) && (
+              {/* Retry cho order processing đã hết retry */}
+              {status === 1 && order.retry >= (order.max_retry ?? 3) && (
                 <Tooltip title='Thử lại đơn hàng'>
                   <IconButton size='small' color='warning' onClick={() => setRetryFailedOrder(order)}>
                     <RotateCcw size={16} />
@@ -596,7 +596,7 @@ return (
   })
 
   return (
-    <>
+    <div style={{ padding: '16px 24px' }}>
           {/* Stats Cards */}
           <Grid2 container spacing={2} sx={{ mb: 3 }}>
             <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
@@ -965,7 +965,10 @@ return (
         <DialogTitle>Thử lại đơn hàng</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Reset đơn <strong>#{retryFailedOrder?.order_code}</strong> về pending và đẩy lại vào queue xử lý?
+            {(retryFailedOrder?.delivered_quantity ?? 0) > 0
+              ? <>Đơn <strong>#{retryFailedOrder?.order_code}</strong> đã mua thành công nhưng chưa lấy được proxy. Thử lại lấy proxy?</>
+              : <>Đơn <strong>#{retryFailedOrder?.order_code}</strong> chưa mua được. Đẩy lại vào queue để thử mua?</>
+            }
           </DialogContentText>
         </DialogContent>
         <DialogActions>
@@ -1031,6 +1034,6 @@ return (
           </Button>
         </DialogActions>
       </Dialog>
-    </>
+    </div>
   )
 }

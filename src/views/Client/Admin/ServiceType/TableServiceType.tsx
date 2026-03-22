@@ -1,11 +1,11 @@
 'use client'
 
-import { useMemo, useState, useCallback, lazy, Suspense } from 'react'
+import { useEffect, useMemo, useState, useCallback, useRef, lazy, Suspense } from 'react'
 
 import Image from 'next/image'
 import { useParams, useRouter } from 'next/navigation'
 
-import { CircleQuestionMark, BadgeCheck, BadgeMinus, ShoppingCart, ShoppingCartIcon, List, Copy, SquarePen, Trash2, SquarePlus, Search, DollarSign, Loader2 } from 'lucide-react'
+import { CircleQuestionMark, BadgeCheck, BadgeMinus, ShoppingCart, ShoppingCartIcon, List, Copy, SquarePen, Trash2, SquarePlus, Search, DollarSign, Loader2, GripVertical, ChevronUp, ChevronDown } from 'lucide-react'
 
 import {
   useReactTable,
@@ -22,7 +22,12 @@ import Chip from '@mui/material/Chip'
 
 import Pagination from '@mui/material/Pagination'
 
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+
+import { DndContext, closestCenter, PointerSensor, KeyboardSensor, useSensor, useSensors } from '@dnd-kit/core'
+import type { DragEndEvent } from '@dnd-kit/core'
+import { SortableContext, useSortable, verticalListSortingStrategy, arrayMove } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 
 import {
   Button,
@@ -44,6 +49,51 @@ const ChildServiceFormModal = lazy(() => import('@/views/Client/Admin/ServiceTyp
 import CustomPriceModal from '@/views/Client/Admin/ServiceType/CustomPriceModal'
 import { getTagStyle } from '@/configs/tagConfig'
 import { useBranding } from '@/app/contexts/BrandingContext'
+
+// ─── SortableRow component ───
+interface SortableRowProps {
+  rowId: string | number
+  disabled?: boolean
+  showDragHandle: boolean
+  children: React.ReactNode
+}
+
+function SortableRow({ rowId, disabled, showDragHandle, children }: SortableRowProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging
+  } = useSortable({ id: rowId, disabled })
+
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    position: 'relative',
+    zIndex: isDragging ? 999 : undefined,
+    background: isDragging ? '#f1f5f9' : undefined
+  }
+
+  return (
+    <tr ref={setNodeRef} style={style} className='table-row' {...attributes}>
+      {/* Drag handle column */}
+      <td className='table-cell' style={{ width: 40, textAlign: 'center', padding: '0 4px' }}>
+        {showDragHandle ? (
+          <span
+            {...listeners}
+            style={{ cursor: isDragging ? 'grabbing' : 'grab', display: 'inline-flex', alignItems: 'center', color: '#94a3b8' }}
+          >
+            <GripVertical size={16} />
+          </span>
+        ) : null}
+      </td>
+      {children}
+    </tr>
+  )
+}
 
 export default function TableServiceType() {
   const { isChild } = useBranding()
@@ -71,8 +121,86 @@ export default function TableServiceType() {
   const axiosAuth = useAxiosAuth()
   const { lang: locale } = params
 
+  const queryClient = useQueryClient()
+
   const copyMutation = useCopyServiceType()
   const deleteMutation = useDeleteServiceType()
+
+  // ─── Drag-and-drop reorder state (non-data-dependent parts) ───
+  const [orderedIds, setOrderedIds] = useState<number[]>([])
+  const reorderTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const isReorderingRef = useRef(false)
+
+  const isFilterActive = !!(searchText || filterType || filterStatus)
+
+  const pointerSensor = useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
+  const keyboardSensor = useSensor(KeyboardSensor)
+  const dndSensors = useSensors(pointerSensor, keyboardSensor)
+
+  // Call reorder API (debounced)
+  const callReorderApi = useCallback(
+    (newIds: number[]) => {
+      if (reorderTimerRef.current) {
+        clearTimeout(reorderTimerRef.current)
+      }
+
+      isReorderingRef.current = true
+      reorderTimerRef.current = setTimeout(async () => {
+        try {
+          await axiosAuth.post('/reorder-service-types', { ids: newIds })
+          toast.success('Cập nhật thứ tự thành công!')
+          queryClient.invalidateQueries({ queryKey: ['orderProxyStatic'] })
+        } catch (error: any) {
+          toast.error(error?.response?.data?.message || 'Có lỗi khi sắp xếp lại')
+          // Revert to server data
+          queryClient.invalidateQueries({ queryKey: ['orderProxyStatic'] })
+        } finally {
+          isReorderingRef.current = false
+        }
+      }, 500)
+    },
+    [axiosAuth, queryClient]
+  )
+
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      const { active, over } = event
+
+      if (!over || active.id === over.id) return
+
+      setOrderedIds(prevIds => {
+        const oldIndex = prevIds.indexOf(Number(active.id))
+        const newIndex = prevIds.indexOf(Number(over.id))
+
+        if (oldIndex === -1 || newIndex === -1) return prevIds
+        const reorderedIds = arrayMove(prevIds, oldIndex, newIndex)
+
+        callReorderApi(reorderedIds)
+
+        return reorderedIds
+      })
+    },
+    [callReorderApi]
+  )
+
+  const handleMoveItem = useCallback(
+    (itemId: number, direction: 'up' | 'down') => {
+      setOrderedIds(prevIds => {
+        const currentIndex = prevIds.indexOf(itemId)
+
+        if (currentIndex === -1) return prevIds
+        const targetIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1
+
+        if (targetIndex < 0 || targetIndex >= prevIds.length) return prevIds
+        const reorderedIds = arrayMove(prevIds, currentIndex, targetIndex)
+
+        callReorderApi(reorderedIds)
+
+        return reorderedIds
+      })
+    },
+    [callReorderApi]
+  )
 
   const handleOpenCreate = useCallback(() => {
     setEditingId(null)
@@ -140,6 +268,21 @@ export default function TableServiceType() {
     staleTime: 0
   })
 
+  // Keep orderedIds in sync with server data
+  useEffect(() => {
+    if (!isReorderingRef.current && dataServices.length > 0) {
+      setOrderedIds(dataServices.map((item: any) => item.id))
+    }
+  }, [dataServices])
+
+  // Sorted data based on local order (used for table data)
+  const sortedDataServices = useMemo(() => {
+    if (orderedIds.length === 0) return dataServices
+    const idMap = new Map(dataServices.map((item: any) => [item.id, item]))
+
+    return orderedIds.map(id => idMap.get(id)).filter(Boolean)
+  }, [dataServices, orderedIds])
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       // case '':
@@ -154,7 +297,7 @@ export default function TableServiceType() {
   }
 
   const filteredData = useMemo(() => {
-    let result = dataServices
+    let result = sortedDataServices
 
     if (searchText) {
       const lower = searchText.toLowerCase()
@@ -174,7 +317,7 @@ export default function TableServiceType() {
 
     
 return result
-  }, [dataServices, searchText, filterType, filterStatus])
+  }, [sortedDataServices, searchText, filterType, filterStatus])
 
   const columns = useMemo(
     () => [
@@ -383,8 +526,43 @@ return (
       {
         header: 'Action',
         cell: ({ row }: { row: any }) => {
+          const itemId = row.original.id
+          const itemIndex = orderedIds.indexOf(itemId)
+          const isFirstItem = itemIndex === 0
+          const isLastItem = itemIndex === orderedIds.length - 1
+
           return (
-            <div className='flex gap-2'>
+            <div className='flex gap-2 items-center'>
+              {/* Up/Down arrow buttons — hidden when filters are active */}
+              {!isFilterActive && (
+                <div className='flex flex-col' style={{ gap: '1px' }}>
+                  <Tooltip title='Di chuyển lên'>
+                    <span>
+                      <IconButton
+                        size='small'
+                        disabled={isFirstItem}
+                        onClick={() => handleMoveItem(itemId, 'up')}
+                        sx={{ padding: '1px', color: '#64748b', '&:hover': { color: '#334155' } }}
+                      >
+                        <ChevronUp size={15} />
+                      </IconButton>
+                    </span>
+                  </Tooltip>
+                  <Tooltip title='Di chuyển xuống'>
+                    <span>
+                      <IconButton
+                        size='small'
+                        disabled={isLastItem}
+                        onClick={() => handleMoveItem(itemId, 'down')}
+                        sx={{ padding: '1px', color: '#64748b', '&:hover': { color: '#334155' } }}
+                      >
+                        <ChevronDown size={15} />
+                      </IconButton>
+                    </span>
+                  </Tooltip>
+                </div>
+              )}
+
               <Tooltip title='Chỉnh sửa dịch vụ'>
                 <IconButton size='small' color='info' onClick={() => handleOpenEdit(row.original)}>
                   <SquarePen size={18} />
@@ -427,10 +605,10 @@ return (
             </div>
           )
         },
-        size: 100
+        size: 140
       }
     ],
-    [handleOpenEdit, handleCopyService, handleOpenDeleteDialog, copyMutation.isPending, deleteMutation.isPending]
+    [handleOpenEdit, handleCopyService, handleOpenDeleteDialog, handleMoveItem, copyMutation.isPending, deleteMutation.isPending, isFilterActive, orderedIds, isChild]
   )
 
   const table = useReactTable({
@@ -455,6 +633,13 @@ return (
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues()
   })
+
+  // Row IDs for current page (used by SortableContext)
+  const tableRows = table.getRowModel().rows
+  const sortableRowIds = useMemo(
+    () => tableRows.map(row => (row.original as any).id as number),
+    [tableRows]
+  )
 
   const { pageIndex, pageSize } = table.getState().pagination
   const totalRows = table.getFilteredRowModel().rows.length
@@ -560,6 +745,10 @@ return (
               <thead className='table-header'>
                 {table.getHeaderGroups().map(headerGroup => (
                   <tr key={headerGroup.id}>
+                    {/* Drag handle header */}
+                    <th className='table-header th' style={{ width: 40, textAlign: 'center', padding: '0 4px' }}>
+                      {!isFilterActive && <GripVertical size={14} style={{ color: '#94a3b8', margin: '0 auto' }} />}
+                    </th>
                     {headerGroup.headers.map(header => (
                       <th style={{ width: header.getSize() }} className='table-header th' key={header.id}>
                         {flexRender(header.column.columnDef.header, header.getContext())}
@@ -568,41 +757,54 @@ return (
                   </tr>
                 ))}
               </thead>
-              <tbody>
-                {isLoading ? (
-                  <tr>
-                    <td colSpan={columns.length} className='py-10 text-center'>
-                      <div className='loader-wrapper'>
-                        <div className='loader'>
-                          <span></span>
-                          <span></span>
-                          <span></span>
-                        </div>
-                        <p className='loading-text'>Đang tải dữ liệu...</p>
-                      </div>
-                    </td>
-                  </tr>
-                ) : table.getRowModel().rows.length === 0 ? (
-                  <tr>
-                    <td colSpan={columns.length} className='py-10 text-center'>
-                      <div className='flex flex-col items-center justify-center'>
-                        <Image src='/images/no-data.png' alt='No data' width={160} height={160} />
-                        <p className='mt-4 text-gray-500'>Không có dữ liệu</p>
-                      </div>
-                    </td>
-                  </tr>
-                ) : (
-                  table.getRowModel().rows.map(row => (
-                    <tr key={row.id} className='table-row'>
-                      {row.getVisibleCells().map(cell => (
-                        <td className='table-cell' key={cell.id}>
-                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+              <DndContext
+                sensors={dndSensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
+              >
+                <SortableContext items={sortableRowIds} strategy={verticalListSortingStrategy}>
+                  <tbody>
+                    {isLoading ? (
+                      <tr>
+                        <td colSpan={columns.length + 1} className='py-10 text-center'>
+                          <div className='loader-wrapper'>
+                            <div className='loader'>
+                              <span></span>
+                              <span></span>
+                              <span></span>
+                            </div>
+                            <p className='loading-text'>Đang tải dữ liệu...</p>
+                          </div>
                         </td>
-                      ))}
-                    </tr>
-                  ))
-                )}
-              </tbody>
+                      </tr>
+                    ) : table.getRowModel().rows.length === 0 ? (
+                      <tr>
+                        <td colSpan={columns.length + 1} className='py-10 text-center'>
+                          <div className='flex flex-col items-center justify-center'>
+                            <Image src='/images/no-data.png' alt='No data' width={160} height={160} />
+                            <p className='mt-4 text-gray-500'>Không có dữ liệu</p>
+                          </div>
+                        </td>
+                      </tr>
+                    ) : (
+                      table.getRowModel().rows.map(row => (
+                        <SortableRow
+                          key={(row.original as any).id}
+                          rowId={(row.original as any).id}
+                          disabled={isFilterActive}
+                          showDragHandle={!isFilterActive}
+                        >
+                          {row.getVisibleCells().map(cell => (
+                            <td className='table-cell' key={cell.id}>
+                              {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                            </td>
+                          ))}
+                        </SortableRow>
+                      ))
+                    )}
+                  </tbody>
+                </SortableContext>
+              </DndContext>
             </table>
           </div>
 
