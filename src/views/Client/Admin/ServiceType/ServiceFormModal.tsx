@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, memo } from 'react'
 
 import {
   Dialog,
@@ -24,7 +24,7 @@ import {
 
 import { toast } from 'react-toastify'
 import { X, Plus, ChevronDown, AlertCircle, Eye, Shield, Wifi, Zap, Users, MapPin, RefreshCw, Clock, Info, ShoppingCart, CheckCircle, Globe, Tag, DollarSign } from 'lucide-react'
-import { useForm, Controller } from 'react-hook-form'
+import { useForm, useWatch, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
 
@@ -113,6 +113,175 @@ return true
     .min(0, 'Phải >= 0'),
   pool_size: yup.string().nullable(),
   metadata_json: yup.string().nullable(),
+})
+
+// ─── Preview component (cô lập re-render khỏi form chính) ───
+const PREVIEW_FIELDS = ['name', 'type', 'tag', 'status', 'rotation_type', 'protocols', 'auth_type', 'bandwidth',
+  'rotation_interval', 'pool_size', 'request_limit', 'concurrent_connections', 'note', 'code',
+  'country', 'ip_version', 'proxy_type', 'is_purchasable'] as const
+
+const ServicePreview = memo(function ServicePreview({ control, serviceId, priceFields, multiInputFields, allowCustomAuth }: {
+  control: any; serviceId?: number | null
+  priceFields: Array<{ key: string; value: string; cost?: string }>
+  multiInputFields: Array<{ key: string; value: string }>
+  allowCustomAuth: boolean
+}) {
+  const previewData = useWatch({ control, name: PREVIEW_FIELDS as any })
+  const previewObj = useMemo(() => {
+    const obj: any = {}
+    PREVIEW_FIELDS.forEach((f, i) => { obj[f] = (previewData as any)?.[i] })
+    return obj
+  }, [previewData])
+
+  const watchedType = previewObj.type
+
+  const convertIpVersion = (v: string) => { switch (v?.toLowerCase()) { case 'ipv4': case 'v4': return 'V4'; case 'ipv6': case 'v6': return 'V6'; default: return v || '' } }
+  const convertAuthType = (t: string) => { switch (t) { case 'userpass': return 'User:Pass'; case 'ip_whitelist': return 'IP Whitelist'; case 'both': return 'User:Pass + IP'; default: return t || '' } }
+
+  const validPrices = priceFields.filter((field: any) => field.key && field.value && parseInt(field.value, 10) > 0)
+  const firstPrice = validPrices.length > 0 ? parseInt(validPrices[0].value, 10) : 0
+  const isAvailable = previewObj.is_purchasable !== false
+
+  const specFeatureRows = [
+    previewObj.auth_type && { label: 'Xác thực', value: convertAuthType(previewObj.auth_type) + ((previewObj.auth_type === 'userpass' || previewObj.auth_type === 'both') ? (allowCustomAuth ? ' (Tự nhập)' : ' (Random)') : ''), icon: Shield, color: 'var(--primary-hover, #f97316)' },
+    previewObj.bandwidth && { label: 'Băng thông', value: previewObj.bandwidth === 'unlimited' ? 'Không giới hạn' : previewObj.bandwidth, icon: Wifi, color: '#3b82f6' },
+    watchedType === '1' && previewObj.rotation_type && { label: 'Kiểu xoay', value: previewObj.rotation_type === 'per_request' ? 'Per request' : previewObj.rotation_type === 'sticky' ? 'Sticky session' : previewObj.rotation_type === 'time_based' ? 'Time-based' : previewObj.rotation_type, icon: RefreshCw, color: '#8b5cf6' },
+    watchedType === '1' && previewObj.rotation_interval && { label: 'Thời gian xoay IP', value: previewObj.rotation_interval, icon: Clock, color: '#f59e0b' },
+    watchedType === '1' && previewObj.pool_size && { label: 'Pool size', value: previewObj.pool_size, icon: Globe, color: '#06b6d4' },
+    previewObj.request_limit && { label: 'Giới hạn request', value: previewObj.request_limit, icon: Zap, color: '#22c55e' },
+    previewObj.concurrent_connections && { label: 'Kết nối đồng thời', value: previewObj.concurrent_connections, icon: Users, color: '#ef4444' },
+  ].filter(Boolean)
+
+  const tagElements = previewObj.tag ? previewObj.tag.split(',').map((t: string) => t.trim()).filter(Boolean) : []
+  const visibleTagEls = tagElements.filter((tag: string) => { const cfg = getTagStyle(tag); return !(cfg && 'hidden' in cfg && cfg.hidden) })
+
+  const renderInlineTags = () => visibleTagEls.length > 0 ? (
+    <div style={{ display: 'flex', gap: '4px', flexShrink: 0 }}>
+      {visibleTagEls.map((tag: string, i: number) => {
+        const cfg = getTagStyle(tag)
+        return <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: '3px', padding: '3px 10px', fontSize: '10.5px', fontWeight: 700, borderRadius: '6px', background: `linear-gradient(180deg, rgba(255,255,255,0.2) 0%, transparent 50%), ${cfg.gradient || cfg.bgColor}`, color: cfg.textColor, boxShadow: `0 2px 10px ${cfg.borderColor}55, inset 0 1px 0 rgba(255,255,255,0.2)`, border: '1px solid rgba(255,255,255,0.25)', letterSpacing: '0.3px', lineHeight: 1.2 }}>
+          {cfg.icon && <span style={{ fontSize: '10px' }}>{cfg.icon}</span>}{tag}
+        </span>
+      })}
+    </div>
+  ) : null
+
+  const renderNotePreview = () => {
+    if (!previewObj.note || previewObj.note === '<p></p>') return null
+    const text = previewObj.note.replace(/<[^>]+>/g, '').trim()
+    if (!text) return null
+    const preview = text.length > 80 ? text.substring(0, 80) + '...' : text
+    return <p style={{ fontSize: '13px', color: '#64748b', margin: '0 0 8px', lineHeight: 1.4 }}>{preview}</p>
+  }
+
+  const renderFooter = () => (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginTop: 'auto', paddingTop: 12, borderTop: '1px solid #f1f5f9' }}>
+      <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--primary-hover, #e53e3e)', whiteSpace: 'nowrap' }}>
+        {validPrices.length > 1 && <span style={{ fontSize: '12px', fontWeight: 500, color: '#94a3b8', marginRight: '2px' }}>từ </span>}
+        {firstPrice > 0 ? `${firstPrice.toLocaleString('vi-VN')}đ` : '—'}
+      </div>
+      {isAvailable ? (
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '8px 18px', fontSize: '13px', fontWeight: 600, color: 'var(--primary-hover, #d06830)', background: 'color-mix(in srgb, var(--primary-hover, #f97316) 8%, white)', borderRadius: '10px', border: '1px solid color-mix(in srgb, var(--primary-hover, #f97316) 25%, white)', whiteSpace: 'nowrap' }}>
+          <ShoppingCart size={14} /> Mua ngay
+        </div>
+      ) : (
+        <div style={{ padding: '8px 14px', borderRadius: '8px', backgroundColor: '#f1f5f9', border: '1px solid #e2e8f0', color: '#64748b', fontSize: '13px', fontWeight: 600 }}>
+          Tạm ngừng
+        </div>
+      )}
+    </div>
+  )
+
+  const renderSpecRows = () => specFeatureRows.map((spec: any, i: number) => (
+    <div key={`spec-${i}`} className='feature-row'>
+      <div className='feature-icons'><spec.icon size={16} color={spec.color} /></div>
+      <div className='feature-content'>
+        <span className='feature-label'>{spec.label}:</span>
+        <span className='feature-value'>{spec.value}</span>
+      </div>
+    </div>
+  ))
+
+  const renderIpRow = (prefix: string) => (previewObj.ip_version || previewObj.country) ? (
+    <div className='feature-row'>
+      <div className='feature-icons'><MapPin size={16} color='#6366f1' /></div>
+      <div className='feature-content'>
+        <span className='feature-label'>Loại IP:</span>
+        <span className='feature-value' style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>{prefix} {convertIpVersion(previewObj.ip_version || '')} — {previewObj.country && <img src={`https://flagcdn.com/w40/${fixCountryCode(previewObj.country)}.png`} alt='' style={{ width: 18, height: 13, objectFit: 'cover', borderRadius: 2 }} />}{COUNTRY_NAMES[previewObj.country] || previewObj.country || 'N/A'}</span>
+      </div>
+    </div>
+  ) : null
+
+  const renderProtocolRow = () => Array.isArray(previewObj.protocols) && previewObj.protocols.length > 0 ? (
+    <div className='feature-row'>
+      <div className='feature-icons'><Shield size={16} color='var(--primary-hover, #f97316)' /></div>
+      <div className='feature-content'>
+        <span className='feature-label'>Hỗ trợ:</span>
+        <span className='feature-value'>{previewObj.protocols.map((p: string) => p.toUpperCase()).join('/')}</span>
+      </div>
+    </div>
+  ) : null
+
+  try {
+    return (
+      <div style={{
+        background: 'white', borderRadius: '12px', padding: '16px',
+        boxShadow: '0 2px 12px rgba(0,0,0,0.06)', border: '1px solid #e2e8f0',
+        position: 'relative', overflow: 'visible', display: 'flex', flexDirection: 'column',
+        ...((!isAvailable) ? { opacity: 0.7 } : {})
+      }}>
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '3px', background: watchedType === '1' ? 'linear-gradient(90deg, #3b82f6, #60a5fa)' : 'var(--primary-gradient, linear-gradient(90deg, #e53e3e, #ff6b6b))', borderRadius: '12px 12px 0 0' }} />
+
+        {watchedType === '1' ? (
+          <>
+            <div style={{ marginBottom: '12px', paddingBottom: '10px', borderBottom: '1px solid #f1f5f9', paddingTop: '4px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
+                <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#1e293b', margin: 0, textAlign: 'left', flex: 1 }}>{previewObj.name || 'Tên sản phẩm'} <span style={{ fontFamily: 'monospace', fontSize: '11px', fontWeight: 500, color: '#94a3b8' }}>#{serviceId || '?'}</span></h3>
+                {renderInlineTags()}
+              </div>
+            </div>
+            {renderNotePreview()}
+            <div style={{ marginBottom: '4px', flex: 1 }}>
+              {renderIpRow('Rotating')}
+              {renderProtocolRow()}
+              {renderSpecRows()}
+              {multiInputFields.filter((field: any) => field.key && field.value).map((input: any, i: number) => {
+                const featureColors = ['var(--primary-hover, #f97316)', '#3b82f6', '#22c55e', '#8b5cf6', '#06b6d4', '#f59e0b', '#ef4444']
+                return (
+                  <div key={i} className='feature-row'>
+                    <div className='feature-icons'><CheckCircle size={16} color={featureColors[i % featureColors.length]} /></div>
+                    <div className='feature-content'>
+                      <span className='feature-label'>{input.key}:</span>
+                      <span className='feature-value'>{input.value}</span>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+            {renderFooter()}
+          </>
+        ) : (
+          <>
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', paddingTop: '4px' }}>
+              <div style={{ marginBottom: '10px', paddingBottom: '8px', borderBottom: '1px solid #f1f5f9' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
+                  <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#1e293b', margin: 0, flex: 1 }}>{previewObj.name || 'Tên sản phẩm'} <span style={{ fontFamily: 'monospace', fontSize: '11px', fontWeight: 500, color: '#94a3b8' }}>#{serviceId || '?'}</span></h3>
+                  {renderInlineTags()}
+                </div>
+              </div>
+              {renderNotePreview()}
+              <div style={{ marginBottom: '8px' }}>
+                {renderIpRow('Static')}
+                {renderProtocolRow()}
+                {renderSpecRows()}
+              </div>
+            </div>
+            {renderFooter()}
+          </>
+        )}
+      </div>
+    )
+  } catch (e) { return <div style={{ padding: '16px', color: '#ef4444', fontSize: '12px' }}>Preview error: {String(e)}</div> }
 })
 
 const COUNTRY_NAMES: Record<string, string> = {
@@ -549,22 +718,11 @@ return { values: {}, errors: formattedErrors }
   const staticPlaceholder = 'Proxy IPv4 dân cư Việt Nam, tốc độ cao, uptime 99.5%. Hỗ trợ HTTP/SOCKS5. Phù hợp cho SEO, social media marketing, và scraping. Băng thông không giới hạn.'
   const rotatingPlaceholder = 'Proxy xoay tự động mỗi 5-30 phút, pool 10,000+ IP Việt Nam. Phù hợp cho crawl data, multi-account, và automation. Hỗ trợ sticky session theo thời gian.'
 
-  // Gộp tất cả watch vào 1 lần — tránh re-render nhiều lần
-  const previewFields = ['name', 'type', 'tag', 'status', 'rotation_type', 'protocols', 'auth_type', 'bandwidth',
-    'rotation_interval', 'pool_size', 'request_limit', 'concurrent_connections', 'note', 'code',
-    'country', 'ip_version', 'proxy_type', 'is_purchasable'] as const
-  const previewData = watch(previewFields as any)
-  // Map array back to object for preview usage
-  const previewObj = useMemo(() => {
-    const obj: any = {}
-    previewFields.forEach((f, i) => { obj[f] = (previewData as any)?.[i] })
-    return obj
-  }, [previewData])
-
-  const watchedType = previewObj.type
-  const watchedRotationType = previewObj.rotation_type
-  const watchedTag = previewObj.tag
-  const watchedStatus = previewObj.status
+  // Watch chỉ những field cần cho form logic (không phải preview)
+  const watchedType = watch('type')
+  const watchedRotationType = watch('rotation_type')
+  const watchedTag = watch('tag')
+  const watchedStatus = watch('status')
 
   const { data: countries } = useCountries()
 
@@ -1012,7 +1170,7 @@ return <Chip key={val} label={p?.label || val} size='small' />
                 </Grid2>
 
                 {/* User:Pass mode — cho admin chọn + preview */}
-                {(previewObj.auth_type === 'userpass' || previewObj.auth_type === 'both') && (
+                {(watch('auth_type') === 'userpass' || watch('auth_type') === 'both') && (
                   <Grid2 size={{ xs: 12 }}>
                     <div style={{ border: '1px solid #e2e8f0', borderRadius: 10, padding: '12px 14px', background: '#fafbfc' }}>
                     <div style={{ fontSize: '12px', fontWeight: 700, color: '#1e293b', marginBottom: 8 }}>User:Pass cho khách hàng</div>
@@ -1661,218 +1819,13 @@ return <Chip key={val} label={p?.label || val} size='small' />
                 <span style={{ fontSize: '13px', fontWeight: 700, color: '#15803d' }}>Xem trước</span>
               </div>
 
-              {(() => { try {
-                // Helpers giống ProxyCard/PlanCard
-                const convertIpVersion = (v: string) => { switch (v?.toLowerCase()) { case 'ipv4': case 'v4': return 'V4'; case 'ipv6': case 'v6': return 'V6'; default: return v || '' } }
-                const convertProxyType = (t: string) => { switch (t?.toLowerCase()) { case 'residential': return 'Dân cư'; case 'datacenter': return 'Datacenter'; default: return t || '' } }
-                const convertAuthType = (t: string) => { switch (t) { case 'userpass': return 'User:Pass'; case 'ip_whitelist': return 'IP Whitelist'; case 'both': return 'User:Pass + IP'; default: return t || '' } }
-                const validPrices = priceFields.filter((f: any) => f.key && f.value && parseInt(f.value, 10) > 0)
-                const firstPrice = validPrices.length > 0 ? parseInt(validPrices[0].value, 10) : 0
-                const isAvailable = previewObj.is_purchasable !== false
-
-                // Render spec feature rows (dùng chung cả 2 loại card)
-                const specFeatureRows = [
-                  previewObj.auth_type && { label: 'Xác thực', value: convertAuthType(previewObj.auth_type) + ((previewObj.auth_type === 'userpass' || previewObj.auth_type === 'both') ? (allowCustomAuth ? ' (Tự nhập)' : ' (Random)') : ''), icon: Shield, color: 'var(--primary-hover, #f97316)' },
-                  previewObj.bandwidth && { label: 'Băng thông', value: previewObj.bandwidth === 'unlimited' ? 'Không giới hạn' : previewObj.bandwidth, icon: Wifi, color: '#3b82f6' },
-                  watchedType === '1' && previewObj.rotation_type && { label: 'Kiểu xoay', value: previewObj.rotation_type === 'per_request' ? 'Per request' : previewObj.rotation_type === 'sticky' ? 'Sticky session' : previewObj.rotation_type === 'time_based' ? 'Time-based' : previewObj.rotation_type, icon: RefreshCw, color: '#8b5cf6' },
-                  watchedType === '1' && previewObj.rotation_interval && { label: 'Thời gian xoay IP', value: previewObj.rotation_interval, icon: Clock, color: '#f59e0b' },
-                  watchedType === '1' && previewObj.pool_size && { label: 'Pool size', value: previewObj.pool_size, icon: Globe, color: '#06b6d4' },
-                  previewObj.request_limit && { label: 'Giới hạn request', value: previewObj.request_limit, icon: Zap, color: '#22c55e' },
-                  previewObj.concurrent_connections && { label: 'Kết nối đồng thời', value: previewObj.concurrent_connections, icon: Users, color: '#ef4444' },
-                ].filter(Boolean)
-
-                const hasSpecs = specFeatureRows.length > 0
-
-                // Render tags
-                const tagElements = previewObj.tag ? previewObj.tag.split(',').map((t: string) => t.trim()).filter(Boolean) : []
-
-                const visibleTagEls = tagElements.filter((tag: string) => { const cfg = getTagStyle(tag);
-
- 
-
-return !(cfg && 'hidden' in cfg && cfg.hidden) })
-
-                const renderInlineTags = () => visibleTagEls.length > 0 ? (
-                  <div style={{ display: 'flex', gap: '4px', flexShrink: 0 }}>
-                    {visibleTagEls.map((tag: string, i: number) => {
-                      const cfg = getTagStyle(tag)
-
-
-return <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: '3px', padding: '3px 10px', fontSize: '10.5px', fontWeight: 700, borderRadius: '6px', background: `linear-gradient(180deg, rgba(255,255,255,0.2) 0%, transparent 50%), ${cfg.gradient || cfg.bgColor}`, color: cfg.textColor, boxShadow: `0 2px 10px ${cfg.borderColor}55, inset 0 1px 0 rgba(255,255,255,0.2)`, border: '1px solid rgba(255,255,255,0.25)', letterSpacing: '0.3px', lineHeight: 1.2 }}>
-                        {cfg.icon && <span style={{ fontSize: '10px' }}>{cfg.icon}</span>}{tag}
-                      </span>
-                    })}
-                  </div>
-                ) : null
-
-                // Note preview (đoạn text ngắn dưới title — giống ProxyCard/PlanCard)
-                const renderNotePreview = () => {
-                  if (!previewObj.note || previewObj.note === '<p></p>') return null
-                  const text = previewObj.note.replace(/<[^>]+>/g, '').trim()
-
-                  if (!text) return null
-                  const preview = text.length > 80 ? text.substring(0, 80) + '...' : text
-
-                  
-return <p style={{ fontSize: '13px', color: '#64748b', margin: '0 0 8px', lineHeight: 1.4 }}>{preview}</p>
-                }
-
-                // Render footer — price left + button right
-                const renderFooter = () => (
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginTop: 'auto', paddingTop: 12, borderTop: '1px solid #f1f5f9' }}>
-                    <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--primary-hover, #e53e3e)', whiteSpace: 'nowrap' }}>
-                      {validPrices.length > 1 && <span style={{ fontSize: '12px', fontWeight: 500, color: '#94a3b8', marginRight: '2px' }}>từ </span>}
-                      {firstPrice > 0 ? `${firstPrice.toLocaleString('vi-VN')}đ` : '—'}
-                    </div>
-                    {isAvailable ? (
-                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '8px 18px', fontSize: '13px', fontWeight: 600, color: 'var(--primary-hover, #d06830)', background: 'color-mix(in srgb, var(--primary-hover, #f97316) 8%, white)', borderRadius: '10px', border: '1px solid color-mix(in srgb, var(--primary-hover, #f97316) 25%, white)', whiteSpace: 'nowrap' }}>
-                        <ShoppingCart size={14} /> Mua ngay
-                      </div>
-                    ) : (
-                      <div style={{ padding: '8px 14px', borderRadius: '8px', backgroundColor: '#f1f5f9', border: '1px solid #e2e8f0', color: '#64748b', fontSize: '13px', fontWeight: 600 }}>
-                        Tạm ngừng
-                      </div>
-                    )}
-                  </div>
-                )
-
-                return (
-                  <div style={{
-                    background: 'white', borderRadius: '12px', padding: '16px',
-                    boxShadow: '0 2px 12px rgba(0,0,0,0.06)', border: '1px solid #e2e8f0',
-                    position: 'relative', overflow: 'visible', display: 'flex', flexDirection: 'column',
-                    ...((!isAvailable) ? { opacity: 0.7 } : {})
-                  }}>
-                    {/* Top color bar */}
-                    <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '3px', background: watchedType === '1' ? 'linear-gradient(90deg, #3b82f6, #60a5fa)' : 'var(--primary-gradient, linear-gradient(90deg, #e53e3e, #ff6b6b))', borderRadius: '12px 12px 0 0' }} />
-
-                    {watchedType === '1' ? (
-
-                      /* ===== ROTATING — giống PlanCard ===== */
-                      <>
-                        {/* Header: title + tags */}
-                        <div style={{ marginBottom: '12px', paddingBottom: '10px', borderBottom: '1px solid #f1f5f9', paddingTop: '4px' }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
-                            <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#1e293b', margin: 0, textAlign: 'left', flex: 1 }}>{previewObj.name || 'Tên sản phẩm'} <span style={{ fontFamily: 'monospace', fontSize: '11px', fontWeight: 500, color: '#94a3b8' }}>#{serviceId || '?'}</span></h3>
-                            {renderInlineTags()}
-                          </div>
-                        </div>
-
-                        {/* Note preview */}
-                        {renderNotePreview()}
-
-                        {/* Feature rows — giống plan-features trong PlanCard */}
-                        <div style={{ marginBottom: '4px', flex: 1 }}>
-                          {/* IP info row */}
-                          {(previewObj.ip_version || previewObj.country) && (
-                            <div className='feature-row'>
-                              <div className='feature-icons'><MapPin size={16} color='#6366f1' /></div>
-                              <div className='feature-content'>
-                                <span className='feature-label'>Loại IP:</span>
-                                <span className='feature-value' style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>Rotating {convertIpVersion(previewObj.ip_version || '')} — {previewObj.country && <img src={`https://flagcdn.com/w40/${fixCountryCode(previewObj.country)}.png`} alt='' style={{ width: 18, height: 13, objectFit: 'cover', borderRadius: 2 }} />}{COUNTRY_NAMES[previewObj.country] || previewObj.country || 'N/A'}</span>
-                              </div>
-                            </div>
-                          )}
-                          {/* Protocol static row */}
-                          {Array.isArray(previewObj.protocols) && previewObj.protocols.length > 0 && (
-                            <div className='feature-row'>
-                              <div className='feature-icons'><Shield size={16} color='var(--primary-hover, #f97316)' /></div>
-                              <div className='feature-content'>
-                                <span className='feature-label'>Hỗ trợ:</span>
-                                <span className='feature-value'>{previewObj.protocols.map((p: string) => p.toUpperCase()).join('/')}</span>
-                              </div>
-                            </div>
-                          )}
-                          {/* Spec feature rows — giống StaticFeatureRow */}
-                          {specFeatureRows.map((spec: any, i: number) => (
-                            <div key={`spec-${i}`} className='feature-row'>
-                              <div className='feature-icons'>
-                                <spec.icon size={16} color={spec.color} />
-                              </div>
-                              <div className='feature-content'>
-                                <span className='feature-label'>{spec.label}:</span>
-                                <span className='feature-value'>{spec.value}</span>
-                              </div>
-                            </div>
-                          ))}
-                          {/* Multi_inputs feature rows — giống StaticFeatureRow */}
-                          {(() => {
-                            const featureColors = ['var(--primary-hover, #f97316)', '#3b82f6', '#22c55e', '#8b5cf6', '#06b6d4', '#f59e0b', '#ef4444']
-
-                            
-return multiInputFields.filter((f: any) => f.key && f.value).map((input: any, i: number) => (
-                              <div key={i} className='feature-row'>
-                                <div className='feature-icons'>
-                                  <CheckCircle size={16} color={featureColors[i % featureColors.length]} />
-                                </div>
-                                <div className='feature-content'>
-                                  <span className='feature-label'>{input.key}:</span>
-                                  <span className='feature-value'>{input.value}</span>
-                                </div>
-                              </div>
-                            ))
-                          })()}
-                        </div>
-
-                        {renderFooter()}
-                      </>
-                    ) : (
-
-                      /* ===== STATIC — giống ProxyCard ===== */
-                      <>
-                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', paddingTop: '4px' }}>
-                          {/* Header: title + tags */}
-                          <div style={{ marginBottom: '10px', paddingBottom: '8px', borderBottom: '1px solid #f1f5f9' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
-                              <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#1e293b', margin: 0, flex: 1 }}>{previewObj.name || 'Tên sản phẩm'} <span style={{ fontFamily: 'monospace', fontSize: '11px', fontWeight: 500, color: '#94a3b8' }}>#{serviceId || '?'}</span></h3>
-                              {renderInlineTags()}
-                            </div>
-                          </div>
-
-                          {/* Note preview */}
-                          {renderNotePreview()}
-
-                          {/* Product info as feature rows — giống ProxyCard */}
-                          <div style={{ marginBottom: '8px' }}>
-                            {(previewObj.ip_version || previewObj.country) && (
-                              <div className='feature-row'>
-                                <div className='feature-icons'><MapPin size={16} color='#6366f1' /></div>
-                                <div className='feature-content'>
-                                  <span className='feature-label'>Loại IP:</span>
-                                  <span className='feature-value' style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>Static {convertIpVersion(previewObj.ip_version || '')} — {previewObj.country && <img src={`https://flagcdn.com/w40/${fixCountryCode(previewObj.country)}.png`} alt='' style={{ width: 18, height: 13, objectFit: 'cover', borderRadius: 2 }} />}{COUNTRY_NAMES[previewObj.country] || previewObj.country || 'N/A'}</span>
-                                </div>
-                              </div>
-                            )}
-                            {/* Protocol static row */}
-                            {Array.isArray(previewObj.protocols) && previewObj.protocols.length > 0 && (
-                              <div className='feature-row'>
-                                <div className='feature-icons'><Shield size={16} color='var(--primary-hover, #f97316)' /></div>
-                                <div className='feature-content'>
-                                  <span className='feature-label'>Hỗ trợ:</span>
-                                  <span className='feature-value'>{previewObj.protocols.map((p: string) => p.toUpperCase()).join('/')}</span>
-                                </div>
-                              </div>
-                            )}
-                            {specFeatureRows.map((spec: any, i: number) => (
-                              <div key={`spec-${i}`} className='feature-row'>
-                                <div className='feature-icons'>
-                                  <spec.icon size={16} color={spec.color} />
-                                </div>
-                                <div className='feature-content'>
-                                  <span className='feature-label'>{spec.label}:</span>
-                                  <span className='feature-value'>{spec.value}</span>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-
-                        {renderFooter()}
-                      </>
-                    )}
-                  </div>
-                )
-              } catch (e) { return <div style={{ padding: '16px', color: '#ef4444', fontSize: '12px' }}>Preview error: {String(e)}</div> } })()}
+              <ServicePreview
+                control={control}
+                serviceId={serviceId}
+                priceFields={priceFields}
+                multiInputFields={multiInputFields}
+                allowCustomAuth={allowCustomAuth}
+              />
 
               <div style={{ textAlign: 'center', marginTop: '8px', fontSize: '11px', color: '#94a3b8' }}>
                 Cập nhật theo thời gian thực
