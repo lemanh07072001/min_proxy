@@ -9,7 +9,7 @@
  * - KHÔNG có: provider, api_provider, body_api, code
  */
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, memo } from 'react'
 
 import {
   Dialog, DialogContent, Button, TextField, MenuItem, Grid2,
@@ -36,6 +36,51 @@ interface Props {
   serviceId?: number | null
   initialData?: any
 }
+
+// ─── Discount Tier Row cho site con (local state cho ô giá — tránh computed value ghi đè) ───
+const ChildDiscountTierRow = memo(function ChildDiscountTierRow({ tier, idx, sellBase, costAt, profit, isLoss, onUpdate, onRemove }: {
+  tier: { min: string; max: string; discount: string }
+  idx: number; sellBase: number; costAt: number; profit: number; isLoss: boolean
+  onUpdate: (idx: number, patch: Partial<{ min: string; max: string; discount: string }>) => void
+  onRemove: (idx: number) => void
+}) {
+  const disc = parseInt(tier.discount) || 0
+  const computedPrice = sellBase > 0 && disc > 0 ? Math.round(sellBase * (1 - disc / 100)) : null
+  const [localPrice, setLocalPrice] = useState(computedPrice?.toString() || '')
+  const [editingPrice, setEditingPrice] = useState(false)
+
+  useEffect(() => {
+    if (!editingPrice) setLocalPrice(computedPrice?.toString() || '')
+  }, [computedPrice, editingPrice])
+
+  const inputStyle = { width: '100%', padding: '4px 6px', border: '1px solid #e2e8f0', borderRadius: 4, fontSize: 12 }
+
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr 1fr 32px', gap: 2, alignItems: 'center', padding: '5px 8px', borderTop: '1px solid #f1f5f9', background: isLoss ? '#fef2f2' : undefined }}>
+      <input type='number' placeholder='5' value={tier.min} onChange={e => onUpdate(idx, { min: e.target.value })} style={inputStyle} />
+      <input type='number' placeholder='∞' value={tier.max} onChange={e => onUpdate(idx, { max: e.target.value })} style={inputStyle} />
+      <input type='number' placeholder='%' value={tier.discount} onChange={e => onUpdate(idx, { discount: e.target.value })} style={inputStyle} />
+      <input type='number' placeholder='đ' value={localPrice}
+        onFocus={() => setEditingPrice(true)}
+        onChange={e => setLocalPrice(e.target.value)}
+        onBlur={() => {
+          setEditingPrice(false)
+          const price = parseInt(localPrice) || 0
+          if (sellBase > 0 && price > 0) {
+            const pct = Math.round((1 - price / sellBase) * 100)
+            onUpdate(idx, { discount: String(Math.max(0, Math.min(99, pct))) })
+          }
+        }}
+        style={{ ...inputStyle, fontWeight: disc > 0 ? 600 : 400, color: disc > 0 ? '#1e293b' : '#94a3b8' }} />
+      <span style={{ fontSize: 11, color: '#6366f1' }}>{costAt > 0 ? `${costAt.toLocaleString('vi-VN')}đ` : '—'}</span>
+      <span style={{ fontSize: 11, fontWeight: 700, color: isLoss ? '#ef4444' : profit > 0 ? '#16a34a' : '#94a3b8' }}>
+        {profit !== 0 ? `${profit > 0 ? '+' : ''}${profit.toLocaleString('vi-VN')}đ` : '—'}
+      </span>
+      <button type='button' onClick={() => onRemove(idx)}
+        style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: 13, padding: 0 }}>✕</button>
+    </div>
+  )
+})
 
 export default function ChildServiceFormModal({ open, onClose, serviceId, initialData }: Props) {
   const isEditMode = !!serviceId
@@ -910,39 +955,10 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
                             const isLoss = profit < 0
 
                             return (
-                              <div key={idx} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr 1fr 32px', gap: 2, alignItems: 'center', padding: '5px 8px', borderTop: '1px solid #f1f5f9', background: isLoss ? '#fef2f2' : undefined }}>
-                                <input type='number' placeholder='5' value={tier.min}
-                                  onChange={e => setDiscountTiers(prev => prev.map((t, i) => i === idx ? { ...t, min: e.target.value } : t))}
-                                  style={{ width: '100%', padding: '4px 6px', border: '1px solid #e2e8f0', borderRadius: 4, fontSize: 12 }}
-                                />
-                                <input type='number' placeholder='∞' value={tier.max}
-                                  onChange={e => setDiscountTiers(prev => prev.map((t, i) => i === idx ? { ...t, max: e.target.value } : t))}
-                                  style={{ width: '100%', padding: '4px 6px', border: '1px solid #e2e8f0', borderRadius: 4, fontSize: 12 }}
-                                />
-                                <input type='number' placeholder='%' value={tier.discount}
-                                  onChange={e => setDiscountTiers(prev => prev.map((t, i) => i === idx ? { ...t, discount: e.target.value } : t))}
-                                  style={{ width: '100%', padding: '4px 6px', border: '1px solid #e2e8f0', borderRadius: 4, fontSize: 12 }}
-                                />
-                                <input type='number' placeholder='đ'
-                                  value={sellBase > 0 && disc > 0 ? sellAfter : ''}
-                                  onChange={e => {
-                                    const price = parseInt(e.target.value) || 0
-                                    if (sellBase > 0 && price > 0) {
-                                      const pct = Math.round((1 - price / sellBase) * 100)
-                                      setDiscountTiers(prev => prev.map((t, i) => i === idx ? { ...t, discount: String(Math.max(0, Math.min(99, pct))) } : t))
-                                    }
-                                  }}
-                                  style={{ width: '100%', padding: '4px 6px', border: '1px solid #e2e8f0', borderRadius: 4, fontSize: 12, fontWeight: disc > 0 ? 600 : 400, color: disc > 0 ? '#1e293b' : '#94a3b8' }}
-                                />
-                                <span style={{ fontSize: 11, color: '#6366f1' }}>
-                                  {costAt > 0 ? `${costAt.toLocaleString('vi-VN')}đ` : '—'}
-                                </span>
-                                <span style={{ fontSize: 11, fontWeight: 700, color: isLoss ? '#ef4444' : profit > 0 ? '#16a34a' : '#94a3b8' }}>
-                                  {profit !== 0 ? `${profit > 0 ? '+' : ''}${profit.toLocaleString('vi-VN')}đ` : '—'}
-                                </span>
-                                <button type='button' onClick={() => setDiscountTiers(prev => prev.filter((_, i) => i !== idx))}
-                                  style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: 13, padding: 0 }}>✕</button>
-                              </div>
+                              <ChildDiscountTierRow key={idx} tier={tier} idx={idx} sellBase={sellBase}
+                                costAt={costAt} profit={profit} isLoss={isLoss}
+                                onUpdate={(i, patch) => setDiscountTiers(prev => prev.map((t, j) => j === i ? { ...t, ...patch } : t))}
+                                onRemove={(i) => setDiscountTiers(prev => prev.filter((_, j) => j !== i))} />
                             )
                           })}
                         </div>
