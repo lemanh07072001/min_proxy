@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState, useCallback, useTransition, lazy, Suspense } from 'react'
+import { useMemo, useState, useCallback, lazy, Suspense } from 'react'
 
 import Image from 'next/image'
 import { useParams, useRouter } from 'next/navigation'
@@ -64,7 +64,6 @@ export default function TableServiceType() {
   const [modalOpen, setModalOpen] = useState(false)
   const [editingId, setEditingId] = useState<number | null>(null)
   const [editingData, setEditingData] = useState<any>(null)
-  const [, startTransition] = useTransition()
   const [customPriceService, setCustomPriceService] = useState<any>(null)
 
   const router = useRouter()
@@ -78,14 +77,15 @@ export default function TableServiceType() {
   const handleOpenCreate = useCallback(() => {
     setEditingId(null)
     setEditingData(null)
-    startTransition(() => setModalOpen(true))
+    // Defer sang frame tiếp — tránh batch với table re-render khi data arrive
+    requestAnimationFrame(() => setModalOpen(true))
   }, [])
 
   const handleOpenEdit = useCallback(
     (row: any) => {
       setEditingId(row.id)
       setEditingData(row)
-      startTransition(() => setModalOpen(true))
+      requestAnimationFrame(() => setModalOpen(true))
     },
     []
   )

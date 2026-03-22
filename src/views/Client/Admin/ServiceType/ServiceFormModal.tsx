@@ -137,22 +137,39 @@ const sanitizeVN = (str: string): string => str.replace(/[^0-9.,]/g, '')
 // ─── Discount Tier Row — lưu cả % và giá, nhập cái nào thì cái đó chính xác ───
 interface DiscountTier { min: string; max: string; discount: string; price?: string }
 
-const DiscountTierRow = memo(function DiscountTierRow({ tier, idx, basePrice, color, onUpdate, onRemove }: {
-  tier: DiscountTier; idx: number; basePrice: number; color: string
+const DiscountTierRow = memo(function DiscountTierRow({ tier, idx, basePrice, baseCost, costTiers, color, onUpdate, onRemove }: {
+  tier: DiscountTier; idx: number; basePrice: number
+  baseCost?: number; costTiers?: DiscountTier[]; color: string
   onUpdate: (idx: number, tier: DiscountTier) => void
   onRemove: (idx: number) => void
 }) {
-  // Hiển thị: nếu có price lưu sẵn → hiện price, nếu không → tính từ %
   const disc = parseFloat(tier.discount) || 0
-  const displayPrice = tier.price
-    ? formatVN(parseVN(tier.price))
-    : (basePrice > 0 && disc > 0 ? formatVN(Math.round(basePrice * (1 - disc / 100) * 100) / 100) : '')
+  const sellPrice = tier.price ? parseVN(tier.price)
+    : (basePrice > 0 && disc > 0 ? Math.round(basePrice * (1 - disc / 100) * 100) / 100 : 0)
+  const displayPrice = sellPrice > 0 ? formatVN(sellPrice) : ''
   const displayDisc = tier.discount || ''
+
+  // Tính giá gốc tại mốc ngày này (từ cost_discount_tiers)
+  const minDays = parseInt(tier.min) || 1
+  let costAtTier = baseCost || 0
+  if (baseCost && costTiers) {
+    for (const ct of costTiers) {
+      const ctMin = parseInt(ct.min) || 0
+      const ctMax = parseInt(ct.max) || Infinity
+      if (minDays >= ctMin && minDays <= ctMax) {
+        costAtTier = ct.price ? parseVN(ct.price) : Math.round(baseCost * (1 - (parseFloat(ct.discount) || 0) / 100) * 100) / 100
+        break
+      }
+    }
+  }
+  const profit = sellPrice > 0 && costAtTier > 0 ? sellPrice - costAtTier : 0
+  const isLoss = profit < 0
+  const showProfit = baseCost && baseCost > 0
 
   const inputSx = { '& input': { fontSize: '12px', padding: '5px 8px' } }
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr 40px', gap: '6px', alignItems: 'center', padding: '6px 10px', borderTop: '1px solid #f1f5f9' }}>
+    <div style={{ display: 'grid', gridTemplateColumns: showProfit ? '1fr 1fr 1fr 1fr 80px 40px' : '1fr 1fr 1fr 1fr 40px', gap: '6px', alignItems: 'center', padding: '6px 10px', borderTop: '1px solid #f1f5f9', background: isLoss ? '#fef2f2' : undefined }}>
       <CustomTextField size='small' type='number' placeholder='VD: 5' value={tier.min}
         onChange={(e: any) => onUpdate(idx, { ...tier, min: e.target.value })} sx={inputSx} />
       <CustomTextField size='small' type='number' placeholder='Không giới hạn' value={tier.max}
@@ -161,7 +178,6 @@ const DiscountTierRow = memo(function DiscountTierRow({ tier, idx, basePrice, co
         onChange={(e: any) => {
           const pct = sanitizeVN(e.target.value)
           const pctNum = parseFloat(pct) || 0
-          // Nhập % → tính giá tự động
           const newPrice = basePrice > 0 && pctNum > 0
             ? String(Math.round(basePrice * (1 - pctNum / 100) * 100) / 100)
             : undefined
@@ -172,13 +188,17 @@ const DiscountTierRow = memo(function DiscountTierRow({ tier, idx, basePrice, co
         onChange={(e: any) => {
           const raw = sanitizeVN(e.target.value)
           const priceNum = parseVN(raw)
-          // Nhập giá → tính % tự động
           const newDisc = basePrice > 0 && priceNum > 0
             ? String(Math.round((1 - priceNum / basePrice) * 10000) / 100)
             : tier.discount
           onUpdate(idx, { ...tier, discount: newDisc, price: String(priceNum) })
         }}
         sx={{ '& input': { fontSize: '12px', padding: '5px 8px', color: disc > 0 ? color : undefined, fontWeight: disc > 0 ? 600 : undefined } }} />
+      {showProfit && (
+        <span style={{ fontSize: '11px', fontWeight: 600, color: isLoss ? '#ef4444' : profit > 0 ? '#16a34a' : '#94a3b8', whiteSpace: 'nowrap' }}>
+          {profit !== 0 ? `${profit > 0 ? '+' : ''}${formatVN(profit)}đ` : '—'}
+        </span>
+      )}
       <button type='button' onClick={() => onRemove(idx)}
         style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: 14 }}>✕</button>
     </div>
@@ -1478,6 +1498,28 @@ return <Chip key={val} label={p?.label || val} size='small' />
               </Grid2>
               </CollapsibleSection>
 
+              {/* ========== Section: Cấu hình API (nhà cung cấp) ========== */}
+              <CollapsibleSection title='Cấu hình Provider' icon={Globe} iconColor='#16a34a' iconBg='#f0fdf4'>
+                <Grid2 container spacing={1}>
+                  <Grid2 size={{ xs: 6, sm: 4 }}>
+                    <Controller
+                      name='api_provider'
+                      control={control}
+                      render={({ field }) => (
+                        <CustomTextField {...field} fullWidth label='API Endpoint' placeholder='URL đối tác' />
+                      )}
+                    />
+                  </Grid2>
+                  <Grid2 size={{ xs: 12 }}>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <Button onClick={() => setIsMultiInputModalOpen(true)} variant='contained' color='secondary' size='small' className='text-white' startIcon={<Plus size={14} />}>
+                        Thêm nhiều trường
+                      </Button>
+                    </div>
+                  </Grid2>
+                </Grid2>
+              </CollapsibleSection>
+
               {/* ========== Section: Chế độ giá ========== */}
               <CollapsibleSection title='Chế độ giá' icon={DollarSign} iconColor='#d97706' iconBg='#fffbeb' border='1px solid #e2e8f0'>
                 <Grid2 container spacing={2}>
@@ -1572,15 +1614,17 @@ return <Chip key={val} label={p?.label || val} size='small' />
 
                         {discountTiers.length > 0 && (
                           <div style={{ border: '1px solid #e2e8f0', borderRadius: 8, overflow: 'hidden' }}>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr 40px', gap: '6px', background: '#f1f5f9', padding: '6px 10px', fontSize: '11px', fontWeight: 600, color: '#64748b' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: parseFloat(costPerUnit) > 0 ? '1fr 1fr 1fr 1fr 80px 40px' : '1fr 1fr 1fr 1fr 40px', gap: '6px', background: '#f1f5f9', padding: '6px 10px', fontSize: '11px', fontWeight: 600, color: '#64748b' }}>
                               <span>Từ ({timeUnit === 'month' ? 'tháng' : 'ngày'})</span>
                               <span>Đến ({timeUnit === 'month' ? 'tháng' : 'ngày'})</span>
                               <span>Giảm (%)</span>
                               <span>Giá bán (đ)</span>
+                              {parseFloat(costPerUnit) > 0 && <span>Lãi/lỗ</span>}
                               <span></span>
                             </div>
                             {discountTiers.map((tier, idx) => (
                               <DiscountTierRow key={idx} tier={tier} idx={idx} basePrice={parseFloat(pricePerUnit) || 0}
+                                baseCost={parseFloat(costPerUnit) || 0} costTiers={costDiscountTiers}
                                 color='#16a34a'
                                 onUpdate={(i, tier) => setDiscountTiers(prev => prev.map((t, j) => j === i ? tier : t))}
                                 onRemove={(i) => setDiscountTiers(prev => prev.filter((_, j) => j !== i))} />
@@ -1685,36 +1729,6 @@ return <Chip key={val} label={p?.label || val} size='small' />
                       </div>
                     </Grid2>
                   )}
-                </Grid2>
-              </CollapsibleSection>
-
-              {/* ========== Section 3: Cấu hình API ========== */}
-              <CollapsibleSection title='Cấu hình API' icon={Globe} iconColor='#16a34a' iconBg='#f0fdf4'>
-                <Grid2 container spacing={1}>
-                  <Grid2 size={{ xs: 6, sm: 4 }}>
-                    <Controller
-                      name='api_provider'
-                      control={control}
-                      render={({ field }) => (
-                        <CustomTextField {...field} fullWidth label='API Endpoint' placeholder='URL đối tác' />
-                      )}
-                    />
-                  </Grid2>
-
-                  <Grid2 size={{ xs: 12 }}>
-                    <div style={{ display: 'flex', gap: '8px' }}>
-                      <Button
-                        onClick={() => setIsMultiInputModalOpen(true)}
-                        variant='contained'
-                        color='secondary'
-                        size='small'
-                        className='text-white'
-                        startIcon={<Plus size={14} />}
-                      >
-                        Thêm nhiều trường
-                      </Button>
-                    </div>
-                  </Grid2>
                 </Grid2>
               </CollapsibleSection>
             </form>
