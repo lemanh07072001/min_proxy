@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState, useCallback } from 'react'
+import { useMemo, useState, useCallback, useTransition, lazy, Suspense } from 'react'
 
 import Image from 'next/image'
 import { useParams, useRouter } from 'next/navigation'
@@ -39,8 +39,8 @@ import { toast } from 'react-toastify'
 
 import useAxiosAuth from '@/hocs/useAxiosAuth'
 import { useCopyServiceType, useDeleteServiceType } from '@/hooks/apis/useServiceType'
-import ServiceFormModal from '@/views/Client/Admin/ServiceType/ServiceFormModal'
-import ChildServiceFormModal from '@/views/Client/Admin/ServiceType/ChildServiceFormModal'
+const ServiceFormModal = lazy(() => import('@/views/Client/Admin/ServiceType/ServiceFormModal'))
+const ChildServiceFormModal = lazy(() => import('@/views/Client/Admin/ServiceType/ChildServiceFormModal'))
 import CustomPriceModal from '@/views/Client/Admin/ServiceType/CustomPriceModal'
 import { getTagStyle } from '@/configs/tagConfig'
 import { useBranding } from '@/app/contexts/BrandingContext'
@@ -64,6 +64,7 @@ export default function TableServiceType() {
   const [modalOpen, setModalOpen] = useState(false)
   const [editingId, setEditingId] = useState<number | null>(null)
   const [editingData, setEditingData] = useState<any>(null)
+  const [, startTransition] = useTransition()
   const [customPriceService, setCustomPriceService] = useState<any>(null)
 
   const router = useRouter()
@@ -77,14 +78,14 @@ export default function TableServiceType() {
   const handleOpenCreate = useCallback(() => {
     setEditingId(null)
     setEditingData(null)
-    setModalOpen(true)
+    startTransition(() => setModalOpen(true))
   }, [])
 
   const handleOpenEdit = useCallback(
     (row: any) => {
       setEditingId(row.id)
       setEditingData(row)
-      setModalOpen(true)
+      startTransition(() => setModalOpen(true))
     },
     []
   )
@@ -665,22 +666,30 @@ return (
         </DialogActions>
       </Dialog>
 
-      {/* Service Form Modal — lazy mount: chỉ render khi mở */}
-      {modalOpen && (isChild ? (
-        <ChildServiceFormModal
-          open={modalOpen}
-          onClose={() => setModalOpen(false)}
-          serviceId={editingId}
-          initialData={editingData}
-        />
-      ) : (
-        <ServiceFormModal
-          open={modalOpen}
-          onClose={() => setModalOpen(false)}
-          serviceId={editingId}
-          initialData={editingData}
-        />
-      ))}
+      {/* Service Form Modal — lazy load + lazy mount */}
+      {modalOpen && (
+        <Suspense fallback={
+          <Dialog open maxWidth='md' fullWidth>
+            <div style={{ padding: 60, textAlign: 'center', color: '#94a3b8' }}>Đang tải form...</div>
+          </Dialog>
+        }>
+          {isChild ? (
+            <ChildServiceFormModal
+              open={modalOpen}
+              onClose={() => setModalOpen(false)}
+              serviceId={editingId}
+              initialData={editingData}
+            />
+          ) : (
+            <ServiceFormModal
+              open={modalOpen}
+              onClose={() => setModalOpen(false)}
+              serviceId={editingId}
+              initialData={editingData}
+            />
+          )}
+        </Suspense>
+      )}
 
       {customPriceService && (
         <CustomPriceModal

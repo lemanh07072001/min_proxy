@@ -46,6 +46,21 @@ export const useSupplierProducts = (enabled = true) => {
 }
 
 /**
+ * Check SP từ site mẹ theo code
+ */
+export const useCheckSupplierProduct = () => {
+  const axiosAuth = useAxiosAuth()
+
+  return useMutation({
+    mutationFn: async (code: string) => {
+      const res = await axiosAuth.get('/supplier/products/check', { params: { code } })
+
+      return res?.data?.data as SupplierProduct & { already_imported?: boolean }
+    },
+  })
+}
+
+/**
  * Import SP từ site mẹ → tạo local ServiceType
  */
 export const useImportSupplierProduct = () => {

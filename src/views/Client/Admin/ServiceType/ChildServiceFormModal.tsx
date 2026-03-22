@@ -25,7 +25,7 @@ import { useForm, Controller } from 'react-hook-form'
 
 import CustomTextField from '@/@core/components/mui/TextField'
 import { useServiceType, useCreateServiceType, useUpdateServiceType } from '@/hooks/apis/useServiceType'
-import { useSupplierProducts, type SupplierProduct } from '@/hooks/apis/useSupplierProducts'
+import { useCheckSupplierProduct, type SupplierProduct } from '@/hooks/apis/useSupplierProducts'
 import { useCountries } from '@/hooks/apis/useCountries'
 
 import { PREDEFINED_TAGS, getTagStyle } from '@/configs/tagConfig'
@@ -111,7 +111,7 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
   // Data
   const { data: fetchedData, isLoading: loadingService } = useServiceType(serviceId, isEditMode && open)
   const serviceData = fetchedData || initialData
-  const { data: supplierData, isLoading: loadingSupplier } = useSupplierProducts(open)
+  const checkProductMutation = useCheckSupplierProduct()
   const { data: countries } = useCountries()
 
   // Mutations
@@ -119,6 +119,8 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
   const updateMutation = useUpdateServiceType(serviceId)
 
   // State
+  const [supplierCodeInput, setSupplierCodeInput] = useState('')
+  const [checkedProduct, setCheckedProduct] = useState<(SupplierProduct & { already_imported?: boolean }) | null>(null)
   const [selectedSupplierId, setSelectedSupplierId] = useState<number | null>(null)
   const [selectedSupplierCode, setSelectedSupplierCode] = useState<string | null>(null)
   const { notification, showSuccess, showError, clear: clearNotification } = useFormNotification()
@@ -134,18 +136,8 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
   const [purchaseOptions, setPurchaseOptions] = useState<Array<{ key: string; param_name: string; label: string; type: 'select' | 'text' | 'number'; required: boolean; default: string; options: Array<{ value: string; label: string }> }>>([])
 
   // All supplier products (imported + available)
-  const allSupplierProducts = useMemo(() => {
-    if (!supplierData) return []
-
-    return [...(supplierData.imported || []), ...(supplierData.available || [])]
-  }, [supplierData])
-
-  // Selected supplier product details
-  const selectedProduct = useMemo(() => {
-    if (!selectedSupplierId) return null
-
-    return allSupplierProducts.find(p => p.supplier_id === selectedSupplierId) || null
-  }, [selectedSupplierId, allSupplierProducts])
+  // selectedProduct = product đã check từ site mẹ (hoặc load từ metadata khi edit)
+  const selectedProduct = checkedProduct
 
   // Form
   const { control, handleSubmit, reset, setValue, watch, setError, formState: { errors } } = useForm({
@@ -190,14 +182,8 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
 
       setSelectedSupplierId(supplierId)
 
-      // Nếu chưa có code trong metadata, tìm từ danh sách supplier products
-      if (!supplierCode && supplierId && allSupplierProducts.length > 0) {
-        const found = allSupplierProducts.find(p => p.supplier_id === supplierId)
-
-        supplierCode = found?.supplier_code || null
-      }
-
       setSelectedSupplierCode(supplierCode)
+      setSupplierCodeInput(supplierCode || '')
 
       // Parse price_by_duration
       let prices = serviceData.price_by_duration
@@ -263,7 +249,7 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
       })
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [serviceData, isEditMode, reset, allSupplierProducts, open])
+  }, [serviceData, isEditMode, reset, open])
 
   // When selecting a supplier product (new import)
   useEffect(() => {
@@ -317,6 +303,8 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
       })
       setSelectedSupplierId(null)
       setSelectedSupplierCode(null)
+      setSupplierCodeInput('')
+      setCheckedProduct(null)
       setPriceFields([])
       setAllowCustomAuth(false)
       setPurchaseOptions([])
@@ -511,7 +499,7 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
   }
 
   const isPending = createMutation.isPending || updateMutation.isPending
-  const isLoading = loadingService || loadingSupplier
+  const isLoading = loadingService
 
   // Preview helpers
   const previewName = watchAll.name || 'Tên sản phẩm'
@@ -570,49 +558,57 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
               <div style={{ flex: 3 }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
 
-              {/* Chọn SP site mẹ (chỉ khi tạo mới) */}
+              {/* Nhập code SP site mẹ (chỉ khi tạo mới) */}
               {!isEditMode && (
                 <div>
                   <div style={{ fontSize: '13px', fontWeight: 600, color: '#1e293b', marginBottom: 8 }}>
-                    Chọn sản phẩm từ nhà cung cấp
+                    Nhập code sản phẩm từ Provider
                   </div>
-                  <CustomTextField
-                    select
-                    fullWidth
-                    value={selectedSupplierId || ''}
-                    onChange={e => {
-                      const id = Number(e.target.value)
-                      const product = allSupplierProducts.find(p => p.supplier_id === id)
-
-                      setSelectedSupplierId(id)
-                      setSelectedSupplierCode(product?.supplier_code || null)
-                    }}
-                    label='Sản phẩm site mẹ'
-                    helperText={
-                      allSupplierProducts.length === 0
-                        ? 'Không có sản phẩm — kiểm tra kết nối nhà cung cấp trong Cài đặt chung'
-                        : 'Chọn sản phẩm muốn bán trên site của bạn'
-                    }
-                  >
-                    <MenuItem value=''><em>— Chọn sản phẩm —</em></MenuItem>
-                    {(supplierData?.available || []).length > 0 && (
-                      <MenuItem disabled sx={{ fontSize: '12px', color: '#22c55e', fontWeight: 600 }}>Chưa import:</MenuItem>
-                    )}
-                    {(supplierData?.available || []).map(p => (
-                      <MenuItem key={p.supplier_id} value={p.supplier_id}>
-                        {p.supplier_code && <span style={{ fontFamily: 'monospace', fontSize: 11, color: '#94a3b8', marginRight: 6 }}>[{p.supplier_code}]</span>}
-                        {p.name} ({p.type}) — {Object.values(p.provider_prices).map(pr => `${pr.toLocaleString('vi-VN')}đ`).join(' / ')}
-                      </MenuItem>
-                    ))}
-                    {(supplierData?.imported || []).length > 0 && (
-                      <MenuItem disabled sx={{ fontSize: '12px', color: '#94a3b8', fontWeight: 600 }}>Đã import:</MenuItem>
-                    )}
-                    {(supplierData?.imported || []).map(p => (
-                      <MenuItem key={p.supplier_id} value={p.supplier_id} disabled>
-                        {p.name} ({p.type}) — đã có
-                      </MenuItem>
-                    ))}
-                  </CustomTextField>
+                  <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+                    <CustomTextField
+                      fullWidth
+                      size='small'
+                      value={supplierCodeInput}
+                      onChange={(e: any) => { setSupplierCodeInput(e.target.value.trim()); setCheckedProduct(null) }}
+                      placeholder='VD: proxy-vn-rotate-a3f2'
+                      helperText={
+                        checkedProduct?.already_imported
+                          ? 'Sản phẩm này đã được import trước đó'
+                          : checkedProduct
+                            ? `✓ ${checkedProduct.name} (${checkedProduct.type})`
+                            : 'Nhập code rồi bấm Kiểm tra để xác nhận sản phẩm tồn tại'
+                      }
+                      error={checkProductMutation.isError}
+                      sx={{
+                        '& .MuiFormHelperText-root': {
+                          color: checkedProduct?.already_imported ? '#d97706' : checkedProduct ? '#16a34a' : undefined
+                        }
+                      }}
+                    />
+                    <Button
+                      size='small'
+                      variant='outlined'
+                      disabled={!supplierCodeInput || checkProductMutation.isPending}
+                      onClick={() => {
+                        checkProductMutation.mutate(supplierCodeInput, {
+                          onSuccess: (data) => {
+                            setCheckedProduct(data)
+                            setSelectedSupplierId(data.supplier_id)
+                            setSelectedSupplierCode(data.supplier_code || supplierCodeInput)
+                          },
+                          onError: () => setCheckedProduct(null),
+                        })
+                      }}
+                      sx={{ whiteSpace: 'nowrap', minWidth: 90, height: 40 }}
+                    >
+                      {checkProductMutation.isPending ? '...' : 'Kiểm tra'}
+                    </Button>
+                  </div>
+                  {checkProductMutation.isError && (
+                    <div style={{ fontSize: 12, color: '#ef4444', marginTop: 4 }}>
+                      {(checkProductMutation.error as any)?.response?.data?.message || 'Không tìm thấy sản phẩm với code này'}
+                    </div>
+                  )}
                 </div>
               )}
 
