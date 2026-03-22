@@ -41,11 +41,12 @@ interface CheckoutModalProps {
   allowCustomAuth?: boolean
   discountTiers?: Array<{ min: string; max: string; discount: string }>
   customFields?: Array<{
-    param: string
+    key: string           // key nội bộ (gửi trong custom_fields)
+    param?: string        // backward compat
     label: string
-    type: 'select'
+    type: 'select' | 'text' | 'number'
     required?: boolean
-    options: Array<{ value: string; label: string }>
+    options?: Array<{ value: string; label: string }>
     default?: string
   }>
 }
@@ -107,7 +108,10 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({
     setAuthMethod('userpass')
     // Init custom field defaults
     const defaults: Record<string, string> = {}
-    customFields?.forEach(f => { if (f.default) defaults[f.param] = f.default })
+    customFields?.forEach(field => {
+      const fieldKey = field.key || field.param || ''
+      if (field.default && fieldKey) defaults[fieldKey] = field.default
+    })
     setCustomFieldValues(defaults)
     isSubmitting.current = false
   }, [priceOptions, protocols, customFields])
@@ -217,7 +221,7 @@ return pct > 0 ? Math.round(pct) : null
       return
     }
     // Validate required custom fields
-    const missingField = customFields?.find(f => f.required && !customFieldValues[f.param])
+    const missingField = customFields?.find(field => field.required && !customFieldValues[field.key || field.param || ''])
     if (missingField) {
       toast.error(`Vui lòng chọn ${missingField.label}.`)
       isSubmitting.current = false
@@ -389,28 +393,42 @@ return (
             </div>
           )}
 
-          {/* Custom fields (dropdown động từ ServiceType) */}
-          {customFields?.map(field => (
-            <div className='checkout-section' key={field.param}>
-              <label className='checkout-section-label'>{field.label.toUpperCase()}</label>
-              <div className='checkout-duration-options'>
-                {field.options.map(opt => (
-                  <label
-                    key={opt.value}
-                    className={`checkout-duration-option ${(customFieldValues[field.param] || field.default) === opt.value ? 'active' : ''}`}
-                  >
-                    <input
-                      type='radio'
-                      value={opt.value}
-                      checked={(customFieldValues[field.param] || field.default) === opt.value}
-                      onChange={() => setCustomFieldValues(prev => ({ ...prev, [field.param]: opt.value }))}
-                    />
-                    <span>{opt.label}</span>
-                  </label>
-                ))}
+          {/* Custom fields (tuỳ chọn mua hàng từ ServiceType) */}
+          {customFields?.map(field => {
+            const fieldKey = field.key || field.param || ''
+            return (
+              <div className='checkout-section' key={fieldKey}>
+                <label className='checkout-section-label'>{field.label.toUpperCase()}</label>
+                {(field.type || 'select') === 'select' && field.options ? (
+                  <div className='checkout-duration-options'>
+                    {field.options.map(opt => (
+                      <label
+                        key={opt.value}
+                        className={`checkout-duration-option ${(customFieldValues[fieldKey] || field.default) === opt.value ? 'active' : ''}`}
+                      >
+                        <input
+                          type='radio'
+                          value={opt.value}
+                          checked={(customFieldValues[fieldKey] || field.default) === opt.value}
+                          onChange={() => setCustomFieldValues(prev => ({ ...prev, [fieldKey]: opt.value }))}
+                        />
+                        <span>{opt.label}</span>
+                      </label>
+                    ))}
+                  </div>
+                ) : (
+                  <input
+                    type={field.type === 'number' ? 'number' : 'text'}
+                    className='discount-input'
+                    placeholder={field.default || ''}
+                    value={customFieldValues[fieldKey] || ''}
+                    onChange={e => setCustomFieldValues(prev => ({ ...prev, [fieldKey]: e.target.value }))}
+                    style={{ width: '100%' }}
+                  />
+                )}
               </div>
-            </div>
-          ))}
+            )
+          })}
 
           {/* Auth method selector */}
           {showAuthOptions && (

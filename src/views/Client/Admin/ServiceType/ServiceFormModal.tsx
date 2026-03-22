@@ -159,8 +159,10 @@ export default function ServiceFormModal({ open, onClose, serviceId, initialData
 
   // Purchase options (tuỳ chọn mua hàng)
   interface PurchaseOption {
-    param: string
+    key: string         // key nội bộ gửi trong custom_fields (khách thấy)
+    param_name: string  // param gốc đối tác (ẩn, chỉ admin thấy)
     label: string
+    type: 'select' | 'text' | 'number'
     required: boolean
     default: string
     options: Array<{ value: string; label: string }>
@@ -365,8 +367,10 @@ return { values: {}, errors: formattedErrors }
       setCostDiscountTiers(meta.cost_discount_tiers || [])
       if (meta.custom_fields && Array.isArray(meta.custom_fields)) {
         setPurchaseOptions(meta.custom_fields.map((f: any) => ({
-          param: f.param || '',
+          key: f.key || f.param || '',
+          param_name: f.param_name || f.param || '',
           label: f.label || '',
+          type: f.type || 'select',
           required: f.required || false,
           default: f.default || '',
           options: f.options || [{ value: '', label: '' }],
@@ -451,15 +455,16 @@ return { values: {}, errors: formattedErrors }
     const autoCostPrice = costs.length > 0 ? Math.min(...costs) : data.cost_price || 0
 
     // Build metadata từ purchase options
-    const validOptions = purchaseOptions.filter(o => o.param && o.label && o.options.some(opt => opt.value))
+    const validOptions = purchaseOptions.filter(o => o.key && o.label && (o.type !== 'select' || o.options.some(opt => opt.value)))
     const metadata = validOptions.length > 0 ? {
       custom_fields: validOptions.map(o => ({
-        param: o.param,
+        key: o.key,
+        param_name: o.param_name || o.key,
         label: o.label,
-        type: 'select' as const,
+        type: o.type || 'select',
         required: o.required,
-        default: o.default || o.options[0]?.value || '',
-        options: o.options.filter(opt => opt.value),
+        default: o.default || (o.type === 'select' ? o.options[0]?.value || '' : ''),
+        ...(o.type === 'select' ? { options: o.options.filter(opt => opt.value) } : {}),
       }))
     } : null
 
@@ -709,7 +714,7 @@ return { values: {}, errors: formattedErrors }
                     name='provider_id'
                     control={control}
                     render={({ field }) => (
-                      <CustomTextField {...field} fullWidth select label='Nhà cung cấp' disabled={loadingProviders}>
+                      <CustomTextField {...field} fullWidth select label='Provider' disabled={loadingProviders}>
                         <MenuItem value=''><em>{loadingProviders ? '...' : '—'}</em></MenuItem>
                         {providers?.map((provider: any) => (
                           <MenuItem key={provider.id} value={provider.id}>
@@ -1145,15 +1150,45 @@ return <Chip key={val} label={p?.label || val} size='small' />
                   </>
                 )}
 
-                {/* Tuỳ chọn mua hàng — UI Builder */}
+                {/* ========== Section: Params & Tuỳ chọn mua hàng ========== */}
                 <Grid2 size={{ xs: 12 }}>
                   <div style={{ border: '1px solid #e2e8f0', borderRadius: 8, padding: 16 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                      <ShoppingCart size={16} color='#7c3aed' />
+                      <span style={{ fontWeight: 700, fontSize: 14, color: '#5b21b6' }}>Params gửi khi mua hàng</span>
+                    </div>
+                    <div style={{ fontSize: 11.5, color: '#64748b', marginBottom: 12, background: '#f8fafc', borderRadius: 6, padding: '6px 10px' }}>
+                      Ưu tiên ghi đè: Provider → Mặc định sản phẩm → Khách chọn. Trùng key thì giá trị lớp sau được gửi đi cho Provider.
+                    </div>
+
+                    {/* Params mặc định sản phẩm (JSON) */}
+                    <div style={{ marginBottom: 16 }}>
+                      <div style={{ fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 6 }}>Mặc định sản phẩm — tự động gửi kèm, khách không thấy</div>
+                      <Controller
+                        name='body_api'
+                        control={control}
+                        render={({ field }) => (
+                          <CustomTextField
+                            {...field}
+                            rows={2}
+                            fullWidth
+                            multiline
+                            size='small'
+                            placeholder='VD: {"loaiproxy":"Viettel","type":"HTTP"}'
+                            error={!!errors.body_api}
+                            helperText={errors.body_api?.message}
+                          />
+                        )}
+                      />
+                    </div>
+
+                    {/* Tuỳ chọn mua hàng — cho khách chọn */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                      <span style={{ fontWeight: 600, fontSize: 14 }}>Tuỳ chọn mua hàng</span>
+                      <div style={{ fontSize: 12, fontWeight: 600, color: '#475569' }}>Khách chọn khi mua — hiện trên form thanh toán, ghi đè mặc định sản phẩm nếu trùng key</div>
                       <Button
                         size='small'
                         variant='outlined'
-                        onClick={() => setPurchaseOptions(prev => [...prev, { param: '', label: '', required: true, default: '', options: [{ value: '', label: '' }] }])}
+                        onClick={() => setPurchaseOptions(prev => [...prev, { key: '', param_name: '', label: '', type: 'select' as const, required: true, default: '', options: [{ value: '', label: '' }] }])}
                       >
                         + Thêm tuỳ chọn
                       </Button>
@@ -1177,19 +1212,31 @@ return <Chip key={val} label={p?.label || val} size='small' />
                         </button>
 
                         <Grid2 container spacing={1.5} sx={{ mb: 1 }}>
-                          <Grid2 size={{ xs: 4 }}>
+                          <Grid2 size={{ xs: 3 }}>
                             <CustomTextField
                               fullWidth size='small'
-                              label='Tên param'
-                              placeholder='loaiproxy'
-                              value={opt.param}
+                              label='Key nội bộ'
+                              placeholder='nha_mang'
+                              value={opt.key}
                               onChange={(e: any) => {
                                 const v = e.target.value.replace(/[^a-zA-Z0-9_]/g, '')
-                                setPurchaseOptions(prev => prev.map((o, i) => i === optIdx ? { ...o, param: v } : o))
+                                setPurchaseOptions(prev => prev.map((o, i) => i === optIdx ? { ...o, key: v } : o))
                               }}
                             />
                           </Grid2>
-                          <Grid2 size={{ xs: 4 }}>
+                          <Grid2 size={{ xs: 3 }}>
+                            <CustomTextField
+                              fullWidth size='small'
+                              label='Param gốc (ẩn)'
+                              placeholder='loaiproxy'
+                              value={opt.param_name}
+                              onChange={(e: any) => {
+                                const v = e.target.value.replace(/[^a-zA-Z0-9_]/g, '')
+                                setPurchaseOptions(prev => prev.map((o, i) => i === optIdx ? { ...o, param_name: v } : o))
+                              }}
+                            />
+                          </Grid2>
+                          <Grid2 size={{ xs: 3 }}>
                             <CustomTextField
                               fullWidth size='small'
                               label='Label hiển thị'
@@ -1198,84 +1245,113 @@ return <Chip key={val} label={p?.label || val} size='small' />
                               onChange={(e: any) => setPurchaseOptions(prev => prev.map((o, i) => i === optIdx ? { ...o, label: e.target.value } : o))}
                             />
                           </Grid2>
-                          <Grid2 size={{ xs: 4 }}>
+                          <Grid2 size={{ xs: 1.5 }}>
+                            <CustomTextField
+                              fullWidth size='small' select
+                              label='Loại'
+                              value={opt.type || 'select'}
+                              onChange={(e: any) => setPurchaseOptions(prev => prev.map((o, i) => i === optIdx ? { ...o, type: e.target.value } : o))}
+                            >
+                              <MenuItem value='select'>Select</MenuItem>
+                              <MenuItem value='text'>Text</MenuItem>
+                              <MenuItem value='number'>Number</MenuItem>
+                            </CustomTextField>
+                          </Grid2>
+                          <Grid2 size={{ xs: 1.5 }}>
                             <CustomTextField
                               fullWidth size='small' select
                               label='Bắt buộc'
                               value={opt.required ? 'true' : 'false'}
                               onChange={(e: any) => setPurchaseOptions(prev => prev.map((o, i) => i === optIdx ? { ...o, required: e.target.value === 'true' } : o))}
                             >
-                              <MenuItem value='true'>Bắt buộc</MenuItem>
-                              <MenuItem value='false'>Tuỳ chọn</MenuItem>
+                              <MenuItem value='true'>Có</MenuItem>
+                              <MenuItem value='false'>Không</MenuItem>
                             </CustomTextField>
                           </Grid2>
                         </Grid2>
 
-                        {/* Options list */}
-                        <div style={{ fontSize: 12, fontWeight: 600, color: '#64748b', marginBottom: 4 }}>Giá trị:</div>
-                        {opt.options.map((option, valIdx) => (
-                          <div key={valIdx} style={{ display: 'flex', gap: 6, marginBottom: 4, alignItems: 'center' }}>
-                            <CustomTextField
-                              size='small'
-                              placeholder='Giá trị (value)'
-                              value={option.value}
-                              onChange={(e: any) => {
-                                const newOptions = [...opt.options]
-                                newOptions[valIdx] = { ...newOptions[valIdx], value: e.target.value }
-                                // Auto-fill label nếu trống
-                                if (!newOptions[valIdx].label) newOptions[valIdx].label = e.target.value
-                                setPurchaseOptions(prev => prev.map((o, i) => i === optIdx ? { ...o, options: newOptions } : o))
-                              }}
-                              sx={{ flex: 1 }}
-                            />
-                            <CustomTextField
-                              size='small'
-                              placeholder='Hiển thị (label)'
-                              value={option.label}
-                              onChange={(e: any) => {
-                                const newOptions = [...opt.options]
-                                newOptions[valIdx] = { ...newOptions[valIdx], label: e.target.value }
-                                setPurchaseOptions(prev => prev.map((o, i) => i === optIdx ? { ...o, options: newOptions } : o))
-                              }}
-                              sx={{ flex: 1 }}
-                            />
-                            <button
-                              type='button'
-                              onClick={() => {
-                                if (opt.options.length <= 1) return
-                                const newOptions = opt.options.filter((_, i) => i !== valIdx)
-                                setPurchaseOptions(prev => prev.map((o, i) => i === optIdx ? { ...o, options: newOptions } : o))
-                              }}
-                              style={{ background: 'none', border: 'none', color: opt.options.length <= 1 ? '#cbd5e1' : '#ef4444', cursor: opt.options.length <= 1 ? 'default' : 'pointer', fontSize: 14, padding: '4px 6px' }}
-                            >
-                              ✕
-                            </button>
-                          </div>
-                        ))}
-                        <div style={{ display: 'flex', gap: 8, marginTop: 6 }}>
-                          <Button
-                            size='small'
-                            variant='text'
-                            onClick={() => {
-                              const newOptions = [...opt.options, { value: '', label: '' }]
-                              setPurchaseOptions(prev => prev.map((o, i) => i === optIdx ? { ...o, options: newOptions } : o))
-                            }}
-                            sx={{ fontSize: 12 }}
-                          >
-                            + Thêm giá trị
-                          </Button>
-                          <CustomTextField
-                            size='small' select
-                            label='Mặc định'
-                            value={opt.default || opt.options[0]?.value || ''}
-                            onChange={(e: any) => setPurchaseOptions(prev => prev.map((o, i) => i === optIdx ? { ...o, default: e.target.value } : o))}
-                            sx={{ minWidth: 120 }}
-                          >
-                            {opt.options.filter(o => o.value).map(o => (
-                              <MenuItem key={o.value} value={o.value}>{o.label || o.value}</MenuItem>
+                        {/* Options list — chỉ hiện cho type=select */}
+                        {(opt.type || 'select') === 'select' && (
+                          <>
+                            <div style={{ fontSize: 12, fontWeight: 600, color: '#64748b', marginBottom: 4 }}>Giá trị:</div>
+                            {opt.options.map((option, valIdx) => (
+                              <div key={valIdx} style={{ display: 'flex', gap: 6, marginBottom: 4, alignItems: 'center' }}>
+                                <CustomTextField
+                                  size='small'
+                                  placeholder='Giá trị (value)'
+                                  value={option.value}
+                                  onChange={(e: any) => {
+                                    const newOptions = [...opt.options]
+                                    newOptions[valIdx] = { ...newOptions[valIdx], value: e.target.value }
+                                    if (!newOptions[valIdx].label) newOptions[valIdx].label = e.target.value
+                                    setPurchaseOptions(prev => prev.map((o, i) => i === optIdx ? { ...o, options: newOptions } : o))
+                                  }}
+                                  sx={{ flex: 1 }}
+                                />
+                                <CustomTextField
+                                  size='small'
+                                  placeholder='Hiển thị (label)'
+                                  value={option.label}
+                                  onChange={(e: any) => {
+                                    const newOptions = [...opt.options]
+                                    newOptions[valIdx] = { ...newOptions[valIdx], label: e.target.value }
+                                    setPurchaseOptions(prev => prev.map((o, i) => i === optIdx ? { ...o, options: newOptions } : o))
+                                  }}
+                                  sx={{ flex: 1 }}
+                                />
+                                <button
+                                  type='button'
+                                  onClick={() => {
+                                    if (opt.options.length <= 1) return
+                                    const newOptions = opt.options.filter((_, i) => i !== valIdx)
+                                    setPurchaseOptions(prev => prev.map((o, i) => i === optIdx ? { ...o, options: newOptions } : o))
+                                  }}
+                                  style={{ background: 'none', border: 'none', color: opt.options.length <= 1 ? '#cbd5e1' : '#ef4444', cursor: opt.options.length <= 1 ? 'default' : 'pointer', fontSize: 14, padding: '4px 6px' }}
+                                >
+                                  ✕
+                                </button>
+                              </div>
                             ))}
-                          </CustomTextField>
-                        </div>
+                            <div style={{ display: 'flex', gap: 8, marginTop: 6 }}>
+                              <Button
+                                size='small'
+                                variant='text'
+                                onClick={() => {
+                                  const newOptions = [...opt.options, { value: '', label: '' }]
+                                  setPurchaseOptions(prev => prev.map((o, i) => i === optIdx ? { ...o, options: newOptions } : o))
+                                }}
+                                sx={{ fontSize: 12 }}
+                              >
+                                + Thêm giá trị
+                              </Button>
+                              <CustomTextField
+                                size='small' select
+                                label='Mặc định'
+                                value={opt.default || opt.options[0]?.value || ''}
+                                onChange={(e: any) => setPurchaseOptions(prev => prev.map((o, i) => i === optIdx ? { ...o, default: e.target.value } : o))}
+                                sx={{ minWidth: 120 }}
+                              >
+                                {opt.options.filter(o => o.value).map(o => (
+                                  <MenuItem key={o.value} value={o.value}>{o.label || o.value}</MenuItem>
+                                ))}
+                              </CustomTextField>
+                            </div>
+                          </>
+                        )}
+
+                        {/* Default value cho text/number */}
+                        {(opt.type === 'text' || opt.type === 'number') && (
+                          <CustomTextField
+                            size='small'
+                            fullWidth
+                            label='Giá trị mặc định'
+                            placeholder={opt.type === 'number' ? '300' : 'VD: giá trị mặc định'}
+                            type={opt.type}
+                            value={opt.default}
+                            onChange={(e: any) => setPurchaseOptions(prev => prev.map((o, i) => i === optIdx ? { ...o, default: e.target.value } : o))}
+                            sx={{ mt: 1 }}
+                          />
+                        )}
                       </div>
                     ))}
                   </div>
@@ -1439,14 +1515,14 @@ return <Chip key={val} label={p?.label || val} size='small' />
                     </Grid2>
                   )}
 
-                  {/* Chiết khấu giá GỐC NCC theo khoảng ngày */}
+                  {/* Chiết khấu giá GỐC Provider theo khoảng ngày */}
                   {pricingMode === 'per_unit' && parseInt(costPerUnit) > 0 && (
                     <Grid2 size={{ xs: 12 }}>
                       <div style={{ border: '1px solid #fde68a', borderRadius: 10, padding: '12px 14px', background: '#fffbeb' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                           <div>
-                            <div style={{ fontSize: '13px', fontWeight: 700, color: '#92400e' }}>Chiết khấu giá GỐC (NCC) theo số {timeUnit === 'month' ? 'tháng' : 'ngày'}</div>
-                            <div style={{ fontSize: '11px', color: '#92400e', lineHeight: 1.5 }}>Chỉ áp cho <strong>đại lý (reseller)</strong>. Nhập chính sách giá từ NCC — giá vốn giảm khi mua nhiều {timeUnit === 'month' ? 'tháng' : 'ngày'}.{parseInt(costPerUnit) > 0 && <><br/>VD: Gốc {parseInt(costPerUnit).toLocaleString('vi-VN')}đ, giảm 20% → vốn {Math.round(parseInt(costPerUnit) * 0.8).toLocaleString('vi-VN')}đ, đại lý +15% → trả {Math.round(parseInt(costPerUnit) * 0.8 * 1.15).toLocaleString('vi-VN')}đ/{timeUnit === 'month' ? 'tháng' : 'ngày'}.</>}</div>
+                            <div style={{ fontSize: '13px', fontWeight: 700, color: '#92400e' }}>Chiết khấu giá GỐC (Provider) theo số {timeUnit === 'month' ? 'tháng' : 'ngày'}</div>
+                            <div style={{ fontSize: '11px', color: '#92400e', lineHeight: 1.5 }}>Chỉ áp cho <strong>đại lý (reseller)</strong>. Nhập chính sách giá từ Provider — giá vốn giảm khi mua nhiều {timeUnit === 'month' ? 'tháng' : 'ngày'}.{parseInt(costPerUnit) > 0 && <><br/>VD: Gốc {parseInt(costPerUnit).toLocaleString('vi-VN')}đ, giảm 20% → vốn {Math.round(parseInt(costPerUnit) * 0.8).toLocaleString('vi-VN')}đ, đại lý +15% → trả {Math.round(parseInt(costPerUnit) * 0.8 * 1.15).toLocaleString('vi-VN')}đ/{timeUnit === 'month' ? 'tháng' : 'ngày'}.</>}</div>
                           </div>
                           <Button
                             size='small' variant='outlined' color='warning'
@@ -1459,7 +1535,7 @@ return <Chip key={val} label={p?.label || val} size='small' />
 
                         {costDiscountTiers.length === 0 && (
                           <div style={{ fontSize: '12px', color: '#b45309', textAlign: 'center', padding: '8px 0' }}>
-                            Chưa có chiết khấu NCC — đại lý mua với giá gốc cố định ({parseInt(costPerUnit) > 0 ? `${parseInt(costPerUnit).toLocaleString('vi-VN')}đ` : '...'} × markup%) bất kể số {timeUnit === 'month' ? 'tháng' : 'ngày'}.
+                            Chưa có chiết khấu Provider — đại lý mua với giá gốc cố định ({parseInt(costPerUnit) > 0 ? `${parseInt(costPerUnit).toLocaleString('vi-VN')}đ` : '...'} × markup%) bất kể số {timeUnit === 'month' ? 'tháng' : 'ngày'}.
                           </div>
                         )}
 
@@ -1553,24 +1629,6 @@ return <Chip key={val} label={p?.label || val} size='small' />
                       control={control}
                       render={({ field }) => (
                         <CustomTextField {...field} fullWidth label='API Endpoint' placeholder='URL đối tác' />
-                      )}
-                    />
-                  </Grid2>
-
-                  <Grid2 size={{ xs: 12 }}>
-                    <Controller
-                      name='body_api'
-                      control={control}
-                      render={({ field }) => (
-                        <CustomTextField
-                          {...field}
-                          rows={3}
-                          fullWidth
-                          multiline
-                          label='Body API (JSON)'
-                          error={!!errors.body_api}
-                          helperText={errors.body_api?.message}
-                        />
                       )}
                     />
                   </Grid2>
@@ -1695,7 +1753,7 @@ return <p style={{ fontSize: '13px', color: '#64748b', margin: '0 0 8px', lineHe
                         {/* Header: title + tags */}
                         <div style={{ marginBottom: '12px', paddingBottom: '10px', borderBottom: '1px solid #f1f5f9', paddingTop: '4px' }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
-                            <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#1e293b', margin: 0, textAlign: 'left', flex: 1 }}>{previewObj.name || 'Tên sản phẩm'} <span style={{ fontFamily: 'monospace', fontSize: '11px', fontWeight: 500, color: '#94a3b8' }}>{serviceId ? `${serviceId}#` : ''}{previewObj.code || ''}</span></h3>
+                            <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#1e293b', margin: 0, textAlign: 'left', flex: 1 }}>{previewObj.name || 'Tên sản phẩm'} <span style={{ fontFamily: 'monospace', fontSize: '11px', fontWeight: 500, color: '#94a3b8' }}>#{serviceId || '?'}</span></h3>
                             {renderInlineTags()}
                           </div>
                         </div>
@@ -1766,7 +1824,7 @@ return multiInputFields.filter((f: any) => f.key && f.value).map((input: any, i:
                           {/* Header: title + tags */}
                           <div style={{ marginBottom: '10px', paddingBottom: '8px', borderBottom: '1px solid #f1f5f9' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
-                              <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#1e293b', margin: 0, flex: 1 }}>{previewObj.name || 'Tên sản phẩm'} <span style={{ fontFamily: 'monospace', fontSize: '11px', fontWeight: 500, color: '#94a3b8' }}>{serviceId ? `${serviceId}#` : ''}{previewObj.code || ''}</span></h3>
+                              <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#1e293b', margin: 0, flex: 1 }}>{previewObj.name || 'Tên sản phẩm'} <span style={{ fontFamily: 'monospace', fontSize: '11px', fontWeight: 500, color: '#94a3b8' }}>#{serviceId || '?'}</span></h3>
                               {renderInlineTags()}
                             </div>
                           </div>

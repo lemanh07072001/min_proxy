@@ -133,6 +133,12 @@ export default function RotatingProxy() {
         request_limit: plan.request_limit,
         concurrent_connections: plan.concurrent_connections,
         pool_size: plan.pool_size,
+        metadata: plan.metadata,
+        pricing_mode: plan.pricing_mode,
+        time_unit: plan.time_unit,
+        price_per_unit: plan.price_per_unit,
+        min_quantity: plan.min_quantity,
+        max_quantity: plan.max_quantity,
         features
       }
     })

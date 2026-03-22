@@ -251,11 +251,15 @@ return
             )}
             {/* Custom fields — hiển thị options cho user biết */}
             {provider?.metadata?.custom_fields?.map((field: any) => (
-              <div className='feature-row' key={field.param}>
+              <div className='feature-row' key={field.key || field.param}>
                 <div className='feature-icons'><Zap size={14} color='#8b5cf6' /></div>
                 <div className='feature-content'>
                   <span className='feature-label'>{field.label}:</span>
-                  <span className='feature-value'>{field.options?.map((o: any) => o.label).join(', ')}</span>
+                  <span className='feature-value'>
+                    {field.type === 'text' || field.type === 'number'
+                      ? (field.default || 'Tự nhập')
+                      : field.options?.map((o: any) => o.label).join(', ')}
+                  </span>
                 </div>
               </div>
             ))}

@@ -63,7 +63,7 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
   const [allowCustomAuth, setAllowCustomAuth] = useState(false)
   const [discountTiers, setDiscountTiers] = useState<Array<{ min: string; max: string; discount: string }>>([])
   const [syncStatus, setSyncStatus] = useState<'idle' | 'loading' | 'done' | 'error'>('idle')
-  const [purchaseOptions, setPurchaseOptions] = useState<Array<{ param: string; label: string; required: boolean; default: string; options: Array<{ value: string; label: string }> }>>([])
+  const [purchaseOptions, setPurchaseOptions] = useState<Array<{ key: string; param_name: string; label: string; type: 'select' | 'text' | 'number'; required: boolean; default: string; options: Array<{ value: string; label: string }> }>>([])
 
   // All supplier products (imported + available)
   const allSupplierProducts = useMemo(() => {
@@ -158,8 +158,10 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
       // Load purchase options (custom fields)
       if (meta.custom_fields && Array.isArray(meta.custom_fields)) {
         setPurchaseOptions(meta.custom_fields.map((f: any) => ({
-          param: f.param || '', label: f.label || '', required: f.required || false,
-          default: f.default || '', options: f.options || [{ value: '', label: '' }],
+          key: f.key || f.param || '', param_name: f.param_name || f.param || '',
+          label: f.label || '', type: f.type || 'select',
+          required: f.required || false, default: f.default || '',
+          options: f.options || [{ value: '', label: '' }],
         })))
       } else {
         setPurchaseOptions([])
@@ -392,9 +394,11 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
         parent_pricing_mode: parentPricingMode,
         allow_custom_auth: allowCustomAuth,
         discount_tiers: pricingMode === 'per_unit' ? discountTiers.filter(t => t.min && t.discount) : undefined,
-        custom_fields: purchaseOptions.filter(o => o.param && o.label && o.options.some(opt => opt.value)).map(o => ({
-          param: o.param, label: o.label, type: 'select' as const, required: o.required,
-          default: o.default || o.options[0]?.value || '', options: o.options.filter(opt => opt.value),
+        custom_fields: purchaseOptions.filter(o => o.key && o.label && (o.type !== 'select' || o.options.some(opt => opt.value))).map(o => ({
+          key: o.key, param_name: o.param_name || o.key, label: o.label,
+          type: o.type || 'select', required: o.required,
+          default: o.default || (o.type === 'select' ? o.options[0]?.value || '' : ''),
+          ...(o.type === 'select' ? { options: o.options.filter(opt => opt.value) } : {}),
         })),
         provider_prices: pricingMode === 'per_unit'
           ? { per_unit: parseInt(costPerUnit) || 0 }
@@ -1290,7 +1294,7 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
                   <span style={{ fontWeight: 600, fontSize: 13 }}>Tuỳ chọn mua hàng</span>
                   <Button
                     size='small' variant='outlined'
-                    onClick={() => setPurchaseOptions(prev => [...prev, { param: '', label: '', required: true, default: '', options: [{ value: '', label: '' }] }])}
+                    onClick={() => setPurchaseOptions(prev => [...prev, { key: '', param_name: '', label: '', type: 'select' as const, required: true, default: '', options: [{ value: '', label: '' }] }])}
                     sx={{ fontSize: '12px', textTransform: 'none' }}
                   >
                     + Thêm tuỳ chọn
@@ -1312,75 +1316,109 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
                     >✕</button>
 
                     <Grid2 container spacing={1} sx={{ mb: 1 }}>
-                      <Grid2 size={{ xs: 4 }}>
-                        <TextField size='small' fullWidth label='Tên param' placeholder='loaiproxy'
-                          value={opt.param}
+                      <Grid2 size={{ xs: 3 }}>
+                        <TextField size='small' fullWidth label='Key nội bộ' placeholder='nha_mang'
+                          value={opt.key}
                           onChange={e => {
                             const v = e.target.value.replace(/[^a-zA-Z0-9_]/g, '')
-                            setPurchaseOptions(prev => prev.map((o, i) => i === optIdx ? { ...o, param: v } : o))
+                            setPurchaseOptions(prev => prev.map((o, i) => i === optIdx ? { ...o, key: v } : o))
                           }}
                         />
                       </Grid2>
-                      <Grid2 size={{ xs: 4 }}>
+                      <Grid2 size={{ xs: 3 }}>
+                        <TextField size='small' fullWidth label='Param gốc (ẩn)' placeholder='loaiproxy'
+                          value={opt.param_name}
+                          onChange={e => {
+                            const v = e.target.value.replace(/[^a-zA-Z0-9_]/g, '')
+                            setPurchaseOptions(prev => prev.map((o, i) => i === optIdx ? { ...o, param_name: v } : o))
+                          }}
+                        />
+                      </Grid2>
+                      <Grid2 size={{ xs: 3 }}>
                         <TextField size='small' fullWidth label='Label hiển thị' placeholder='Nhà mạng'
                           value={opt.label}
                           onChange={e => setPurchaseOptions(prev => prev.map((o, i) => i === optIdx ? { ...o, label: e.target.value } : o))}
                         />
                       </Grid2>
-                      <Grid2 size={{ xs: 4 }}>
+                      <Grid2 size={{ xs: 1.5 }}>
+                        <TextField size='small' fullWidth select label='Loại'
+                          value={opt.type || 'select'}
+                          onChange={e => setPurchaseOptions(prev => prev.map((o, i) => i === optIdx ? { ...o, type: e.target.value as any } : o))}
+                        >
+                          <MenuItem value='select'>Select</MenuItem>
+                          <MenuItem value='text'>Text</MenuItem>
+                          <MenuItem value='number'>Number</MenuItem>
+                        </TextField>
+                      </Grid2>
+                      <Grid2 size={{ xs: 1.5 }}>
                         <TextField size='small' fullWidth select label='Bắt buộc'
                           value={opt.required ? 'true' : 'false'}
                           onChange={e => setPurchaseOptions(prev => prev.map((o, i) => i === optIdx ? { ...o, required: e.target.value === 'true' } : o))}
                         >
-                          <MenuItem value='true'>Bắt buộc</MenuItem>
-                          <MenuItem value='false'>Tuỳ chọn</MenuItem>
+                          <MenuItem value='true'>Có</MenuItem>
+                          <MenuItem value='false'>Không</MenuItem>
                         </TextField>
                       </Grid2>
                     </Grid2>
 
-                    <div style={{ fontSize: 11, fontWeight: 600, color: '#64748b', marginBottom: 4 }}>Giá trị:</div>
-                    {opt.options.map((option, valIdx) => (
-                      <div key={valIdx} style={{ display: 'flex', gap: 6, marginBottom: 4, alignItems: 'center' }}>
-                        <TextField size='small' placeholder='Value' value={option.value} sx={{ flex: 1 }}
-                          onChange={e => {
-                            const newOpts = [...opt.options]
-                            newOpts[valIdx] = { ...newOpts[valIdx], value: e.target.value }
-                            if (!newOpts[valIdx].label) newOpts[valIdx].label = e.target.value
-                            setPurchaseOptions(prev => prev.map((o, i) => i === optIdx ? { ...o, options: newOpts } : o))
-                          }}
-                        />
-                        <TextField size='small' placeholder='Label' value={option.label} sx={{ flex: 1 }}
-                          onChange={e => {
-                            const newOpts = [...opt.options]
-                            newOpts[valIdx] = { ...newOpts[valIdx], label: e.target.value }
-                            setPurchaseOptions(prev => prev.map((o, i) => i === optIdx ? { ...o, options: newOpts } : o))
-                          }}
-                        />
-                        <button type='button'
-                          onClick={() => {
-                            if (opt.options.length <= 1) return
-                            setPurchaseOptions(prev => prev.map((o, i) => i === optIdx ? { ...o, options: o.options.filter((_, j) => j !== valIdx) } : o))
-                          }}
-                          style={{ background: 'none', border: 'none', color: opt.options.length <= 1 ? '#cbd5e1' : '#ef4444', cursor: opt.options.length <= 1 ? 'default' : 'pointer', fontSize: 13 }}
-                        >✕</button>
-                      </div>
-                    ))}
-                    <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
-                      <Button size='small' variant='text' sx={{ fontSize: 11 }}
-                        onClick={() => {
-                          const newOpts = [...opt.options, { value: '', label: '' }]
-                          setPurchaseOptions(prev => prev.map((o, i) => i === optIdx ? { ...o, options: newOpts } : o))
-                        }}
-                      >+ Thêm giá trị</Button>
-                      <TextField size='small' select label='Mặc định' sx={{ minWidth: 100 }}
-                        value={opt.default || opt.options[0]?.value || ''}
-                        onChange={e => setPurchaseOptions(prev => prev.map((o, i) => i === optIdx ? { ...o, default: e.target.value } : o))}
-                      >
-                        {opt.options.filter(o => o.value).map(o => (
-                          <MenuItem key={o.value} value={o.value}>{o.label || o.value}</MenuItem>
+                    {/* Options — chỉ cho type=select */}
+                    {(opt.type || 'select') === 'select' && (
+                      <>
+                        <div style={{ fontSize: 11, fontWeight: 600, color: '#64748b', marginBottom: 4 }}>Giá trị:</div>
+                        {opt.options.map((option, valIdx) => (
+                          <div key={valIdx} style={{ display: 'flex', gap: 6, marginBottom: 4, alignItems: 'center' }}>
+                            <TextField size='small' placeholder='Value' value={option.value} sx={{ flex: 1 }}
+                              onChange={e => {
+                                const newOpts = [...opt.options]
+                                newOpts[valIdx] = { ...newOpts[valIdx], value: e.target.value }
+                                if (!newOpts[valIdx].label) newOpts[valIdx].label = e.target.value
+                                setPurchaseOptions(prev => prev.map((o, i) => i === optIdx ? { ...o, options: newOpts } : o))
+                              }}
+                            />
+                            <TextField size='small' placeholder='Label' value={option.label} sx={{ flex: 1 }}
+                              onChange={e => {
+                                const newOpts = [...opt.options]
+                                newOpts[valIdx] = { ...newOpts[valIdx], label: e.target.value }
+                                setPurchaseOptions(prev => prev.map((o, i) => i === optIdx ? { ...o, options: newOpts } : o))
+                              }}
+                            />
+                            <button type='button'
+                              onClick={() => {
+                                if (opt.options.length <= 1) return
+                                setPurchaseOptions(prev => prev.map((o, i) => i === optIdx ? { ...o, options: o.options.filter((_, j) => j !== valIdx) } : o))
+                              }}
+                              style={{ background: 'none', border: 'none', color: opt.options.length <= 1 ? '#cbd5e1' : '#ef4444', cursor: opt.options.length <= 1 ? 'default' : 'pointer', fontSize: 13 }}
+                            >✕</button>
+                          </div>
                         ))}
-                      </TextField>
-                    </div>
+                        <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
+                          <Button size='small' variant='text' sx={{ fontSize: 11 }}
+                            onClick={() => {
+                              const newOpts = [...opt.options, { value: '', label: '' }]
+                              setPurchaseOptions(prev => prev.map((o, i) => i === optIdx ? { ...o, options: newOpts } : o))
+                            }}
+                          >+ Thêm giá trị</Button>
+                          <TextField size='small' select label='Mặc định' sx={{ minWidth: 100 }}
+                            value={opt.default || opt.options[0]?.value || ''}
+                            onChange={e => setPurchaseOptions(prev => prev.map((o, i) => i === optIdx ? { ...o, default: e.target.value } : o))}
+                          >
+                            {opt.options.filter(o => o.value).map(o => (
+                              <MenuItem key={o.value} value={o.value}>{o.label || o.value}</MenuItem>
+                            ))}
+                          </TextField>
+                        </div>
+                      </>
+                    )}
+
+                    {/* Default cho text/number */}
+                    {(opt.type === 'text' || opt.type === 'number') && (
+                      <TextField size='small' fullWidth label='Giá trị mặc định'
+                        placeholder={opt.type === 'number' ? '300' : 'VD: giá trị mặc định'}
+                        type={opt.type} value={opt.default}
+                        onChange={e => setPurchaseOptions(prev => prev.map((o, i) => i === optIdx ? { ...o, default: e.target.value } : o))}
+                        sx={{ mt: 1 }}
+                      />
+                    )}
                   </div>
                 ))}
               </div>
