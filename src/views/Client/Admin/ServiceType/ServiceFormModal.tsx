@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo, memo, useCallback, useRef } from 'react'
+import { useState, useEffect, useMemo, memo, useCallback } from 'react'
 
 import {
   Dialog,
@@ -134,64 +134,49 @@ const formatVN = (num: number): string => {
 // Chỉ cho nhập: số, dấu chấm (ngăn nghìn), dấu phẩy (thập phân)
 const sanitizeVN = (str: string): string => str.replace(/[^0-9.,]/g, '')
 
-// ─── Discount Tier Row (local state cho ô giá — tránh computed value ghi đè input) ───
-const DiscountTierRow = memo(function DiscountTierRow({ tier, idx, basePrice, unitLabel, color, onUpdate, onRemove }: {
-  tier: { min: string; max: string; discount: string }
-  idx: number; basePrice: number; unitLabel: string; color: string
-  onUpdate: (idx: number, patch: Partial<{ min: string; max: string; discount: string }>) => void
+// ─── Discount Tier Row — lưu cả % và giá, nhập cái nào thì cái đó chính xác ───
+interface DiscountTier { min: string; max: string; discount: string; price?: string }
+
+const DiscountTierRow = memo(function DiscountTierRow({ tier, idx, basePrice, color, onUpdate, onRemove }: {
+  tier: DiscountTier; idx: number; basePrice: number; color: string
+  onUpdate: (idx: number, tier: DiscountTier) => void
   onRemove: (idx: number) => void
 }) {
+  // Hiển thị: nếu có price lưu sẵn → hiện price, nếu không → tính từ %
   const disc = parseFloat(tier.discount) || 0
-  const computedPrice = basePrice > 0 && disc > 0
-    ? Math.round(basePrice * (1 - disc / 100) * 100) / 100
-    : null
-  const [localPrice, setLocalPrice] = useState(computedPrice ? formatVN(computedPrice) : '')
-  // "priceTouched" = user đã nhập giá trực tiếp → không cho useEffect ghi đè
-  const [priceTouched, setPriceTouched] = useState(false)
-  const [editingPrice, setEditingPrice] = useState(false)
-
-  // Chỉ sync computed → local khi % thay đổi từ ô % (không phải từ ô giá)
-  useEffect(() => {
-    if (!editingPrice && !priceTouched) {
-      setLocalPrice(computedPrice ? formatVN(computedPrice) : '')
-    }
-  }, [computedPrice, editingPrice, priceTouched])
-
-  // Reset priceTouched khi discount thay đổi từ ô % (user gõ vào ô %)
-  const prevDisc = useRef(tier.discount)
-  useEffect(() => {
-    // Nếu discount thay đổi mà không phải do ô giá gây ra → reset touch
-    if (tier.discount !== prevDisc.current && !editingPrice) {
-      setPriceTouched(false)
-    }
-    prevDisc.current = tier.discount
-  }, [tier.discount, editingPrice])
+  const displayPrice = tier.price
+    ? formatVN(parseVN(tier.price))
+    : (basePrice > 0 && disc > 0 ? formatVN(Math.round(basePrice * (1 - disc / 100) * 100) / 100) : '')
+  const displayDisc = tier.discount || ''
 
   const inputSx = { '& input': { fontSize: '12px', padding: '5px 8px' } }
 
   return (
     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr 40px', gap: '6px', alignItems: 'center', padding: '6px 10px', borderTop: '1px solid #f1f5f9' }}>
       <CustomTextField size='small' type='number' placeholder='VD: 5' value={tier.min}
-        onChange={(e: any) => onUpdate(idx, { min: e.target.value })} sx={inputSx} />
+        onChange={(e: any) => onUpdate(idx, { ...tier, min: e.target.value })} sx={inputSx} />
       <CustomTextField size='small' type='number' placeholder='Không giới hạn' value={tier.max}
-        onChange={(e: any) => onUpdate(idx, { max: e.target.value })} sx={inputSx} />
-      <CustomTextField size='small' placeholder='VD: 10,5' value={tier.discount}
-        onChange={(e: any) => { setPriceTouched(false); onUpdate(idx, { discount: sanitizeVN(e.target.value) }) }}
+        onChange={(e: any) => onUpdate(idx, { ...tier, max: e.target.value })} sx={inputSx} />
+      <CustomTextField size='small' placeholder='VD: 10,5' value={displayDisc}
+        onChange={(e: any) => {
+          const pct = sanitizeVN(e.target.value)
+          const pctNum = parseFloat(pct) || 0
+          // Nhập % → tính giá tự động
+          const newPrice = basePrice > 0 && pctNum > 0
+            ? String(Math.round(basePrice * (1 - pctNum / 100) * 100) / 100)
+            : undefined
+          onUpdate(idx, { ...tier, discount: pct, price: newPrice })
+        }}
         sx={inputSx} />
-      <CustomTextField size='small' placeholder='VD: 4.500'
-        value={localPrice}
-        onFocus={() => setEditingPrice(true)}
-        onChange={(e: any) => setLocalPrice(sanitizeVN(e.target.value))}
-        onBlur={() => {
-          setEditingPrice(false)
-          const price = parseVN(localPrice)
-          if (basePrice > 0 && price > 0) {
-            const pct = Math.round((1 - price / basePrice) * 10000) / 100
-            onUpdate(idx, { discount: String(Math.max(0.01, Math.min(99.99, pct))) })
-            // Giữ giá user nhập — format lại cho đẹp, không tính ngược từ %
-            setLocalPrice(formatVN(price))
-            setPriceTouched(true)
-          }
+      <CustomTextField size='small' placeholder='VD: 4.500' value={displayPrice}
+        onChange={(e: any) => {
+          const raw = sanitizeVN(e.target.value)
+          const priceNum = parseVN(raw)
+          // Nhập giá → tính % tự động
+          const newDisc = basePrice > 0 && priceNum > 0
+            ? String(Math.round((1 - priceNum / basePrice) * 10000) / 100)
+            : tier.discount
+          onUpdate(idx, { ...tier, discount: newDisc, price: String(priceNum) })
         }}
         sx={{ '& input': { fontSize: '12px', padding: '5px 8px', color: disc > 0 ? color : undefined, fontWeight: disc > 0 ? 600 : undefined } }} />
       <button type='button' onClick={() => onRemove(idx)}
@@ -549,8 +534,8 @@ export default function ServiceFormModal({ open, onClose, serviceId, initialData
 
   const [purchaseOptions, setPurchaseOptions] = useState<PurchaseOption[]>([])
   const [allowCustomAuth, setAllowCustomAuth] = useState(false)
-  const [discountTiers, setDiscountTiers] = useState<Array<{ min: string; max: string; discount: string }>>([])
-  const [costDiscountTiers, setCostDiscountTiers] = useState<Array<{ min: string; max: string; discount: string }>>([])
+  const [discountTiers, setDiscountTiers] = useState<DiscountTier[]>([])
+  const [costDiscountTiers, setCostDiscountTiers] = useState<DiscountTier[]>([])
 
 
   const protocols = [
@@ -1596,8 +1581,8 @@ return <Chip key={val} label={p?.label || val} size='small' />
                             </div>
                             {discountTiers.map((tier, idx) => (
                               <DiscountTierRow key={idx} tier={tier} idx={idx} basePrice={parseFloat(pricePerUnit) || 0}
-                                unitLabel={timeUnit === 'month' ? 'tháng' : 'ngày'} color='#16a34a'
-                                onUpdate={(i, patch) => setDiscountTiers(prev => prev.map((t, j) => j === i ? { ...t, ...patch } : t))}
+                                color='#16a34a'
+                                onUpdate={(i, tier) => setDiscountTiers(prev => prev.map((t, j) => j === i ? tier : t))}
                                 onRemove={(i) => setDiscountTiers(prev => prev.filter((_, j) => j !== i))} />
                             ))}
                           </div>
@@ -1607,10 +1592,11 @@ return <Chip key={val} label={p?.label || val} size='small' />
                         {discountTiers.length > 0 && parseFloat(pricePerUnit) > 0 && (
                           <div style={{ marginTop: 8, padding: '8px 10px', background: '#eff6ff', borderRadius: 8, border: '1px solid #bfdbfe', fontSize: '11.5px', color: '#1e40af' }}>
                             <strong>Khách sẽ thấy khi nhập số {timeUnit === 'month' ? 'tháng' : 'ngày'}:</strong>
-                            {discountTiers.filter(t => t.min && t.discount).map((t, i) => {
+                            {discountTiers.filter(t => t.min && (t.discount || t.price)).map((t, i) => {
                               const base = parseFloat(pricePerUnit) || 0
                               const disc = parseFloat(t.discount) || 0
-                              const price = Math.round(base * (1 - disc / 100) * 100) / 100
+                              // Dùng giá lưu trực tiếp nếu có, không tính ngược từ %
+                              const price = t.price ? parseVN(t.price) : Math.round(base * (1 - disc / 100) * 100) / 100
 
                               return (
                                 <span key={i}>
@@ -1659,8 +1645,8 @@ return <Chip key={val} label={p?.label || val} size='small' />
                             </div>
                             {costDiscountTiers.map((tier, idx) => (
                               <DiscountTierRow key={idx} tier={tier} idx={idx} basePrice={parseFloat(costPerUnit) || 0}
-                                unitLabel={timeUnit === 'month' ? 'tháng' : 'ngày'} color='#d97706'
-                                onUpdate={(i, patch) => setCostDiscountTiers(prev => prev.map((t, j) => j === i ? { ...t, ...patch } : t))}
+                                color='#d97706'
+                                onUpdate={(i, tier) => setCostDiscountTiers(prev => prev.map((t, j) => j === i ? tier : t))}
                                 onRemove={(i) => setCostDiscountTiers(prev => prev.filter((_, j) => j !== i))} />
                             ))}
                           </div>
