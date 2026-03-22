@@ -665,8 +665,8 @@ return (
         </DialogActions>
       </Dialog>
 
-      {/* Service Form Modal — site con dùng form đơn giản, site mẹ dùng form đầy đủ */}
-      {isChild ? (
+      {/* Service Form Modal — lazy mount: chỉ render khi mở */}
+      {modalOpen && (isChild ? (
         <ChildServiceFormModal
           open={modalOpen}
           onClose={() => setModalOpen(false)}
@@ -680,7 +680,7 @@ return (
           serviceId={editingId}
           initialData={editingData}
         />
-      )}
+      ))}
 
       {customPriceService && (
         <CustomPriceModal

@@ -34,7 +34,7 @@ import CustomTextField from '@/@core/components/mui/TextField'
 import { TAG_CONFIG, PREDEFINED_TAGS, getTagStyle, fixCountryCode } from '@/configs/tagConfig'
 import { useProviders } from '@/hooks/apis/useProviders'
 import { useCountries } from '@/hooks/apis/useCountries'
-import { useServiceType, useCreateServiceType, useUpdateServiceType, useServiceTypes } from '@/hooks/apis/useServiceType'
+import { useServiceType, useCreateServiceType, useUpdateServiceType } from '@/hooks/apis/useServiceType'
 import MultiInputModal from '@/views/Client/Admin/ServiceType/MultiInputModal'
 import PriceByDurationModal from '@/views/Client/Admin/ServiceType/PriceByDurationModal'
 
@@ -506,7 +506,7 @@ export default function ServiceFormModal({ open, onClose, serviceId, initialData
   // Fetch chi tiết khi edit để lấy field hidden (api_provider) — dùng initialData làm placeholder
   const { data: fetchedData, isLoading: loadingService } = useServiceType(serviceId, isEditMode && open)
   const serviceData = fetchedData ?? initialData
-  const { data: serviceTypes = [] } = useServiceTypes()
+  // Bỏ useServiceTypes() — chỉ dùng để derive protocols/ipVersions, đã hardcode sẵn
 
   // Mutations
   const createMutation = useCreateServiceType()
@@ -531,43 +531,15 @@ export default function ServiceFormModal({ open, onClose, serviceId, initialData
   const [costDiscountTiers, setCostDiscountTiers] = useState<Array<{ min: string; max: string; discount: string }>>([])
 
 
-  // Derive dynamic options from existing service types
-  const protocols = useMemo(() => {
-    const allProtocols = new Set<string>()
+  const protocols = [
+    { value: 'http', label: 'HTTP' },
+    { value: 'socks5', label: 'SOCKS5' },
+  ]
 
-    allProtocols.add('http')
-    allProtocols.add('socks5')
-
-    serviceTypes.forEach((service: any) => {
-      if (service.protocols && Array.isArray(service.protocols)) {
-        service.protocols.forEach((protocol: string) => {
-          allProtocols.add(protocol)
-        })
-      }
-    })
-
-    return Array.from(allProtocols).map(protocol => ({
-      value: protocol,
-      label: protocol.toUpperCase()
-    }))
-  }, [serviceTypes])
-
-
-  const ipVersionOptions = useMemo(() => {
-    const versions = new Set<string>()
-
-    versions.add('ipv4')
-    versions.add('ipv6')
-
-    serviceTypes.forEach((service: any) => {
-      if (service.ip_version) versions.add(service.ip_version.toLowerCase())
-    })
-
-    return Array.from(versions).map(v => ({
-      value: v,
-      label: v.toUpperCase()
-    }))
-  }, [serviceTypes])
+  const ipVersionOptions = [
+    { value: 'ipv4', label: 'IPV4' },
+    { value: 'ipv6', label: 'IPV6' },
+  ]
 
   // Form
   const {
