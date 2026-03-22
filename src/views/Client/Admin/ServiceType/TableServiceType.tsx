@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState, useCallback, useRef, lazy, Suspense } from 'react'
+import React, { useEffect, useMemo, useState, useCallback, useRef, lazy, Suspense } from 'react'
 
 import Image from 'next/image'
 import { useParams, useRouter } from 'next/navigation'
@@ -49,6 +49,46 @@ const ChildServiceFormModal = lazy(() => import('@/views/Client/Admin/ServiceTyp
 import CustomPriceModal from '@/views/Client/Admin/ServiceType/CustomPriceModal'
 import { getTagStyle } from '@/configs/tagConfig'
 import { useBranding } from '@/app/contexts/BrandingContext'
+
+// ─── EditableOrderCell — isolated component, không rerender bảng ───
+const EditableOrderCell = React.memo(function EditableOrderCell({ value, onSave }: { value: number; onSave: (newOrder: number) => void }) {
+  const [editing, setEditing] = useState(false)
+  const [localValue, setLocalValue] = useState(String(value))
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => { setLocalValue(String(value)) }, [value])
+  useEffect(() => { if (editing) inputRef.current?.select() }, [editing])
+
+  const handleSave = () => {
+    setEditing(false)
+    const parsed = parseInt(localValue) || 0
+    if (parsed !== value) onSave(parsed)
+  }
+
+  if (editing) {
+    return (
+      <input
+        ref={inputRef}
+        type='number'
+        value={localValue}
+        onChange={event => setLocalValue(event.target.value)}
+        onBlur={handleSave}
+        onKeyDown={event => { if (event.key === 'Enter') handleSave(); if (event.key === 'Escape') setEditing(false) }}
+        style={{ width: 50, textAlign: 'center', fontSize: 13, padding: '2px 4px', border: '1px solid #93c5fd', borderRadius: 4, outline: 'none' }}
+      />
+    )
+  }
+
+  return (
+    <span
+      onClick={() => setEditing(true)}
+      title='Click để sửa thứ tự'
+      style={{ cursor: 'pointer', fontSize: 13, fontWeight: 500, color: '#475569', padding: '2px 8px', borderRadius: 4, background: '#f1f5f9', display: 'inline-block', minWidth: 30, textAlign: 'center' }}
+    >
+      {value}
+    </span>
+  )
+})
 
 // ─── SortableRow component ───
 interface SortableRowProps {
@@ -319,6 +359,17 @@ export default function TableServiceType() {
 return result
   }, [sortedDataServices, searchText, filterType, filterStatus])
 
+  const handleUpdateOrder = useCallback((itemId: number, newOrder: number) => {
+    setOrderedIds(prevIds => {
+      // Tạo bản sao sorted theo newOrder
+      const items = prevIds.map((id, index) => ({ id, order: id === itemId ? newOrder : index }))
+      items.sort((a, b) => a.order - b.order)
+      const reorderedIds = items.map(item => item.id)
+      callReorderApi(reorderedIds)
+      return reorderedIds
+    })
+  }, [callReorderApi])
+
   const columns = useMemo(
     () => [
       {
@@ -330,6 +381,19 @@ return result
             {row.original?.id}#{row.original?.code || '—'}
           </span>
         ),
+      },
+      {
+        header: 'STT',
+        size: 60,
+        cell: ({ row }: { row: any }) => {
+          const itemIndex = orderedIds.indexOf(row.original?.id)
+          return (
+            <EditableOrderCell
+              value={itemIndex >= 0 ? itemIndex : row.index}
+              onSave={(newOrder: number) => handleUpdateOrder(row.original.id, newOrder)}
+            />
+          )
+        }
       },
       {
         header: 'Name',
@@ -608,7 +672,7 @@ return (
         size: 140
       }
     ],
-    [handleOpenEdit, handleCopyService, handleOpenDeleteDialog, handleMoveItem, copyMutation.isPending, deleteMutation.isPending, isFilterActive, orderedIds, isChild]
+    [handleOpenEdit, handleCopyService, handleOpenDeleteDialog, handleMoveItem, handleUpdateOrder, copyMutation.isPending, deleteMutation.isPending, isFilterActive, orderedIds, isChild]
   )
 
   const table = useReactTable({
