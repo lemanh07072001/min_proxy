@@ -1,6 +1,7 @@
 import { use, useEffect, useState } from 'react'
 
 import { useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 
 import { Mail, Phone, MapPin, Calendar, CreditCard as Edit2, Save, X } from 'lucide-react'
 
@@ -54,6 +55,7 @@ const AccountInfo = ({ dataUser }: ProfileProps) => {
 
   const axiosAuth = useAxiosAuth()
   const router = useRouter()
+  const { update: updateSession } = useSession()
 
   const {
     control,
@@ -95,6 +97,8 @@ const AccountInfo = ({ dataUser }: ProfileProps) => {
       toast.success('Cập nhật thông tin thành công!')
       setIsEditing(false)
 
+      // Sync session NextAuth → header hiện tên mới ngay
+      updateSession()
       router.refresh()
     },
     onError: err => {
