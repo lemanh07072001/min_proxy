@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo, memo, useCallback } from 'react'
+import { useState, useEffect, useMemo, memo, useCallback, useRef } from 'react'
 
 import {
   Dialog,
@@ -122,10 +122,13 @@ const parseVN = (str: string): number => {
   const cleaned = str.replace(/\./g, '').replace(',', '.')
   return parseFloat(cleaned) || 0
 }
-// Format: 1000.5 → "1.000,50" (2 chữ số thập phân)
+// Format: 1000.5 → "1.000,5" | 1000 → "1.000" (chỉ hiện thập phân khi cần)
 const formatVN = (num: number): string => {
   if (!num && num !== 0) return ''
-  return num.toLocaleString('vi-VN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  const rounded = Math.round(num * 100) / 100
+  return rounded % 1 === 0
+    ? rounded.toLocaleString('vi-VN')
+    : rounded.toLocaleString('vi-VN', { minimumFractionDigits: 1, maximumFractionDigits: 2 })
 }
 // Chỉ cho nhập: số, dấu chấm (ngăn nghìn), dấu phẩy (thập phân)
 const sanitizeVN = (str: string): string => str.replace(/[^0-9.,]/g, '')
@@ -142,11 +145,26 @@ const DiscountTierRow = memo(function DiscountTierRow({ tier, idx, basePrice, un
     ? Math.round(basePrice * (1 - disc / 100) * 100) / 100
     : null
   const [localPrice, setLocalPrice] = useState(computedPrice ? formatVN(computedPrice) : '')
+  // "priceTouched" = user đã nhập giá trực tiếp → không cho useEffect ghi đè
+  const [priceTouched, setPriceTouched] = useState(false)
   const [editingPrice, setEditingPrice] = useState(false)
 
+  // Chỉ sync computed → local khi % thay đổi từ ô % (không phải từ ô giá)
   useEffect(() => {
-    if (!editingPrice) setLocalPrice(computedPrice ? formatVN(computedPrice) : '')
-  }, [computedPrice, editingPrice])
+    if (!editingPrice && !priceTouched) {
+      setLocalPrice(computedPrice ? formatVN(computedPrice) : '')
+    }
+  }, [computedPrice, editingPrice, priceTouched])
+
+  // Reset priceTouched khi discount thay đổi từ ô % (user gõ vào ô %)
+  const prevDisc = useRef(tier.discount)
+  useEffect(() => {
+    // Nếu discount thay đổi mà không phải do ô giá gây ra → reset touch
+    if (tier.discount !== prevDisc.current && !editingPrice) {
+      setPriceTouched(false)
+    }
+    prevDisc.current = tier.discount
+  }, [tier.discount, editingPrice])
 
   const inputSx = { '& input': { fontSize: '12px', padding: '5px 8px' } }
 
@@ -157,9 +175,9 @@ const DiscountTierRow = memo(function DiscountTierRow({ tier, idx, basePrice, un
       <CustomTextField size='small' type='number' placeholder='Không giới hạn' value={tier.max}
         onChange={(e: any) => onUpdate(idx, { max: e.target.value })} sx={inputSx} />
       <CustomTextField size='small' placeholder='VD: 10,5' value={tier.discount}
-        onChange={(e: any) => onUpdate(idx, { discount: sanitizeVN(e.target.value) })}
+        onChange={(e: any) => { setPriceTouched(false); onUpdate(idx, { discount: sanitizeVN(e.target.value) }) }}
         sx={inputSx} />
-      <CustomTextField size='small' placeholder='VD: 4.500,00'
+      <CustomTextField size='small' placeholder='VD: 4.500'
         value={localPrice}
         onFocus={() => setEditingPrice(true)}
         onChange={(e: any) => setLocalPrice(sanitizeVN(e.target.value))}
@@ -169,6 +187,9 @@ const DiscountTierRow = memo(function DiscountTierRow({ tier, idx, basePrice, un
           if (basePrice > 0 && price > 0) {
             const pct = Math.round((1 - price / basePrice) * 10000) / 100
             onUpdate(idx, { discount: String(Math.max(0.01, Math.min(99.99, pct))) })
+            // Giữ giá user nhập — format lại cho đẹp, không tính ngược từ %
+            setLocalPrice(formatVN(price))
+            setPriceTouched(true)
           }
         }}
         sx={{ '& input': { fontSize: '12px', padding: '5px 8px', color: disc > 0 ? color : undefined, fontWeight: disc > 0 ? 600 : undefined } }} />
