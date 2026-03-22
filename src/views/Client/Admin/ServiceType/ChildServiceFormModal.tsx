@@ -24,6 +24,7 @@ import FormAlert from '@/components/FormAlert'
 import { useForm, Controller } from 'react-hook-form'
 
 import CustomTextField from '@/@core/components/mui/TextField'
+import CollapsibleSection from '@/views/Client/Admin/ServiceType/CollapsibleSection'
 import { useServiceType, useCreateServiceType, useUpdateServiceType } from '@/hooks/apis/useServiceType'
 import { useCheckSupplierProduct, type SupplierProduct } from '@/hooks/apis/useSupplierProducts'
 import { useCountries } from '@/hooks/apis/useCountries'
@@ -1332,9 +1333,9 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
               </div>
 
               {/* Tuỳ chọn mua hàng — Custom fields */}
-              <div style={{ border: '1px solid #e2e8f0', borderRadius: 8, padding: 14, marginTop: 8 }}>
+              <CollapsibleSection title='Tuỳ chọn mua hàng' icon={ShoppingCart} iconColor='#7c3aed' iconBg='#f5f3ff' border='1px solid #e2e8f0'>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-                  <span style={{ fontWeight: 600, fontSize: 13 }}>Tuỳ chọn mua hàng</span>
+                  <span style={{ fontWeight: 600, fontSize: 13 }}>Danh sách tuỳ chọn</span>
                   <Button
                     size='small' variant='outlined'
                     onClick={() => setPurchaseOptions(prev => [...prev, { key: '', param_name: '', label: '', type: 'select' as const, required: true, default: '', options: [{ value: '', label: '' }] }])}
@@ -1464,7 +1465,7 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
                     )}
                   </div>
                 ))}
-              </div>
+              </CollapsibleSection>
 
               {/* Tag — chọn từ preset có màu */}
               <div>

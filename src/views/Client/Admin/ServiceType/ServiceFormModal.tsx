@@ -37,6 +37,7 @@ import { useCountries } from '@/hooks/apis/useCountries'
 import { useServiceType, useCreateServiceType, useUpdateServiceType } from '@/hooks/apis/useServiceType'
 import MultiInputModal from '@/views/Client/Admin/ServiceType/MultiInputModal'
 import PriceByDurationModal from '@/views/Client/Admin/ServiceType/PriceByDurationModal'
+import CollapsibleSection from '@/views/Client/Admin/ServiceType/CollapsibleSection'
 
 import '@/views/Client/RotatingProxy/styles.css'
 
@@ -1327,14 +1328,7 @@ return <Chip key={val} label={p?.label || val} size='small' />
               </div>
 
               {/* ========== Section: Thông số sản phẩm ========== */}
-              <div style={{ background: '#fafbfc', borderRadius: '10px', padding: '14px 16px', marginBottom: '14px', border: '1px solid #f1f5f9' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                  <div style={{ width: '26px', height: '26px', borderRadius: '7px', background: '#f0fdf4', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <Zap size={13} color='#22c55e' />
-                  </div>
-                  <span style={{ fontSize: '13px', fontWeight: 700, color: '#1e293b' }}>Thông số sản phẩm</span>
-                </div>
-                <p style={{ fontSize: '12px', color: '#94a3b8', margin: '0 0 12px 34px' }}>Hiển thị trên card sản phẩm cho khách hàng</p>
+              <CollapsibleSection title='Thông số sản phẩm' icon={Zap} iconColor='#22c55e' iconBg='#f0fdf4'>
               <Grid2 container spacing={1}>
                 <Grid2 size={{ xs: 6, sm: 3 }}>
                   <Controller
@@ -1497,14 +1491,10 @@ return <Chip key={val} label={p?.label || val} size='small' />
                   errors={errors}
                 />
               </Grid2>
-              </div>
+              </CollapsibleSection>
 
               {/* ========== Section: Chế độ giá ========== */}
-              <div style={{ border: '1px solid #e2e8f0', borderRadius: 8, padding: '12px 16px', marginBottom: 16 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
-                  <DollarSign size={16} color='#d97706' />
-                  <span style={{ fontSize: '13px', fontWeight: 700, color: '#92400e' }}>Chế độ giá</span>
-                </div>
+              <CollapsibleSection title='Chế độ giá' icon={DollarSign} iconColor='#d97706' iconBg='#fffbeb' border='1px solid #e2e8f0'>
                 <Grid2 container spacing={2}>
                   <Grid2 size={{ xs: 12, sm: 4 }}>
                     <CustomTextField
@@ -1710,16 +1700,10 @@ return <Chip key={val} label={p?.label || val} size='small' />
                     </Grid2>
                   )}
                 </Grid2>
-              </div>
+              </CollapsibleSection>
 
               {/* ========== Section 3: Cấu hình API ========== */}
-              <div style={{ background: '#fafbfc', borderRadius: '10px', padding: '14px 16px', marginBottom: '14px', border: '1px solid #f1f5f9' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-                  <div style={{ width: '26px', height: '26px', borderRadius: '7px', background: '#f0fdf4', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <Globe size={13} color='#16a34a' />
-                  </div>
-                  <span style={{ fontSize: '13px', fontWeight: 700, color: '#1e293b' }}>Cấu hình API</span>
-                </div>
+              <CollapsibleSection title='Cấu hình API' icon={Globe} iconColor='#16a34a' iconBg='#f0fdf4'>
                 <Grid2 container spacing={1}>
                   <Grid2 size={{ xs: 6, sm: 4 }}>
                     <Controller
@@ -1746,7 +1730,7 @@ return <Chip key={val} label={p?.label || val} size='small' />
                     </div>
                   </Grid2>
                 </Grid2>
-              </div>
+              </CollapsibleSection>
             </form>
           )}
           </Box>
