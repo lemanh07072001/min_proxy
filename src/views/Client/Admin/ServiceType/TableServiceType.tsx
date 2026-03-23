@@ -85,7 +85,7 @@ const EditableOrderCell = React.memo(function EditableOrderCell({ value, onSave 
       title='Click để sửa thứ tự'
       style={{ cursor: 'pointer', fontSize: 13, fontWeight: 500, color: '#475569', padding: '2px 8px', borderRadius: 4, background: '#f1f5f9', display: 'inline-block', minWidth: 30, textAlign: 'center' }}
     >
-      {value}
+      {localValue}
     </span>
   )
 })
