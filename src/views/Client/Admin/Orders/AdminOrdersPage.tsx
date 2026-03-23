@@ -596,7 +596,7 @@ return (
   })
 
   return (
-    <div style={{ padding: '20px 24px' }}>
+    <>
           {/* Stats Cards */}
           <Grid2 container spacing={2} sx={{ mb: 3 }}>
             <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
@@ -773,7 +773,7 @@ return (
               </div>
 
               {/* Table */}
-              <div className='table-wrapper' style={{ overflowX: 'auto' }}>
+              <div className='table-wrapper' style={{ overflowX: 'auto', padding: '0 16px 16px' }}>
                 <table
                   className='data-table'
                   style={{ minWidth: '1540px', ...(isLoading || orders.length === 0 ? { height: '100%' } : {}) }}
@@ -1034,6 +1034,6 @@ return (
           </Button>
         </DialogActions>
       </Dialog>
-    </div>
+    </>
   )
 }
