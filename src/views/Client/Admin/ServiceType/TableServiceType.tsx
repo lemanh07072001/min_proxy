@@ -5,7 +5,7 @@ import React, { useEffect, useMemo, useState, useCallback, useRef, lazy, Suspens
 import Image from 'next/image'
 import { useParams, useRouter } from 'next/navigation'
 
-import { CircleQuestionMark, BadgeCheck, BadgeMinus, ShoppingCart, ShoppingCartIcon, List, Copy, SquarePen, Trash2, SquarePlus, Search, DollarSign, Loader2, GripVertical, ChevronUp, ChevronDown } from 'lucide-react'
+import { CircleQuestionMark, BadgeCheck, BadgeMinus, ShoppingCart, ShoppingCartIcon, List, Copy, SquarePen, Trash2, SquarePlus, Search, DollarSign, Loader2, GripVertical, ChevronUp, ChevronDown, RefreshCw } from 'lucide-react'
 
 import {
   useReactTable,
@@ -361,14 +361,16 @@ return result
 
   const handleUpdateOrder = useCallback(async (itemId: number, newOrder: number) => {
     try {
-      const res = await axiosAuth.post('/reorder-service-types', { id: itemId, order: newOrder })
-      console.log('[Reorder] Response:', res.data)
-      await queryClient.refetchQueries({ queryKey: ['orderProxyStatic'] })
-    } catch (error: any) {
-      console.error('[Reorder] Error:', error?.response?.data || error.message)
+      await axiosAuth.post('/reorder-service-types', { id: itemId, order: newOrder })
+      toast.success('Đã lưu thứ tự')
+    } catch {
       toast.error('Lỗi cập nhật thứ tự')
     }
-  }, [axiosAuth, queryClient])
+  }, [axiosAuth])
+
+  const handleRefreshList = useCallback(() => {
+    queryClient.refetchQueries({ queryKey: ['orderProxyStatic'] })
+  }, [queryClient])
 
   const columns = useMemo(
     () => [
@@ -724,7 +726,16 @@ return (
               </div>
             </div>
 
-            <div className='header-right'>
+            <div className='header-right' style={{ display: 'flex', gap: 8 }}>
+              <Button
+                onClick={handleRefreshList}
+                variant='outlined'
+                size='small'
+                startIcon={<RefreshCw size={14} />}
+                sx={{ textTransform: 'none', fontSize: 13 }}
+              >
+                Làm mới
+              </Button>
               <Button
                 onClick={handleOpenCreate}
                 variant='contained'
