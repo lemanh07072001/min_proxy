@@ -155,7 +155,10 @@ export default function TableDepositHistory() {
       case TRANSACTION_TYPES.THANHTOAN_V4:
         return <Chip label={label} size='small' icon={<BadgeCheck />} color='success' sx={chipSx} />
       case TRANSACTION_TYPES.REFUND:
+      case TRANSACTION_TYPES.REFUND_PARTIAL:
         return <Chip label={label} size='small' icon={<BadgeMinus />} color='warning' sx={chipWarning} />
+      case TRANSACTION_TYPES.REFUND_FULL:
+        return <Chip label={label} size='small' icon={<BadgeMinus />} color='error' sx={chipSx} />
       case TRANSACTION_TYPES.FAILED:
         return <Chip label={label} size='small' icon={<CircleX />} color='error' sx={chipSx} />
       case TRANSACTION_TYPES.GIAHAN:
@@ -503,8 +506,8 @@ export default function TableDepositHistory() {
               <MenuItem value={TRANSACTION_TYPES.GIAHAN}>Gia hạn</MenuItem>
               <MenuItem value={TRANSACTION_TYPES.THANHTOAN_V4}>Mua proxy V4</MenuItem>
               <MenuItem value={TRANSACTION_TYPES.GIAHAN_V4}>Gia hạn V4</MenuItem>
-              <MenuItem value='REFUND_PARTIAL'>Hoàn tiền 1 phần</MenuItem>
-              <MenuItem value='REFUND_FULL'>Hoàn tiền toàn bộ</MenuItem>
+              <MenuItem value={TRANSACTION_TYPES.REFUND_PARTIAL}>Hoàn tiền 1 phần</MenuItem>
+              <MenuItem value={TRANSACTION_TYPES.REFUND_FULL}>Hoàn tiền toàn bộ</MenuItem>
               <MenuItem value={TRANSACTION_TYPES.RUT_HOA_HONG_AFFILIATE}>Rút hoa hồng</MenuItem>
             </CustomTextField>
 

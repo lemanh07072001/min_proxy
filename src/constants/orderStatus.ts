@@ -70,6 +70,8 @@ export const ORDER_STATUS_COLORS: Record<string, string> = {
 export const TRANSACTION_TYPES = {
   BUY: 'BUY',
   REFUND: 'REFUND',
+  REFUND_PARTIAL: 'REFUND_PARTIAL',
+  REFUND_FULL: 'REFUND_FULL',
   FAILED: 'FAILED',
   NAPTIEN: 'NAPTIEN',
   NAPTIEN_AUTO: 'NAPTIEN_AUTO',
@@ -90,6 +92,8 @@ export type TransactionType = (typeof TRANSACTION_TYPES)[keyof typeof TRANSACTIO
 export const TRANSACTION_TYPE_LABELS: Record<string, string> = {
   [TRANSACTION_TYPES.BUY]: 'Mua proxy',
   [TRANSACTION_TYPES.REFUND]: 'Hoàn tiền',
+  [TRANSACTION_TYPES.REFUND_PARTIAL]: 'Hoàn tiền 1 phần',
+  [TRANSACTION_TYPES.REFUND_FULL]: 'Hoàn tiền toàn bộ',
   [TRANSACTION_TYPES.FAILED]: 'Thất bại',
   [TRANSACTION_TYPES.NAPTIEN]: 'Nạp tiền',
   [TRANSACTION_TYPES.NAPTIEN_AUTO]: 'Nạp tiền tự động',
