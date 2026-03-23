@@ -23,6 +23,11 @@ export const TAG_CONFIG: Record<string, TagStyle> = {
   'Không ổn định': { bgColor: '#f97316', textColor: '#fff', borderColor: '#ea580c', gradient: 'linear-gradient(135deg, #f97316, #ea580c)', icon: '⚠️' },
   'Bảo trì':       { bgColor: '#ef4444', textColor: '#fff', borderColor: '#dc2626', gradient: 'linear-gradient(135deg, #ef4444, #dc2626)', icon: '🔧' },
   'Đóng':          { bgColor: '#94a3b8', textColor: '#fff', borderColor: '#64748b', hidden: true },
+
+  // ISP tags
+  'Viettel':       { bgColor: '#e60012', textColor: '#fff', borderColor: '#cc0010', gradient: 'linear-gradient(135deg, #e60012, #cc0010)', icon: '🇻🇳' },
+  'FPT':           { bgColor: '#f58220', textColor: '#fff', borderColor: '#e07010', gradient: 'linear-gradient(135deg, #f58220, #e07010)', icon: '🇻🇳' },
+  'VNPT':          { bgColor: '#005baa', textColor: '#fff', borderColor: '#004a8c', gradient: 'linear-gradient(135deg, #005baa, #004a8c)', icon: '🇻🇳' },
 }
 
 const DEFAULT_STYLE: TagStyle = { bgColor: '#64748b', textColor: '#fff', borderColor: '#475569' }
