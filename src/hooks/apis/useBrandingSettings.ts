@@ -89,10 +89,9 @@ export const useBrandingSettings = (serverData?: BrandingSettings) => {
       return (json?.data ?? {}) as BrandingSettings
     },
     initialData: serverData,    // server đã fetch → client dùng ngay, không gọi API
-    staleTime: Infinity,        // không bao giờ stale — chỉ invalidate khi admin update
-    gcTime: Infinity,           // giữ cache vĩnh viễn trong session
+    staleTime: 30_000,          // 30s — sau đó refetch background khi mount
+    gcTime: Infinity,           // giữ cache trong session
     refetchOnWindowFocus: false,
-    refetchOnMount: false,
     refetchOnReconnect: false,
   })
 }
