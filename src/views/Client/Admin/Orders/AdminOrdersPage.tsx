@@ -596,7 +596,7 @@ return (
   })
 
   return (
-    <>
+    <div style={{ padding: '20px 24px' }}>
           {/* Stats Cards */}
           <Grid2 container spacing={2} sx={{ mb: 3 }}>
             <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
@@ -614,7 +614,7 @@ return (
           </Grid2>
 
           {/* Table */}
-          <div className='orders-content' style={{ padding: '0 16px 16px' }}>
+          <div className='orders-content'>
             <div className='table-container' style={{ borderRadius: '12px', overflow: 'hidden' }}>
               {/* Toolbar */}
               <div className='table-toolbar' style={{ flexDirection: 'column', alignItems: 'stretch', gap: 0, padding: 0 }}>
@@ -1034,6 +1034,6 @@ return (
           </Button>
         </DialogActions>
       </Dialog>
-    </>
+    </div>
   )
 }
