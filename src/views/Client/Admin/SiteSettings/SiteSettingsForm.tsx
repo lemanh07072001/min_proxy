@@ -1639,7 +1639,8 @@ export default function SiteSettingsForm() {
                     placeholder='Nhập mệnh giá (VD: 50000)'
                     onKeyDown={e => {
                       if (e.key === 'Enter') {
-                        const input = e.currentTarget
+                        e.preventDefault()
+                        const input = e.target as HTMLInputElement
                         const val = parseInt(input.value.replace(/[^0-9]/g, ''))
                         if (val > 0) {
                           const current = branding.deposit_preset_amounts || []
