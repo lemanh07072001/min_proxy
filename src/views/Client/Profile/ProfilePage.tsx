@@ -124,8 +124,8 @@ export default function ProfilePage({ dataProfile }: ProfileProps) {
                       className='hidden'
                     />
                   </div>
-                  <h3 className='mt-4 text-lg font-bold text-white'>{dataProfile?.name}</h3>
-                  <p className='text-sm' style={{ color: 'color-mix(in srgb, var(--primary-hover, #f97316) 30%, white)' }}>{dataProfile?.email}</p>
+                  <h3 className='mt-4 text-lg font-bold text-white'>{(session?.user as any)?.name || dataProfile?.name}</h3>
+                  <p className='text-sm' style={{ color: 'color-mix(in srgb, var(--primary-hover, #f97316) 30%, white)' }}>{(session?.user as any)?.email || dataProfile?.email}</p>
                 </div>
               </div>
 

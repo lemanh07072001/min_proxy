@@ -782,6 +782,20 @@ export default function SiteSettingsForm() {
                 fullWidth
               />
               {/* Liên hệ hỗ trợ đã chuyển sang tab "Hỗ trợ & Liên hệ" */}
+
+              {/* ── Hiển thị sản phẩm ── */}
+              <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: 20 }}>
+                <h6 style={sectionTitleSx}>Hiển thị sản phẩm</h6>
+              </div>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '13px', color: '#475569', cursor: 'pointer' }}>
+                <input
+                  type='checkbox'
+                  checked={branding.show_product_code !== '0'}
+                  onChange={e => updateBrandingField('show_product_code', e.target.checked ? '1' : '0')}
+                  style={{ accentColor: 'var(--primary-color, #2092EC)' }}
+                />
+                Hiện mã sản phẩm (code) dưới tên sản phẩm trên trang khách hàng
+              </label>
             </div>
           )}
 
@@ -1583,7 +1597,66 @@ export default function SiteSettingsForm() {
                 {updateBankMutation.isPending ? 'Đang lưu...' : 'Lưu ngân hàng'}
               </Button>
 
-              {/* ── Section 2: Pay2s ── */}
+              {/* ── Section 2: Cài đặt nạp tiền ── */}
+              <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: 20 }}>
+                <h6 style={sectionTitleSx}>Cài đặt nạp tiền</h6>
+                <p style={sectionDescSx}>Số tiền tối thiểu và các mệnh giá gợi ý cho khách khi nạp tiền</p>
+              </div>
+              <div style={{ display: 'flex', gap: 12 }}>
+                <TextField
+                  size='small'
+                  label='Số tiền tối thiểu (đ)'
+                  value={branding.deposit_min_amount || ''}
+                  onChange={e => updateBrandingField('deposit_min_amount', e.target.value.replace(/[^0-9]/g, ''))}
+                  placeholder='VD: 2000'
+                  sx={{ flex: 1 }}
+                  helperText='Khách không thể nạp dưới số này. Để trống = 2.000đ'
+                />
+              </div>
+              <div>
+                <div style={{ fontSize: '13px', fontWeight: 500, color: '#475569', marginBottom: 8 }}>
+                  Mệnh giá gợi ý (khách click nhanh)
+                </div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 8 }}>
+                  {(branding.deposit_preset_amounts || []).map((amt: number, idx: number) => (
+                    <div key={idx} style={{
+                      display: 'flex', alignItems: 'center', gap: 4,
+                      padding: '4px 10px', borderRadius: 6, border: '1px solid #e2e8f0', background: '#f8fafc'
+                    }}>
+                      <span style={{ fontSize: '13px' }}>{Number(amt).toLocaleString('vi-VN')}đ</span>
+                      <IconButton size='small' onClick={() => {
+                        const updated = (branding.deposit_preset_amounts || []).filter((_: number, i: number) => i !== idx)
+                        updateBrandingField('deposit_preset_amounts', updated)
+                      }} sx={{ padding: '2px' }}>
+                        <Trash2 size={12} color='#ef4444' />
+                      </IconButton>
+                    </div>
+                  ))}
+                </div>
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                  <TextField
+                    size='small'
+                    placeholder='Nhập mệnh giá (VD: 50000)'
+                    onKeyDown={e => {
+                      if (e.key === 'Enter') {
+                        const input = e.currentTarget
+                        const val = parseInt(input.value.replace(/[^0-9]/g, ''))
+                        if (val > 0) {
+                          const current = branding.deposit_preset_amounts || []
+                          if (!current.includes(val)) {
+                            updateBrandingField('deposit_preset_amounts', [...current, val].sort((a: number, b: number) => a - b))
+                          }
+                          input.value = ''
+                        }
+                      }
+                    }}
+                    sx={{ width: 200 }}
+                    helperText='Nhập số rồi Enter để thêm'
+                  />
+                </div>
+              </div>
+
+              {/* ── Section 3: Pay2s ── */}
               <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: 20 }}>
                 <h6 style={sectionTitleSx}>Pay2s (nạp tiền tự động)</h6>
                 <p style={sectionDescSx}>Token xác thực webhook từ pay2s.vn. Khi có giao dịch ngân hàng, pay2s gửi thông báo &rarr; hệ thống tự cộng tiền.</p>
@@ -1633,8 +1706,19 @@ export default function SiteSettingsForm() {
               {/* Deposit channel */}
               <div style={{ padding: 16, border: '1px solid #e2e8f0', borderRadius: 10, display: 'flex', flexDirection: 'column', gap: 12 }}>
                 <div>
-                  <div style={{ fontSize: '13px', fontWeight: 600, color: '#1e293b' }}>Kênh Nạp tiền</div>
-                  <div style={{ fontSize: '12px', color: '#94a3b8' }}>Thông báo nạp tiền: khi khách chuyển khoản thành công</div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <div style={{ fontSize: '13px', fontWeight: 600, color: '#1e293b' }}>Kênh Nạp tiền</div>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: '12px', color: '#64748b', cursor: 'pointer' }}>
+                      <input
+                        type='checkbox'
+                        checked={branding.deposit_notify_telegram === '1' || branding.deposit_notify_telegram === 'true'}
+                        onChange={e => updateBrandingField('deposit_notify_telegram', e.target.checked ? '1' : '0')}
+                        style={{ accentColor: 'var(--primary-color, #2092EC)' }}
+                      />
+                      Gửi thông báo khi khách tạo bill nạp tiền
+                    </label>
+                  </div>
+                  <div style={{ fontSize: '12px', color: '#94a3b8' }}>Thông báo nạp tiền: khi khách tạo hoá đơn hoặc chuyển khoản thành công</div>
                 </div>
                 <div style={{ display: 'flex', gap: 12 }}>
                   <TextField

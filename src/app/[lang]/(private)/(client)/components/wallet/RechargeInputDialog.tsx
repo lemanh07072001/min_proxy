@@ -22,8 +22,9 @@ import { useCopy } from '@/app/hooks/useCopy'
 import useAxiosAuth from '@/hocs/useAxiosAuth'
 import { setUser } from '@/store/userSlice'
 import type { AppDispatch } from '@/store'
+import { useBranding } from '@/app/contexts/BrandingContext'
 
-const denominations = ['2000', '5000', '10000', '50000', '100000', '200000', '500000', '1000000']
+const DEFAULT_DENOMINATIONS = ['2000', '5000', '10000', '50000', '100000', '200000', '500000', '1000000']
 const EXPIRE_SECONDS = 600 // 10 phút
 
 interface RechargeInputDialogProps {
@@ -34,6 +35,10 @@ interface RechargeInputDialogProps {
 export default function RechargeInputDialog({ isOpen, handleClose }: RechargeInputDialogProps) {
   const dispatch = useDispatch<AppDispatch>()
   const queryClient = useQueryClient()
+  const { settings } = useBranding()
+  const denominations = settings?.deposit_preset_amounts?.length
+    ? settings.deposit_preset_amounts.map((a: number) => String(a))
+    : DEFAULT_DENOMINATIONS
   const [rechargeAmount, setRechargeAmount] = useState('50,000')
   const [amount, setAmount] = useState('50000')
   const [isGeneratingQR, setIsGeneratingQR] = useState(false)

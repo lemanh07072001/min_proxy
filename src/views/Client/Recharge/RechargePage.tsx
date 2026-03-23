@@ -47,13 +47,21 @@ import useAxiosAuth from '@/hocs/useAxiosAuth'
 import { setUser } from '@/store/userSlice'
 
 import type { AppDispatch, RootState } from '@/store'
+import { useBranding } from '@/app/contexts/BrandingContext'
 
-const denominations = ['2000', '5000', '10000', '50000', '100000', '200000', '500000', '1000000']
+const DEFAULT_DENOMINATIONS = ['2000', '5000', '10000', '50000', '100000', '200000', '500000', '1000000']
 const EXPIRE_SECONDS = 600
 
 export default function RechargePage() {
   const { user } = useSelector((state: RootState) => state.user)
   const dispatch = useDispatch<AppDispatch>()
+  const { settings } = useBranding()
+  const denominations = useMemo(() => {
+    if (settings?.deposit_preset_amounts?.length) {
+      return settings.deposit_preset_amounts.map((a: number) => String(a))
+    }
+    return DEFAULT_DENOMINATIONS
+  }, [settings?.deposit_preset_amounts])
   const queryClient = useQueryClient()
   const [tabIndex, setTabIndex] = useState(0)
 
