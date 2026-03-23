@@ -108,8 +108,9 @@ export const useUpdateBrandingSettings = () => {
       return res?.data
     },
     onSuccess: () => {
-      // Invalidate client cache (TanStack Query)
+      // Force refetch (staleTime=Infinity nên invalidate không tự refetch)
       queryClient.invalidateQueries({ queryKey: ['branding-settings'] })
+      queryClient.refetchQueries({ queryKey: ['branding-settings'] })
 
       // Invalidate server cache (Next.js) → SEO metadata cập nhật ngay
       fetch('/api/revalidate?tag=branding', { method: 'POST' }).catch(() => {})

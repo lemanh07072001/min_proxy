@@ -286,6 +286,10 @@ export default function SiteSettingsForm() {
         telegram_bot_token_error: brandingData.telegram_bot_token_error || '',
         telegram_chat_id_error: brandingData.telegram_chat_id_error || '',
         site_mode: brandingData.site_mode || null,
+        show_product_code: brandingData.show_product_code ?? null,
+        deposit_min_amount: brandingData.deposit_min_amount ?? null,
+        deposit_preset_amounts: brandingData.deposit_preset_amounts ?? null,
+        deposit_notify_telegram: brandingData.deposit_notify_telegram ?? null,
       })
     }
   }, [brandingData])
