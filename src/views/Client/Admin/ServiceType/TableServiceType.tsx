@@ -385,15 +385,12 @@ return result
       {
         header: 'STT',
         size: 60,
-        cell: ({ row }: { row: any }) => {
-          const itemIndex = orderedIds.indexOf(row.original?.id)
-          return (
-            <EditableOrderCell
-              value={itemIndex >= 0 ? itemIndex : row.index}
-              onSave={(newOrder: number) => handleUpdateOrder(row.original.id, newOrder)}
-            />
-          )
-        }
+        cell: ({ row }: { row: any }) => (
+          <EditableOrderCell
+            value={row.original?.order ?? 0}
+            onSave={(newOrder: number) => handleUpdateOrder(row.original.id, newOrder)}
+          />
+        )
       },
       {
         header: 'Name',
