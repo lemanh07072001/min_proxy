@@ -62,7 +62,7 @@ const EditableOrderCell = React.memo(function EditableOrderCell({ value, onSave 
   const handleSave = () => {
     setEditing(false)
     const parsed = parseInt(localValue) || 0
-    if (parsed !== value) onSave(parsed)
+    onSave(parsed)
   }
 
   if (editing) {
@@ -359,16 +359,14 @@ export default function TableServiceType() {
 return result
   }, [sortedDataServices, searchText, filterType, filterStatus])
 
-  const handleUpdateOrder = useCallback((itemId: number, newOrder: number) => {
-    setOrderedIds(prevIds => {
-      // Tạo bản sao sorted theo newOrder
-      const items = prevIds.map((id, index) => ({ id, order: id === itemId ? newOrder : index }))
-      items.sort((a, b) => a.order - b.order)
-      const reorderedIds = items.map(item => item.id)
-      callReorderApi(reorderedIds)
-      return reorderedIds
-    })
-  }, [callReorderApi])
+  const handleUpdateOrder = useCallback(async (itemId: number, newOrder: number) => {
+    try {
+      await axiosAuth.post('/reorder-service-types', { id: itemId, order: newOrder })
+      queryClient.invalidateQueries({ queryKey: ['get-service-types'] })
+    } catch {
+      toast.error('Lỗi cập nhật thứ tự')
+    }
+  }, [axiosAuth, queryClient])
 
   const columns = useMemo(
     () => [
