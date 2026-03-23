@@ -35,9 +35,9 @@ interface RechargeInputDialogProps {
 export default function RechargeInputDialog({ isOpen, handleClose }: RechargeInputDialogProps) {
   const dispatch = useDispatch<AppDispatch>()
   const queryClient = useQueryClient()
-  const { settings } = useBranding()
-  const denominations = settings?.deposit_preset_amounts?.length
-    ? settings.deposit_preset_amounts.map((a: number) => String(a))
+  const branding = useBranding()
+  const denominations = branding?.deposit_preset_amounts?.length
+    ? branding.deposit_preset_amounts.map((a: number) => String(a))
     : DEFAULT_DENOMINATIONS
   const [rechargeAmount, setRechargeAmount] = useState('50,000')
   const [amount, setAmount] = useState('50000')

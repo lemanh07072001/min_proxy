@@ -55,13 +55,13 @@ const EXPIRE_SECONDS = 600
 export default function RechargePage() {
   const { user } = useSelector((state: RootState) => state.user)
   const dispatch = useDispatch<AppDispatch>()
-  const { settings } = useBranding()
+  const branding = useBranding()
   const denominations = useMemo(() => {
-    if (settings?.deposit_preset_amounts?.length) {
-      return settings.deposit_preset_amounts.map((a: number) => String(a))
+    if (branding?.deposit_preset_amounts?.length) {
+      return branding.deposit_preset_amounts.map((a: number) => String(a))
     }
     return DEFAULT_DENOMINATIONS
-  }, [settings?.deposit_preset_amounts])
+  }, [branding?.deposit_preset_amounts])
   const queryClient = useQueryClient()
   const [tabIndex, setTabIndex] = useState(0)
 
