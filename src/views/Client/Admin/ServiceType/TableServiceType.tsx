@@ -372,7 +372,10 @@ return result
 
   const handleRefreshList = useCallback(async () => {
     setRefreshing(true)
-    await queryClient.refetchQueries({ queryKey: ['orderProxyStatic'] })
+    await Promise.all([
+      queryClient.refetchQueries({ queryKey: ['orderProxyStatic'] }),
+      new Promise(resolve => setTimeout(resolve, 1000))
+    ])
     setRefreshing(false)
   }, [queryClient])
 
