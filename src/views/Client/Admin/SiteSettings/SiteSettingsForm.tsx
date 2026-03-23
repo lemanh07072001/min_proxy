@@ -172,6 +172,10 @@ const defaultBranding: BrandingSettings = {
   telegram_bot_token_error: '',
   telegram_chat_id_error: '',
   site_mode: null,
+  show_product_code: null,
+  deposit_min_amount: null,
+  deposit_preset_amounts: null,
+  deposit_notify_telegram: null,
 }
 
 const defaultBank: BankSettings = {
