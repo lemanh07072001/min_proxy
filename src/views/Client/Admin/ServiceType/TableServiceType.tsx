@@ -368,8 +368,12 @@ return result
     }
   }, [axiosAuth])
 
-  const handleRefreshList = useCallback(() => {
-    queryClient.refetchQueries({ queryKey: ['orderProxyStatic'] })
+  const [refreshing, setRefreshing] = useState(false)
+
+  const handleRefreshList = useCallback(async () => {
+    setRefreshing(true)
+    await queryClient.refetchQueries({ queryKey: ['orderProxyStatic'] })
+    setRefreshing(false)
   }, [queryClient])
 
   const columns = useMemo(
@@ -731,10 +735,11 @@ return (
                 onClick={handleRefreshList}
                 variant='outlined'
                 size='small'
-                startIcon={<RefreshCw size={14} />}
-                sx={{ textTransform: 'none', fontSize: 13 }}
+                disabled={refreshing}
+                startIcon={<RefreshCw size={14} style={{ transition: 'transform 0.5s ease', transform: refreshing ? 'rotate(360deg)' : 'none', animation: refreshing ? 'spin 0.8s linear infinite' : 'none' }} />}
+                sx={{ textTransform: 'none', fontSize: 13, '@keyframes spin': { from: { transform: 'rotate(0deg)' }, to: { transform: 'rotate(360deg)' } } }}
               >
-                Làm mới
+                {refreshing ? 'Đang tải...' : 'Làm mới'}
               </Button>
               <Button
                 onClick={handleOpenCreate}
