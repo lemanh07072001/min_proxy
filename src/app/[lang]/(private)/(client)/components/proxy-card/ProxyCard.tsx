@@ -11,6 +11,7 @@ import { useSession } from 'next-auth/react'
 import CheckoutModal from '@/components/checkout-modal/CheckoutModal'
 import type { PriceOption } from '@/components/checkout-modal/CheckoutModal'
 import { getTagStyle, shouldHideByTag, fixCountryCode } from '@/configs/tagConfig'
+import { useBranding } from '@/app/contexts/BrandingContext'
 import { protocols as defaultProtocols } from '@/utils/protocolProxy'
 
 import { useModalContext } from '@/app/contexts/ModalContext'
@@ -25,6 +26,7 @@ interface ProxyCardProps {
 const ProxyCard: React.FC<ProxyCardProps> = ({ provider, isFirstCard = false, countries = [] }) => {
   const session = useSession()
   const { openAuthModal } = useModalContext()
+  const { show_product_code } = useBranding()
   const [checkoutOpen, setCheckoutOpen] = useState(false)
 
   const isAvailable = provider?.is_purchasable !== false
@@ -166,7 +168,9 @@ return
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
               <div style={{ flex: 1 }}>
                 <h3 className='provider-title-column' style={{ marginBottom: 1 }}>{provider?.name ?? provider?.code}</h3>
-                <span style={{ fontFamily: 'monospace', fontSize: '10.5px', fontWeight: 500, color: '#b0b8c4', lineHeight: 1, display: 'block' }}>{provider?.id}#{provider?.code || ''}</span>
+                {show_product_code !== '0' && (
+                  <span style={{ fontFamily: 'monospace', fontSize: '10.5px', fontWeight: 500, color: '#b0b8c4', lineHeight: 1, display: 'block' }}>{provider?.id}#{provider?.code || ''}</span>
+                )}
               </div>
               {visibleTags.length > 0 && (
                 <div style={{ display: 'flex', gap: '4px', flexShrink: 0 }}>

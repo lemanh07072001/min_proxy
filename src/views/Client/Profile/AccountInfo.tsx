@@ -83,7 +83,7 @@ const AccountInfo = ({ dataUser }: ProfileProps) => {
   }, [dataUser, reset])
 
   const { mutate, isPending } = useMutation({
-    mutationFn: (data: ProfileFormData) => {
+    mutationFn: async (data: ProfileFormData) => {
       const payload = {
         name: data.fullName,
         email: data.email,
@@ -91,14 +91,19 @@ const AccountInfo = ({ dataUser }: ProfileProps) => {
         address: data.address
       }
 
-      const res = axiosAuth.post('/profile', payload)
+      const res = await axiosAuth.post('/profile', payload)
+
+      return res.data
     },
-    onSuccess: () => {
+    onSuccess: (responseData, submittedData) => {
       toast.success('Cập nhật thông tin thành công!')
       setIsEditing(false)
 
-      // Sync session NextAuth → header hiện tên mới ngay
-      updateSession()
+      // Sync session NextAuth → header hiện tên + email mới ngay
+      updateSession({
+        name: submittedData.fullName,
+        email: submittedData.email,
+      })
       router.refresh()
     },
     onError: err => {

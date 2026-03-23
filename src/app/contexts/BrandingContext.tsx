@@ -77,6 +77,10 @@ const defaultBranding: BrandingContextValue = {
   telegram_chat_id_deposit: null,
   telegram_bot_token_error: null,
   telegram_chat_id_error: null,
+  show_product_code: null,
+  deposit_min_amount: null,
+  deposit_preset_amounts: null,
+  deposit_notify_telegram: null,
 }
 
 const BrandingContext = createContext<BrandingContextValue>(defaultBranding)
@@ -139,6 +143,10 @@ export function BrandingProvider({ children, initialData }: { children: React.Re
     telegram_chat_id_deposit: data?.telegram_chat_id_deposit ?? null,
     telegram_bot_token_error: data?.telegram_bot_token_error ?? null,
     telegram_chat_id_error: data?.telegram_chat_id_error ?? null,
+    show_product_code: data?.show_product_code ?? null,
+    deposit_min_amount: data?.deposit_min_amount ?? null,
+    deposit_preset_amounts: data?.deposit_preset_amounts ?? null,
+    deposit_notify_telegram: data?.deposit_notify_telegram ?? null,
   }), [data, isLoading, siteMode])
 
   // Inject CSS variables — chỉ khi giá trị thực sự đổi

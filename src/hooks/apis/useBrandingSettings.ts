@@ -65,6 +65,14 @@ export interface BrandingSettings {
   telegram_bot_token_error: string | null
   telegram_chat_id_error: string | null
 
+  // Display settings
+  show_product_code: string | null
+
+  // Deposit settings
+  deposit_min_amount: string | null
+  deposit_preset_amounts: number[] | null
+  deposit_notify_telegram: string | null
+
   // Mode
   site_mode: SiteMode | null
 }

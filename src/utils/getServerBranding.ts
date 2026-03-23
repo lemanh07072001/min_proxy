@@ -81,6 +81,10 @@ export async function getServerBranding(): Promise<BrandingSettings> {
     telegram_chat_id_deposit: null,
     telegram_bot_token_error: null,
     telegram_chat_id_error: null,
+    show_product_code: null,
+    deposit_min_amount: null,
+    deposit_preset_amounts: null,
+    deposit_notify_telegram: null,
     site_mode: 'child',
   }
 }
