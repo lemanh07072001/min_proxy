@@ -228,7 +228,7 @@ const RootLayout = async (props: ChildrenType & { params: Promise<{ lang: string
             >
               <TanstackProvider>
                 <InitColorSchemeScript attribute='data' defaultMode={systemMode} />
-                <BrandingProvider>
+                <BrandingProvider initialData={branding}>
                   <StoreProvider initialUser={user}>
                     <ModalContextProvider>
                       <Suspense fallback={null}>

@@ -83,8 +83,8 @@ const BrandingContext = createContext<BrandingContextValue>(defaultBranding)
 
 export const useBranding = () => useContext(BrandingContext)
 
-export function BrandingProvider({ children }: { children: React.ReactNode }) {
-  const { data, isLoading } = useBrandingSettings()
+export function BrandingProvider({ children, initialData }: { children: React.ReactNode; initialData?: BrandingSettings }) {
+  const { data, isLoading } = useBrandingSettings(initialData)
 
   const siteMode: SiteMode = (data?.site_mode || 'child') as SiteMode
 

@@ -22,9 +22,11 @@ export async function getServerBranding(): Promise<BrandingSettings> {
   try {
     const apiUrl = process.env.API_URL || siteConfig.apiUrl
 
-    // Không cache ở Next.js — BE đã cache 5 phút (Laravel Cache::remember)
-    // Admin lưu → BE xóa cache → request tiếp theo nhận data mới ngay
-    const res = await fetch(`${apiUrl}/get-branding-settings`, { cache: 'no-store' })
+    // Cache 5 phút ở Next.js + tag 'branding' để admin save gọi revalidateTag xóa cache
+    // 3-tier: BE Laravel cache → Next.js fetch cache → Client TanStack Query
+    const res = await fetch(`${apiUrl}/get-branding-settings`, {
+      next: { tags: ['branding'], revalidate: 300 }
+    })
 
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
 
@@ -50,6 +52,7 @@ export async function getServerBranding(): Promise<BrandingSettings> {
     site_name: '',
     site_description: '',
     logo_url: '',
+    logo_icon_url: '',
     favicon_url: '',
     og_image_url: null,
     primary_color: siteConfig.primaryColor,

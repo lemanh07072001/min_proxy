@@ -69,18 +69,19 @@ export interface BrandingSettings {
   site_mode: SiteMode | null
 }
 
-export const useBrandingSettings = () => {
+export const useBrandingSettings = (serverData?: BrandingSettings) => {
   return useQuery({
     queryKey: ['branding-settings'],
     queryFn: async () => {
-      // Public API — không cần auth, fetch ngay khi app mount
+      // Public API — không cần auth
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || ''
       const res = await fetch(`${apiUrl}/get-branding-settings`)
       const json = await res.json()
 
       return (json?.data ?? {}) as BrandingSettings
     },
-    staleTime: Infinity,       // không bao giờ stale — chỉ invalidate khi admin update
+    initialData: serverData,    // server đã fetch → client dùng ngay, không gọi API
+    staleTime: Infinity,        // không bao giờ stale — chỉ invalidate khi admin update
     gcTime: Infinity,           // giữ cache vĩnh viễn trong session
     refetchOnWindowFocus: false,
     refetchOnMount: false,
