@@ -190,7 +190,7 @@ const AccountInfo = ({ dataUser }: ProfileProps) => {
               )}
             />
 
-            {/* 2. Email - Read Only */}
+            {/* 2. Email - Admin có thể sửa */}
             <Controller
               name='email'
               control={control}
@@ -199,14 +199,14 @@ const AccountInfo = ({ dataUser }: ProfileProps) => {
                   {...field}
                   fullWidth
                   label='Email'
-                  placeholder='Email không thể chỉnh sửa'
-                  disabled={true}
+                  placeholder={dataUser?.role === 'admin' ? 'Nhập email mới' : 'Email không thể chỉnh sửa'}
+                  disabled={dataUser?.role !== 'admin'}
                   size='medium'
                   error={!!errors.email}
                   helperText={errors.email?.message}
                   slotProps={{
                     input: {
-                      style: { backgroundColor: '#f5f5f5' },
+                      style: dataUser?.role !== 'admin' ? { backgroundColor: '#f5f5f5' } : {},
                       startAdornment: (
                         <InputAdornment position='start'>
                           <Mail size={16} />
