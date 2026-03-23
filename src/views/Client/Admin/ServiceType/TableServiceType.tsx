@@ -361,9 +361,11 @@ return result
 
   const handleUpdateOrder = useCallback(async (itemId: number, newOrder: number) => {
     try {
-      await axiosAuth.post('/reorder-service-types', { id: itemId, order: newOrder })
-      queryClient.invalidateQueries({ queryKey: ['orderProxyStatic'] })
-    } catch {
+      const res = await axiosAuth.post('/reorder-service-types', { id: itemId, order: newOrder })
+      console.log('[Reorder] Response:', res.data)
+      await queryClient.refetchQueries({ queryKey: ['orderProxyStatic'] })
+    } catch (error: any) {
+      console.error('[Reorder] Error:', error?.response?.data || error.message)
       toast.error('Lỗi cập nhật thứ tự')
     }
   }, [axiosAuth, queryClient])
