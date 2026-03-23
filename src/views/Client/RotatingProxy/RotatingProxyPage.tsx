@@ -11,6 +11,7 @@ import { CheckCircle, ShoppingCart, User, Users, Shield, Clock, Filter, Globe, W
 import Switch from '@mui/material/Switch'
 import MenuItem from '@mui/material/MenuItem'
 import { useSession } from 'next-auth/react'
+import { useBranding } from '@/app/contexts/BrandingContext'
 
 import { Box, Grid2, Typography } from '@mui/material'
 
@@ -321,6 +322,7 @@ const PlanCard = ({ plan }) => {
 
   const { openAuthModal } = useModalContext()
   const session = useSession()
+  const { show_product_code } = useBranding()
 
   const isAvailable = plan?.is_purchasable !== false
 
@@ -462,7 +464,9 @@ return
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
             <div style={{ flex: 1 }}>
               <h3 className='plan-title' style={{ textAlign: 'left', marginBottom: 1 }}>{plan.title}</h3>
-              <span style={{ fontFamily: 'monospace', fontSize: '10.5px', fontWeight: 500, color: '#b0b8c4', lineHeight: 1, display: 'block' }}>{plan.id}#{plan.code || ''}</span>
+              {show_product_code !== '0' && (
+                <span style={{ fontFamily: 'monospace', fontSize: '10.5px', fontWeight: 500, color: '#b0b8c4', lineHeight: 1, display: 'block' }}>#{plan.code || plan.id}</span>
+              )}
             </div>
             {visibleTags.length > 0 && (
               <div style={{ display: 'flex', gap: '4px', flexShrink: 0 }}>

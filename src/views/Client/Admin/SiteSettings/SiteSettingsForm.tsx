@@ -461,7 +461,7 @@ export default function SiteSettingsForm() {
     { label: 'Google & Quảng bá', icon: <Search size={16} /> },
     { label: 'Hỗ trợ & Liên hệ', icon: <Headphones size={16} /> },
     { label: 'Sản phẩm', icon: <ShoppingCart size={16} /> },
-    { label: 'Thanh toán', icon: <CreditCard size={16} /> },
+    { label: 'Thanh toán & Giao dịch', icon: <CreditCard size={16} /> },
     ...(isChild ? [{ label: 'Nhà cung cấp', icon: <Truck size={16} /> }] : []),
   ]
 
@@ -1620,7 +1620,7 @@ export default function SiteSettingsForm() {
               {/* ── Section 2: Cài đặt nạp tiền ── */}
               <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: 20 }}>
                 <h6 style={sectionTitleSx}>Cài đặt nạp tiền</h6>
-                <p style={sectionDescSx}>Số tiền tối thiểu và các mệnh giá gợi ý cho khách khi nạp tiền</p>
+                <p style={sectionDescSx}>Số tiền tối thiểu, mệnh giá gợi ý và thông báo khi khách tạo hoá đơn nạp tiền</p>
               </div>
               <div style={{ display: 'flex', gap: 12 }}>
                 <TextField
@@ -1633,6 +1633,15 @@ export default function SiteSettingsForm() {
                   helperText='Khách không thể nạp dưới số này. Để trống = 2.000đ'
                 />
               </div>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '13px', color: '#475569', cursor: 'pointer' }}>
+                <input
+                  type='checkbox'
+                  checked={branding.deposit_notify_telegram === '1' || branding.deposit_notify_telegram === 'true'}
+                  onChange={e => updateBrandingField('deposit_notify_telegram', e.target.checked ? '1' : '0')}
+                  style={{ accentColor: 'var(--primary-color, #2092EC)' }}
+                />
+                Gửi thông báo Telegram khi khách tạo hoá đơn nạp tiền
+              </label>
               <div>
                 <div style={{ fontSize: '13px', fontWeight: 500, color: '#475569', marginBottom: 8 }}>
                   Mệnh giá gợi ý (khách click nhanh)
