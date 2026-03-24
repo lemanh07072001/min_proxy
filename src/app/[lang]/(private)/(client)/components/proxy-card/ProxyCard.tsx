@@ -314,6 +314,7 @@ return
         pricePerUnit={provider.price_per_unit || 0}
         allowCustomAuth={!!provider.metadata?.allow_custom_auth}
         discountTiers={provider.metadata?.discount_tiers || []}
+        quantityTiers={provider.metadata?.quantity_tiers || []}
         customFields={provider.metadata?.custom_fields || undefined}
       />
     </>

@@ -40,6 +40,7 @@ interface CheckoutModalProps {
   pricePerUnit?: number
   allowCustomAuth?: boolean
   discountTiers?: Array<{ min: string; max: string; discount: string }>
+  quantityTiers?: Array<{ min: string; max: string; discount?: string; price?: string }>
   customFields?: Array<{
     key: string           // key nội bộ (gửi trong custom_fields)
     param?: string        // backward compat
@@ -69,6 +70,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({
   pricePerUnit = 0,
   allowCustomAuth = false,
   discountTiers = [],
+  quantityTiers = [],
   customFields
 }) => {
   const [selectedDuration, setSelectedDuration] = useState(priceOptions[0]?.key || '1')
@@ -140,7 +142,42 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({
   const discountPct = parseInt(activeDiscount?.discount || '0') || 0
   const effectivePricePerUnit = discountPct > 0 ? Math.round(pricePerUnit * (1 - discountPct / 100)) : pricePerUnit
   const fullPriceTotal = pricePerUnit * customDuration
-  const unitPrice = isPerUnit ? (effectivePricePerUnit * customDuration) : (selectedOption?.price || 0)
+
+  // Quantity discount — per_unit mode
+  const activeQtyTier = quantityTiers.length > 0
+    ? quantityTiers.find(t => {
+        const min = parseInt(t.min) || 0
+        const max = parseInt(t.max) || Infinity
+        return quantity >= min && quantity <= max
+      })
+    : null
+  const qtyDiscountPct = parseFloat(activeQtyTier?.discount || '0') || 0
+  const qtyFixedPrice = activeQtyTier?.price ? parseInt(activeQtyTier.price) : 0
+  const priceAfterQtyDiscount = qtyFixedPrice > 0
+    ? qtyFixedPrice
+    : (qtyDiscountPct > 0 ? Math.round(effectivePricePerUnit * (1 - qtyDiscountPct / 100)) : effectivePricePerUnit)
+
+  // Fixed mode: quantity tiers nhúng trong price option
+  const fixedQtyTiers = !isPerUnit && selectedOption
+    ? (selectedOption as any).quantity_tiers || []
+    : []
+  const activeFixedQtyTier = fixedQtyTiers.length > 0
+    ? fixedQtyTiers.find((t: any) => {
+        const min = parseInt(t.min) || 0
+        const max = parseInt(t.max) || Infinity
+        return quantity >= min && quantity <= max
+      })
+    : null
+  const fixedQtyPrice = activeFixedQtyTier?.price ? parseInt(activeFixedQtyTier.price) : 0
+
+  const unitPrice = isPerUnit
+    ? (priceAfterQtyDiscount * customDuration)
+    : (fixedQtyPrice > 0 ? fixedQtyPrice : (selectedOption?.price || 0))
+  const baseUnitPrice = isPerUnit
+    ? (effectivePricePerUnit * customDuration)
+    : (selectedOption?.price || 0)
+  const hasQtyDiscount = unitPrice < baseUnitPrice
+
   const activeDuration = isPerUnit ? String(customDuration) : selectedDuration
   const total = unitPrice * quantity
 
@@ -544,7 +581,14 @@ return (
               <span>Thành tiền</span>
             </div>
             <div className='price-table-row'>
-              <span className='price-cell'>{unitPrice.toLocaleString('vi-VN')}đ</span>
+              <span className='price-cell'>
+                {hasQtyDiscount && (
+                  <span style={{ textDecoration: 'line-through', color: '#94a3b8', fontSize: '11px', marginRight: 4 }}>
+                    {baseUnitPrice.toLocaleString('vi-VN')}đ
+                  </span>
+                )}
+                {unitPrice.toLocaleString('vi-VN')}đ
+              </span>
               <div className='qty-cell'>
                 <QuantityControl
                   min={1}
@@ -555,6 +599,21 @@ return (
               </div>
               <span className='subtotal-cell'>{total.toLocaleString('vi-VN')}đ</span>
             </div>
+            {/* Qty discount hint */}
+            {(quantityTiers.length > 0 || fixedQtyTiers.length > 0) && (
+              <div style={{ padding: '6px 12px', fontSize: '11px', color: '#16a34a', background: '#f0fdf4', borderRadius: '0 0 8px 8px' }}>
+                {hasQtyDiscount
+                  ? `Mua ${quantity} proxy — giảm giá SL!`
+                  : (() => {
+                      const tiers = isPerUnit ? quantityTiers : fixedQtyTiers
+                      const nextTier = tiers.find((t: any) => quantity < (parseInt(t.min) || 0))
+                      return nextTier
+                        ? `Mua từ ${nextTier.min}+ proxy để được giảm giá`
+                        : 'Mua nhiều hơn để được giảm giá'
+                    })()
+                }
+              </div>
+            )}
           </div>
 
           {/* Discount code */}
