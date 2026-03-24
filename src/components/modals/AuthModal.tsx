@@ -1,5 +1,7 @@
 'use client'
 
+import { useEffect } from 'react'
+
 import { X, Eye, EyeOff } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 
@@ -18,6 +20,15 @@ const AuthModal: React.FC = () => {
   const { name: appName } = useBranding()
 
   const { t } = useTranslation()
+
+  useEffect(() => {
+    if (!isAuthModalOpen) return
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') closeAuthModal()
+    }
+    document.addEventListener('keydown', handleEsc)
+    return () => document.removeEventListener('keydown', handleEsc)
+  }, [isAuthModalOpen, closeAuthModal])
 
   return (
     <AnimatePresence>

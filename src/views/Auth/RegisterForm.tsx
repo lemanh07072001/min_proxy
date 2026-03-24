@@ -34,7 +34,6 @@ const registerUser = async (data: RegisterFormInputs) => {
 export default function RegisterForm() {
   const [showPassword, setShowPassword] = useState(false)
   const [showPasswordConfirmation, setPasswordConfirmation] = useState(false)
-  const [rememberMe, setRememberMe] = useState(false)
 
   const { closeAuthModal, setAuthModalMode, referralCode } = useModalContext()
   const { t } = useTranslation()
