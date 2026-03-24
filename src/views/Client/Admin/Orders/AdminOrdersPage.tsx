@@ -447,13 +447,14 @@ return {
           </div>
         )
       },
-      {
+      // NCC: ẩn ở site con — sau này site con đấu ngoài thì bật lại
+      ...(!isChild ? [{
         header: 'NCC',
         minSize: 90,
         cell: ({ row }: { row: any }) => (
           <span style={{ fontSize: '13px' }}>{row.original.provider_name || '-'}</span>
         )
-      },
+      }] : []),
       {
         header: 'SL',
         size: 70,
