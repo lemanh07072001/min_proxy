@@ -1010,85 +1010,90 @@ function BuyConfigFields({
               />
             </Grid2>
           )}
-          <Grid2 size={{ xs: 12, sm: 6 }}>
-            <Controller
-              name={`${prefix}.response.proxy_format`}
-              control={control}
-              render={({ field }) => (
-                <CustomTextField {...field} fullWidth select label={<>Format proxy <FieldHint text='key: 1 field chứa key xoay. fields: nhiều field (ip, port, user, pass)' /></>}>
-                  <MenuItem value='key'>Key đơn (VD: keyxoay)</MenuItem>
-                  <MenuItem value='string'>Chuỗi ip:port:user:pass trong 1 field</MenuItem>
-                  <MenuItem value='fields'>Nhiều fields riêng (ip, port, user, pass)</MenuItem>
-                </CustomTextField>
-              )}
-            />
-          </Grid2>
-
-          {proxyFormat === 'string' && (
-            <Grid2 size={{ xs: 12, sm: 6 }}>
-              <Controller
-                name={`${prefix}.response.proxy_key_field`}
-                control={control}
-                render={({ field }) => (
-                  <CustomTextField {...field} fullWidth label={<>Field chứa chuỗi proxy <FieldHint text='Tên field chứa chuỗi ip:port:user:pass. VD: proxy, proxyhttp' /></>} placeholder='proxy' />
-                )}
-              />
-            </Grid2>
-          )}
-
-          {proxyFormat === 'key' && (
-            <Grid2 size={{ xs: 12, sm: 6 }}>
-              <Controller
-                name={`${prefix}.response.proxy_key_field`}
-                control={control}
-                render={({ field }) => (
-                  <CustomTextField {...field} fullWidth label={<>Field chứa key <FieldHint text='VD: keyxoay, proxy_key' /></>} placeholder='keyxoay' />
-                )}
-              />
-            </Grid2>
-          )}
-
-          {proxyFormat === 'fields' && (
+          {/* Proxy format + fields — ẩn khi deferred (API mua chỉ trả mã đơn) */}
+          {responseMode !== 'deferred' && (
             <>
-              <Grid2 size={{ xs: 6, sm: 4 }}>
-                <Controller name={`${prefix}.response.proxy_fields_ip`} control={control} render={({ field }) => (
-                  <CustomTextField {...field} fullWidth label='Field IP' placeholder='ip' />
-                )} />
+              <Grid2 size={{ xs: 12, sm: 6 }}>
+                <Controller
+                  name={`${prefix}.response.proxy_format`}
+                  control={control}
+                  render={({ field }) => (
+                    <CustomTextField {...field} fullWidth select label={<>Format proxy <FieldHint text='key: 1 field chứa key xoay. fields: nhiều field (ip, port, user, pass)' /></>}>
+                      <MenuItem value='key'>Key đơn (VD: keyxoay)</MenuItem>
+                      <MenuItem value='string'>Chuỗi ip:port:user:pass trong 1 field</MenuItem>
+                      <MenuItem value='fields'>Nhiều fields riêng (ip, port, user, pass)</MenuItem>
+                    </CustomTextField>
+                  )}
+                />
               </Grid2>
-              <Grid2 size={{ xs: 6, sm: 4 }}>
-                <Controller name={`${prefix}.response.proxy_fields_port`} control={control} render={({ field }) => (
-                  <CustomTextField {...field} fullWidth label='Field Port' placeholder='port' />
-                )} />
-              </Grid2>
-              <Grid2 size={{ xs: 6, sm: 4 }}>
-                <Controller name={`${prefix}.response.proxy_fields_user`} control={control} render={({ field }) => (
-                  <CustomTextField {...field} fullWidth label='Field Username' placeholder='username' />
-                )} />
-              </Grid2>
-              <Grid2 size={{ xs: 6, sm: 4 }}>
-                <Controller name={`${prefix}.response.proxy_fields_pass`} control={control} render={({ field }) => (
-                  <CustomTextField {...field} fullWidth label='Field Password' placeholder='password' />
-                )} />
-              </Grid2>
-              <Grid2 size={{ xs: 6, sm: 4 }}>
-                <Controller name={`${prefix}.response.proxy_fields_type`} control={control} render={({ field }) => (
-                  <CustomTextField {...field} fullWidth label='Field Type' placeholder='type' />
-                )} />
-              </Grid2>
-            </>
-          )}
 
-          {/* Provider item ID field — cho format fields hoặc string */}
-          {(proxyFormat === 'fields' || proxyFormat === 'string') && (
-            <Grid2 size={{ xs: 12, sm: 6 }}>
-              <Controller
-                name={`${prefix}.response.item_id_field`}
-                control={control}
-                render={({ field }) => (
-                  <CustomTextField {...field} fullWidth label={<>Field ID nhà cung cấp <FieldHint text='Tên field chứa ID proxy từ provider. VD: idproxy, id, proxy_id. Lưu vào provider_item_id. Bỏ trống nếu không có.' /></>} placeholder='idproxy' />
-                )}
-              />
-            </Grid2>
+              {proxyFormat === 'string' && (
+                <Grid2 size={{ xs: 12, sm: 6 }}>
+                  <Controller
+                    name={`${prefix}.response.proxy_key_field`}
+                    control={control}
+                    render={({ field }) => (
+                      <CustomTextField {...field} fullWidth label={<>Field chứa chuỗi proxy <FieldHint text='Tên field chứa chuỗi ip:port:user:pass. VD: proxy, proxyhttp' /></>} placeholder='proxy' />
+                    )}
+                  />
+                </Grid2>
+              )}
+
+              {proxyFormat === 'key' && (
+                <Grid2 size={{ xs: 12, sm: 6 }}>
+                  <Controller
+                    name={`${prefix}.response.proxy_key_field`}
+                    control={control}
+                    render={({ field }) => (
+                      <CustomTextField {...field} fullWidth label={<>Field chứa key <FieldHint text='VD: keyxoay, proxy_key' /></>} placeholder='keyxoay' />
+                    )}
+                  />
+                </Grid2>
+              )}
+
+              {proxyFormat === 'fields' && (
+                <>
+                  <Grid2 size={{ xs: 6, sm: 4 }}>
+                    <Controller name={`${prefix}.response.proxy_fields_ip`} control={control} render={({ field }) => (
+                      <CustomTextField {...field} fullWidth label='Field IP' placeholder='ip' />
+                    )} />
+                  </Grid2>
+                  <Grid2 size={{ xs: 6, sm: 4 }}>
+                    <Controller name={`${prefix}.response.proxy_fields_port`} control={control} render={({ field }) => (
+                      <CustomTextField {...field} fullWidth label='Field Port' placeholder='port' />
+                    )} />
+                  </Grid2>
+                  <Grid2 size={{ xs: 6, sm: 4 }}>
+                    <Controller name={`${prefix}.response.proxy_fields_user`} control={control} render={({ field }) => (
+                      <CustomTextField {...field} fullWidth label='Field Username' placeholder='username' />
+                    )} />
+                  </Grid2>
+                  <Grid2 size={{ xs: 6, sm: 4 }}>
+                    <Controller name={`${prefix}.response.proxy_fields_pass`} control={control} render={({ field }) => (
+                      <CustomTextField {...field} fullWidth label='Field Password' placeholder='password' />
+                    )} />
+                  </Grid2>
+                  <Grid2 size={{ xs: 6, sm: 4 }}>
+                    <Controller name={`${prefix}.response.proxy_fields_type`} control={control} render={({ field }) => (
+                      <CustomTextField {...field} fullWidth label='Field Type' placeholder='type' />
+                    )} />
+                  </Grid2>
+                </>
+              )}
+
+              {/* Provider item ID field — cho format fields hoặc string */}
+              {(proxyFormat === 'fields' || proxyFormat === 'string') && (
+                <Grid2 size={{ xs: 12, sm: 6 }}>
+                  <Controller
+                    name={`${prefix}.response.item_id_field`}
+                    control={control}
+                    render={({ field }) => (
+                      <CustomTextField {...field} fullWidth label={<>Field ID nhà cung cấp <FieldHint text='Tên field chứa ID proxy từ provider. VD: idproxy, id, proxy_id. Lưu vào provider_item_id. Bỏ trống nếu không có.' /></>} placeholder='idproxy' />
+                    )}
+                  />
+                </Grid2>
+              )}
+            </>
           )}
         </>
       )}
