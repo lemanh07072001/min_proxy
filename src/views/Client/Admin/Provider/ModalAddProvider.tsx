@@ -807,11 +807,11 @@ function BuyConfigFields({
                 <Grid2 size={{ xs: 12, sm: 4 }}>
                   <Controller name={`${prefix}.response.type`} control={control} render={({ field }) => (
                     <CustomTextField {...field} fullWidth select
-                      label='Dạng kết quả'
-                      helperText='So sánh kết quả API đối tác với ví dụ ở trên để chọn'
+                      label='Dạng kết quả trả về'
+                      helperText='Gọi thử API đối tác, xem kết quả rồi chọn dạng phù hợp'
                     >
-                      <MenuItem value='object'>Proxy nằm bên trong 1 trường (VD: data.proxies)</MenuItem>
-                      <MenuItem value='array_last_status'>Mỗi proxy là 1 phần riêng, cuối cùng có trạng thái</MenuItem>
+                      <MenuItem value='object'>Dạng 1 — Chỉ có 1 cặp {'{ }'} duy nhất</MenuItem>
+                      <MenuItem value='array_last_status'>Dạng 2 — Có nhiều cặp {'{ }'} liên tiếp (bao bởi [ ])</MenuItem>
                     </CustomTextField>
                   )} />
                 </Grid2>
