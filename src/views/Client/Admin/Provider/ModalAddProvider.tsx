@@ -784,9 +784,9 @@ function BuyConfigFields({
                 {/* Check thành công */}
                 <Grid2 size={{ xs: 6, sm: 3 }}>
                   <Controller name={`${prefix}.response.type`} control={control} render={({ field }) => (
-                    <CustomTextField {...field} fullWidth select label={<>Dạng kết quả <FieldHint text={'Tuỳ vào API nhà cung cấp trả về dạng nào.\n\n• {"statusCode":200, "data":{...}} → chọn dạng 1\n• [{"status":100,...}, {"status":200,...}] → chọn dạng 2'} /></>}>
-                      <MenuItem value='object'>{'{"statusCode": 200, "data": {...}}'}</MenuItem>
-                      <MenuItem value='array_last_status'>{'[{...}, {...}, {"status": 200}]'}</MenuItem>
+                    <CustomTextField {...field} fullWidth select label={<>Dạng kết quả <FieldHint text='Hỏi nhà cung cấp hoặc xem tài liệu API của họ để biết kết quả trả về dạng nào.' /></>}>
+                      <MenuItem value='object'>Kết quả đơn (1 kết quả duy nhất)</MenuItem>
+                      <MenuItem value='array_last_status'>Danh sách (nhiều kết quả, check cuối cùng)</MenuItem>
                     </CustomTextField>
                   )} />
                 </Grid2>
