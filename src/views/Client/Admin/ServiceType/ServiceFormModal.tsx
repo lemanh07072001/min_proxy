@@ -1618,7 +1618,7 @@ return <Chip key={val} label={p?.label || val} size='small' />
                               <span>Từ ({timeUnit === 'month' ? 'tháng' : 'ngày'})</span>
                               <span>Đến ({timeUnit === 'month' ? 'tháng' : 'ngày'})</span>
                               <span>Giảm (%)</span>
-                              <span>Giá bán (đ)</span>
+                              <span>Bán sau giảm</span>
                               {parseFloat(costPerUnit) > 0 && <span>Lãi/lỗ</span>}
                               <span></span>
                             </div>
@@ -1684,7 +1684,7 @@ return <Chip key={val} label={p?.label || val} size='small' />
                               <span>Từ ({timeUnit === 'month' ? 'tháng' : 'ngày'})</span>
                               <span>Đến ({timeUnit === 'month' ? 'tháng' : 'ngày'})</span>
                               <span>Giảm (%)</span>
-                              <span>Giá gốc (đ)</span>
+                              <span>Gốc sau giảm</span>
                               <span></span>
                             </div>
                             {costDiscountTiers.map((tier, idx) => (
