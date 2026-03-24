@@ -715,40 +715,63 @@ function BuyConfigFields({
               ═══════════════════════════════════════════════ */}
           <Grid2 size={{ xs: 12 }}>
             <Box sx={sectionBox}>
-              {sectionTitle('2. Kết quả trả về', 'Cách đọc response từ API nhà cung cấp')}
+              {sectionTitle('2. Đọc kết quả từ nhà cung cấp')}
               <Grid2 container spacing={2}>
-                {/* Response mode — đặt ở đầu để quyết định hiển thị bên dưới */}
+                {/* Giải thích tổng quan */}
+                <Grid2 size={{ xs: 12 }}>
+                  <Box sx={{ p: 1.5, background: '#f8fafc', borderRadius: 1.5, border: '1px solid #e2e8f0', fontSize: 12, color: '#475569', lineHeight: 1.6 }}>
+                    Sau khi gọi API mua (ở trên), nhà cung cấp sẽ <strong>trả về kết quả</strong> dạng JSON. Ví dụ:
+                    <pre style={{ background: '#1e293b', color: '#e2e8f0', padding: 10, borderRadius: 6, margin: '8px 0 4px', fontSize: 11.5, overflowX: 'auto', lineHeight: 1.5 }}>{responseMode === 'deferred'
+? `{
+  "statusCode": 200,         ← Kiểm tra thành công: "statusCode" = 200
+  "data": {
+    "id": 12345              ← Mã đơn hàng: vị trí "data.id"
+  }
+}`
+: `{
+  "statusCode": 200,         ← Kiểm tra thành công: "statusCode" = 200
+  "data": {
+    "proxies": [             ← Mảng proxy: vị trí "data.proxies"
+      {"ip":"1.2.3.4", "port":8080, "user":"abc", "pass":"xyz"}
+    ]
+  }
+}`}</pre>
+                    Cấu hình bên dưới để hệ thống biết cách đọc kết quả này.
+                  </Box>
+                </Grid2>
+
+                {/* Response mode */}
                 <Grid2 size={{ xs: 12, sm: 4 }}>
                   <Controller name={`${prefix}.response_mode`} control={control} render={({ field }) => (
-                    <CustomTextField {...field} fullWidth select label={<>Chế độ <FieldHint text='Trả ngay: API trả proxy trong cùng response. Lấy sau: API chỉ trả mã đơn, hệ thống sẽ gọi API khác để lấy proxy.' /></>}>
-                      <MenuItem value='immediate'>Trả proxy ngay trong response</MenuItem>
+                    <CustomTextField {...field} fullWidth select label='Nhà cung cấp trả về gì?'>
+                      <MenuItem value='immediate'>Trả proxy ngay</MenuItem>
                       <MenuItem value='deferred'>Chỉ trả mã đơn, lấy proxy sau</MenuItem>
                     </CustomTextField>
                   )} />
                 </Grid2>
 
-                {/* Check thành công — dùng chung cho cả 2 mode */}
+                {/* Check thành công */}
                 <Grid2 size={{ xs: 6, sm: 3 }}>
                   <Controller name={`${prefix}.response.type`} control={control} render={({ field }) => (
-                    <CustomTextField {...field} fullWidth select label={<>Cấu trúc <FieldHint text='Array: response là mảng, check phần tử cuối. Object: response là object đơn.' /></>}>
-                      <MenuItem value='array_last_status'>Array</MenuItem>
-                      <MenuItem value='object'>Object</MenuItem>
+                    <CustomTextField {...field} fullWidth select label={<>Dạng kết quả <FieldHint text='Object: kết quả là 1 object {...}. Array: kết quả là mảng [{...}, {...}], hệ thống check phần tử cuối.' /></>}>
+                      <MenuItem value='object'>Object (phổ biến)</MenuItem>
+                      <MenuItem value='array_last_status'>Array (check cuối)</MenuItem>
                     </CustomTextField>
                   )} />
                 </Grid2>
                 <Grid2 size={{ xs: 6, sm: 2 }}>
                   <Controller name={`${prefix}.response.success_field`} control={control} render={({ field }) => (
-                    <CustomTextField {...field} fullWidth label={<>Field check <FieldHint text='Tên field check OK/lỗi. VD: statusCode, success, status' /></>} placeholder='statusCode' />
+                    <CustomTextField {...field} fullWidth label={<>Tên field kiểm tra <FieldHint text='Tên trường dùng để biết thành công/thất bại. VD: statusCode, success, status' /></>} placeholder='statusCode' />
                   )} />
                 </Grid2>
                 <Grid2 size={{ xs: 3, sm: 1.5 }}>
                   <Controller name={`${prefix}.response.success_value`} control={control} render={({ field }) => (
-                    <CustomTextField {...field} fullWidth label='= OK' placeholder='200' />
+                    <CustomTextField {...field} fullWidth label='Thành công' placeholder='200' />
                   )} />
                 </Grid2>
                 <Grid2 size={{ xs: 3, sm: 1.5 }}>
                   <Controller name={`${prefix}.response.error_status`} control={control} render={({ field }) => (
-                    <CustomTextField {...field} fullWidth label='= Lỗi' placeholder='101' />
+                    <CustomTextField {...field} fullWidth label='Thất bại' placeholder='101' />
                   )} />
                 </Grid2>
 
@@ -756,19 +779,10 @@ function BuyConfigFields({
                 {responseMode !== 'deferred' && (
                   <>
                     {responseType === 'object' && (
-                      <Grid2 size={{ xs: 12 }}>
-                        <Box sx={{ p: 1.5, background: '#f0fdf4', borderRadius: 1.5, border: '1px solid #bbf7d0' }}>
-                          <Typography variant='caption' sx={{ display: 'block', mb: 1, color: '#166534', lineHeight: 1.4 }}>
-                            Chỉ vị trí mảng proxy trong response JSON của provider.
-                          </Typography>
-                          <Typography variant='caption' sx={{ display: 'block', mb: 1, color: '#78716c', lineHeight: 1.4 }}>
-                            VD provider trả: <code style={{ background: '#f5f5f4', padding: '1px 4px', borderRadius: 3 }}>{`{"statusCode": 200, "data": {"proxies": [{...}, {...}]}}`}</code>
-                            <br />→ Điền: <strong>data.proxies</strong> (hệ thống sẽ lấy mảng proxy từ vị trí đó)
-                          </Typography>
-                          <Controller name={`${prefix}.response.proxies_path`} control={control} render={({ field }) => (
-                            <CustomTextField {...field} fullWidth label='Vị trí mảng proxy trong response' placeholder='data.proxies' size='small' />
-                          )} />
-                        </Box>
+                      <Grid2 size={{ xs: 12, sm: 6 }}>
+                        <Controller name={`${prefix}.response.proxies_path`} control={control} render={({ field }) => (
+                          <CustomTextField {...field} fullWidth label='Vị trí mảng proxy (xem ví dụ ở trên)' placeholder='data.proxies' />
+                        )} />
                       </Grid2>
                     )}
                     <Grid2 size={{ xs: 12, sm: responseType === 'object' ? 6 : 4 }}>
@@ -817,19 +831,10 @@ function BuyConfigFields({
 
                 {/* ── DEFERRED MODE: mã đơn hàng trong response ── */}
                 {responseMode === 'deferred' && (
-                  <Grid2 size={{ xs: 12 }}>
-                    <Box sx={{ p: 1.5, background: '#fffbeb', borderRadius: 1.5, border: '1px solid #fde68a' }}>
-                      <Typography variant='caption' sx={{ display: 'block', mb: 1, color: '#92400e', lineHeight: 1.4 }}>
-                        Khi mua, provider trả về JSON chứa mã đơn hàng. Chỉ định vị trí của mã đơn trong response.
-                      </Typography>
-                      <Typography variant='caption' sx={{ display: 'block', mb: 1, color: '#78716c', lineHeight: 1.4 }}>
-                        Ví dụ provider trả: <code style={{ background: '#f5f5f4', padding: '1px 4px', borderRadius: 3 }}>{`{"success": 200, "data": {"id": 12345}}`}</code>
-                        <br />→ Điền: <strong>data.id</strong> (hệ thống sẽ lấy giá trị 12345 làm mã đơn)
-                      </Typography>
-                      <Controller name={`${prefix}.response.proxies_path`} control={control} render={({ field }) => (
-                        <CustomTextField {...field} fullWidth label='Vị trí mã đơn hàng trong response' placeholder='data.id' size='small' />
-                      )} />
-                    </Box>
+                  <Grid2 size={{ xs: 12, sm: 6 }}>
+                    <Controller name={`${prefix}.response.proxies_path`} control={control} render={({ field }) => (
+                      <CustomTextField {...field} fullWidth label='Vị trí mã đơn hàng (xem ví dụ ở trên)' placeholder='data.id' />
+                    )} />
                   </Grid2>
                 )}
               </Grid2>
