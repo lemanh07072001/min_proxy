@@ -470,7 +470,9 @@ function buildBuySection(buy: ApiConfigBuy): object | null {
   // Deferred: order_id_field thay vì proxy data
   if (buy.response_mode === 'deferred') {
     result.response_mode = 'deferred'
-    resp.order_id_field = resp.proxies_path || 'data.id' // Reuse proxies_path as order_id_field for deferred
+    // Form dùng proxies_path input để nhập order_id path khi deferred
+    resp.order_id_field = buy.response.proxies_path || 'data.id'
+    delete resp.proxies_path // Deferred không cần proxies_path trong response mua
 
     // fetch_proxies config
     const fp = buy.fetch_proxies
