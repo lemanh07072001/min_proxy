@@ -430,14 +430,23 @@ return (
             )
           })}
 
-          {/* Auth section — luôn hiện khi sản phẩm có auth config */}
+          {/* Auth section */}
           {(authType === 'userpass' || authType === 'ip_whitelist' || authType === 'both') && (
             <div className='checkout-section'>
-              <label className='checkout-section-label'>XÁC THỰC PROXY</label>
+              <label className='checkout-section-label'>CÁCH KẾT NỐI PROXY</label>
+
+              {/* Giải thích chung */}
+              <div style={{ fontSize: '11.5px', color: '#64748b', marginBottom: 10, lineHeight: 1.5, padding: '8px 12px', background: '#f8fafc', borderRadius: 8 }}>
+                {authType === 'both'
+                  ? 'Chọn cách xác thực proxy. Bạn có thể đổi sau khi mua.'
+                  : authType === 'userpass'
+                    ? 'Proxy sử dụng User:Pass để xác thực kết nối.'
+                    : 'Proxy sử dụng IP Whitelist — chỉ IP bạn đăng ký mới dùng được.'}
+              </div>
 
               {/* Radio chọn mode — chỉ khi both */}
               {authType === 'both' && (
-                <div className='checkout-duration-options' style={{ marginBottom: 8 }}>
+                <div className='checkout-duration-options' style={{ marginBottom: 12 }}>
                   <label className={`checkout-duration-option ${authMethod === 'userpass' ? 'active' : ''}`}>
                     <input type='radio' value='userpass' checked={authMethod === 'userpass'} onChange={() => setAuthMethod('userpass')} />
                     <span>User:Pass</span>
@@ -451,54 +460,77 @@ return (
 
               {/* User:Pass fields */}
               {(authType === 'userpass' || (authType === 'both' && authMethod === 'userpass')) && (
-                allowCustomAuth ? (
-                  <div>
-                    <div style={{ fontSize: '11px', color: '#64748b', marginBottom: 6 }}>
-                      Nhập tài khoản proxy tùy chọn (bỏ trống = tạo tự động)
+                <div style={{ padding: '12px', background: '#fafbfc', borderRadius: 8, border: '1px solid #e2e8f0' }}>
+                  {allowCustomAuth ? (
+                    <>
+                      <div style={{ fontSize: '12px', fontWeight: 600, color: '#334155', marginBottom: 4 }}>
+                        Tài khoản proxy
+                      </div>
+                      <div style={{ fontSize: '11px', color: '#94a3b8', marginBottom: 8 }}>
+                        Tự đặt username/password hoặc bỏ trống để hệ thống tạo ngẫu nhiên.
+                      </div>
+                      <div style={{ display: 'flex', gap: 8 }}>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontSize: '10px', color: '#64748b', marginBottom: 3, fontWeight: 500 }}>Username</div>
+                          <input
+                            type='text'
+                            placeholder='VD: myproxy01'
+                            value={customUser}
+                            onChange={e => setCustomUser(e.target.value.replace(/[^a-zA-Z0-9_.-]/g, ''))}
+                            className='discount-input'
+                            style={{ width: '100%', padding: '8px 10px', border: '1px solid #d1d5db', borderRadius: 6, fontSize: '13px' }}
+                            maxLength={50}
+                          />
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontSize: '10px', color: '#64748b', marginBottom: 3, fontWeight: 500 }}>Password</div>
+                          <input
+                            type='text'
+                            placeholder='VD: pass1234'
+                            value={customPass}
+                            onChange={e => setCustomPass(e.target.value.replace(/[^a-zA-Z0-9_.-]/g, ''))}
+                            className='discount-input'
+                            style={{ width: '100%', padding: '8px 10px', border: '1px solid #d1d5db', borderRadius: 6, fontSize: '13px' }}
+                            maxLength={50}
+                          />
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <div style={{ width: 32, height: 32, borderRadius: 8, background: '#dbeafe', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <span style={{ fontSize: '14px' }}>~</span>
+                      </div>
+                      <div>
+                        <div style={{ fontSize: '12px', fontWeight: 600, color: '#334155' }}>Tự động tạo tài khoản</div>
+                        <div style={{ fontSize: '11px', color: '#94a3b8' }}>Username và password sẽ được tạo ngẫu nhiên sau khi mua thành công.</div>
+                      </div>
                     </div>
-                    <div style={{ display: 'flex', gap: 8 }}>
-                      <input
-                        type='text'
-                        placeholder='Username'
-                        value={customUser}
-                        onChange={e => setCustomUser(e.target.value.replace(/[^a-zA-Z0-9_.-]/g, ''))}
-                        className='discount-input'
-                        style={{ flex: 1 }}
-                        maxLength={50}
-                      />
-                      <input
-                        type='text'
-                        placeholder='Password'
-                        value={customPass}
-                        onChange={e => setCustomPass(e.target.value.replace(/[^a-zA-Z0-9_.-]/g, ''))}
-                        className='discount-input'
-                        style={{ flex: 1 }}
-                        maxLength={50}
-                      />
-                    </div>
-                  </div>
-                ) : (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', background: '#f0f9ff', borderRadius: 8, border: '1px solid #bae6fd' }}>
-                    <span style={{ fontSize: '12.5px', color: '#0369a1' }}>User:Pass được tạo tự động sau khi mua</span>
-                  </div>
-                )
+                  )}
+                </div>
               )}
 
               {/* IP Whitelist field */}
               {(authType === 'ip_whitelist' || (authType === 'both' && authMethod === 'ip_whitelist')) && (
-                <div>
-                  <div style={{ fontSize: '11px', color: '#64748b', marginBottom: 6 }}>
-                    Nhập IP của bạn để whitelist (chỉ IP này được dùng proxy)
+                <div style={{ padding: '12px', background: '#fafbfc', borderRadius: 8, border: '1px solid #e2e8f0' }}>
+                  <div style={{ fontSize: '12px', fontWeight: 600, color: '#334155', marginBottom: 4 }}>
+                    IP được phép sử dụng proxy
                   </div>
-                  <input
-                    type='text'
-                    placeholder='VD: 1.2.3.4'
-                    value={allowIp}
-                    onChange={e => setAllowIp(e.target.value.replace(/[^0-9.]/g, ''))}
-                    className='discount-input'
-                    maxLength={15}
-                    style={{ width: '100%' }}
-                  />
+                  <div style={{ fontSize: '11px', color: '#94a3b8', marginBottom: 8 }}>
+                    Chỉ thiết bị có IP này mới kết nối được. Bạn có thể thay đổi IP sau khi mua.
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '10px', color: '#64748b', marginBottom: 3, fontWeight: 500 }}>Địa chỉ IP</div>
+                    <input
+                      type='text'
+                      placeholder='VD: 123.45.67.89'
+                      value={allowIp}
+                      onChange={e => setAllowIp(e.target.value.replace(/[^0-9.]/g, ''))}
+                      className='discount-input'
+                      maxLength={15}
+                      style={{ width: '100%', padding: '8px 10px', border: '1px solid #d1d5db', borderRadius: 6, fontSize: '13px' }}
+                    />
+                  </div>
                 </div>
               )}
             </div>
