@@ -895,7 +895,7 @@ function BuyConfigFields({
                     {responseType === 'object' && (
                       <Grid2 size={{ xs: 12, sm: 6 }}>
                         <Controller name={`${prefix}.response.proxies_path`} control={control} render={({ field }) => (
-                          <CustomTextField {...field} fullWidth label='Vị trí mảng proxy (xem ví dụ ở trên)' placeholder='data.proxies' />
+                          <CustomTextField {...field} fullWidth label='Vị trí danh sách proxy' helperText='Lấy tên trường từ kết quả API, xem ví dụ ở trên' placeholder='data.proxies' />
                         )} />
                       </Grid2>
                     )}
@@ -947,7 +947,7 @@ function BuyConfigFields({
                 {responseMode === 'deferred' && (
                   <Grid2 size={{ xs: 12, sm: 6 }}>
                     <Controller name={`${prefix}.response.proxies_path`} control={control} render={({ field }) => (
-                      <CustomTextField {...field} fullWidth label='Vị trí mã đơn hàng (xem ví dụ ở trên)' placeholder='data.id' />
+                      <CustomTextField {...field} fullWidth label='Vị trí mã đơn hàng' helperText='Lấy tên trường từ kết quả API, xem ví dụ ở trên' placeholder='data.id' />
                     )} />
                   </Grid2>
                 )}
@@ -966,33 +966,43 @@ function BuyConfigFields({
                   {/* Ví dụ response */}
                   <Grid2 size={{ xs: 12 }}>
                     <Box sx={{ p: 1.5, background: '#f8fafc', borderRadius: 1.5, border: '1px solid #e2e8f0', fontSize: 12, color: '#475569', lineHeight: 1.6 }}>
-                      Khi gọi API lấy proxy, nhà cung cấp trả về <strong>1 kết quả {'{ }'}</strong> chứa danh sách proxy bên trong.
-                      <br />Tuỳ nhà cung cấp, danh sách proxy có thể nằm ở các vị trí khác nhau:
+                      <strong>Cách tìm vị trí danh sách proxy:</strong> Gọi thử API lấy proxy, xem kết quả trả về. Tìm chỗ chứa danh sách proxy, rồi <strong>lấy tên các trường bao quanh nó</strong>, nối bằng dấu chấm.
                       <Box sx={{ display: 'flex', gap: 1.5, mt: 1, mb: 0.5, flexWrap: 'wrap' }}>
                         <Box sx={{ flex: 1, minWidth: 220 }}>
-                          <Typography sx={{ fontSize: 11, fontWeight: 600, color: '#334155', mb: 0.5 }}>VD 1: Proxy nằm trong "data" → "proxies"</Typography>
+                          <Typography sx={{ fontSize: 11, fontWeight: 600, color: '#334155', mb: 0.5 }}>VD 1: Nhà cung cấp A trả về:</Typography>
                           <pre style={{ background: '#1e293b', color: '#e2e8f0', padding: 8, borderRadius: 6, margin: 0, fontSize: 10.5, overflowX: 'auto', lineHeight: 1.5 }}>{`{
   "success": true,
-  "data": {            ← cấp 1
-    "proxies": [       ← cấp 2
-      {"ip":"...", ...}
+  "data": {              ← tên trường: "data"
+    "proxies": [         ← tên trường: "proxies"
+      {"ip":"1.2.3.4", "port":8080, ...}
     ]
   }
 }`}</pre>
                           <Typography sx={{ fontSize: 11, mt: 0.5, color: '#16a34a', fontWeight: 600 }}>→ Điền: data.proxies</Typography>
                         </Box>
                         <Box sx={{ flex: 1, minWidth: 220 }}>
-                          <Typography sx={{ fontSize: 11, fontWeight: 600, color: '#334155', mb: 0.5 }}>VD 2: Proxy nằm ngay trong "data"</Typography>
+                          <Typography sx={{ fontSize: 11, fontWeight: 600, color: '#334155', mb: 0.5 }}>VD 2: Nhà cung cấp B trả về:</Typography>
                           <pre style={{ background: '#1e293b', color: '#e2e8f0', padding: 8, borderRadius: 6, margin: 0, fontSize: 10.5, overflowX: 'auto', lineHeight: 1.5 }}>{`{
   "success": true,
-  "data": [            ← cấp 1
-    {"ip":"...", ...}
+  "result": [            ← tên trường: "result"
+    {"ip":"5.6.7.8", "port":3128, ...}
   ]
 }`}</pre>
-                          <Typography sx={{ fontSize: 11, mt: 0.5, color: '#16a34a', fontWeight: 600 }}>→ Điền: data</Typography>
+                          <Typography sx={{ fontSize: 11, mt: 0.5, color: '#16a34a', fontWeight: 600 }}>→ Điền: result</Typography>
+                        </Box>
+                        <Box sx={{ flex: 1, minWidth: 220 }}>
+                          <Typography sx={{ fontSize: 11, fontWeight: 600, color: '#334155', mb: 0.5 }}>VD 3: Nhà cung cấp C trả về:</Typography>
+                          <pre style={{ background: '#1e293b', color: '#e2e8f0', padding: 8, borderRadius: 6, margin: 0, fontSize: 10.5, overflowX: 'auto', lineHeight: 1.5 }}>{`{
+  "data": {              ← "data"
+    "data": [            ← "data" (trùng tên)
+      {"ip":"9.8.7.6", ...}
+    ]
+  }
+}`}</pre>
+                          <Typography sx={{ fontSize: 11, mt: 0.5, color: '#16a34a', fontWeight: 600 }}>→ Điền: data.data</Typography>
                         </Box>
                       </Box>
-                      <span style={{ color: '#64748b' }}>Quy tắc: dùng dấu chấm <strong>.</strong> nối tên các cấp từ ngoài vào trong đến chỗ chứa danh sách proxy.</span>
+                      <span style={{ color: '#64748b' }}>Tên trường do nhà cung cấp đặt — mỗi NCC khác nhau. Lấy đúng tên trong kết quả API, nối bằng dấu chấm.</span>
                     </Box>
                   </Grid2>
 
@@ -1041,7 +1051,7 @@ function BuyConfigFields({
                     <Controller name={`${prefix}.fetch_proxies.proxies_path`} control={control} render={({ field }) => (
                       <CustomTextField {...field} fullWidth
                         label='Vị trí danh sách proxy'
-                        helperText='Dùng dấu chấm cho trường lồng nhau, xem ví dụ ở trên'
+                        helperText='Lấy tên trường từ kết quả API, xem ví dụ ở trên'
                         placeholder='data.proxies' />
                     )} />
                   </Grid2>
