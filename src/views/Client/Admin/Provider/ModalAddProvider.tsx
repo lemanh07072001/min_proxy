@@ -37,13 +37,19 @@ interface ErrorCodeRule {
   message: string
 }
 
+interface HttpErrorRule {
+  status: string
+  message: string
+}
+
 interface ApiConfigBuyResponse {
   type: string
   success_field: string
   success_value: number | string
-  error_status: number | string
   error_message_field: string
   error_codes: ErrorCodeRule[]
+  http_errors: HttpErrorRule[]
+  fallback_message: string
   proxies_path: string
   proxy_format: string
   proxy_key_field: string
@@ -209,9 +215,10 @@ const defaultBuy: ApiConfigBuy = {
     type: 'array_last_status',
     success_field: 'statusCode',
     success_value: 200,
-    error_status: 101,
     error_message_field: '',
     error_codes: [],
+    http_errors: [],
+    fallback_message: '',
     proxies_path: 'data.proxies',
     proxy_format: 'key',
     proxy_key_field: 'keyxoay',
@@ -288,7 +295,6 @@ function parseBuySection(buy: any): ApiConfigBuy {
       type: buyResp.type || 'array_last_status',
       success_field: buyResp.success_field || 'statusCode',
       success_value: buyResp.success_value ?? 200,
-      error_status: buyResp.error_status ?? 101,
       error_message_field: buyResp.error_message_field || '',
       error_codes: (buyResp.error_codes || []).map((r: any) => ({
         field: r.field || '',
@@ -296,6 +302,12 @@ function parseBuySection(buy: any): ApiConfigBuy {
         match: r.match || 'exact',
         message: r.message || '',
       })),
+      http_errors: (() => {
+        const he = buyResp.http_errors
+        if (!he || typeof he !== 'object') return []
+        return Object.entries(he).map(([status, message]) => ({ status, message: String(message) }))
+      })(),
+      fallback_message: buyResp.fallback_message || '',
       proxies_path: buyResp.proxies_path || 'data.proxies',
       proxy_format: buyResp.proxy_format || 'key',
       proxy_key_field: buyResp.proxy_key_field || buyResp.proxy_string_field || 'keyxoay',
@@ -412,8 +424,8 @@ function buildBuySection(buy: ApiConfigBuy): object | null {
 
   if (buy.response.success_field) resp.success_field = buy.response.success_field
   if (buy.response.success_value !== '') resp.success_value = Number(buy.response.success_value)
-  if (buy.response.error_status !== '') resp.error_status = Number(buy.response.error_status)
   if (buy.response.error_message_field) resp.error_message_field = buy.response.error_message_field
+  if (buy.response.fallback_message) resp.fallback_message = buy.response.fallback_message
 
   // Error codes mapping
   const validErrorCodes = buy.response.error_codes.filter((r: ErrorCodeRule) => r.field && r.value && r.message)
@@ -424,6 +436,13 @@ function buildBuySection(buy: ApiConfigBuy): object | null {
       match: r.match,
       message: r.message,
     }))
+  }
+
+  // HTTP errors mapping (object format: { "524": "message", "5xx": "message" })
+  const validHttpErrors = buy.response.http_errors.filter((r: HttpErrorRule) => r.status && r.message)
+  if (validHttpErrors.length > 0) {
+    resp.http_errors = {} as any
+    validHttpErrors.forEach((r: HttpErrorRule) => { resp.http_errors[r.status] = r.message })
   }
 
   if (buy.response.type === 'object' && buy.response.proxies_path) resp.proxies_path = buy.response.proxies_path
@@ -578,6 +597,10 @@ function BuyConfigFields({
   const { fields: errorCodeFields, append: appendErrorCode, remove: removeErrorCode } = useFieldArray({
     control,
     name: `${prefix}.response.error_codes` as any,
+  })
+  const { fields: httpErrorFields, append: appendHttpError, remove: removeHttpError } = useFieldArray({
+    control,
+    name: `${prefix}.response.http_errors` as any,
   })
 
   // Helper: box style cho section grouping
@@ -887,6 +910,62 @@ function BuyConfigFields({
                       </Typography>
                     )}
                   </Box>
+                </Grid2>
+
+                {/* HTTP errors — lỗi khi API trả HTML thay vì JSON */}
+                <Grid2 size={{ xs: 12 }}>
+                  <Box sx={{ p: 1.5, background: '#fefce8', borderRadius: 1.5, border: '1px solid #fde68a' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+                      <Typography variant='caption' sx={{ fontWeight: 600, color: '#854d0e' }}>
+                        Lỗi HTTP (server/mạng) <FieldHint text='Khi nhà cung cấp trả lỗi HTTP (500, 524...) thay vì JSON bình thường. Hệ thống sẽ hiện thông báo bạn cấu hình thay vì hiện HTML rác.' />
+                      </Typography>
+                      <Button
+                        size='small'
+                        startIcon={<Plus size={14} />}
+                        onClick={() => appendHttpError({ status: '', message: '' })}
+                        sx={{ fontSize: 11, textTransform: 'none' }}
+                      >
+                        Thêm mã HTTP
+                      </Button>
+                    </Box>
+
+                    {httpErrorFields.map((item, idx) => (
+                      <Box key={item.id} sx={{ display: 'flex', gap: 1, mb: 1, alignItems: 'center' }}>
+                        <Controller name={`${prefix}.response.http_errors.${idx}.status`} control={control} render={({ field }) => (
+                          <CustomTextField {...field} placeholder='524 hoặc 5xx' size='small' sx={{ flex: 1 }} label={idx === 0 ? 'Mã HTTP' : undefined}
+                            helperText={idx === 0 ? 'VD: 524, 429, 5xx, 4xx' : undefined}
+                          />
+                        )} />
+                        <Controller name={`${prefix}.response.http_errors.${idx}.message`} control={control} render={({ field }) => (
+                          <CustomTextField {...field} placeholder='Server nhà cung cấp đang lỗi' size='small' sx={{ flex: 3 }} label={idx === 0 ? 'Thông báo hiển thị' : undefined} />
+                        )} />
+                        <IconButton
+                          size='small'
+                          onClick={() => removeHttpError(idx)}
+                          sx={{ color: '#dc2626', mt: idx === 0 ? 2.5 : 0 }}
+                        >
+                          <Trash2 size={14} />
+                        </IconButton>
+                      </Box>
+                    ))}
+
+                    {httpErrorFields.length === 0 && (
+                      <Typography variant='caption' sx={{ color: '#a8a29e', fontStyle: 'italic' }}>
+                        Không bắt buộc. Hệ thống sẽ tự trích nội dung từ HTML nếu chưa cấu hình.
+                      </Typography>
+                    )}
+                  </Box>
+                </Grid2>
+
+                {/* Fallback message */}
+                <Grid2 size={{ xs: 12, sm: 6 }}>
+                  <Controller name={`${prefix}.response.fallback_message`} control={control} render={({ field }) => (
+                    <CustomTextField {...field} fullWidth
+                      label={<>Thông báo mặc định khi lỗi <FieldHint text='Hiển thị khi có lỗi nhưng không khớp mã lỗi nào ở trên và không lấy được message từ provider' /></>}
+                      placeholder='Lỗi không xác định từ nhà cung cấp'
+                      helperText='Bỏ trống = hiện message mặc định hệ thống'
+                    />
+                  )} />
                 </Grid2>
 
                 {/* ── IMMEDIATE MODE: proxy data trong response ── */}
