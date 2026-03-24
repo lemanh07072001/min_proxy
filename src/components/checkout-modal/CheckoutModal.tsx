@@ -168,7 +168,10 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({
         return quantity >= min && quantity <= max
       })
     : null
-  const fixedQtyPrice = activeFixedQtyTier?.price ? parseInt(activeFixedQtyTier.price) : 0
+  const fixedQtyDiscountPct = parseFloat(activeFixedQtyTier?.discount || '0') || 0
+  const fixedQtyPrice = activeFixedQtyTier?.price
+    ? parseInt(activeFixedQtyTier.price)
+    : (fixedQtyDiscountPct > 0 ? Math.round((selectedOption?.price || 0) * (1 - fixedQtyDiscountPct / 100)) : 0)
 
   const unitPrice = isPerUnit
     ? (priceAfterQtyDiscount * customDuration)
