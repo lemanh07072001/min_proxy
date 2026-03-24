@@ -966,22 +966,33 @@ function BuyConfigFields({
                   {/* Ví dụ response */}
                   <Grid2 size={{ xs: 12 }}>
                     <Box sx={{ p: 1.5, background: '#f8fafc', borderRadius: 1.5, border: '1px solid #e2e8f0', fontSize: 12, color: '#475569', lineHeight: 1.6 }}>
-                      Khi gọi API lấy proxy, nhà cung cấp trả về kết quả. Ví dụ:
-                      <pre style={{ background: '#1e293b', color: '#e2e8f0', padding: 10, borderRadius: 6, margin: '8px 0 4px', fontSize: 11, overflowX: 'auto', lineHeight: 1.5 }}>{`{
-  "success": true,            ← Check: "success" = true
-  "data": {
-    "proxies": [              ← Vị trí danh sách proxy: "data.proxies"
-      {
-        "ip": "1.2.3.4",     ← Các field proxy
-        "port": 8080,
-        "user": "abc",
-        "pass": "xyz"
-      },
-      ...
+                      Khi gọi API lấy proxy, nhà cung cấp trả về <strong>1 kết quả {'{ }'}</strong> chứa danh sách proxy bên trong.
+                      <br />Tuỳ nhà cung cấp, danh sách proxy có thể nằm ở các vị trí khác nhau:
+                      <Box sx={{ display: 'flex', gap: 1.5, mt: 1, mb: 0.5, flexWrap: 'wrap' }}>
+                        <Box sx={{ flex: 1, minWidth: 220 }}>
+                          <Typography sx={{ fontSize: 11, fontWeight: 600, color: '#334155', mb: 0.5 }}>VD 1: Proxy nằm trong "data" → "proxies"</Typography>
+                          <pre style={{ background: '#1e293b', color: '#e2e8f0', padding: 8, borderRadius: 6, margin: 0, fontSize: 10.5, overflowX: 'auto', lineHeight: 1.5 }}>{`{
+  "success": true,
+  "data": {            ← cấp 1
+    "proxies": [       ← cấp 2
+      {"ip":"...", ...}
     ]
   }
 }`}</pre>
-                      Điền tên các trường tương ứng bên dưới.
+                          <Typography sx={{ fontSize: 11, mt: 0.5, color: '#16a34a', fontWeight: 600 }}>→ Điền: data.proxies</Typography>
+                        </Box>
+                        <Box sx={{ flex: 1, minWidth: 220 }}>
+                          <Typography sx={{ fontSize: 11, fontWeight: 600, color: '#334155', mb: 0.5 }}>VD 2: Proxy nằm ngay trong "data"</Typography>
+                          <pre style={{ background: '#1e293b', color: '#e2e8f0', padding: 8, borderRadius: 6, margin: 0, fontSize: 10.5, overflowX: 'auto', lineHeight: 1.5 }}>{`{
+  "success": true,
+  "data": [            ← cấp 1
+    {"ip":"...", ...}
+  ]
+}`}</pre>
+                          <Typography sx={{ fontSize: 11, mt: 0.5, color: '#16a34a', fontWeight: 600 }}>→ Điền: data</Typography>
+                        </Box>
+                      </Box>
+                      <span style={{ color: '#64748b' }}>Quy tắc: dùng dấu chấm <strong>.</strong> nối tên các cấp từ ngoài vào trong đến chỗ chứa danh sách proxy.</span>
                     </Box>
                   </Grid2>
 
