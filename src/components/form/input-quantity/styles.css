@@ -54,11 +54,22 @@
 }
 
 .qty-display {
-  inline-size: 50px;
+  min-inline-size: 50px;
   text-align: center;
   border: none;
   outline: none;
   font-size: 14px;
   padding: 6px;
   flex: 1;
+}
+
+/* Ẩn spinner mặc định của input number */
+.qty-display::-webkit-outer-spin-button,
+.qty-display::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.qty-display[type='number'] {
+  -moz-appearance: textfield;
 }

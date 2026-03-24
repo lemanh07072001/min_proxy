@@ -592,26 +592,53 @@ return (
               <div className='qty-cell'>
                 <QuantityControl
                   min={1}
-                  max={100}
+                  max={9999}
                   value={quantity}
                   onChange={setQuantity}
                 />
               </div>
               <span className='subtotal-cell'>{total.toLocaleString('vi-VN')}đ</span>
             </div>
-            {/* Qty discount hint */}
+            {/* Qty discount tiers */}
             {(quantityTiers.length > 0 || fixedQtyTiers.length > 0) && (
-              <div style={{ padding: '6px 12px', fontSize: '11px', color: '#16a34a', background: '#f0fdf4', borderRadius: '0 0 8px 8px' }}>
-                {hasQtyDiscount
-                  ? `Mua ${quantity} proxy — giảm giá SL!`
-                  : (() => {
+              <div style={{ padding: '8px 12px', fontSize: '11px', background: '#f0fdf4', borderRadius: '0 0 8px 8px' }}>
+                {hasQtyDiscount ? (
+                  <div style={{ color: '#16a34a', fontWeight: 600 }}>
+                    Mua {quantity} proxy — đang được giảm giá!
+                  </div>
+                ) : (
+                  <div style={{ color: '#64748b', marginBottom: 4 }}>
+                    {(() => {
                       const tiers = isPerUnit ? quantityTiers : fixedQtyTiers
                       const nextTier = tiers.find((t: any) => quantity < (parseInt(t.min) || 0))
                       return nextTier
                         ? `Mua từ ${nextTier.min}+ proxy để được giảm giá`
                         : 'Mua nhiều hơn để được giảm giá'
-                    })()
-                }
+                    })()}
+                  </div>
+                )}
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 4 }}>
+                  {(isPerUnit ? quantityTiers : fixedQtyTiers)
+                    .filter((t: any) => t.min && (t.discount || t.price))
+                    .map((t: any, i: number) => {
+                      const disc = parseFloat(t.discount) || 0
+                      const min = parseInt(t.min) || 0
+                      const isActive = quantity >= min && quantity <= (parseInt(t.max) || Infinity)
+                      return (
+                        <span key={i} style={{
+                          padding: '2px 8px',
+                          borderRadius: 4,
+                          fontSize: '10.5px',
+                          fontWeight: isActive ? 700 : 500,
+                          background: isActive ? '#dcfce7' : '#f8fafc',
+                          color: isActive ? '#15803d' : '#64748b',
+                          border: `1px solid ${isActive ? '#86efac' : '#e2e8f0'}`,
+                        }}>
+                          {t.min}+: {disc ? `-${disc}%` : ''}{t.price ? ` ${parseInt(t.price).toLocaleString('vi-VN')}đ` : ''}
+                        </span>
+                      )
+                    })}
+                </div>
               </div>
             )}
           </div>
