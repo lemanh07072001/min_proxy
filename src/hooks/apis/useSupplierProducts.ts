@@ -12,7 +12,7 @@ export interface SupplierProduct {
   provider_prices: Record<string, number>
   country: string | null
 
-  supplier_discount_tiers?: Array<{ min: string; max: string; discount: string }>
+  provider_discount_tiers?: Array<{ min: string; max: string; discount: string }>
 
   // Nếu đã import
   local_id?: number

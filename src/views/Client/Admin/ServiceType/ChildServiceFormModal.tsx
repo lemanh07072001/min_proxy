@@ -176,7 +176,7 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
       setSelectedSupplierCode(supplierCode)
       setSupplierCodeInput(supplierCode || '')
 
-      // Auto-fetch product từ site mẹ theo code để lấy supplier_discount_tiers
+      // Auto-fetch product từ site mẹ theo code để lấy provider_discount_tiers
       if (supplierCode && !checkedProduct) {
         checkProductMutation.mutate(supplierCode, {
           onSuccess: (data) => setCheckedProduct(data),
@@ -451,7 +451,7 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
         // Lưu mốc giá nhập từ site mẹ → dùng tính giá vốn khi tạo đơn
         cost_discount_tiers: (() => {
           // Ưu tiên data mới từ site mẹ, fallback existing metadata
-          const tiers = selectedProduct?.supplier_discount_tiers
+          const tiers = selectedProduct?.provider_discount_tiers
             || existingMeta?.cost_discount_tiers
           if (!tiers?.length || pricingMode !== 'per_unit') return existingMeta?.cost_discount_tiers || undefined
           return tiers
@@ -781,7 +781,7 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
 
                     {/* Bảng mốc từ site mẹ — admin chọn áp dụng + nhập giá bán */}
                     {(() => {
-                      const supplierTiers = selectedProduct?.supplier_discount_tiers || []
+                      const supplierTiers = selectedProduct?.provider_discount_tiers || []
                       const costBase = parseFloat(costPerUnit) || 0
                       const sellBase = parseFloat(pricePerUnit) || 0
                       const unitLabel = timeUnit === 'month' ? 'tháng' : 'ngày'
@@ -953,7 +953,7 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
                       const unitLabel = timeUnit === 'month' ? 'tháng' : 'ngày'
                       const sellBase = parseFloat(pricePerUnit) || 0
                       const costBase = parseFloat(costPerUnit) || 0
-                      const supplierTiers = selectedProduct?.supplier_discount_tiers || []
+                      const supplierTiers = selectedProduct?.provider_discount_tiers || []
 
                       // Helper: tìm giá nhập tại mốc ngày
                       const getCostAt = (days: number) => {
