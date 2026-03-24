@@ -459,6 +459,26 @@ return (
                     <span style={{ fontSize: '10px', color: '#f59e0b' }}>(-{pricing.cost_discount_percent}%)</span>
                   )}
                 </div>
+                {/* Lãi/ngày so với giá nhập */}
+                {(() => {
+                  const profitPerDay = effectiveSell - effectiveCost
+                  const profitPctOnCost = effectiveCost > 0
+                    ? ((profitPerDay / effectiveCost) * 100).toFixed(1) : '—'
+                  const color = profitPerDay >= 0 ? '#16a34a' : '#dc2626'
+                  return (
+                    <div style={{
+                      fontWeight: 600, color, fontSize: '11.5px',
+                      borderTop: '1px dashed #e2e8f0', marginTop: 3, paddingTop: 3,
+                      display: 'flex', alignItems: 'center', gap: 4
+                    }}>
+                      <span>Lãi/ng:</span>
+                      <span>{profitPerDay >= 0 ? '+' : ''}{formatVND(profitPerDay)}</span>
+                      <span style={{ fontSize: '10px', fontWeight: 400, color: '#94a3b8' }}>
+                        ({profitPctOnCost}% trên {costLabel.toLowerCase()})
+                      </span>
+                    </div>
+                  )
+                })()}
                 {/* Thời gian × SL */}
                 <div style={{ fontSize: '10px', color: '#94a3b8', marginTop: 2 }}>
                   {duration} ngày{quantity > 1 ? ` × ${quantity} SL` : ''}
