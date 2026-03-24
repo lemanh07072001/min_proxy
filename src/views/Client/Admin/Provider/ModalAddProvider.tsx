@@ -963,9 +963,34 @@ function BuyConfigFields({
               <Box sx={{ ...sectionBox, background: '#fffdf5', borderColor: '#fde68a' }}>
                 {sectionTitle('3. API lấy proxy (poll tự động)', 'Sau khi có mã đơn, hệ thống gọi API này mỗi phút để lấy proxy')}
                 <Grid2 container spacing={2}>
+                  {/* Ví dụ response */}
+                  <Grid2 size={{ xs: 12 }}>
+                    <Box sx={{ p: 1.5, background: '#f8fafc', borderRadius: 1.5, border: '1px solid #e2e8f0', fontSize: 12, color: '#475569', lineHeight: 1.6 }}>
+                      Khi gọi API lấy proxy, nhà cung cấp trả về kết quả. Ví dụ:
+                      <pre style={{ background: '#1e293b', color: '#e2e8f0', padding: 10, borderRadius: 6, margin: '8px 0 4px', fontSize: 11, overflowX: 'auto', lineHeight: 1.5 }}>{`{
+  "success": true,            ← Check: "success" = true
+  "data": {
+    "proxies": [              ← Vị trí danh sách proxy: "data.proxies"
+      {
+        "ip": "1.2.3.4",     ← Các field proxy
+        "port": 8080,
+        "user": "abc",
+        "pass": "xyz"
+      },
+      ...
+    ]
+  }
+}`}</pre>
+                      Điền tên các trường tương ứng bên dưới.
+                    </Box>
+                  </Grid2>
+
                   <Grid2 size={{ xs: 12, sm: 6 }}>
                     <Controller name={`${prefix}.fetch_proxies.url`} control={control} render={({ field }) => (
-                      <CustomTextField {...field} fullWidth label={<>URL <FieldHint text='Dùng {order_id} làm placeholder cho mã đơn. VD: https://api.provider.com/orders/{order_id}/proxies' /></>} placeholder='https://api.provider.com/orders/{order_id}' />
+                      <CustomTextField {...field} fullWidth
+                        label='URL lấy proxy'
+                        helperText='Dùng {order_id} thay cho mã đơn hàng'
+                        placeholder='https://api.provider.com/orders/{order_id}/proxies' />
                     )} />
                   </Grid2>
                   <Grid2 size={{ xs: 6, sm: 3 }}>
@@ -978,7 +1003,7 @@ function BuyConfigFields({
                   </Grid2>
                   <Grid2 size={{ xs: 6, sm: 3 }}>
                     <Controller name={`${prefix}.fetch_proxies.auth_type`} control={control} render={({ field }) => (
-                      <CustomTextField {...field} fullWidth select label={<>Xác thực <FieldHint text='Dùng chung auth với API mua, hoặc chọn auth riêng.' /></>}>
+                      <CustomTextField {...field} fullWidth select label='Xác thực'>
                         <MenuItem value='inherit'>Giống API mua</MenuItem>
                         <MenuItem value='query'>Query param</MenuItem>
                         <MenuItem value='header'>Header</MenuItem>
@@ -987,21 +1012,25 @@ function BuyConfigFields({
                     )} />
                   </Grid2>
 
-                  {/* Check thành công */}
-                  <Grid2 size={{ xs: 6, sm: 3 }}>
+                  {/* Check thành công + vị trí proxy */}
+                  <Grid2 size={{ xs: 6, sm: 2.5 }}>
                     <Controller name={`${prefix}.fetch_proxies.success_field`} control={control} render={({ field }) => (
-                      <CustomTextField {...field} fullWidth label={<>Field check <FieldHint text='Bỏ trống nếu không cần check. VD: success, status' /></>} placeholder='success' />
+                      <CustomTextField {...field} fullWidth
+                        label='Tên field kiểm tra'
+                        helperText='Bỏ trống nếu không cần'
+                        placeholder='success' />
                     )} />
                   </Grid2>
-                  <Grid2 size={{ xs: 6, sm: 3 }}>
+                  <Grid2 size={{ xs: 6, sm: 1.5 }}>
                     <Controller name={`${prefix}.fetch_proxies.success_value`} control={control} render={({ field }) => (
-                      <CustomTextField {...field} fullWidth label='= OK' placeholder='200' />
+                      <CustomTextField {...field} fullWidth label='Giá trị OK' placeholder='true' />
                     )} />
                   </Grid2>
-                  <Grid2 size={{ xs: 12, sm: 6 }}>
+                  <Grid2 size={{ xs: 12, sm: 4 }}>
                     <Controller name={`${prefix}.fetch_proxies.proxies_path`} control={control} render={({ field }) => (
                       <CustomTextField {...field} fullWidth
-                        label={<>Vị trí mảng proxy <FieldHint text='VD provider trả: {"data": {"proxies": [{...}]}} → điền data.proxies. Hệ thống dùng dấu chấm để truy cập vào object lồng nhau.' /></>}
+                        label='Vị trí danh sách proxy'
+                        helperText='Dùng dấu chấm cho trường lồng nhau, xem ví dụ ở trên'
                         placeholder='data.proxies' />
                     )} />
                   </Grid2>
