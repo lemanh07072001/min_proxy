@@ -966,43 +966,58 @@ function BuyConfigFields({
                   {/* Ví dụ response */}
                   <Grid2 size={{ xs: 12 }}>
                     <Box sx={{ p: 1.5, background: '#f8fafc', borderRadius: 1.5, border: '1px solid #e2e8f0', fontSize: 12, color: '#475569', lineHeight: 1.6 }}>
-                      <strong>Cách tìm vị trí danh sách proxy:</strong> Gọi thử API lấy proxy, xem kết quả trả về. Tìm chỗ chứa danh sách proxy, rồi <strong>lấy tên các trường bao quanh nó</strong>, nối bằng dấu chấm.
-                      <Box sx={{ display: 'flex', gap: 1.5, mt: 1, mb: 0.5, flexWrap: 'wrap' }}>
-                        <Box sx={{ flex: 1, minWidth: 220 }}>
-                          <Typography sx={{ fontSize: 11, fontWeight: 600, color: '#334155', mb: 0.5 }}>VD 1: Nhà cung cấp A trả về:</Typography>
-                          <pre style={{ background: '#1e293b', color: '#e2e8f0', padding: 8, borderRadius: 6, margin: 0, fontSize: 10.5, overflowX: 'auto', lineHeight: 1.5 }}>{`{
-  "success": true,
-  "data": {              ← tên trường: "data"
-    "proxies": [         ← tên trường: "proxies"
-      {"ip":"1.2.3.4", "port":8080, ...}
-    ]
-  }
-}`}</pre>
-                          <Typography sx={{ fontSize: 11, mt: 0.5, color: '#16a34a', fontWeight: 600 }}>→ Điền: data.proxies</Typography>
+                      <strong>Hướng dẫn đọc kết quả API:</strong>
+                      <Box sx={{ mt: 1, mb: 1, p: 1.5, background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 1.5 }}>
+                        <Typography sx={{ fontSize: 12, fontWeight: 600, color: '#0c4a6e', mb: 1 }}>
+                          Bước 1: Gọi thử API lấy proxy → nhà cung cấp trả về kết quả (gọi là "response")
+                        </Typography>
+                        <Typography sx={{ fontSize: 11.5, color: '#334155', mb: 0.5 }}>
+                          Ví dụ đây là <strong>toàn bộ response</strong> mà nhà cung cấp trả về:
+                        </Typography>
+                        <pre style={{ background: '#1e293b', color: '#e2e8f0', padding: 10, borderRadius: 6, margin: '4px 0', fontSize: 11, overflowX: 'auto', lineHeight: 1.7 }}>{`┌─ Đây là toàn bộ response ──────────────────────────┐
+│                                                     │
+│  {                                                  │
+│    "success": true,                                 │
+│    "data": {                                        │
+│       ▲                                             │
+│       └── Đây là TÊN TRƯỜNG (nằm bên trái dấu :)  │
+│                                                     │
+│      "proxies": [                                   │
+│         ▲                                           │
+│         └── Đây cũng là TÊN TRƯỜNG                 │
+│                                                     │
+│        {"ip":"1.2.3.4", "port":8080, ...},          │
+│        {"ip":"5.6.7.8", "port":3128, ...}           │
+│           ▲                                         │
+│           └── Đây là DANH SÁCH PROXY cần lấy       │
+│      ]                                              │
+│    }                                                │
+│  }                                                  │
+│                                                     │
+└─────────────────────────────────────────────────────┘`}</pre>
+
+                        <Typography sx={{ fontSize: 12, fontWeight: 600, color: '#0c4a6e', mt: 1.5, mb: 1 }}>
+                          Bước 2: Tìm đường đi đến danh sách proxy
+                        </Typography>
+                        <Typography sx={{ fontSize: 11.5, color: '#334155', lineHeight: 1.8 }}>
+                          Từ ngoài vào trong, danh sách proxy nằm trong <strong>"data"</strong> rồi trong <strong>"proxies"</strong>
+                          <br />→ Nối tên các trường bằng dấu chấm: <strong style={{ color: '#16a34a' }}>data.proxies</strong>
+                        </Typography>
+
+                        <Typography sx={{ fontSize: 12, fontWeight: 600, color: '#0c4a6e', mt: 1.5, mb: 0.5 }}>
+                          Thêm ví dụ:
+                        </Typography>
+                        <Box sx={{ fontSize: 11.5, color: '#334155', lineHeight: 1.8, pl: 1 }}>
+                          • NCC trả <code style={{ background: '#e2e8f0', padding: '1px 4px', borderRadius: 3 }}>{`{"result": [...]}`}</code> → proxy nằm trong "result" → điền: <strong style={{ color: '#16a34a' }}>result</strong>
+                          <br />
+                          • NCC trả <code style={{ background: '#e2e8f0', padding: '1px 4px', borderRadius: 3 }}>{`{"data": {"data": [...]}}`}</code> → "data" rồi "data" → điền: <strong style={{ color: '#16a34a' }}>data.data</strong>
+                          <br />
+                          • NCC trả <code style={{ background: '#e2e8f0', padding: '1px 4px', borderRadius: 3 }}>{`{"response": {"items": [...]}}`}</code> → "response" rồi "items" → điền: <strong style={{ color: '#16a34a' }}>response.items</strong>
                         </Box>
-                        <Box sx={{ flex: 1, minWidth: 220 }}>
-                          <Typography sx={{ fontSize: 11, fontWeight: 600, color: '#334155', mb: 0.5 }}>VD 2: Nhà cung cấp B trả về:</Typography>
-                          <pre style={{ background: '#1e293b', color: '#e2e8f0', padding: 8, borderRadius: 6, margin: 0, fontSize: 10.5, overflowX: 'auto', lineHeight: 1.5 }}>{`{
-  "success": true,
-  "result": [            ← tên trường: "result"
-    {"ip":"5.6.7.8", "port":3128, ...}
-  ]
-}`}</pre>
-                          <Typography sx={{ fontSize: 11, mt: 0.5, color: '#16a34a', fontWeight: 600 }}>→ Điền: result</Typography>
-                        </Box>
-                        <Box sx={{ flex: 1, minWidth: 220 }}>
-                          <Typography sx={{ fontSize: 11, fontWeight: 600, color: '#334155', mb: 0.5 }}>VD 3: Nhà cung cấp C trả về:</Typography>
-                          <pre style={{ background: '#1e293b', color: '#e2e8f0', padding: 8, borderRadius: 6, margin: 0, fontSize: 10.5, overflowX: 'auto', lineHeight: 1.5 }}>{`{
-  "data": {              ← "data"
-    "data": [            ← "data" (trùng tên)
-      {"ip":"9.8.7.6", ...}
-    ]
-  }
-}`}</pre>
-                          <Typography sx={{ fontSize: 11, mt: 0.5, color: '#16a34a', fontWeight: 600 }}>→ Điền: data.data</Typography>
-                        </Box>
+                        <Typography sx={{ fontSize: 11, color: '#64748b', mt: 1, fontStyle: 'italic' }}>
+                          Lưu ý: Tên trường do mỗi nhà cung cấp tự đặt, không giống nhau. Phải xem kết quả API thực tế của từng NCC.
+                        </Typography>
                       </Box>
-                      <span style={{ color: '#64748b' }}>Tên trường do nhà cung cấp đặt — mỗi NCC khác nhau. Lấy đúng tên trong kết quả API, nối bằng dấu chấm.</span>
                     </Box>
                   </Grid2>
 
