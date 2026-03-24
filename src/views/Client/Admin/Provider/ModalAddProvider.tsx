@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from 'react'
 
-import { useForm, Controller, useWatch, type Control } from 'react-hook-form'
+import { useForm, Controller, useWatch, useFieldArray, type Control } from 'react-hook-form'
 import Button from '@mui/material/Button'
 import Dialog from '@mui/material/Dialog'
 import Typography from '@mui/material/Typography'
@@ -575,6 +575,11 @@ function BuyConfigFields({
   const fetchPaginationEnabled = useWatch({ control, name: `${prefix}.fetch_proxies.pagination_enabled` })
   const fetchProxyFormat = useWatch({ control, name: `${prefix}.fetch_proxies.proxy_format` })
 
+  const { fields: errorCodeFields, append: appendErrorCode, remove: removeErrorCode } = useFieldArray({
+    control,
+    name: `${prefix}.response.error_codes` as any,
+  })
+
   // Helper: box style cho section grouping
   const sectionBox = { p: 1.5, border: '1px solid #e2e8f0', borderRadius: 2, background: '#fafbfc' }
   const sectionTitle = (text: string, hint?: string) => (
@@ -835,20 +840,15 @@ function BuyConfigFields({
                       <Button
                         size='small'
                         startIcon={<Plus size={14} />}
-                        onClick={() => {
-                          const current = control._formValues[prefix].response.error_codes || []
-                          control._formValues[prefix].response.error_codes = [...current, { field: '', value: '', match: 'exact', message: '' }]
-                          // Force re-render
-                          control._subjects.values.next({ values: control._formValues } as any)
-                        }}
+                        onClick={() => appendErrorCode({ field: '', value: '', match: 'exact' as const, message: '' })}
                         sx={{ fontSize: 11, textTransform: 'none' }}
                       >
                         Thêm mã lỗi
                       </Button>
                     </Box>
 
-                    {(control._formValues[prefix]?.response?.error_codes || []).map((_: any, idx: number) => (
-                      <Box key={idx} sx={{ display: 'flex', gap: 1, mb: 1, alignItems: 'center' }}>
+                    {errorCodeFields.map((item, idx) => (
+                      <Box key={item.id} sx={{ display: 'flex', gap: 1, mb: 1, alignItems: 'center' }}>
                         <Controller name={`${prefix}.response.error_codes.${idx}.field`} control={control} render={({ field }) => (
                           <CustomTextField {...field} placeholder='statusCode' size='small' sx={{ flex: 1.2 }} label={idx === 0 ? 'Field' : undefined} />
                         )} />
@@ -866,12 +866,7 @@ function BuyConfigFields({
                         )} />
                         <IconButton
                           size='small'
-                          onClick={() => {
-                            const current = [...(control._formValues[prefix].response.error_codes || [])]
-                            current.splice(idx, 1)
-                            control._formValues[prefix].response.error_codes = current
-                            control._subjects.values.next({ values: control._formValues } as any)
-                          }}
+                          onClick={() => removeErrorCode(idx)}
                           sx={{ color: '#dc2626', mt: idx === 0 ? 2.5 : 0 }}
                         >
                           <Trash2 size={14} />
@@ -879,7 +874,7 @@ function BuyConfigFields({
                       </Box>
                     ))}
 
-                    {(control._formValues[prefix]?.response?.error_codes || []).length === 0 && (
+                    {errorCodeFields.length === 0 && (
                       <Typography variant='caption' sx={{ color: '#a8a29e', fontStyle: 'italic' }}>
                         Chưa có mã lỗi nào. Bấm "Thêm mã lỗi" để cấu hình.
                       </Typography>
