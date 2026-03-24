@@ -347,7 +347,7 @@ return {
             )}
           </span>
         ),
-        size: 80,
+        size: 60,
         cell: ({ row }: { row: any }) => (
           <span style={{ fontWeight: 600, fontSize: '13px', color: '#64748b' }}>#{row.original.id}</span>
         )
@@ -355,7 +355,7 @@ return {
       {
         accessorKey: 'order_code',
         header: 'Mã đơn',
-        size: 200,
+        minSize: 180,
         cell: ({ row }: { row: any }) => (
           <div>
             <span style={{ fontWeight: 600, fontSize: '13px' }}>{row.original.order_code}</span>
@@ -369,21 +369,21 @@ return {
       },
       {
         header: 'User',
-        size: 160,
+        minSize: 120,
         cell: ({ row }: { row: any }) => (
           <span style={{ fontWeight: 600, fontSize: '13px' }}>{row.original.user_name || '-'}</span>
         )
       },
       {
         header: 'Dịch vụ',
-        size: 170,
+        minSize: 150,
         cell: ({ row }: { row: any }) => (
           <span style={{ fontSize: '13px' }}>{row.original.service_name || '-'}</span>
         )
       },
       {
-        header: 'Nhà cung cấp',
-        size: 110,
+        header: 'NCC',
+        minSize: 90,
         cell: ({ row }: { row: any }) => (
           <span style={{ fontSize: '13px' }}>{row.original.provider_name || '-'}</span>
         )
@@ -406,7 +406,7 @@ return (
       },
       {
         header: 'Đơn giá / ngày',
-        size: 180,
+        minSize: 200,
         cell: ({ row }: { row: any }) => {
           const o = row.original
           const pricing = o.metadata?.pricing
@@ -508,7 +508,7 @@ return (
       },
       {
         header: 'Tổng đơn',
-        size: 160,
+        minSize: 150,
         cell: ({ row }: { row: any }) => {
           const o = row.original
           const totalSell = o.total_amount ?? 0
@@ -549,7 +549,7 @@ return (
       },
       {
         header: 'Trạng thái',
-        size: 160,
+        minSize: 130,
         cell: ({ row }: { row: any }) => {
           const o = row.original
           const status = o.status
@@ -633,7 +633,7 @@ return (
       {
         header: 'Thao tác',
         id: 'actions',
-        size: 140,
+        minSize: 120,
         cell: ({ row }: { row: any }) => {
           const order = row.original
           const status = order.status
@@ -881,10 +881,10 @@ return (
               </div>
 
               {/* Table */}
-              <div className='table-wrapper' style={{ overflowX: 'auto', padding: '0 16px 16px' }}>
+              <div className='table-wrapper' style={{ overflowX: 'auto', padding: '0 12px 12px' }}>
                 <table
                   className='data-table'
-                  style={{ minWidth: '1540px', ...(isLoading || orders.length === 0 ? { height: '100%' } : {}) }}
+                  style={{ tableLayout: 'auto', minWidth: '100%', ...(isLoading || orders.length === 0 ? { height: '100%' } : {}) }}
                 >
                   <thead className='table-header'>
                     {table.getHeaderGroups().map(headerGroup => (

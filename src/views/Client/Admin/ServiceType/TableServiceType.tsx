@@ -384,7 +384,7 @@ return result
       {
         accessorKey: 'code',
         header: 'ID#Code',
-        size: 160,
+        minSize: 140,
         cell: ({ row }: { row: any }) => (
           <span style={{ fontFamily: 'monospace', fontSize: 12, color: '#64748b' }}>
             {row.original?.id}#{row.original?.code || '—'}
@@ -408,7 +408,7 @@ return result
             <div className='font-bold'>{row.original?.name}</div>
           </div>
         ),
-        size: 200
+        minSize: 180
       },
       {
         header: 'Trạng thái',
@@ -422,7 +422,7 @@ return result
             </div>
           )
         },
-        size: 120
+        minSize: 100
       },
       {
         header: 'Nhà cung cấp',
@@ -433,7 +433,7 @@ return result
             </div>
           )
         },
-        size: 100
+        minSize: 90
       },
       {
         header: 'Type',
@@ -448,7 +448,7 @@ return (
             </div>
           )
         },
-        size: 100
+        minSize: 90
       },
       {
         header: 'Proxy Type',
@@ -464,7 +464,7 @@ return (
             </div>
           )
         },
-        size: 100
+        minSize: 90
       },
       {
         header: 'IP Version',
@@ -480,7 +480,7 @@ return (
             </div>
           )
         },
-        size: 100
+        minSize: 90
       },
       {
         header: 'Protocols',
@@ -505,7 +505,7 @@ return (
             </div>
           )
         },
-        size: 150
+        minSize: 140
       },
       {
         header: 'Giá bán',
@@ -564,7 +564,7 @@ return (
             </div>
           )
         },
-        size: 150
+        minSize: 140
       },
       {
         header: 'Tag',
@@ -591,7 +591,7 @@ return (
             </div>
           )
         },
-        size: 120
+        minSize: 100
       },
       {
         header: 'Action',
@@ -675,7 +675,7 @@ return (
             </div>
           )
         },
-        size: 140
+        minSize: 140
       }
     ],
     [handleOpenEdit, handleCopyService, handleOpenDeleteDialog, handleMoveItem, handleUpdateOrder, copyMutation.isPending, deleteMutation.isPending, isFilterActive, orderedIds, isChild]
@@ -820,8 +820,8 @@ return (
           </div>
 
           {/* Table */}
-          <div className='table-wrapper'>
-            <table className='data-table' style={isLoading || dataServices.length === 0 ? { height: '100%' } : {}}>
+          <div className='table-wrapper' style={{ overflowX: 'auto' }}>
+            <table className='data-table' style={{ ...(isLoading || dataServices.length === 0 ? { height: '100%' } : {}), tableLayout: 'auto', minWidth: '100%' }}>
               <thead className='table-header'>
                 {table.getHeaderGroups().map(headerGroup => (
                   <tr key={headerGroup.id}>
