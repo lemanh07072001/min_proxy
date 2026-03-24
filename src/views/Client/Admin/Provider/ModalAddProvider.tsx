@@ -16,7 +16,7 @@ import Divider from '@mui/material/Divider'
 import Accordion from '@mui/material/Accordion'
 import AccordionSummary from '@mui/material/AccordionSummary'
 import AccordionDetails from '@mui/material/AccordionDetails'
-import { ChevronDown, Info } from 'lucide-react'
+import { ChevronDown, Info, Plus, Trash2 } from 'lucide-react'
 import Tooltip from '@mui/material/Tooltip'
 import IconButton from '@mui/material/IconButton'
 
@@ -30,11 +30,20 @@ import { useCreateProvider, useUpdateProvider } from '@/hooks/apis/useProviders'
 
 // ─── Types ──────────────────────────────────────────
 
+interface ErrorCodeRule {
+  field: string
+  value: string
+  match: 'exact' | 'contains'
+  message: string
+}
+
 interface ApiConfigBuyResponse {
   type: string
   success_field: string
   success_value: number | string
   error_status: number | string
+  error_message_field: string
+  error_codes: ErrorCodeRule[]
   proxies_path: string
   proxy_format: string
   proxy_key_field: string
@@ -201,6 +210,8 @@ const defaultBuy: ApiConfigBuy = {
     success_field: 'statusCode',
     success_value: 200,
     error_status: 101,
+    error_message_field: '',
+    error_codes: [],
     proxies_path: 'data.proxies',
     proxy_format: 'key',
     proxy_key_field: 'keyxoay',
@@ -278,6 +289,13 @@ function parseBuySection(buy: any): ApiConfigBuy {
       success_field: buyResp.success_field || 'statusCode',
       success_value: buyResp.success_value ?? 200,
       error_status: buyResp.error_status ?? 101,
+      error_message_field: buyResp.error_message_field || '',
+      error_codes: (buyResp.error_codes || []).map((r: any) => ({
+        field: r.field || '',
+        value: r.value != null ? String(r.value) : '',
+        match: r.match || 'exact',
+        message: r.message || '',
+      })),
       proxies_path: buyResp.proxies_path || 'data.proxies',
       proxy_format: buyResp.proxy_format || 'key',
       proxy_key_field: buyResp.proxy_key_field || buyResp.proxy_string_field || 'keyxoay',
@@ -395,6 +413,19 @@ function buildBuySection(buy: ApiConfigBuy): object | null {
   if (buy.response.success_field) resp.success_field = buy.response.success_field
   if (buy.response.success_value !== '') resp.success_value = Number(buy.response.success_value)
   if (buy.response.error_status !== '') resp.error_status = Number(buy.response.error_status)
+  if (buy.response.error_message_field) resp.error_message_field = buy.response.error_message_field
+
+  // Error codes mapping
+  const validErrorCodes = buy.response.error_codes.filter((r: ErrorCodeRule) => r.field && r.value && r.message)
+  if (validErrorCodes.length > 0) {
+    resp.error_codes = validErrorCodes.map((r: ErrorCodeRule) => ({
+      field: r.field,
+      value: r.match === 'contains' ? r.value : (isNaN(Number(r.value)) ? r.value : Number(r.value)),
+      match: r.match,
+      message: r.message,
+    }))
+  }
+
   if (buy.response.type === 'object' && buy.response.proxies_path) resp.proxies_path = buy.response.proxies_path
 
   if (buy.response.proxy_format === 'key' && buy.response.proxy_key_field) {
@@ -773,6 +804,75 @@ function BuyConfigFields({
                   <Controller name={`${prefix}.response.error_status`} control={control} render={({ field }) => (
                     <CustomTextField {...field} fullWidth label='Thất bại' placeholder='101' />
                   )} />
+                </Grid2>
+
+                {/* Field chứa message lỗi từ provider */}
+                <Grid2 size={{ xs: 12, sm: 4 }}>
+                  <Controller name={`${prefix}.response.error_message_field`} control={control} render={({ field }) => (
+                    <CustomTextField {...field} fullWidth label={<>Field message lỗi <FieldHint text='Tên trường chứa mô tả lỗi từ provider. VD: message, error, msg. Bỏ trống nếu không có.' /></>} placeholder='message' />
+                  )} />
+                </Grid2>
+
+                {/* Error codes mapping */}
+                <Grid2 size={{ xs: 12 }}>
+                  <Box sx={{ p: 1.5, background: '#fef2f2', borderRadius: 1.5, border: '1px solid #fecaca' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+                      <Typography variant='caption' sx={{ fontWeight: 600, color: '#991b1b' }}>
+                        Mã lỗi cụ thể <FieldHint text='Khi nhà cung cấp trả mã lỗi, hệ thống sẽ hiện thông báo tương ứng thay vì lỗi chung chung.' />
+                      </Typography>
+                      <Button
+                        size='small'
+                        startIcon={<Plus size={14} />}
+                        onClick={() => {
+                          const current = control._formValues[prefix].response.error_codes || []
+                          control._formValues[prefix].response.error_codes = [...current, { field: '', value: '', match: 'exact', message: '' }]
+                          // Force re-render
+                          control._subjects.values.next({ values: control._formValues } as any)
+                        }}
+                        sx={{ fontSize: 11, textTransform: 'none' }}
+                      >
+                        Thêm mã lỗi
+                      </Button>
+                    </Box>
+
+                    {(control._formValues[prefix]?.response?.error_codes || []).map((_: any, idx: number) => (
+                      <Box key={idx} sx={{ display: 'flex', gap: 1, mb: 1, alignItems: 'center' }}>
+                        <Controller name={`${prefix}.response.error_codes.${idx}.field`} control={control} render={({ field }) => (
+                          <CustomTextField {...field} placeholder='statusCode' size='small' sx={{ flex: 1.2 }} label={idx === 0 ? 'Field' : undefined} />
+                        )} />
+                        <Controller name={`${prefix}.response.error_codes.${idx}.match`} control={control} render={({ field }) => (
+                          <CustomTextField {...field} select size='small' sx={{ flex: 1 }} label={idx === 0 ? 'So sánh' : undefined}>
+                            <MenuItem value='exact'>bằng (===)</MenuItem>
+                            <MenuItem value='contains'>chứa</MenuItem>
+                          </CustomTextField>
+                        )} />
+                        <Controller name={`${prefix}.response.error_codes.${idx}.value`} control={control} render={({ field }) => (
+                          <CustomTextField {...field} placeholder='101' size='small' sx={{ flex: 1 }} label={idx === 0 ? 'Giá trị' : undefined} />
+                        )} />
+                        <Controller name={`${prefix}.response.error_codes.${idx}.message`} control={control} render={({ field }) => (
+                          <CustomTextField {...field} placeholder='Hết proxy trong kho' size='small' sx={{ flex: 2 }} label={idx === 0 ? 'Thông báo hiển thị' : undefined} />
+                        )} />
+                        <IconButton
+                          size='small'
+                          onClick={() => {
+                            const current = [...(control._formValues[prefix].response.error_codes || [])]
+                            current.splice(idx, 1)
+                            control._formValues[prefix].response.error_codes = current
+                            control._subjects.values.next({ values: control._formValues } as any)
+                          }}
+                          sx={{ color: '#dc2626', mt: idx === 0 ? 2.5 : 0 }}
+                        >
+                          <Trash2 size={14} />
+                        </IconButton>
+                      </Box>
+                    ))}
+
+                    {(control._formValues[prefix]?.response?.error_codes || []).length === 0 && (
+                      <Typography variant='caption' sx={{ color: '#a8a29e', fontStyle: 'italic' }}>
+                        Chưa có mã lỗi nào. Bấm "Thêm mã lỗi" để cấu hình.
+                      </Typography>
+                    )}
+                  </Box>
                 </Grid2>
 
                 {/* ── IMMEDIATE MODE: proxy data trong response ── */}
