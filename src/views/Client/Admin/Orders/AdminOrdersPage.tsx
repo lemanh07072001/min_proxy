@@ -444,9 +444,16 @@ return (
                     Thực tính: {formatVND(effectiveSell)}/ng
                   </div>
                 )}
-                {/* Giá vốn/nhập 1 ngày */}
+                {/* Giá vốn/nhập gốc 1 ngày */}
+                {hasCostDiscount && (
+                  <div style={{ color: '#94a3b8', display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <span>{costLabel} gốc:</span>
+                    <span style={{ textDecoration: 'line-through' }}>{formatVND(pricing.base_cost_per_day)}/ng</span>
+                  </div>
+                )}
+                {/* Giá vốn/nhập thực tính 1 ngày */}
                 <div style={{ color: '#64748b', display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <span>{costLabel}:</span>
+                  <span>{costLabel}{hasCostDiscount ? ' thực tính' : ''}:</span>
                   <span>{formatVND(effectiveCost)}/ng</span>
                   {hasCostDiscount && (
                     <span style={{ fontSize: '10px', color: '#f59e0b' }}>(-{pricing.cost_discount_percent}%)</span>
