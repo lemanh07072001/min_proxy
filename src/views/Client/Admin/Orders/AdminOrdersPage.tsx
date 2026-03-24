@@ -435,9 +435,16 @@ return {
       },
       {
         header: 'Dịch vụ',
-        minSize: 150,
+        minSize: 170,
         cell: ({ row }: { row: any }) => (
-          <span style={{ fontSize: '13px' }}>{row.original.service_name || '-'}</span>
+          <div>
+            <div style={{ fontSize: '13px' }}>{row.original.service_name || '-'}</div>
+            {row.original.service_code && (
+              <div style={{ fontSize: '10px', color: '#94a3b8', fontFamily: 'monospace' }}>
+                #{row.original.service_id}・{row.original.service_code}
+              </div>
+            )}
+          </div>
         )
       },
       {
