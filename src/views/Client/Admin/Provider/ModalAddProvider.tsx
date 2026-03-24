@@ -756,10 +756,19 @@ function BuyConfigFields({
                 {responseMode !== 'deferred' && (
                   <>
                     {responseType === 'object' && (
-                      <Grid2 size={{ xs: 12, sm: 6 }}>
-                        <Controller name={`${prefix}.response.proxies_path`} control={control} render={({ field }) => (
-                          <CustomTextField {...field} fullWidth label={<>Đường dẫn mảng proxy <FieldHint text='Dot path đến mảng proxy trong response. VD: data.proxies, result.list' /></>} placeholder='data.proxies' />
-                        )} />
+                      <Grid2 size={{ xs: 12 }}>
+                        <Box sx={{ p: 1.5, background: '#f0fdf4', borderRadius: 1.5, border: '1px solid #bbf7d0' }}>
+                          <Typography variant='caption' sx={{ display: 'block', mb: 1, color: '#166534', lineHeight: 1.4 }}>
+                            Chỉ vị trí mảng proxy trong response JSON của provider.
+                          </Typography>
+                          <Typography variant='caption' sx={{ display: 'block', mb: 1, color: '#78716c', lineHeight: 1.4 }}>
+                            VD provider trả: <code style={{ background: '#f5f5f4', padding: '1px 4px', borderRadius: 3 }}>{`{"statusCode": 200, "data": {"proxies": [{...}, {...}]}}`}</code>
+                            <br />→ Điền: <strong>data.proxies</strong> (hệ thống sẽ lấy mảng proxy từ vị trí đó)
+                          </Typography>
+                          <Controller name={`${prefix}.response.proxies_path`} control={control} render={({ field }) => (
+                            <CustomTextField {...field} fullWidth label='Vị trí mảng proxy trong response' placeholder='data.proxies' size='small' />
+                          )} />
+                        </Box>
                       </Grid2>
                     )}
                     <Grid2 size={{ xs: 12, sm: responseType === 'object' ? 6 : 4 }}>
@@ -870,9 +879,11 @@ function BuyConfigFields({
                       <CustomTextField {...field} fullWidth label='= OK' placeholder='200' />
                     )} />
                   </Grid2>
-                  <Grid2 size={{ xs: 12, sm: 3 }}>
+                  <Grid2 size={{ xs: 12, sm: 6 }}>
                     <Controller name={`${prefix}.fetch_proxies.proxies_path`} control={control} render={({ field }) => (
-                      <CustomTextField {...field} fullWidth label={<>Đường dẫn mảng proxy <FieldHint text='Dot path đến mảng proxy. VD: data.proxies, data.data' /></>} placeholder='data.proxies' />
+                      <CustomTextField {...field} fullWidth
+                        label={<>Vị trí mảng proxy <FieldHint text='VD provider trả: {"data": {"proxies": [{...}]}} → điền data.proxies. Hệ thống dùng dấu chấm để truy cập vào object lồng nhau.' /></>}
+                        placeholder='data.proxies' />
                     )} />
                   </Grid2>
                   <Grid2 size={{ xs: 12, sm: 3 }}>
