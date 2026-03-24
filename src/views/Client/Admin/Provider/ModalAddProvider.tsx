@@ -658,19 +658,32 @@ function BuyConfigFields({
                 </Grid2>
                 {durationParam && (
                   <Grid2 size={{ xs: 12, sm: 6 }}>
-                    <Typography variant='caption' color='text.secondary' sx={{ mb: 0.5, display: 'block' }}>
-                      Quy đổi giá trị gửi cho provider <FieldHint text='Hệ thống gửi số ngày (1, 7, 30). Nếu provider dùng giá trị khác (VD: "daily", "weekly") thì điền vào đây. Bỏ trống = gửi nguyên số ngày.' />
-                    </Typography>
-                    <Box sx={{ display: 'flex', gap: 1 }}>
-                      <Controller name={`${prefix}.duration_map_1`} control={control} render={({ field }) => (
-                        <CustomTextField {...field} fullWidth label='1 ngày →' placeholder='1' size='small' />
-                      )} />
-                      <Controller name={`${prefix}.duration_map_7`} control={control} render={({ field }) => (
-                        <CustomTextField {...field} fullWidth label='7 ngày →' placeholder='7' size='small' />
-                      )} />
-                      <Controller name={`${prefix}.duration_map_30`} control={control} render={({ field }) => (
-                        <CustomTextField {...field} fullWidth label='30 ngày →' placeholder='30' size='small' />
-                      )} />
+                    <Box sx={{ p: 1.5, background: '#f1f5f9', borderRadius: 1.5, border: '1px solid #e2e8f0' }}>
+                      <Typography variant='caption' color='text.secondary' sx={{ mb: 1, display: 'block', lineHeight: 1.4 }}>
+                        Khi user mua 1/7/30 ngày, hệ thống gửi giá trị nào cho provider?
+                        <br />
+                        <span style={{ color: '#94a3b8' }}>Bỏ trống = gửi nguyên số ngày. Điền nếu provider dùng giá trị khác (VD: daily, weekly, monthly)</span>
+                      </Typography>
+                      <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center' }}>
+                        <Box sx={{ flex: 1, textAlign: 'center' }}>
+                          <Typography variant='caption' sx={{ fontWeight: 600, color: '#475569', mb: 0.5, display: 'block' }}>1 ngày</Typography>
+                          <Controller name={`${prefix}.duration_map_1`} control={control} render={({ field }) => (
+                            <CustomTextField {...field} fullWidth placeholder='1' size='small' sx={{ '& input': { textAlign: 'center' } }} />
+                          )} />
+                        </Box>
+                        <Box sx={{ flex: 1, textAlign: 'center' }}>
+                          <Typography variant='caption' sx={{ fontWeight: 600, color: '#475569', mb: 0.5, display: 'block' }}>7 ngày</Typography>
+                          <Controller name={`${prefix}.duration_map_7`} control={control} render={({ field }) => (
+                            <CustomTextField {...field} fullWidth placeholder='7' size='small' sx={{ '& input': { textAlign: 'center' } }} />
+                          )} />
+                        </Box>
+                        <Box sx={{ flex: 1, textAlign: 'center' }}>
+                          <Typography variant='caption' sx={{ fontWeight: 600, color: '#475569', mb: 0.5, display: 'block' }}>30 ngày</Typography>
+                          <Controller name={`${prefix}.duration_map_30`} control={control} render={({ field }) => (
+                            <CustomTextField {...field} fullWidth placeholder='30' size='small' sx={{ '& input': { textAlign: 'center' } }} />
+                          )} />
+                        </Box>
+                      </Box>
                     </Box>
                   </Grid2>
                 )}
@@ -795,10 +808,19 @@ function BuyConfigFields({
 
                 {/* ── DEFERRED MODE: mã đơn hàng trong response ── */}
                 {responseMode === 'deferred' && (
-                  <Grid2 size={{ xs: 12, sm: 6 }}>
-                    <Controller name={`${prefix}.response.proxies_path`} control={control} render={({ field }) => (
-                      <CustomTextField {...field} fullWidth label={<>Đường dẫn mã đơn hàng <FieldHint text='Dot path đến order ID trong response. VD: data.id, data.order_id' /></>} placeholder='data.id' />
-                    )} />
+                  <Grid2 size={{ xs: 12 }}>
+                    <Box sx={{ p: 1.5, background: '#fffbeb', borderRadius: 1.5, border: '1px solid #fde68a' }}>
+                      <Typography variant='caption' sx={{ display: 'block', mb: 1, color: '#92400e', lineHeight: 1.4 }}>
+                        Khi mua, provider trả về JSON chứa mã đơn hàng. Chỉ định vị trí của mã đơn trong response.
+                      </Typography>
+                      <Typography variant='caption' sx={{ display: 'block', mb: 1, color: '#78716c', lineHeight: 1.4 }}>
+                        Ví dụ provider trả: <code style={{ background: '#f5f5f4', padding: '1px 4px', borderRadius: 3 }}>{`{"success": 200, "data": {"id": 12345}}`}</code>
+                        <br />→ Điền: <strong>data.id</strong> (hệ thống sẽ lấy giá trị 12345 làm mã đơn)
+                      </Typography>
+                      <Controller name={`${prefix}.response.proxies_path`} control={control} render={({ field }) => (
+                        <CustomTextField {...field} fullWidth label='Vị trí mã đơn hàng trong response' placeholder='data.id' size='small' />
+                      )} />
+                    </Box>
                   </Grid2>
                 )}
               </Grid2>
