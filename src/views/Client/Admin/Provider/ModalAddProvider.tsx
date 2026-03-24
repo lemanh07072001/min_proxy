@@ -820,7 +820,7 @@ function BuyConfigFields({
                     <CustomTextField {...field} fullWidth
                       label={<>Field chứa lý do lỗi <FieldHint text={'VD: đối tác trả {"statusCode":101, "message":"Hết hàng"}\n→ điền "message"\n→ hệ thống tự hiện "Hết hàng" khi có lỗi\n\nNên luôn điền field này.'} /></>}
                       placeholder='message'
-                      helperText='Nên điền — hệ thống tự lấy lý do lỗi từ đối tác mà không cần cấu hình từng mã'
+                      helperText='Thay thế cho mã lỗi, hoặc dùng khi gặp mã lỗi chưa có trong danh sách bên dưới'
                     />
                   )} />
                 </Grid2>
