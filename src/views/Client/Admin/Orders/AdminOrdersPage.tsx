@@ -403,9 +403,41 @@ return (
       },
       {
         header: 'Đơn giá',
-        size: 130,
+        size: 160,
         cell: ({ row }: { row: any }) => {
           const o = row.original
+          const pricing = o.metadata?.pricing
+          const duration = o.time ?? 1
+
+          if (pricing && pricing.mode === 'per_unit') {
+            const hasDiscount = pricing.sell_discount_percent > 0
+            return (
+              <div style={{ lineHeight: 1.5 }}>
+                <div style={{ fontSize: '13px', fontWeight: 600, color: '#0f172a' }}>
+                  {formatVND(pricing.effective_sell_per_day)}/ng
+                  {hasDiscount && (
+                    <span style={{ fontSize: '10px', color: '#16a34a', marginLeft: 4 }}>
+                      -{pricing.sell_discount_percent}%
+                    </span>
+                  )}
+                </div>
+                {hasDiscount && (
+                  <div style={{ fontSize: '10px', color: '#94a3b8', textDecoration: 'line-through' }}>
+                    gốc: {formatVND(pricing.base_sell_per_day)}/ng
+                  </div>
+                )}
+                <div style={{ fontSize: '10px', color: '#64748b' }}>
+                  vốn: {formatVND(pricing.effective_cost_per_day)}/ng
+                  {pricing.cost_discount_percent > 0 && (
+                    <span style={{ color: '#16a34a', marginLeft: 3 }}>-{pricing.cost_discount_percent}%</span>
+                  )}
+                </div>
+                <div style={{ fontSize: '10px', color: '#94a3b8' }}>
+                  × {duration} ngày
+                </div>
+              </div>
+            )
+          }
 
           return (
             <div style={{ lineHeight: 1.6 }}>
@@ -421,19 +453,24 @@ return (
       },
       {
         header: 'Tổng tiền',
-        size: 140,
+        size: 150,
         cell: ({ row }: { row: any }) => {
           const o = row.original
           const profit = (o.total_amount ?? 0) - (o.total_cost ?? 0)
           const profitColor = profit >= 0 ? '#16a34a' : '#dc2626'
+          const profitPercent = o.total_cost > 0
+            ? ((profit / o.total_cost) * 100).toFixed(1) : '0'
 
           return (
-            <div style={{ lineHeight: 1.6 }}>
+            <div style={{ lineHeight: 1.5 }}>
               <div style={{ fontSize: '13px', fontWeight: 600, color: '#0f172a' }}>
                 {formatVND(o.total_amount ?? 0)}
               </div>
-              <div style={{ fontSize: '11px', color: profitColor }}>
-                lãi: {formatVND(profit)}
+              <div style={{ fontSize: '11px', color: '#64748b' }}>
+                vốn: {formatVND(o.total_cost ?? 0)}
+              </div>
+              <div style={{ fontSize: '12px', fontWeight: 600, color: profitColor }}>
+                {profit >= 0 ? '+' : ''}{formatVND(profit)} ({profitPercent}%)
               </div>
             </div>
           )
