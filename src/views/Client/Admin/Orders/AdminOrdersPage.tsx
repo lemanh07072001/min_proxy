@@ -5,6 +5,7 @@ import { useMemo, useState, useCallback } from 'react'
 import Image from 'next/image'
 
 import { useQueryClient } from '@tanstack/react-query'
+import { useBranding } from '@/app/contexts/BrandingContext'
 
 
 import {
@@ -134,6 +135,8 @@ const inputSx = {
 
 export default function AdminOrdersPage() {
   const queryClient = useQueryClient()
+  const branding = useBranding()
+  const isChild = branding.siteMode === 'child'
   const defaults = useMemo(() => getDefaults(), [])
 
   // Staged filter inputs
@@ -402,75 +405,113 @@ return (
         }
       },
       {
-        header: 'Đơn giá',
-        size: 160,
+        header: 'Đơn giá / ngày',
+        size: 170,
         cell: ({ row }: { row: any }) => {
           const o = row.original
           const pricing = o.metadata?.pricing
           const duration = o.time ?? 1
 
+          // Per_unit có breakdown
           if (pricing && pricing.mode === 'per_unit') {
-            const hasDiscount = pricing.sell_discount_percent > 0
+            const sellPerDay = pricing.effective_sell_per_day
+            const costPerDay = pricing.effective_cost_per_day
+            const profitPerDay = sellPerDay - costPerDay
+            const hasSellDiscount = pricing.sell_discount_percent > 0
+            const costLabel = isChild ? 'Nhập' : 'Vốn'
+
             return (
-              <div style={{ lineHeight: 1.5 }}>
-                <div style={{ fontSize: '13px', fontWeight: 600, color: '#0f172a' }}>
-                  {formatVND(pricing.effective_sell_per_day)}/ng
-                  {hasDiscount && (
-                    <span style={{ fontSize: '10px', color: '#16a34a', marginLeft: 4 }}>
-                      -{pricing.sell_discount_percent}%
+              <div style={{ lineHeight: 1.5, fontSize: '12px' }}>
+                {/* Giá bán/ngày */}
+                <div style={{ fontWeight: 600, color: '#0f172a' }}>
+                  Bán: {formatVND(sellPerDay)}/ng
+                  {hasSellDiscount && (
+                    <span style={{ fontSize: '10px', color: '#f59e0b', marginLeft: 3 }}>
+                      (-{pricing.sell_discount_percent}%)
                     </span>
                   )}
                 </div>
-                {hasDiscount && (
+                {hasSellDiscount && (
                   <div style={{ fontSize: '10px', color: '#94a3b8', textDecoration: 'line-through' }}>
-                    gốc: {formatVND(pricing.base_sell_per_day)}/ng
+                    Gốc: {formatVND(pricing.base_sell_per_day)}/ng
                   </div>
                 )}
-                <div style={{ fontSize: '10px', color: '#64748b' }}>
-                  vốn: {formatVND(pricing.effective_cost_per_day)}/ng
+                {/* Giá vốn/nhập/ngày */}
+                <div style={{ color: '#64748b' }}>
+                  {costLabel}: {formatVND(costPerDay)}/ng
                   {pricing.cost_discount_percent > 0 && (
-                    <span style={{ color: '#16a34a', marginLeft: 3 }}>-{pricing.cost_discount_percent}%</span>
+                    <span style={{ fontSize: '10px', color: '#f59e0b', marginLeft: 3 }}>
+                      (-{pricing.cost_discount_percent}%)
+                    </span>
                   )}
                 </div>
+                {/* Lãi/ngày */}
+                <div style={{ fontWeight: 600, color: profitPerDay >= 0 ? '#16a34a' : '#dc2626' }}>
+                  Lãi: {profitPerDay >= 0 ? '+' : ''}{formatVND(profitPerDay)}/ng
+                </div>
+                {/* Thời gian */}
                 <div style={{ fontSize: '10px', color: '#94a3b8' }}>
-                  × {duration} ngày
+                  × {duration} ngày × {o.quantity ?? 1} SL
                 </div>
               </div>
             )
           }
 
+          // Fallback: không có breakdown (đơn cũ hoặc fixed mode)
+          const sellTotal = o.price_per_unit ?? 0
+          const costTotal = o.cost_price ?? 0
+          const costLabel = isChild ? 'Nhập' : 'Vốn'
+
           return (
-            <div style={{ lineHeight: 1.6 }}>
-              <div style={{ fontSize: '13px', fontWeight: 600, color: '#0f172a' }}>
-                {formatVND(o.price_per_unit ?? 0)}
+            <div style={{ lineHeight: 1.5, fontSize: '12px' }}>
+              <div style={{ fontWeight: 600, color: '#0f172a' }}>
+                Bán: {formatVND(sellTotal)}
               </div>
-              <div style={{ fontSize: '11px', color: '#64748b' }}>
-                vốn: {formatVND(o.cost_price ?? 0)}
+              <div style={{ color: '#64748b' }}>
+                {costLabel}: {formatVND(costTotal)}
               </div>
+              {duration > 1 && (
+                <div style={{ fontSize: '10px', color: '#94a3b8' }}>
+                  {duration} ngày × {o.quantity ?? 1} SL
+                </div>
+              )}
             </div>
           )
         }
       },
       {
         header: 'Tổng tiền',
-        size: 150,
+        size: 160,
         cell: ({ row }: { row: any }) => {
           const o = row.original
-          const profit = (o.total_amount ?? 0) - (o.total_cost ?? 0)
+          const totalSell = o.total_amount ?? 0
+          const totalCost = o.total_cost ?? 0
+          const profit = totalSell - totalCost
           const profitColor = profit >= 0 ? '#16a34a' : '#dc2626'
-          const profitPercent = o.total_cost > 0
-            ? ((profit / o.total_cost) * 100).toFixed(1) : '0'
+          const profitPercent = totalCost > 0
+            ? ((profit / totalCost) * 100).toFixed(1) : '—'
+          const costLabel = isChild ? 'Tổng nhập' : 'Tổng vốn'
 
           return (
-            <div style={{ lineHeight: 1.5 }}>
-              <div style={{ fontSize: '13px', fontWeight: 600, color: '#0f172a' }}>
-                {formatVND(o.total_amount ?? 0)}
+            <div style={{ lineHeight: 1.5, fontSize: '12px' }}>
+              <div style={{ fontWeight: 600, color: '#0f172a' }}>
+                Tổng bán: {formatVND(totalSell)}
               </div>
-              <div style={{ fontSize: '11px', color: '#64748b' }}>
-                vốn: {formatVND(o.total_cost ?? 0)}
+              <div style={{ color: '#64748b' }}>
+                {costLabel}: {formatVND(totalCost)}
               </div>
-              <div style={{ fontSize: '12px', fontWeight: 600, color: profitColor }}>
-                {profit >= 0 ? '+' : ''}{formatVND(profit)} ({profitPercent}%)
+              <div style={{
+                fontWeight: 700,
+                color: profitColor,
+                fontSize: '13px',
+                borderTop: '1px solid #e2e8f0',
+                marginTop: 2,
+                paddingTop: 2
+              }}>
+                {profit >= 0 ? '+' : ''}{formatVND(profit)}
+                <span style={{ fontSize: '10px', fontWeight: 400, marginLeft: 3 }}>
+                  ({profitPercent}%)
+                </span>
               </div>
             </div>
           )
