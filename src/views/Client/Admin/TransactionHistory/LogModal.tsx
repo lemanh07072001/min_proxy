@@ -194,10 +194,13 @@ export default function LogModal({
                         {log.context && typeof log.context === 'object' && (() => {
                           const { request_params, response, duration_ms, service_name, service_code, provider_name, provider_code, quantity, price_per_unit, total_amount, proxy_type, time_days, ...rest } = log.context
                           if (Object.keys(rest).length === 0) return null
+                          const isError = ['api_call_error', 'failed', 'exception'].includes(log.action)
                           return (
-                            <details className='mt-2'>
-                              <summary className='text-xs text-gray-400 cursor-pointer hover:text-gray-600 font-medium'>Context</summary>
-                              <div className='mt-1 p-2 bg-gray-50 rounded text-xs text-gray-600 font-mono whitespace-pre-wrap max-h-32 overflow-y-auto'>
+                            <details className='mt-2' open={isError}>
+                              <summary className={`text-xs cursor-pointer font-medium ${isError ? 'text-red-500 hover:text-red-700' : 'text-gray-400 hover:text-gray-600'}`}>
+                                {isError ? 'Debug chi tiết (click để xem)' : 'Context'}
+                              </summary>
+                              <div className={`mt-1 p-2 rounded text-xs font-mono whitespace-pre-wrap max-h-80 overflow-y-auto ${isError ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-gray-50 text-gray-600'}`}>
                                 {JSON.stringify(rest, null, 2)}
                               </div>
                             </details>
