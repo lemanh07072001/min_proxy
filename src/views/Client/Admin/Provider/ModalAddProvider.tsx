@@ -784,9 +784,21 @@ function BuyConfigFields({
                 {/* Check thành công */}
                 <Grid2 size={{ xs: 6, sm: 3 }}>
                   <Controller name={`${prefix}.response.type`} control={control} render={({ field }) => (
-                    <CustomTextField {...field} fullWidth select label={<>Dạng kết quả <FieldHint text='Hỏi nhà cung cấp hoặc xem tài liệu API của họ để biết kết quả trả về dạng nào.' /></>}>
-                      <MenuItem value='object'>Kết quả đơn (1 kết quả duy nhất)</MenuItem>
-                      <MenuItem value='array_last_status'>Danh sách (nhiều kết quả, check cuối cùng)</MenuItem>
+                    <CustomTextField {...field} fullWidth select
+                      label={<>Dạng kết quả <FieldHint text={'So sánh response từ API đối tác với 2 dạng bên dưới để chọn đúng.'} /></>}
+                    >
+                      <MenuItem value='object'>
+                        <Box>
+                          <Typography sx={{ fontSize: 13, fontWeight: 600 }}>Dạng 1: Bắt đầu bằng {'{'}</Typography>
+                          <Typography sx={{ fontSize: 11, color: '#64748b', fontFamily: 'monospace' }}>{'{"success":true, "data":{...}}'}</Typography>
+                        </Box>
+                      </MenuItem>
+                      <MenuItem value='array_last_status'>
+                        <Box>
+                          <Typography sx={{ fontSize: 13, fontWeight: 600 }}>Dạng 2: Bắt đầu bằng {'['}</Typography>
+                          <Typography sx={{ fontSize: 11, color: '#64748b', fontFamily: 'monospace' }}>{'[{"status":100,...}, {"status":200,...}]'}</Typography>
+                        </Box>
+                      </MenuItem>
                     </CustomTextField>
                   )} />
                 </Grid2>
