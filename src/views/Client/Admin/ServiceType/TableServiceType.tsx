@@ -521,8 +521,8 @@ return (
             const tiers = data?.metadata?.discount_tiers || []
 
             return (
-              <div style={{ fontSize: '12px', lineHeight: '1.6' }}>
-                <div>
+              <div style={{ fontSize: '12px', lineHeight: '1.6', whiteSpace: 'normal' }}>
+                <div style={{ whiteSpace: 'nowrap' }}>
                   <span style={{ fontWeight: 600, color: '#334155' }}>{unitPrice.toLocaleString('vi-VN')}đ</span>
                   <span style={{ color: '#94a3b8' }}>/{unitLabel}</span>
                 </div>
@@ -549,7 +549,7 @@ return (
           const durationLabels: Record<string, string> = { '1': 'Ngày', '7': 'Tuần', '30': 'Tháng' }
 
           return (
-            <div style={{ fontSize: '12px', lineHeight: '1.6' }}>
+            <div style={{ fontSize: '12px', lineHeight: '1.6', whiteSpace: 'normal' }}>
               {['1', '7', '30'].map(d => {
                 const item = prices.find((p: any) => p.key === d || p.duration === d)
                 if (!item) return null
@@ -821,7 +821,7 @@ return (
 
           {/* Table */}
           <div className='table-wrapper' style={{ overflowX: 'auto' }}>
-            <table className='data-table' style={{ ...(isLoading || dataServices.length === 0 ? { height: '100%' } : {}), tableLayout: 'auto', minWidth: '100%' }}>
+            <table className='data-table' style={{ ...(isLoading || dataServices.length === 0 ? { height: '100%' } : {}), tableLayout: 'auto', minWidth: '100%', whiteSpace: 'nowrap' }}>
               <thead className='table-header' style={{ position: 'sticky', top: 0, zIndex: 10, background: '#f8fafc' }}>
                 {table.getHeaderGroups().map(headerGroup => (
                   <tr key={headerGroup.id}>
