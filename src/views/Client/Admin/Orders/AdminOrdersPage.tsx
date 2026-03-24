@@ -468,7 +468,6 @@ return (
         minSize: 220,
         cell: ({ row }: { row: any }) => {
           const o = row.original
-          const cellStyle = { whiteSpace: 'normal' as const }
           const pricing = o.metadata?.pricing
           const duration = o.time ?? 1
           const quantity = o.quantity ?? 1
@@ -483,57 +482,36 @@ return (
             const hasCostDiscount = pricing.cost_discount_percent > 0
 
             return (
-              <div style={{ lineHeight: 1.6, fontSize: '11.5px', ...cellStyle }}>
+              <div style={{ lineHeight: 1.6, fontSize: '11.5px', whiteSpace: 'normal', minWidth: 200 }}>
                 {/* Giá gốc 1 ngày */}
-                <div style={{ color: '#94a3b8', display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <span>Gốc:</span>
-                  <span style={{ textDecoration: hasSellDiscount ? 'line-through' : 'none' }}>
-                    {formatVND(baseSell)}/ng
-                  </span>
+                <div style={{ color: '#94a3b8', whiteSpace: 'nowrap' }}>
+                  Gốc: <span style={{ textDecoration: hasSellDiscount ? 'line-through' : 'none' }}>{formatVND(baseSell)}/ng</span>
                 </div>
                 {/* Giá thực tính 1 ngày */}
-                {hasSellDiscount && (
-                  <div style={{ fontWeight: 600, color: '#0f172a', display: 'flex', alignItems: 'center', gap: 4 }}>
-                    <span>Thực tính:</span>
-                    <span>{formatVND(effectiveSell)}/ng</span>
-                    <span style={{ fontSize: '10px', color: '#f59e0b' }}>(-{pricing.sell_discount_percent}%)</span>
-                  </div>
-                )}
-                {!hasSellDiscount && (
-                  <div style={{ fontWeight: 600, color: '#0f172a' }}>
-                    Thực tính: {formatVND(effectiveSell)}/ng
-                  </div>
-                )}
-                {/* Giá vốn/nhập gốc 1 ngày */}
-                {hasCostDiscount && (
-                  <div style={{ color: '#94a3b8', display: 'flex', alignItems: 'center', gap: 4 }}>
-                    <span>{costLabel} gốc:</span>
-                    <span style={{ textDecoration: 'line-through' }}>{formatVND(pricing.base_cost_per_day)}/ng</span>
-                  </div>
-                )}
-                {/* Giá vốn/nhập thực tính 1 ngày */}
-                <div style={{ color: '#64748b', display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <span>{costLabel}{hasCostDiscount ? ' thực tính' : ''}:</span>
-                  <span>{formatVND(effectiveCost)}/ng</span>
-                  {hasCostDiscount && (
-                    <span style={{ fontSize: '10px', color: '#f59e0b' }}>(-{pricing.cost_discount_percent}%)</span>
-                  )}
+                <div style={{ fontWeight: 600, color: '#0f172a', whiteSpace: 'nowrap' }}>
+                  Bán: {formatVND(effectiveSell)}/ng
+                  {hasSellDiscount && <span style={{ fontSize: '10px', color: '#f59e0b', marginLeft: 3 }}>(-{pricing.sell_discount_percent}%)</span>}
                 </div>
-                {/* Lãi/ngày so với giá nhập */}
+                {/* Giá vốn/nhập */}
+                {hasCostDiscount && (
+                  <div style={{ color: '#94a3b8', whiteSpace: 'nowrap' }}>
+                    {costLabel} gốc: <span style={{ textDecoration: 'line-through' }}>{formatVND(pricing.base_cost_per_day)}/ng</span>
+                  </div>
+                )}
+                <div style={{ color: '#64748b', whiteSpace: 'nowrap' }}>
+                  {costLabel}: {formatVND(effectiveCost)}/ng
+                  {hasCostDiscount && <span style={{ fontSize: '10px', color: '#f59e0b', marginLeft: 3 }}>(-{pricing.cost_discount_percent}%)</span>}
+                </div>
+                {/* Lãi/ngày */}
                 {(() => {
                   const profitPerDay = effectiveSell - effectiveCost
                   const profitPctOnCost = effectiveCost > 0
                     ? ((profitPerDay / effectiveCost) * 100).toFixed(1) : '—'
                   const color = profitPerDay >= 0 ? '#16a34a' : '#dc2626'
                   return (
-                    <div style={{
-                      fontWeight: 600, color, fontSize: '11.5px',
-                      borderTop: '1px dashed #e2e8f0', marginTop: 3, paddingTop: 3,
-                      display: 'flex', alignItems: 'center', gap: 4
-                    }}>
-                      <span>Lãi/ng:</span>
-                      <span>{profitPerDay >= 0 ? '+' : ''}{formatVND(profitPerDay)}</span>
-                      <span style={{ fontSize: '10px', fontWeight: 400, color: '#94a3b8' }}>
+                    <div style={{ fontWeight: 600, color, borderTop: '1px dashed #e2e8f0', marginTop: 3, paddingTop: 3, whiteSpace: 'nowrap' }}>
+                      Lãi/ng: {profitPerDay >= 0 ? '+' : ''}{formatVND(profitPerDay)}
+                      <span style={{ fontSize: '10px', fontWeight: 400, color: '#94a3b8', marginLeft: 3 }}>
                         ({profitPctOnCost}% trên {costLabel.toLowerCase()})
                       </span>
                     </div>
@@ -552,7 +530,7 @@ return (
           const costPerDay = duration > 0 ? Math.round((o.cost_price ?? 0) / duration) : (o.cost_price ?? 0)
 
           return (
-            <div style={{ lineHeight: 1.6, fontSize: '11.5px', ...cellStyle }}>
+            <div style={{ lineHeight: 1.6, fontSize: '11.5px' }}>
               <div style={{ fontWeight: 600, color: '#0f172a' }}>
                 Bán: {formatVND(sellPerDay)}/ng
               </div>
@@ -580,7 +558,7 @@ return (
           const costLabel = isChild ? 'Nhập' : 'Vốn'
 
           return (
-            <div style={{ lineHeight: 1.6, fontSize: '11.5px', whiteSpace: 'normal' }}>
+            <div style={{ lineHeight: 1.6, fontSize: '11.5px' }}>
               <div style={{ color: '#0f172a' }}>
                 Bán: <strong>{formatVND(totalSell)}</strong>
               </div>
@@ -704,8 +682,8 @@ return (
 
   return (
     <>
-          {/* Stats Cards — sticky top */}
-          <Grid2 container spacing={2} sx={{ mb: 3, position: 'sticky', top: 0, zIndex: 20, background: '#f1f5f9', py: 1 }}>
+          {/* Stats Cards */}
+          <Grid2 container spacing={2} sx={{ mb: 3 }}>
             <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
               <StatCard title='Tổng đơn hàng' value={summary.total_orders} icon={ShoppingCart} color='#7C3AED' />
             </Grid2>
@@ -880,12 +858,12 @@ return (
               </div>
 
               {/* Table */}
-              <div className='table-wrapper' style={{ overflowX: 'auto', padding: '0 12px 12px' }}>
+              <div className='table-wrapper' style={{ overflow: 'auto', maxHeight: 'calc(100vh - 280px)', padding: '0 12px 12px' }}>
                 <table
                   className='data-table'
                   style={{ tableLayout: 'auto', minWidth: '100%', whiteSpace: 'nowrap', ...(isLoading || orders.length === 0 ? { height: '100%' } : {}) }}
                 >
-                  <thead className='table-header' style={{ position: 'sticky', top: 0, zIndex: 10, background: '#f8fafc' }}>
+                  <thead className='table-header' style={{ position: 'sticky', top: -1, zIndex: 10, background: '#f8fafc', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
                     {table.getHeaderGroups().map(headerGroup => (
                       <tr key={headerGroup.id}>
                         {headerGroup.headers.map(header => (
