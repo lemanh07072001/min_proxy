@@ -258,7 +258,7 @@ export default function TableReseller({ onOpenModal, onViewCredentials }: TableR
         cell: ({ row }: { row: any }) => {
           const markup = row.original?.reseller_profile?.default_markup_percent
 
-          return markup != null ? `${markup}%` : '-'
+          return markup != null ? `${markup > 0 ? '+' : ''}${markup}%` : '-'
         },
         size: 80
       },

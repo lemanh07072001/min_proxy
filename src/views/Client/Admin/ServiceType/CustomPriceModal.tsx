@@ -283,7 +283,7 @@ export default function CustomPriceModal({ open, onClose, serviceType }: CustomP
                       </TableCell>
                       <TableCell>
                         <Chip
-                          label={cp.price_type === 'cost_plus' ? `vốn+${cp.markup_percent}%` : 'cố định'}
+                          label={cp.price_type === 'cost_plus' ? `vốn${cp.markup_percent >= 0 ? '+' : ''}${cp.markup_percent}%` : 'cố định'}
                           size='small'
                           color={cp.price_type === 'cost_plus' ? 'warning' : 'primary'}
                           variant='outlined'

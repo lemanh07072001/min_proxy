@@ -209,7 +209,7 @@ export default function ProviderPricingModal({ open, onClose, userId, userName }
               ) : (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 2 }}>
                   <Typography variant='caption' color='text.secondary'>
-                    Chênh lệch: <strong style={{ color: '#d97706' }}>+{item.markup_percent}%</strong> so với giá gốc
+                    Chênh lệch: <strong style={{ color: item.markup_percent < 0 ? '#16a34a' : '#d97706' }}>{item.markup_percent > 0 ? '+' : ''}{item.markup_percent}%</strong> so với giá gốc
                   </Typography>
                   {item.note && (
                     <Typography variant='caption' color='text.secondary'>
