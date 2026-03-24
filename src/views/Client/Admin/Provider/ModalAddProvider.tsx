@@ -808,20 +808,10 @@ function BuyConfigFields({
                   <Controller name={`${prefix}.response.type`} control={control} render={({ field }) => (
                     <CustomTextField {...field} fullWidth select
                       label='Dạng kết quả'
-                      helperText='Xem kết quả từ API đối tác rồi chọn dạng phù hợp'
+                      helperText='So sánh kết quả API đối tác với ví dụ ở trên để chọn'
                     >
-                      <MenuItem value='object'>
-                        <Box>
-                          <Typography sx={{ fontSize: 13, fontWeight: 600 }}>1 kết quả duy nhất</Typography>
-                          <Typography sx={{ fontSize: 11, color: '#64748b', whiteSpace: 'normal' }}>{'VD: {"success":true, "data":{...}}'}</Typography>
-                        </Box>
-                      </MenuItem>
-                      <MenuItem value='array_last_status'>
-                        <Box>
-                          <Typography sx={{ fontSize: 13, fontWeight: 600 }}>Nhiều kết quả liên tiếp</Typography>
-                          <Typography sx={{ fontSize: 11, color: '#64748b', whiteSpace: 'normal' }}>{'VD: {...proxy...}, {...proxy...}, {"status":200, "comen":"..."}'}</Typography>
-                        </Box>
-                      </MenuItem>
+                      <MenuItem value='object'>Proxy nằm bên trong 1 trường (VD: data.proxies)</MenuItem>
+                      <MenuItem value='array_last_status'>Mỗi proxy là 1 phần riêng, cuối cùng có trạng thái</MenuItem>
                     </CustomTextField>
                   )} />
                 </Grid2>
