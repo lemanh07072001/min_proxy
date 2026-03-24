@@ -531,8 +531,8 @@ return (
                   const tierPrice = t.price ? parseInt(t.price) : Math.round(unitPrice * (1 - disc / 100))
 
                   return (
-                    <div key={i} style={{ color: '#16a34a', fontSize: '11px' }}>
-                      {t.min}+ {unitLabel}: {tierPrice.toLocaleString('vi-VN')}đ <span style={{ opacity: 0.7 }}>(-{disc}%)</span>
+                    <div key={i} style={{ color: '#16a34a', fontSize: '11px', whiteSpace: 'nowrap' }}>
+                      {t.min}+{unitLabel}: {tierPrice.toLocaleString('vi-VN')}đ ({disc}%)
                     </div>
                   )
                 })}
@@ -555,7 +555,7 @@ return (
                 if (!item) return null
                 const price = new Intl.NumberFormat('vi-VN').format(parseInt(item.value || item.price || '0') || 0)
                 return (
-                  <div key={d}>
+                  <div key={d} style={{ whiteSpace: 'nowrap' }}>
                     <span style={{ color: '#64748b' }}>{durationLabels[d]}: </span>
                     <span style={{ fontWeight: 600, color: '#334155' }}>{price}đ</span>
                   </div>
