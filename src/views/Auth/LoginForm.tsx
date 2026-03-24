@@ -112,7 +112,8 @@ export default function LoginForm() {
         <div className='login-form-group'>
           <label className={`login-form-label ${errors.email && 'text-red-500'}`}>{t('auth.email')}</label>
           <input
-            type='text'
+            type='email'
+            autoComplete='email'
             className={`login-form-input ${errors.email && 'border-red-500'}`}
             placeholder={t('auth.placeholders.enterEmail')}
             {...register('email')}
@@ -126,6 +127,7 @@ export default function LoginForm() {
           <div className='login-password-wrapper'>
             <input
               type={showPassword ? 'text' : 'password'}
+              autoComplete='current-password'
               className={`login-form-input ${errors.password && 'border-red-500'}`}
               placeholder={t('auth.placeholders.enterPassword')}
               {...register('password')}
@@ -148,9 +150,9 @@ export default function LoginForm() {
             <span className='login-checkbox-custom'></span>
             <span className='login-checkbox-label'>{t('auth.rememberMe')}</span>
           </label>
-          <a href='#' className='login-forgot-link' onClick={() => setAuthModalMode('reset')}>
+          <button type='button' className='login-forgot-link' onClick={() => setAuthModalMode('reset')}>
             {t('auth.buttons.forgotPassword')}
-          </a>
+          </button>
         </div>
 
         {loading ? (

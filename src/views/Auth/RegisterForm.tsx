@@ -36,7 +36,7 @@ export default function RegisterForm() {
   const [showPasswordConfirmation, setPasswordConfirmation] = useState(false)
   const [rememberMe, setRememberMe] = useState(false)
 
-  const { closeAuthModal, referralCode } = useModalContext()
+  const { closeAuthModal, setAuthModalMode, referralCode } = useModalContext()
   const { t } = useTranslation()
 
   const schema = yup
@@ -68,10 +68,8 @@ export default function RegisterForm() {
     mutationFn: registerUser,
     onSuccess: data => {
       toast.success(data.message)
-
       reset()
-
-      closeAuthModal()
+      setAuthModalMode('login')
     },
     onError: (error: any) => {
       console.error('Lỗi đăng ký:', error)
@@ -109,7 +107,6 @@ export default function RegisterForm() {
   const onSubmit = (data: RegisterFormInputs) => {
     const payload: RegisterFormInputs = { ...data, ref: referralCode ?? undefined }
 
-    console.log('Dữ liệu form:', payload)
     mutate(payload)
   }
 
@@ -119,7 +116,8 @@ export default function RegisterForm() {
       <div className='login-form-group'>
         <label className={`login-form-label ${errors.email && 'text-red-500'}`}>{t('auth.email')}</label>
         <input
-          type='text'
+          type='email'
+          autoComplete='email'
           className={`login-form-input ${errors.email && 'border-red-500'}`}
           placeholder={t('auth.placeholders.enterEmail')}
           {...register('email')}
@@ -145,6 +143,7 @@ export default function RegisterForm() {
         <div className='login-password-wrapper'>
           <input
             type={showPassword ? 'text' : 'password'}
+            autoComplete='new-password'
             className={`login-form-input ${errors.password && 'border-red-500'}`}
             placeholder={t('auth.placeholders.enterPassword')}
             {...register('password')}
@@ -164,8 +163,9 @@ export default function RegisterForm() {
         <div className='login-password-wrapper'>
           <input
             type={showPasswordConfirmation ? 'text' : 'password'}
+            autoComplete='new-password'
             className={`login-form-input ${errors.password_confirmation && 'border-red-500'}`}
-            placeholder={t('auth.placeholders.enterPassword')}
+            placeholder={t('auth.placeholders.confirmPassword') || t('auth.placeholders.enterPassword')}
             {...register('password_confirmation')}
           />
           <button

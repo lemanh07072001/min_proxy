@@ -24,14 +24,16 @@ const AuthModal: React.FC = () => {
       {isAuthModalOpen && (
         <motion.div
           className='login-modal-overlay'
-          onClick={closeAuthModal}
+          onMouseDown={e => {
+            if (e.target === e.currentTarget) closeAuthModal()
+          }}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
         >
           <motion.div
             className='login-modal-container'
-            onClick={e => e.stopPropagation()}
+            onMouseDown={e => e.stopPropagation()}
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
