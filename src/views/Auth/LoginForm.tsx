@@ -107,11 +107,12 @@ export default function LoginForm() {
 
   return (
     <>
-      <form className='login-modal-form' onSubmit={handleSubmit(onSubmit)}>
+      <form className='login-modal-form' onSubmit={handleSubmit(onSubmit)} autoComplete='on'>
         {/* Email */}
         <div className='login-form-group'>
           <label className={`login-form-label ${errors.email && 'text-red-500'}`}>{t('auth.email')}</label>
           <input
+            id='login-email'
             type='email'
             autoComplete='email'
             className={`login-form-input ${errors.email && 'border-red-500'}`}
@@ -126,6 +127,7 @@ export default function LoginForm() {
           <label className={`login-form-label ${errors.password && 'text-red-500'}`}>{t('auth.password')}</label>
           <div className='login-password-wrapper'>
             <input
+              id='login-password'
               type={showPassword ? 'text' : 'password'}
               autoComplete='current-password'
               className={`login-form-input ${errors.password && 'border-red-500'}`}
