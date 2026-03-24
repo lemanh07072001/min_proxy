@@ -430,71 +430,77 @@ return (
             )
           })}
 
-          {/* Auth method selector */}
-          {showAuthOptions && (
+          {/* Auth section — luôn hiện khi sản phẩm có auth config */}
+          {(authType === 'userpass' || authType === 'ip_whitelist' || authType === 'both') && (
             <div className='checkout-section'>
-              <label className='checkout-section-label'>XÁC THỰC</label>
-              <div className='checkout-duration-options'>
-                <label className={`checkout-duration-option ${authMethod === 'userpass' ? 'active' : ''}`}>
-                  <input type='radio' value='userpass' checked={authMethod === 'userpass'} onChange={() => setAuthMethod('userpass')} />
-                  <span>User:Pass</span>
-                </label>
-                <label className={`checkout-duration-option ${authMethod === 'ip_whitelist' ? 'active' : ''}`}>
-                  <input type='radio' value='ip_whitelist' checked={authMethod === 'ip_whitelist'} onChange={() => setAuthMethod('ip_whitelist')} />
-                  <span>IP Whitelist</span>
-                </label>
-              </div>
-            </div>
-          )}
+              <label className='checkout-section-label'>XÁC THỰC PROXY</label>
 
-          {/* Custom user:pass (khi auth = userpass hoặc both+userpass) */}
-          {showUserPassFields && authMethod === 'userpass' && (
-            <div className='checkout-section'>
-              {allowCustomAuth ? (
-                <>
-                  <label className='checkout-section-label'>TÀI KHOẢN PROXY (bỏ trống = random)</label>
-                  <div style={{ display: 'flex', gap: 8 }}>
-                    <input
-                      type='text'
-                      placeholder='Username'
-                      value={customUser}
-                      onChange={e => setCustomUser(e.target.value.replace(/[^a-zA-Z0-9_.-]/g, ''))}
-                      className='discount-input'
-                      style={{ flex: 1 }}
-                      maxLength={50}
-                    />
-                    <input
-                      type='text'
-                      placeholder='Password'
-                      value={customPass}
-                      onChange={e => setCustomPass(e.target.value.replace(/[^a-zA-Z0-9_.-]/g, ''))}
-                      className='discount-input'
-                      style={{ flex: 1 }}
-                      maxLength={50}
-                    />
-                  </div>
-                </>
-              ) : (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', background: '#f0f9ff', borderRadius: 8, border: '1px solid #bae6fd' }}>
-                  <span style={{ fontSize: '13px' }}>🔑</span>
-                  <span style={{ fontSize: '12.5px', color: '#0369a1' }}>User:Pass được tạo tự động sau khi mua</span>
+              {/* Radio chọn mode — chỉ khi both */}
+              {authType === 'both' && (
+                <div className='checkout-duration-options' style={{ marginBottom: 8 }}>
+                  <label className={`checkout-duration-option ${authMethod === 'userpass' ? 'active' : ''}`}>
+                    <input type='radio' value='userpass' checked={authMethod === 'userpass'} onChange={() => setAuthMethod('userpass')} />
+                    <span>User:Pass</span>
+                  </label>
+                  <label className={`checkout-duration-option ${authMethod === 'ip_whitelist' ? 'active' : ''}`}>
+                    <input type='radio' value='ip_whitelist' checked={authMethod === 'ip_whitelist'} onChange={() => setAuthMethod('ip_whitelist')} />
+                    <span>IP Whitelist</span>
+                  </label>
                 </div>
               )}
-            </div>
-          )}
 
-          {/* IP whitelist input */}
-          {showIpField && (
-            <div className='checkout-section'>
-              <label className='checkout-section-label'>IP WHITELIST</label>
-              <input
-                type='text'
-                placeholder='VD: 1.2.3.4'
-                value={allowIp}
-                onChange={e => setAllowIp(e.target.value.replace(/[^0-9.]/g, ''))}
-                className='discount-input'
-                maxLength={15}
-              />
+              {/* User:Pass fields */}
+              {(authType === 'userpass' || (authType === 'both' && authMethod === 'userpass')) && (
+                allowCustomAuth ? (
+                  <div>
+                    <div style={{ fontSize: '11px', color: '#64748b', marginBottom: 6 }}>
+                      Nhập tài khoản proxy tùy chọn (bỏ trống = tạo tự động)
+                    </div>
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <input
+                        type='text'
+                        placeholder='Username'
+                        value={customUser}
+                        onChange={e => setCustomUser(e.target.value.replace(/[^a-zA-Z0-9_.-]/g, ''))}
+                        className='discount-input'
+                        style={{ flex: 1 }}
+                        maxLength={50}
+                      />
+                      <input
+                        type='text'
+                        placeholder='Password'
+                        value={customPass}
+                        onChange={e => setCustomPass(e.target.value.replace(/[^a-zA-Z0-9_.-]/g, ''))}
+                        className='discount-input'
+                        style={{ flex: 1 }}
+                        maxLength={50}
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', background: '#f0f9ff', borderRadius: 8, border: '1px solid #bae6fd' }}>
+                    <span style={{ fontSize: '12.5px', color: '#0369a1' }}>User:Pass được tạo tự động sau khi mua</span>
+                  </div>
+                )
+              )}
+
+              {/* IP Whitelist field */}
+              {(authType === 'ip_whitelist' || (authType === 'both' && authMethod === 'ip_whitelist')) && (
+                <div>
+                  <div style={{ fontSize: '11px', color: '#64748b', marginBottom: 6 }}>
+                    Nhập IP của bạn để whitelist (chỉ IP này được dùng proxy)
+                  </div>
+                  <input
+                    type='text'
+                    placeholder='VD: 1.2.3.4'
+                    value={allowIp}
+                    onChange={e => setAllowIp(e.target.value.replace(/[^0-9.]/g, ''))}
+                    className='discount-input'
+                    maxLength={15}
+                    style={{ width: '100%' }}
+                  />
+                </div>
+              )}
             </div>
           )}
 
