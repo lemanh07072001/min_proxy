@@ -782,21 +782,22 @@ function BuyConfigFields({
                 </Grid2>
 
                 {/* Check thành công */}
-                <Grid2 size={{ xs: 6, sm: 3 }}>
+                <Grid2 size={{ xs: 12, sm: 4 }}>
                   <Controller name={`${prefix}.response.type`} control={control} render={({ field }) => (
                     <CustomTextField {...field} fullWidth select
-                      label={<>Dạng kết quả <FieldHint text={'So sánh response từ API đối tác với 2 dạng bên dưới để chọn đúng.'} /></>}
+                      label='Dạng kết quả'
+                      helperText='Gọi thử API đối tác → xem ký tự đầu tiên của kết quả là { hay ['
                     >
                       <MenuItem value='object'>
                         <Box>
-                          <Typography sx={{ fontSize: 13, fontWeight: 600 }}>Dạng 1: Bắt đầu bằng {'{'}</Typography>
-                          <Typography sx={{ fontSize: 11, color: '#64748b', fontFamily: 'monospace' }}>{'{"success":true, "data":{...}}'}</Typography>
+                          <Typography sx={{ fontSize: 13, fontWeight: 600 }}>Bắt đầu bằng {'{ }'} — phổ biến nhất</Typography>
+                          <Typography sx={{ fontSize: 11, color: '#64748b', fontFamily: 'monospace', whiteSpace: 'normal' }}>{'VD: {"success":true, "data":{...}}'}</Typography>
                         </Box>
                       </MenuItem>
                       <MenuItem value='array_last_status'>
                         <Box>
-                          <Typography sx={{ fontSize: 13, fontWeight: 600 }}>Dạng 2: Bắt đầu bằng {'['}</Typography>
-                          <Typography sx={{ fontSize: 11, color: '#64748b', fontFamily: 'monospace' }}>{'[{"status":100,...}, {"status":200,...}]'}</Typography>
+                          <Typography sx={{ fontSize: 13, fontWeight: 600 }}>Bắt đầu bằng {'[ ]'} — ít gặp</Typography>
+                          <Typography sx={{ fontSize: 11, color: '#64748b', fontFamily: 'monospace', whiteSpace: 'normal' }}>{'VD: [{"status":100,...}, {"status":200}]'}</Typography>
                         </Box>
                       </MenuItem>
                     </CustomTextField>
@@ -816,7 +817,11 @@ function BuyConfigFields({
                 {/* Field chứa message lỗi từ provider */}
                 <Grid2 size={{ xs: 12, sm: 4 }}>
                   <Controller name={`${prefix}.response.error_message_field`} control={control} render={({ field }) => (
-                    <CustomTextField {...field} fullWidth label={<>Field message lỗi <FieldHint text='Tên trường chứa mô tả lỗi từ provider. VD: message, error, msg. Bỏ trống nếu không có.' /></>} placeholder='message' />
+                    <CustomTextField {...field} fullWidth
+                      label={<>Field lấy lý do lỗi <FieldHint text='Khi gặp mã lỗi chưa cấu hình ở trên, hệ thống sẽ lấy nội dung từ field này để hiển thị. VD: response có {"message": "Hết hàng"} → điền "message".' /></>}
+                      placeholder='message'
+                      helperText='Dùng khi gặp lỗi chưa có trong danh sách mã lỗi ở trên'
+                    />
                   )} />
                 </Grid2>
 
