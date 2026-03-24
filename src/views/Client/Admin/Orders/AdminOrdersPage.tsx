@@ -353,6 +353,65 @@ return {
         )
       },
       {
+        header: 'Thao tác',
+        id: 'actions',
+        size: 110,
+        cell: ({ row }: { row: any }) => {
+          const order = row.original
+          const status = order.status
+
+          return (
+            <div className='flex gap-1' style={{ whiteSpace: 'nowrap' }}>
+              <Tooltip title='Chi tiết'>
+                <IconButton size='small' color='primary' onClick={() => handleOpenDetail(order)}>
+                  <Eye size={16} />
+                </IconButton>
+              </Tooltip>
+              {status === 5 && (
+                <>
+                  <Tooltip title='Hủy + hoàn tiền'>
+                    <IconButton size='small' color='error' onClick={() => handleOpenCancel(order)}>
+                      <XCircle size={16} />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title={(order.delivered_quantity ?? 0) > 0 ? 'Thử lại lấy proxy' : 'Thử lại mua hàng'}>
+                    <IconButton size='small' color='warning' onClick={() => setRetryFailedOrder(order)}>
+                      <RotateCcw size={16} />
+                    </IconButton>
+                  </Tooltip>
+                </>
+              )}
+              {status === 1 && order.retry >= (order.max_retry ?? 3) && (
+                <Tooltip title='Thử lại đơn hàng'>
+                  <IconButton size='small' color='warning' onClick={() => setRetryFailedOrder(order)}>
+                    <RotateCcw size={16} />
+                  </IconButton>
+                </Tooltip>
+              )}
+              {status === 3 && (
+                <>
+                  <Tooltip title='Mua bù (retry)'>
+                    <IconButton size='small' color='success' onClick={() => setRetryOrder(order)}>
+                      <RefreshCw size={16} />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title='Hoàn tiền phần thiếu'>
+                    <IconButton size='small' color='warning' onClick={() => setRefundOrder(order)}>
+                      <DollarSign size={16} />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title='Thêm proxy thủ công'>
+                    <IconButton size='small' color='primary' onClick={() => setFillProxiesOrder(order)}>
+                      <PlusCircle size={16} />
+                    </IconButton>
+                  </Tooltip>
+                </>
+              )}
+            </div>
+          )
+        }
+      },
+      {
         accessorKey: 'order_code',
         header: 'Mã đơn',
         minSize: 180,
@@ -406,9 +465,10 @@ return (
       },
       {
         header: 'Đơn giá / ngày',
-        minSize: 200,
+        minSize: 220,
         cell: ({ row }: { row: any }) => {
           const o = row.original
+          const cellStyle = { whiteSpace: 'normal' as const }
           const pricing = o.metadata?.pricing
           const duration = o.time ?? 1
           const quantity = o.quantity ?? 1
@@ -423,7 +483,7 @@ return (
             const hasCostDiscount = pricing.cost_discount_percent > 0
 
             return (
-              <div style={{ lineHeight: 1.6, fontSize: '11.5px' }}>
+              <div style={{ lineHeight: 1.6, fontSize: '11.5px', ...cellStyle }}>
                 {/* Giá gốc 1 ngày */}
                 <div style={{ color: '#94a3b8', display: 'flex', alignItems: 'center', gap: 4 }}>
                   <span>Gốc:</span>
@@ -492,7 +552,7 @@ return (
           const costPerDay = duration > 0 ? Math.round((o.cost_price ?? 0) / duration) : (o.cost_price ?? 0)
 
           return (
-            <div style={{ lineHeight: 1.6, fontSize: '11.5px' }}>
+            <div style={{ lineHeight: 1.6, fontSize: '11.5px', ...cellStyle }}>
               <div style={{ fontWeight: 600, color: '#0f172a' }}>
                 Bán: {formatVND(sellPerDay)}/ng
               </div>
@@ -520,7 +580,7 @@ return (
           const costLabel = isChild ? 'Nhập' : 'Vốn'
 
           return (
-            <div style={{ lineHeight: 1.6, fontSize: '11.5px' }}>
+            <div style={{ lineHeight: 1.6, fontSize: '11.5px', whiteSpace: 'normal' }}>
               <div style={{ color: '#0f172a' }}>
                 Bán: <strong>{formatVND(totalSell)}</strong>
               </div>
@@ -630,67 +690,6 @@ return (
           )
         }
       },
-      {
-        header: 'Thao tác',
-        id: 'actions',
-        minSize: 120,
-        cell: ({ row }: { row: any }) => {
-          const order = row.original
-          const status = order.status
-
-
-return (
-            <div className='flex gap-1'>
-              <Tooltip title='Chi tiết'>
-                <IconButton size='small' color='primary' onClick={() => handleOpenDetail(order)}>
-                  <Eye size={16} />
-                </IconButton>
-              </Tooltip>
-              {status === 5 && (
-                <>
-                  <Tooltip title='Hủy + hoàn tiền'>
-                    <IconButton size='small' color='error' onClick={() => handleOpenCancel(order)}>
-                      <XCircle size={16} />
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip title={(order.delivered_quantity ?? 0) > 0 ? 'Thử lại lấy proxy' : 'Thử lại mua hàng'}>
-                    <IconButton size='small' color='warning' onClick={() => setRetryFailedOrder(order)}>
-                      <RotateCcw size={16} />
-                    </IconButton>
-                  </Tooltip>
-                </>
-              )}
-              {/* Retry cho order processing đã hết retry */}
-              {status === 1 && order.retry >= (order.max_retry ?? 3) && (
-                <Tooltip title='Thử lại đơn hàng'>
-                  <IconButton size='small' color='warning' onClick={() => setRetryFailedOrder(order)}>
-                    <RotateCcw size={16} />
-                  </IconButton>
-                </Tooltip>
-              )}
-              {status === 3 && (
-                <>
-                  <Tooltip title='Mua bù (retry)'>
-                    <IconButton size='small' color='success' onClick={() => setRetryOrder(order)}>
-                      <RefreshCw size={16} />
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip title='Hoàn tiền phần thiếu'>
-                    <IconButton size='small' color='warning' onClick={() => setRefundOrder(order)}>
-                      <DollarSign size={16} />
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip title='Thêm proxy thủ công'>
-                    <IconButton size='small' color='primary' onClick={() => setFillProxiesOrder(order)}>
-                      <PlusCircle size={16} />
-                    </IconButton>
-                  </Tooltip>
-                </>
-              )}
-            </div>
-          )
-        }
-      }
     ],
     [handleOpenDetail, handleOpenCancel, handleOpenResend, handleToggleSort, sortBy, sortOrder]
   )
@@ -705,8 +704,8 @@ return (
 
   return (
     <>
-          {/* Stats Cards */}
-          <Grid2 container spacing={2} sx={{ mb: 3 }}>
+          {/* Stats Cards — sticky top */}
+          <Grid2 container spacing={2} sx={{ mb: 3, position: 'sticky', top: 0, zIndex: 20, background: '#f1f5f9', py: 1 }}>
             <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
               <StatCard title='Tổng đơn hàng' value={summary.total_orders} icon={ShoppingCart} color='#7C3AED' />
             </Grid2>
@@ -884,7 +883,7 @@ return (
               <div className='table-wrapper' style={{ overflowX: 'auto', padding: '0 12px 12px' }}>
                 <table
                   className='data-table'
-                  style={{ tableLayout: 'auto', minWidth: '100%', ...(isLoading || orders.length === 0 ? { height: '100%' } : {}) }}
+                  style={{ tableLayout: 'auto', minWidth: '100%', whiteSpace: 'nowrap', ...(isLoading || orders.length === 0 ? { height: '100%' } : {}) }}
                 >
                   <thead className='table-header' style={{ position: 'sticky', top: 0, zIndex: 10, background: '#f8fafc' }}>
                     {table.getHeaderGroups().map(headerGroup => (
