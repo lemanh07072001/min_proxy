@@ -46,6 +46,29 @@ interface ApiConfigBuyResponse {
   item_id_field: string
 }
 
+interface FetchProxiesConfig {
+  url: string
+  method: string
+  auth_type: string
+  auth_param: string
+  success_field: string
+  success_value: string
+  proxies_path: string
+  proxy_format: string
+  proxy_key_field: string
+  proxy_fields_ip: string
+  proxy_fields_port: string
+  proxy_fields_user: string
+  proxy_fields_pass: string
+  proxy_fields_type: string
+  item_id_field: string
+  pagination_enabled: boolean
+  page_param: string
+  per_page_param: string
+  per_page: string
+  last_page_path: string
+}
+
 interface ApiConfigBuy {
   enabled: boolean
   method: string
@@ -70,6 +93,8 @@ interface ApiConfigBuy {
   protocol_override_param: string
   protocol_override_http: string
   protocol_override_socks5: string
+  response_mode: string
+  fetch_proxies: FetchProxiesConfig
   response: ApiConfigBuyResponse
 }
 
@@ -126,6 +151,29 @@ function FieldHint({ text }: { text: string }) {
   )
 }
 
+const defaultFetchProxies: FetchProxiesConfig = {
+  url: '',
+  method: 'GET',
+  auth_type: 'inherit',
+  auth_param: '',
+  success_field: '',
+  success_value: '',
+  proxies_path: 'data.proxies',
+  proxy_format: 'fields',
+  proxy_key_field: '',
+  proxy_fields_ip: 'ip',
+  proxy_fields_port: 'port',
+  proxy_fields_user: 'user',
+  proxy_fields_pass: 'pass',
+  proxy_fields_type: '',
+  item_id_field: '',
+  pagination_enabled: false,
+  page_param: 'page',
+  per_page_param: 'per_page',
+  per_page: '50',
+  last_page_path: 'data.last_page',
+}
+
 const defaultBuy: ApiConfigBuy = {
   enabled: false,
   method: 'GET',
@@ -146,6 +194,8 @@ const defaultBuy: ApiConfigBuy = {
   protocol_override_param: 'type',
   protocol_override_http: 'HTTP',
   protocol_override_socks5: 'SOCKS5',
+  response_mode: 'immediate',
+  fetch_proxies: { ...defaultFetchProxies },
   response: {
     type: 'array_last_status',
     success_field: 'statusCode',
@@ -193,6 +243,36 @@ function parseBuySection(buy: any): ApiConfigBuy {
     protocol_override_param: buy.protocol_override?.param || 'type',
     protocol_override_http: buy.protocol_override?.map?.http || 'HTTP',
     protocol_override_socks5: buy.protocol_override?.map?.socks5 || 'SOCKS5',
+    response_mode: buy.response_mode || 'immediate',
+    fetch_proxies: (() => {
+      const fp = buy.fetch_proxies
+      if (!fp) return { ...defaultFetchProxies }
+      const fpResp = fp.response || {}
+      const fpFields = fpResp.proxy_fields || {}
+      const pg = fp.pagination || null
+      return {
+        url: fp.url || '',
+        method: fp.method || 'GET',
+        auth_type: fp.auth_type ? fp.auth_type : 'inherit',
+        auth_param: fp.auth_param || '',
+        success_field: fpResp.success_field || '',
+        success_value: fpResp.success_value != null ? String(fpResp.success_value) : '',
+        proxies_path: fpResp.proxies_path || 'data.proxies',
+        proxy_format: fpResp.proxy_format || 'fields',
+        proxy_key_field: fpResp.proxy_key_field || fpResp.proxy_string_field || '',
+        proxy_fields_ip: fpFields.ip || 'ip',
+        proxy_fields_port: fpFields.port || 'port',
+        proxy_fields_user: fpFields.user || 'user',
+        proxy_fields_pass: fpFields.pass || 'pass',
+        proxy_fields_type: fpFields.type || '',
+        item_id_field: fpResp.item_id_field || '',
+        pagination_enabled: !!pg,
+        page_param: pg?.page_param || 'page',
+        per_page_param: pg?.per_page_param || 'per_page',
+        per_page: pg?.per_page ? String(pg.per_page) : '50',
+        last_page_path: pg?.last_page_path || 'data.last_page',
+      }
+    })(),
     response: {
       type: buyResp.type || 'array_last_status',
       success_field: buyResp.success_field || 'statusCode',
@@ -337,6 +417,67 @@ function buildBuySection(buy: ApiConfigBuy): object | null {
   // Provider item ID field (VD: idproxy)
   if (buy.response.item_id_field) resp.item_id_field = buy.response.item_id_field
 
+  // Deferred: order_id_field thay vì proxy data
+  if (buy.response_mode === 'deferred') {
+    result.response_mode = 'deferred'
+    resp.order_id_field = resp.proxies_path || 'data.id' // Reuse proxies_path as order_id_field for deferred
+
+    // fetch_proxies config
+    const fp = buy.fetch_proxies
+    if (fp.url) {
+      const fetchResult: any = {
+        url: fp.url,
+        method: fp.method || 'GET',
+      }
+
+      // Auth: inherit từ buy section hoặc custom
+      if (fp.auth_type !== 'inherit') {
+        fetchResult.auth_type = fp.auth_type
+        if (fp.auth_param) fetchResult.auth_param = fp.auth_param
+      }
+
+      // Response
+      const fpResp: any = {}
+      if (fp.success_field) fpResp.success_field = fp.success_field
+      if (fp.success_value !== '') {
+        const numVal = Number(fp.success_value)
+        fpResp.success_value = isNaN(numVal) ? fp.success_value : numVal
+      }
+      if (fp.proxies_path) fpResp.proxies_path = fp.proxies_path
+      fpResp.proxy_format = fp.proxy_format || 'fields'
+
+      if (fp.proxy_format === 'key' && fp.proxy_key_field) {
+        fpResp.proxy_key_field = fp.proxy_key_field
+      }
+      if (fp.proxy_format === 'string' && fp.proxy_key_field) {
+        fpResp.proxy_string_field = fp.proxy_key_field
+      }
+      if (fp.proxy_format === 'fields') {
+        fpResp.proxy_fields = {} as any
+        if (fp.proxy_fields_ip) fpResp.proxy_fields.ip = fp.proxy_fields_ip
+        if (fp.proxy_fields_port) fpResp.proxy_fields.port = fp.proxy_fields_port
+        if (fp.proxy_fields_user) fpResp.proxy_fields.user = fp.proxy_fields_user
+        if (fp.proxy_fields_pass) fpResp.proxy_fields.pass = fp.proxy_fields_pass
+        if (fp.proxy_fields_type) fpResp.proxy_fields.type = fp.proxy_fields_type
+      }
+      if (fp.item_id_field) fpResp.item_id_field = fp.item_id_field
+
+      fetchResult.response = fpResp
+
+      // Pagination
+      if (fp.pagination_enabled) {
+        fetchResult.pagination = {
+          page_param: fp.page_param || 'page',
+          per_page_param: fp.per_page_param || 'per_page',
+          per_page: parseInt(fp.per_page) || 50,
+          last_page_path: fp.last_page_path || 'data.last_page',
+        }
+      }
+
+      result.fetch_proxies = fetchResult
+    }
+  }
+
   result.response = resp
 
   return result
@@ -399,6 +540,9 @@ function BuyConfigFields({
   const userOverrideEnabled = useWatch({ control, name: `${prefix}.user_override_enabled` })
   const protocolOverrideEnabled = useWatch({ control, name: `${prefix}.protocol_override_enabled` })
   const durationParam = useWatch({ control, name: `${prefix}.duration_param` })
+  const responseMode = useWatch({ control, name: `${prefix}.response_mode` })
+  const fetchPaginationEnabled = useWatch({ control, name: `${prefix}.fetch_proxies.pagination_enabled` })
+  const fetchProxyFormat = useWatch({ control, name: `${prefix}.fetch_proxies.proxy_format` })
 
   return (
     <Grid2 container spacing={2}>
@@ -647,12 +791,175 @@ function BuyConfigFields({
             </>
           )}
 
+          {/* Response mode: immediate vs deferred */}
+          <Grid2 size={{ xs: 12 }}>
+            <Divider sx={{ my: 1 }} />
+            <Typography variant='body2' fontWeight={600} sx={{ mb: 1 }}>
+              Chế độ trả proxy
+              <FieldHint text='Immediate: provider trả proxy ngay. Deferred: provider trả mã đơn, lấy proxy sau bằng API khác.' />
+            </Typography>
+          </Grid2>
+          <Grid2 size={{ xs: 12, sm: 4 }}>
+            <Controller
+              name={`${prefix}.response_mode`}
+              control={control}
+              render={({ field }) => (
+                <CustomTextField {...field} fullWidth select label='Chế độ trả proxy'>
+                  <MenuItem value='immediate'>Trả proxy ngay</MenuItem>
+                  <MenuItem value='deferred'>Tạo đơn trước, lấy proxy sau</MenuItem>
+                </CustomTextField>
+              )}
+            />
+          </Grid2>
+
+          {/* Fetch proxies config — chỉ hiện khi deferred */}
+          {responseMode === 'deferred' && (
+            <>
+              <Grid2 size={{ xs: 12 }}>
+                <Typography variant='caption' color='text.secondary' sx={{ display: 'block', mt: 1, mb: 0.5, px: 1, py: 0.5, background: '#fffbeb', borderRadius: 1, border: '1px solid #fde68a' }}>
+                  Provider sẽ trả mã đơn hàng khi mua. Hệ thống sẽ tự động poll API bên dưới để lấy proxy.
+                </Typography>
+              </Grid2>
+
+              <Grid2 size={{ xs: 12, sm: 6 }}>
+                <Controller name={`${prefix}.fetch_proxies.url`} control={control} render={({ field }) => (
+                  <CustomTextField {...field} fullWidth label={<>URL lấy proxy <FieldHint text='Dùng {order_id} làm placeholder. VD: https://api.provider.com/orders/{order_id}/proxies' /></>} placeholder='https://api.provider.com/orders/{order_id}' />
+                )} />
+              </Grid2>
+              <Grid2 size={{ xs: 6, sm: 3 }}>
+                <Controller name={`${prefix}.fetch_proxies.method`} control={control} render={({ field }) => (
+                  <CustomTextField {...field} fullWidth select label='Method'>
+                    <MenuItem value='GET'>GET</MenuItem>
+                    <MenuItem value='POST'>POST</MenuItem>
+                  </CustomTextField>
+                )} />
+              </Grid2>
+              <Grid2 size={{ xs: 6, sm: 3 }}>
+                <Controller name={`${prefix}.fetch_proxies.auth_type`} control={control} render={({ field }) => (
+                  <CustomTextField {...field} fullWidth select label={<>Auth <FieldHint text='Inherit: dùng cùng auth với API mua. Hoặc chọn auth riêng.' /></>}>
+                    <MenuItem value='inherit'>Kế thừa từ API mua</MenuItem>
+                    <MenuItem value='query'>Query param</MenuItem>
+                    <MenuItem value='header'>Header</MenuItem>
+                    <MenuItem value='bearer'>Bearer token</MenuItem>
+                  </CustomTextField>
+                )} />
+              </Grid2>
+
+              {/* Response config cho fetch */}
+              <Grid2 size={{ xs: 6, sm: 3 }}>
+                <Controller name={`${prefix}.fetch_proxies.success_field`} control={control} render={({ field }) => (
+                  <CustomTextField {...field} fullWidth label={<>Field thành công <FieldHint text='Bỏ trống nếu không cần check. VD: success, status' /></>} placeholder='success' />
+                )} />
+              </Grid2>
+              <Grid2 size={{ xs: 6, sm: 3 }}>
+                <Controller name={`${prefix}.fetch_proxies.success_value`} control={control} render={({ field }) => (
+                  <CustomTextField {...field} fullWidth label='Giá trị OK' placeholder='true' />
+                )} />
+              </Grid2>
+              <Grid2 size={{ xs: 12, sm: 3 }}>
+                <Controller name={`${prefix}.fetch_proxies.proxies_path`} control={control} render={({ field }) => (
+                  <CustomTextField {...field} fullWidth label={<>Đường dẫn proxy <FieldHint text='Dot path đến mảng proxy. VD: data.proxies, data.data' /></>} placeholder='data.proxies' />
+                )} />
+              </Grid2>
+              <Grid2 size={{ xs: 12, sm: 3 }}>
+                <Controller name={`${prefix}.fetch_proxies.proxy_format`} control={control} render={({ field }) => (
+                  <CustomTextField {...field} fullWidth select label='Format proxy'>
+                    <MenuItem value='key'>Key đơn</MenuItem>
+                    <MenuItem value='string'>Chuỗi ip:port:user:pass</MenuItem>
+                    <MenuItem value='fields'>Nhiều fields riêng</MenuItem>
+                  </CustomTextField>
+                )} />
+              </Grid2>
+
+              {fetchProxyFormat === 'fields' && (
+                <>
+                  <Grid2 size={{ xs: 6, sm: 2.4 }}>
+                    <Controller name={`${prefix}.fetch_proxies.proxy_fields_ip`} control={control} render={({ field }) => (
+                      <CustomTextField {...field} fullWidth label='Field IP' placeholder='ip' />
+                    )} />
+                  </Grid2>
+                  <Grid2 size={{ xs: 6, sm: 2.4 }}>
+                    <Controller name={`${prefix}.fetch_proxies.proxy_fields_port`} control={control} render={({ field }) => (
+                      <CustomTextField {...field} fullWidth label='Field Port' placeholder='port' />
+                    )} />
+                  </Grid2>
+                  <Grid2 size={{ xs: 6, sm: 2.4 }}>
+                    <Controller name={`${prefix}.fetch_proxies.proxy_fields_user`} control={control} render={({ field }) => (
+                      <CustomTextField {...field} fullWidth label='Field User' placeholder='user' />
+                    )} />
+                  </Grid2>
+                  <Grid2 size={{ xs: 6, sm: 2.4 }}>
+                    <Controller name={`${prefix}.fetch_proxies.proxy_fields_pass`} control={control} render={({ field }) => (
+                      <CustomTextField {...field} fullWidth label='Field Pass' placeholder='pass' />
+                    )} />
+                  </Grid2>
+                  <Grid2 size={{ xs: 6, sm: 2.4 }}>
+                    <Controller name={`${prefix}.fetch_proxies.item_id_field`} control={control} render={({ field }) => (
+                      <CustomTextField {...field} fullWidth label={<>Field ID <FieldHint text='ID proxy từ provider. Bỏ trống nếu không có.' /></>} placeholder='id' />
+                    )} />
+                  </Grid2>
+                </>
+              )}
+              {(fetchProxyFormat === 'key' || fetchProxyFormat === 'string') && (
+                <Grid2 size={{ xs: 12, sm: 6 }}>
+                  <Controller name={`${prefix}.fetch_proxies.proxy_key_field`} control={control} render={({ field }) => (
+                    <CustomTextField {...field} fullWidth label={fetchProxyFormat === 'key' ? 'Field chứa key' : 'Field chứa chuỗi proxy'} placeholder={fetchProxyFormat === 'key' ? 'keyxoay' : 'proxy'} />
+                  )} />
+                </Grid2>
+              )}
+
+              {/* Pagination */}
+              <Grid2 size={{ xs: 12, sm: 4 }}>
+                <Controller
+                  name={`${prefix}.fetch_proxies.pagination_enabled`}
+                  control={control}
+                  render={({ field: { value, onChange, ...field } }) => (
+                    <CustomTextField
+                      {...field}
+                      value={value ? 'true' : 'false'}
+                      onChange={(e) => onChange(e.target.value === 'true')}
+                      fullWidth select
+                      label={<>Phân trang <FieldHint text='Bật nếu API lấy proxy trả kết quả phân trang (nhiều page)' /></>}
+                    >
+                      <MenuItem value='false'>Không phân trang</MenuItem>
+                      <MenuItem value='true'>Có phân trang</MenuItem>
+                    </CustomTextField>
+                  )}
+                />
+              </Grid2>
+              {fetchPaginationEnabled && (
+                <>
+                  <Grid2 size={{ xs: 6, sm: 2 }}>
+                    <Controller name={`${prefix}.fetch_proxies.page_param`} control={control} render={({ field }) => (
+                      <CustomTextField {...field} fullWidth label='Param page' placeholder='page' />
+                    )} />
+                  </Grid2>
+                  <Grid2 size={{ xs: 6, sm: 2 }}>
+                    <Controller name={`${prefix}.fetch_proxies.per_page_param`} control={control} render={({ field }) => (
+                      <CustomTextField {...field} fullWidth label='Param per_page' placeholder='per_page' />
+                    )} />
+                  </Grid2>
+                  <Grid2 size={{ xs: 6, sm: 2 }}>
+                    <Controller name={`${prefix}.fetch_proxies.per_page`} control={control} render={({ field }) => (
+                      <CustomTextField {...field} fullWidth label='Số/trang' placeholder='50' type='number' />
+                    )} />
+                  </Grid2>
+                  <Grid2 size={{ xs: 6, sm: 2 }}>
+                    <Controller name={`${prefix}.fetch_proxies.last_page_path`} control={control} render={({ field }) => (
+                      <CustomTextField {...field} fullWidth label={<>Path last page <FieldHint text='Dot path đến tổng số page. VD: data.last_page, meta.last_page' /></>} placeholder='data.last_page' />
+                    )} />
+                  </Grid2>
+                </>
+              )}
+            </>
+          )}
+
           {/* Response config */}
           <Grid2 size={{ xs: 12 }}>
             <Divider sx={{ my: 1 }} />
             <Typography variant='body2' fontWeight={600} sx={{ mb: 1 }}>
-              Cấu hình Response
-              <FieldHint text='Cách đọc kết quả từ API nhà cung cấp' />
+              Cấu hình Response {responseMode === 'deferred' ? '(API mua — trả mã đơn)' : ''}
+              <FieldHint text={responseMode === 'deferred' ? 'Cách đọc mã đơn hàng từ response API mua' : 'Cách đọc kết quả từ API nhà cung cấp'} />
             </Typography>
           </Grid2>
           <Grid2 size={{ xs: 6, sm: 4 }}>
@@ -686,13 +993,19 @@ function BuyConfigFields({
               <CustomTextField {...field} fullWidth label='Giá trị lỗi' placeholder='101' />
             )} />
           </Grid2>
-          {responseType === 'object' && (
+          {(responseType === 'object' || responseMode === 'deferred') && (
             <Grid2 size={{ xs: 12, sm: 6 }}>
               <Controller
                 name={`${prefix}.response.proxies_path`}
                 control={control}
                 render={({ field }) => (
-                  <CustomTextField {...field} fullWidth label={<>Đường dẫn proxy data <FieldHint text='Dot path. VD: data.proxies, result.list. Chỉ cần cho dạng Object.' /></>} placeholder='data.proxies' />
+                  <CustomTextField {...field} fullWidth
+                    label={responseMode === 'deferred'
+                      ? <>Đường dẫn mã đơn hàng <FieldHint text='Dot path đến order ID trong response. VD: data.id, data.order_id' /></>
+                      : <>Đường dẫn proxy data <FieldHint text='Dot path. VD: data.proxies, result.list. Chỉ cần cho dạng Object.' /></>
+                    }
+                    placeholder={responseMode === 'deferred' ? 'data.id' : 'data.proxies'}
+                  />
                 )}
               />
             </Grid2>
