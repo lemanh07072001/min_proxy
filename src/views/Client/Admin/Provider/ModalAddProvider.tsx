@@ -818,9 +818,9 @@ function BuyConfigFields({
                 <Grid2 size={{ xs: 12, sm: 4 }}>
                   <Controller name={`${prefix}.response.error_message_field`} control={control} render={({ field }) => (
                     <CustomTextField {...field} fullWidth
-                      label={<>Field lấy lý do lỗi <FieldHint text='Khi gặp mã lỗi chưa cấu hình ở trên, hệ thống sẽ lấy nội dung từ field này để hiển thị. VD: response có {"message": "Hết hàng"} → điền "message".' /></>}
+                      label={<>Field chứa lý do lỗi <FieldHint text={'VD: đối tác trả {"statusCode":101, "message":"Hết hàng"}\n→ điền "message"\n→ hệ thống tự hiện "Hết hàng" khi có lỗi\n\nNên luôn điền field này.'} /></>}
                       placeholder='message'
-                      helperText='Dùng khi gặp lỗi chưa có trong danh sách mã lỗi ở trên'
+                      helperText='Nên điền — hệ thống tự lấy lý do lỗi từ đối tác mà không cần cấu hình từng mã'
                     />
                   )} />
                 </Grid2>
