@@ -714,7 +714,8 @@ return { values: {}, errors: formattedErrors }
         protocols: parsedProtocols || [],
         body_api: bodyApiString,
         proxy_type: serviceData.proxy_type?.toLowerCase() || '',
-        country: Array.isArray(serviceData.country) ? serviceData.country : (serviceData.country ? [serviceData.country.toLowerCase()] : []),
+        country: Array.isArray(serviceData.country) ? serviceData.country
+          : (serviceData.country ? serviceData.country.toLowerCase().split(',').map((c: string) => c.trim()).filter(Boolean) : []),
         note: serviceData.note || '',
         tag: serviceData.tag || '',
         is_purchasable: serviceData.is_purchasable !== false,
@@ -812,6 +813,10 @@ return { values: {}, errors: formattedErrors }
 
   const onSubmit = (data: any) => {
     setFormErrors([])
+    // Normalize country: array → comma-separated string cho BE
+    if (Array.isArray(data.country)) {
+      data.country = data.country.join(',')
+    }
 
     const formattedPriceFields = priceFields.map((field: any) => {
       const qtyTiers = (field.quantity_tiers || []).filter((t: any) => t.min && (t.price || t.cost))
