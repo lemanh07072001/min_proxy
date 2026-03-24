@@ -797,12 +797,7 @@ function BuyConfigFields({
                 </Grid2>
                 <Grid2 size={{ xs: 3, sm: 1.5 }}>
                   <Controller name={`${prefix}.response.success_value`} control={control} render={({ field }) => (
-                    <CustomTextField {...field} fullWidth label='Thành công' placeholder='200' />
-                  )} />
-                </Grid2>
-                <Grid2 size={{ xs: 3, sm: 1.5 }}>
-                  <Controller name={`${prefix}.response.error_status`} control={control} render={({ field }) => (
-                    <CustomTextField {...field} fullWidth label='Thất bại' placeholder='101' />
+                    <CustomTextField {...field} fullWidth label='Giá trị OK' placeholder='200' />
                   )} />
                 </Grid2>
 
