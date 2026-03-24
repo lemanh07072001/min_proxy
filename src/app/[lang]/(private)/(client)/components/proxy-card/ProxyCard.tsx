@@ -86,7 +86,8 @@ return !(tagDef && 'hidden' in tagDef && tagDef.hidden)
       return provider.price_by_duration.map((item: any) => ({
         key: item.key,
         label: getDurationLabel(item.key),
-        price: parseInt(item.value, 10) || 0
+        price: parseInt(item.value, 10) || 0,
+        quantity_tiers: item.quantity_tiers || [],
       }))
     }
 

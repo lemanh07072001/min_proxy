@@ -352,7 +352,8 @@ return timeFeature.options.map((opt: any) => ({
 
 return `${opt.key} ngày`
       })(),
-      price: parseInt(opt.value, 10) || 0
+      price: parseInt(opt.value, 10) || 0,
+      quantity_tiers: opt.quantity_tiers || [],
     }))
   }, [timeFeature, plan.price])
 
