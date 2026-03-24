@@ -513,12 +513,13 @@ return (
           const data = row.original
           const isPerUnit = data?.pricing_mode === 'per_unit'
 
-          // Per_unit: hiện giá/ngày + chiết khấu
+          // Per_unit: hiện giá/ngày + chiết khấu thời gian + chiết khấu SL
           if (isPerUnit) {
             const unitPrice = parseInt(data?.price_per_unit) || 0
             if (!unitPrice) return <div style={{ color: '#94a3b8' }}>-</div>
             const unitLabel = data?.time_unit === 'month' ? 'tháng' : 'ngày'
             const tiers = data?.metadata?.discount_tiers || []
+            const qtyTiers = data?.metadata?.quantity_tiers || []
 
             return (
               <div style={{ fontSize: '12px', lineHeight: '1.6', whiteSpace: 'normal' }}>
@@ -533,6 +534,16 @@ return (
                   return (
                     <div key={i} style={{ color: '#16a34a', fontSize: '11px', whiteSpace: 'nowrap' }}>
                       {t.min}+{unitLabel}: {tierPrice.toLocaleString('vi-VN')}đ ({disc}%)
+                    </div>
+                  )
+                })}
+                {qtyTiers.filter((t: any) => t.min && (t.discount || t.price)).map((t: any, i: number) => {
+                  const disc = parseFloat(t.discount) || 0
+                  const qtyPrice = t.price ? parseInt(t.price) : null
+
+                  return (
+                    <div key={`q${i}`} style={{ color: '#7c3aed', fontSize: '11px', whiteSpace: 'nowrap' }}>
+                      {t.min}+ proxy: {qtyPrice ? `${qtyPrice.toLocaleString('vi-VN')}đ` : ''}{disc ? ` -${disc}%` : ''}
                     </div>
                   )
                 })}
@@ -554,10 +565,23 @@ return (
                 const item = prices.find((p: any) => p.key === d || p.duration === d)
                 if (!item) return null
                 const price = new Intl.NumberFormat('vi-VN').format(parseInt(item.value || item.price || '0') || 0)
+                const itemQtyTiers = item.quantity_tiers || []
                 return (
-                  <div key={d} style={{ whiteSpace: 'nowrap' }}>
-                    <span style={{ color: '#64748b' }}>{durationLabels[d]}: </span>
-                    <span style={{ fontWeight: 600, color: '#334155' }}>{price}đ</span>
+                  <div key={d}>
+                    <div style={{ whiteSpace: 'nowrap' }}>
+                      <span style={{ color: '#64748b' }}>{durationLabels[d]}: </span>
+                      <span style={{ fontWeight: 600, color: '#334155' }}>{price}đ</span>
+                    </div>
+                    {itemQtyTiers.filter((t: any) => t.min && (t.discount || t.price)).map((t: any, i: number) => {
+                      const disc = parseFloat(t.discount) || 0
+                      const qtyPrice = t.price ? parseInt(t.price) : null
+
+                      return (
+                        <div key={`q${d}-${i}`} style={{ color: '#7c3aed', fontSize: '11px', whiteSpace: 'nowrap', paddingLeft: 8 }}>
+                          {t.min}+ proxy: {qtyPrice ? `${qtyPrice.toLocaleString('vi-VN')}đ` : ''}{disc ? ` -${disc}%` : ''}
+                        </div>
+                      )
+                    })}
                   </div>
                 )
               })}
