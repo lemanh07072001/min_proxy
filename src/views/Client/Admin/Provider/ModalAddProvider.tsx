@@ -756,23 +756,40 @@ function BuyConfigFields({
                 {/* Giải thích tổng quan */}
                 <Grid2 size={{ xs: 12 }}>
                   <Box sx={{ p: 1.5, background: '#f8fafc', borderRadius: 1.5, border: '1px solid #e2e8f0', fontSize: 12, color: '#475569', lineHeight: 1.6 }}>
-                    Sau khi gọi API mua (ở trên), nhà cung cấp sẽ <strong>trả về kết quả</strong> dạng JSON. Ví dụ:
-                    <pre style={{ background: '#1e293b', color: '#e2e8f0', padding: 10, borderRadius: 6, margin: '8px 0 4px', fontSize: 11.5, overflowX: 'auto', lineHeight: 1.5 }}>{responseMode === 'deferred'
+                    Sau khi gọi API mua, nhà cung cấp sẽ <strong>trả về kết quả</strong>. Có 2 dạng:
+                    <Box sx={{ display: 'flex', gap: 1.5, mt: 1, mb: 0.5, flexWrap: 'wrap' }}>
+                      <Box sx={{ flex: 1, minWidth: 240 }}>
+                        <Typography sx={{ fontSize: 11.5, fontWeight: 600, color: '#334155', mb: 0.5 }}>Dạng 1: 1 kết quả duy nhất</Typography>
+                        <pre style={{ background: '#1e293b', color: '#e2e8f0', padding: 10, borderRadius: 6, margin: 0, fontSize: 11, overflowX: 'auto', lineHeight: 1.5 }}>{responseMode === 'deferred'
 ? `{
-  "statusCode": 200,         ← Kiểm tra thành công: "statusCode" = 200
+  "success": true,       ← Check: "success" = true
   "data": {
-    "id": 12345              ← Mã đơn hàng: vị trí "data.id"
+    "id": 12345          ← Mã đơn: "data.id"
   }
 }`
 : `{
-  "statusCode": 200,         ← Kiểm tra thành công: "statusCode" = 200
+  "success": true,       ← Check: "success" = true
   "data": {
-    "proxies": [             ← Mảng proxy: vị trí "data.proxies"
-      {"ip":"1.2.3.4", "port":8080, "user":"abc", "pass":"xyz"}
+    "proxies": [         ← Proxy: "data.proxies"
+      {"ip":"1.2.3.4", ...}
     ]
   }
 }`}</pre>
-                    Cấu hình bên dưới để hệ thống biết cách đọc kết quả này.
+                      </Box>
+                      <Box sx={{ flex: 1, minWidth: 240 }}>
+                        <Typography sx={{ fontSize: 11.5, fontWeight: 600, color: '#334155', mb: 0.5 }}>Dạng 2: Nhiều kết quả liên tiếp</Typography>
+                        <pre style={{ background: '#1e293b', color: '#e2e8f0', padding: 10, borderRadius: 6, margin: 0, fontSize: 11, overflowX: 'auto', lineHeight: 1.5 }}>{`{                        ← Proxy 1
+  "status": 100,
+  "ip": "27.73.88.211",
+  "port": 35270, ...
+},
+{                        ← Kết quả cuối
+  "status": 200,         ← Check: "status" = 200
+  "comen": "Success"
+}`}</pre>
+                      </Box>
+                    </Box>
+                    Chọn dạng phù hợp rồi cấu hình bên dưới.
                   </Box>
                 </Grid2>
 
@@ -791,18 +808,18 @@ function BuyConfigFields({
                   <Controller name={`${prefix}.response.type`} control={control} render={({ field }) => (
                     <CustomTextField {...field} fullWidth select
                       label='Dạng kết quả'
-                      helperText='Gọi thử API đối tác → xem ký tự đầu tiên của kết quả là { hay ['
+                      helperText='Xem kết quả từ API đối tác rồi chọn dạng phù hợp'
                     >
                       <MenuItem value='object'>
                         <Box>
-                          <Typography sx={{ fontSize: 13, fontWeight: 600 }}>Bắt đầu bằng {'{ }'} — phổ biến nhất</Typography>
-                          <Typography sx={{ fontSize: 11, color: '#64748b', fontFamily: 'monospace', whiteSpace: 'normal' }}>{'VD: {"success":true, "data":{...}}'}</Typography>
+                          <Typography sx={{ fontSize: 13, fontWeight: 600 }}>1 kết quả duy nhất</Typography>
+                          <Typography sx={{ fontSize: 11, color: '#64748b', whiteSpace: 'normal' }}>{'VD: {"success":true, "data":{...}}'}</Typography>
                         </Box>
                       </MenuItem>
                       <MenuItem value='array_last_status'>
                         <Box>
-                          <Typography sx={{ fontSize: 13, fontWeight: 600 }}>Bắt đầu bằng {'[ ]'} — ít gặp</Typography>
-                          <Typography sx={{ fontSize: 11, color: '#64748b', fontFamily: 'monospace', whiteSpace: 'normal' }}>{'VD: [{"status":100,...}, {"status":200}]'}</Typography>
+                          <Typography sx={{ fontSize: 13, fontWeight: 600 }}>Nhiều kết quả liên tiếp</Typography>
+                          <Typography sx={{ fontSize: 11, color: '#64748b', whiteSpace: 'normal' }}>{'VD: {...proxy...}, {...proxy...}, {"status":200, "comen":"..."}'}</Typography>
                         </Box>
                       </MenuItem>
                     </CustomTextField>
