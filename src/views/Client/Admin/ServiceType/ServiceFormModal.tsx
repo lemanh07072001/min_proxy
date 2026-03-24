@@ -89,7 +89,7 @@ return true
       }
     }),
   proxy_type: yup.string().nullable().required('Proxy type là bắt buộc'),
-  country: yup.string().nullable().required('Quốc gia là bắt buộc'),
+  country: yup.mixed().nullable().required('Quốc gia là bắt buộc'),
   note: yup
     .string()
     .nullable()
@@ -297,7 +297,18 @@ const ServicePreview = memo(function ServicePreview({ control, serviceId, priceF
       <div className='feature-icons'><MapPin size={16} color='#6366f1' /></div>
       <div className='feature-content'>
         <span className='feature-label'>Loại IP:</span>
-        <span className='feature-value' style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>{prefix} {convertIpVersion(previewObj.ip_version || '')} — {previewObj.country && <img src={`https://flagcdn.com/w40/${fixCountryCode(previewObj.country)}.png`} alt='' style={{ width: 18, height: 13, objectFit: 'cover', borderRadius: 2 }} />}{COUNTRY_NAMES[previewObj.country] || previewObj.country || 'N/A'}</span>
+        <span className='feature-value' style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap' }}>
+          {prefix} {convertIpVersion(previewObj.ip_version || '')} —
+          {(() => {
+            const countries = Array.isArray(previewObj.country) ? previewObj.country : (previewObj.country ? [previewObj.country] : [])
+            return countries.length > 0 ? countries.map((c: string) => (
+              <span key={c} style={{ display: 'inline-flex', alignItems: 'center', gap: 2 }}>
+                <img src={`https://flagcdn.com/w40/${fixCountryCode(c)}.png`} alt='' style={{ width: 18, height: 13, objectFit: 'cover', borderRadius: 2 }} />
+                {COUNTRY_NAMES[c] || c.toUpperCase()}
+              </span>
+            )) : 'N/A'
+          })()}
+        </span>
       </div>
     </div>
   ) : null
@@ -620,7 +631,7 @@ return { values: {}, errors: formattedErrors }
       protocols: [],
       body_api: '',
       proxy_type: '',
-      country: '',
+      country: [],
       note: '',
       tag: '',
       is_purchasable: true,
@@ -703,7 +714,7 @@ return { values: {}, errors: formattedErrors }
         protocols: parsedProtocols || [],
         body_api: bodyApiString,
         proxy_type: serviceData.proxy_type?.toLowerCase() || '',
-        country: serviceData.country?.toLowerCase() || '',
+        country: Array.isArray(serviceData.country) ? serviceData.country : (serviceData.country ? [serviceData.country.toLowerCase()] : []),
         note: serviceData.note || '',
         tag: serviceData.tag || '',
         is_purchasable: serviceData.is_purchasable !== false,
@@ -757,7 +768,7 @@ return { values: {}, errors: formattedErrors }
         protocols: [],
         body_api: '',
         proxy_type: '',
-        country: '',
+        country: [],
         note: '',
         tag: '',
         is_purchasable: true,
@@ -1158,21 +1169,49 @@ return { values: {}, errors: formattedErrors }
                   />
                 </Grid2>
 
-                <Grid2 size={{ xs: 6, sm: 2 }}>
+                <Grid2 size={{ xs: 6, sm: 3 }}>
                   <Controller
                     name='country'
                     control={control}
-                    render={({ field }) => (
-                      <CustomTextField {...field} fullWidth select label='Quốc gia' value={field.value || ''}>
-                        <MenuItem value=''><em>— Chọn —</em></MenuItem>
-                        {(countries || []).map((c: any) => (
-                          <MenuItem key={c.code} value={c.code.toLowerCase()}>
-                            <img src={`https://flagcdn.com/w20/${c.code.toLowerCase()}.png`} alt='' style={{ width: 20, height: 15, marginRight: 8, verticalAlign: 'middle' }} />
-                            {c.name}
-                          </MenuItem>
-                        ))}
-                      </CustomTextField>
-                    )}
+                    render={({ field }) => {
+                      // Normalize: string "us" → ["us"], array giữ nguyên
+                      const values: string[] = Array.isArray(field.value) ? field.value
+                        : (field.value ? [field.value] : [])
+                      return (
+                        <CustomTextField
+                          select fullWidth label='Quốc gia'
+                          value={values}
+                          onChange={(e: any) => field.onChange(e.target.value)}
+                          slotProps={{
+                            select: {
+                              multiple: true,
+                              MenuProps,
+                              renderValue: (selected: any) => {
+                                const vals = selected as string[]
+                                if (!vals?.length) return <em>— Chọn —</em>
+                                return (
+                                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
+                                    {vals.map(code => (
+                                      <span key={code} style={{ display: 'inline-flex', alignItems: 'center', gap: 3, background: '#f1f5f9', borderRadius: 4, padding: '1px 6px', fontSize: '11px' }}>
+                                        <img src={`https://flagcdn.com/w20/${code}.png`} alt='' style={{ width: 16, height: 11 }} />
+                                        {code.toUpperCase()}
+                                      </span>
+                                    ))}
+                                  </div>
+                                )
+                              }
+                            }
+                          }}
+                        >
+                          {(countries || []).map((c: any) => (
+                            <MenuItem key={c.code} value={c.code.toLowerCase()}>
+                              <img src={`https://flagcdn.com/w20/${c.code.toLowerCase()}.png`} alt='' style={{ width: 20, height: 15, marginRight: 8 }} />
+                              {c.name}
+                            </MenuItem>
+                          ))}
+                        </CustomTextField>
+                      )
+                    }}
                   />
                 </Grid2>
 
