@@ -541,7 +541,7 @@ export default function ServiceFormModal({ open, onClose, serviceId, initialData
 
   // Out-of-form state
   const [multiInputFields, setMultiInputFields] = useState<Array<{ key: string; value: string }>>([{ key: '', value: '' }])
-  const [priceFields, setPriceFields] = useState<Array<{ key: string; value: string; cost?: string }>>([{ key: '', value: '', cost: '' }])
+  const [priceFields, setPriceFields] = useState<Array<{ key: string; value: string; cost?: string; quantity_tiers?: Array<{ min: string; max: string; price: string; cost: string }> }>>([{ key: '', value: '', cost: '' }])
   const [isMultiInputModalOpen, setIsMultiInputModalOpen] = useState(false)
   // quantity_tiers cho per_unit mode
   const [quantityTiers, setQuantityTiers] = useState<Array<{ min: string; max: string; discount: string }>>([])
@@ -673,7 +673,8 @@ return { values: {}, errors: formattedErrors }
             ? priceDurations.map((item: any) => ({
                 key: item.key || '',
                 value: item.value || '',
-                cost: item.cost || ''
+                cost: item.cost || '',
+                quantity_tiers: item.quantity_tiers || []
               }))
             : [{ key: '', value: '', cost: '' }]
         )
@@ -801,11 +802,15 @@ return { values: {}, errors: formattedErrors }
   const onSubmit = (data: any) => {
     setFormErrors([])
 
-    const formattedPriceFields = priceFields.map((field: any) => ({
-      key: field.key,
-      value: field.value,
-      cost: field.cost ?? ''
-    }))
+    const formattedPriceFields = priceFields.map((field: any) => {
+      const qtyTiers = (field.quantity_tiers || []).filter((t: any) => t.min && (t.price || t.cost))
+      return {
+        key: field.key,
+        value: field.value,
+        cost: field.cost ?? '',
+        ...(qtyTiers.length > 0 ? { quantity_tiers: qtyTiers } : {})
+      }
+    })
 
     // Clean empty Tiptap content to null
     const cleanNote = data.note && data.note !== '<p></p>' ? data.note : null
@@ -1725,33 +1730,93 @@ return <Chip key={val} label={p?.label || val} size='small' />
                             disabled={priceFields.length >= 6}
                           >Thêm mốc</Button>
                         </div>
-                        {priceFields.map((field, index) => (
-                          <div key={index} style={{ display: 'flex', gap: 8, alignItems: 'center', padding: '8px 12px', borderBottom: index < priceFields.length - 1 ? '1px solid #f1f5f9' : 'none' }}>
-                            <CustomTextField size='small' select value={field.key} onChange={(e: any) => {
-                              setPriceFields(prev => prev.map((f, i) => i === index ? { ...f, key: e.target.value } : f))
-                            }} sx={{ minWidth: 130 }} slotProps={{ select: { displayEmpty: true } }}>
-                              <MenuItem value=''><em>Thời gian</em></MenuItem>
-                              {[
-                                { value: '1', label: '1 ngày' }, { value: '3', label: '3 ngày' },
-                                { value: '7', label: '7 ngày' }, { value: '14', label: '14 ngày' },
-                                { value: '21', label: '21 ngày' }, { value: '30', label: '30 ngày' }
-                              ].filter(o => o.value === field.key || !priceFields.some(f => f.key === o.value))
-                                .map(o => <MenuItem key={o.value} value={o.value}>{o.label}</MenuItem>)}
-                            </CustomTextField>
-                            <CustomTextField size='small' type='number' placeholder='Giá bán' value={field.value}
-                              onChange={(e: any) => setPriceFields(prev => prev.map((f, i) => i === index ? { ...f, value: e.target.value } : f))}
-                              sx={{ width: 120 }} />
-                            <CustomTextField size='small' type='number' placeholder='Giá vốn' value={field.cost || ''}
-                              onChange={(e: any) => setPriceFields(prev => prev.map((f, i) => i === index ? { ...f, cost: e.target.value } : f))}
-                              sx={{ width: 120 }} />
-                            {priceFields.length > 1 && (
-                              <IconButton size='small' color='error'
-                                onClick={() => setPriceFields(prev => prev.filter((_, i) => i !== index))}>
-                                <X size={14} />
-                              </IconButton>
-                            )}
-                          </div>
-                        ))}
+                        {/* Header */}
+                        <div style={{ display: 'grid', gridTemplateColumns: '130px 110px 110px 80px 30px', gap: 6, padding: '6px 12px', fontSize: '10px', fontWeight: 600, color: '#64748b', background: '#f1f5f9' }}>
+                          <span>Thời gian</span><span>Giá bán</span><span>Giá vốn</span><span>SL giảm</span><span></span>
+                        </div>
+                        {priceFields.map((field, index) => {
+                          const qtyTiers = field.quantity_tiers || []
+                          const hasQtyTiers = qtyTiers.length > 0
+                          return (
+                            <div key={index} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                              {/* Dòng chính */}
+                              <div style={{ display: 'grid', gridTemplateColumns: '130px 110px 110px 80px 30px', gap: 6, alignItems: 'center', padding: '6px 12px' }}>
+                                <CustomTextField size='small' select value={field.key} onChange={(e: any) => {
+                                  setPriceFields(prev => prev.map((f, i) => i === index ? { ...f, key: e.target.value } : f))
+                                }} slotProps={{ select: { displayEmpty: true } }}>
+                                  <MenuItem value=''><em>Chọn</em></MenuItem>
+                                  {[
+                                    { value: '1', label: '1 ngày' }, { value: '3', label: '3 ngày' },
+                                    { value: '7', label: '7 ngày' }, { value: '14', label: '14 ngày' },
+                                    { value: '21', label: '21 ngày' }, { value: '30', label: '30 ngày' }
+                                  ].filter(o => o.value === field.key || !priceFields.some(f => f.key === o.value))
+                                    .map(o => <MenuItem key={o.value} value={o.value}>{o.label}</MenuItem>)}
+                                </CustomTextField>
+                                <CustomTextField size='small' type='number' placeholder='đ' value={field.value}
+                                  onChange={(e: any) => setPriceFields(prev => prev.map((f, i) => i === index ? { ...f, value: e.target.value } : f))} />
+                                <CustomTextField size='small' type='number' placeholder='đ' value={field.cost || ''}
+                                  onChange={(e: any) => setPriceFields(prev => prev.map((f, i) => i === index ? { ...f, cost: e.target.value } : f))} />
+                                <Button size='small' variant={hasQtyTiers ? 'contained' : 'outlined'} color={hasQtyTiers ? 'success' : 'inherit'}
+                                  sx={{ fontSize: '10px', minWidth: 0, px: 1, py: 0.3 }}
+                                  onClick={() => {
+                                    if (!hasQtyTiers) {
+                                      setPriceFields(prev => prev.map((f, i) => i === index ? { ...f, quantity_tiers: [{ min: '', max: '', price: '', cost: '' }] } : f))
+                                    } else {
+                                      setPriceFields(prev => prev.map((f, i) => i === index ? { ...f, quantity_tiers: [] } : f))
+                                    }
+                                  }}>
+                                  {hasQtyTiers ? `${qtyTiers.length} mức` : '+ SL'}
+                                </Button>
+                                {priceFields.length > 1 ? (
+                                  <IconButton size='small' color='error' sx={{ p: '2px' }}
+                                    onClick={() => setPriceFields(prev => prev.filter((_, i) => i !== index))}>
+                                    <X size={13} />
+                                  </IconButton>
+                                ) : <span />}
+                              </div>
+                              {/* Sub-rows: qty tiers */}
+                              {hasQtyTiers && (
+                                <div style={{ background: '#fafbfc', borderTop: '1px dashed #e2e8f0', padding: '4px 12px 8px 32px' }}>
+                                  <div style={{ display: 'grid', gridTemplateColumns: '70px 70px 100px 100px 30px', gap: 4, fontSize: '9px', color: '#94a3b8', fontWeight: 600, marginBottom: 2 }}>
+                                    <span>Từ SL</span><span>Đến SL</span><span>Giá bán</span><span>Giá vốn</span><span></span>
+                                  </div>
+                                  {qtyTiers.map((qt, qIdx) => (
+                                    <div key={qIdx} style={{ display: 'grid', gridTemplateColumns: '70px 70px 100px 100px 30px', gap: 4, alignItems: 'center', marginBottom: 2 }}>
+                                      <CustomTextField size='small' type='number' placeholder='20' value={qt.min}
+                                        onChange={(e: any) => setPriceFields(prev => prev.map((f, i) => i === index ? {
+                                          ...f, quantity_tiers: (f.quantity_tiers || []).map((t, j) => j === qIdx ? { ...t, min: e.target.value } : t)
+                                        } : f))} sx={{ '& input': { fontSize: '11px', p: '4px 8px' } }} />
+                                      <CustomTextField size='small' type='number' placeholder='∞' value={qt.max}
+                                        onChange={(e: any) => setPriceFields(prev => prev.map((f, i) => i === index ? {
+                                          ...f, quantity_tiers: (f.quantity_tiers || []).map((t, j) => j === qIdx ? { ...t, max: e.target.value } : t)
+                                        } : f))} sx={{ '& input': { fontSize: '11px', p: '4px 8px' } }} />
+                                      <CustomTextField size='small' type='number' placeholder='đ' value={qt.price}
+                                        onChange={(e: any) => setPriceFields(prev => prev.map((f, i) => i === index ? {
+                                          ...f, quantity_tiers: (f.quantity_tiers || []).map((t, j) => j === qIdx ? { ...t, price: e.target.value } : t)
+                                        } : f))} sx={{ '& input': { fontSize: '11px', p: '4px 8px' } }} />
+                                      <CustomTextField size='small' type='number' placeholder='đ' value={qt.cost}
+                                        onChange={(e: any) => setPriceFields(prev => prev.map((f, i) => i === index ? {
+                                          ...f, quantity_tiers: (f.quantity_tiers || []).map((t, j) => j === qIdx ? { ...t, cost: e.target.value } : t)
+                                        } : f))} sx={{ '& input': { fontSize: '11px', p: '4px 8px' } }} />
+                                      <IconButton size='small' sx={{ p: '1px' }} color='error'
+                                        onClick={() => setPriceFields(prev => prev.map((f, i) => i === index ? {
+                                          ...f, quantity_tiers: (f.quantity_tiers || []).filter((_, j) => j !== qIdx)
+                                        } : f))}>
+                                        <X size={12} />
+                                      </IconButton>
+                                    </div>
+                                  ))}
+                                  <Button size='small' sx={{ fontSize: '10px', mt: 0.5 }} startIcon={<Plus size={11} />}
+                                    onClick={() => setPriceFields(prev => prev.map((f, i) => i === index ? {
+                                      ...f, quantity_tiers: [...(f.quantity_tiers || []), { min: '', max: '', price: '', cost: '' }]
+                                    } : f))}>
+                                    Thêm mức SL
+                                  </Button>
+                                </div>
+                              )}
+                            </div>
+                          )
+                        })}
                       </div>
                     </Grid2>
                   )}
