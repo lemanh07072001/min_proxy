@@ -681,9 +681,9 @@ return (
   })
 
   return (
-    <>
-          {/* Stats Cards */}
-          <Grid2 container spacing={2} sx={{ mb: 3 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - var(--header-height, 64px))', overflow: 'hidden' }}>
+          {/* Stats Cards — cố định */}
+          <Grid2 container spacing={2} sx={{ mb: 2, flexShrink: 0, px: 1 }}>
             <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
               <StatCard title='Tổng đơn hàng' value={summary.total_orders} icon={ShoppingCart} color='#7C3AED' />
             </Grid2>
@@ -698,11 +698,11 @@ return (
             </Grid2>
           </Grid2>
 
-          {/* Table */}
-          <div className='orders-content'>
-            <div className='table-container' style={{ borderRadius: '12px', overflow: 'hidden' }}>
+          {/* Table — chiếm phần còn lại, tự scroll */}
+          <div className='orders-content' style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+            <div className='table-container' style={{ borderRadius: '12px', overflow: 'hidden', display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
               {/* Toolbar */}
-              <div className='table-toolbar' style={{ flexDirection: 'column', alignItems: 'stretch', gap: 0, padding: 0 }}>
+              <div className='table-toolbar' style={{ flexDirection: 'column', alignItems: 'stretch', gap: 0, padding: 0, flexShrink: 0 }}>
                 {/* Row 1: Title + Search */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', borderBottom: '1px solid #f1f5f9' }}>
                   <div className='header-left'>
@@ -858,7 +858,7 @@ return (
               </div>
 
               {/* Table */}
-              <div className='table-wrapper' style={{ overflow: 'auto', maxHeight: 'calc(100vh - 280px)', padding: '0 12px 12px' }}>
+              <div className='table-wrapper' style={{ overflow: 'auto', flex: 1, minHeight: 0, padding: '0 12px 12px' }}>
                 <table
                   className='data-table'
                   style={{ tableLayout: 'auto', minWidth: '100%', whiteSpace: 'nowrap', ...(isLoading || orders.length === 0 ? { height: '100%' } : {}) }}
@@ -1119,6 +1119,6 @@ return (
           </Button>
         </DialogActions>
       </Dialog>
-    </>
+    </div>
   )
 }
