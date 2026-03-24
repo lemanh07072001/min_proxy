@@ -36,7 +36,7 @@ import { useProviders } from '@/hooks/apis/useProviders'
 import { useCountries } from '@/hooks/apis/useCountries'
 import { useServiceType, useCreateServiceType, useUpdateServiceType } from '@/hooks/apis/useServiceType'
 import MultiInputModal from '@/views/Client/Admin/ServiceType/MultiInputModal'
-import PriceByDurationModal from '@/views/Client/Admin/ServiceType/PriceByDurationModal'
+// PriceByDurationModal removed — giá theo thời gian giờ inline trong form
 import CollapsibleSection from '@/views/Client/Admin/ServiceType/CollapsibleSection'
 
 import '@/views/Client/RotatingProxy/styles.css'
@@ -543,7 +543,9 @@ export default function ServiceFormModal({ open, onClose, serviceId, initialData
   const [multiInputFields, setMultiInputFields] = useState<Array<{ key: string; value: string }>>([{ key: '', value: '' }])
   const [priceFields, setPriceFields] = useState<Array<{ key: string; value: string; cost?: string }>>([{ key: '', value: '', cost: '' }])
   const [isMultiInputModalOpen, setIsMultiInputModalOpen] = useState(false)
-  const [isPriceModalOpen, setIsPriceModalOpen] = useState(false)
+  // quantity_tiers cho per_unit mode
+  const [quantityTiers, setQuantityTiers] = useState<Array<{ min: string; max: string; discount: string }>>([])
+
   const [pricingMode, setPricingMode] = useState<'fixed' | 'per_unit'>('fixed')
   const [timeUnit, setTimeUnit] = useState<'day' | 'month'>('day')
   const [pricePerUnit, setPricePerUnit] = useState('')
@@ -721,6 +723,7 @@ return { values: {}, errors: formattedErrors }
       setAllowCustomAuth(!!meta.allow_custom_auth)
       setDiscountTiers(meta.discount_tiers || [])
       setCostDiscountTiers(meta.cost_discount_tiers || [])
+      setQuantityTiers(meta.quantity_tiers || [])
       if (meta.custom_fields && Array.isArray(meta.custom_fields)) {
         setPurchaseOptions(meta.custom_fields.map((f: any) => ({
           key: f.key || f.param || '',
@@ -773,6 +776,7 @@ return { values: {}, errors: formattedErrors }
       setPurchaseOptions([])
       setAllowCustomAuth(false)
       setDiscountTiers([])
+      setQuantityTiers([])
       setPricingMode('fixed')
       setTimeUnit('day')
       setPricePerUnit('')
@@ -830,6 +834,8 @@ return { values: {}, errors: formattedErrors }
       allow_custom_auth: allowCustomAuth,
       discount_tiers: pricingMode === 'per_unit' ? discountTiers.filter(t => t.min && t.discount) : undefined,
       cost_discount_tiers: pricingMode === 'per_unit' ? costDiscountTiers.filter(t => t.min && t.discount) : undefined,
+      quantity_tiers: pricingMode === 'per_unit' && quantityTiers.length > 0
+        ? quantityTiers.filter(t => t.min && t.discount) : undefined,
     }
 
     const submitData: any = {
@@ -1708,24 +1714,89 @@ return <Chip key={val} label={p?.label || val} size='small' />
                     </Grid2>
                   )}
 
+                  {/* Fixed mode: bảng mốc giá inline */}
                   {pricingMode === 'fixed' && (
-                    <Grid2 size={{ xs: 12, sm: 8 }} sx={{ display: 'flex', alignItems: 'flex-end' }}>
-                      <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', paddingBottom: 4 }}>
-                        <Button
-                          onClick={() => setIsPriceModalOpen(true)}
-                          variant='contained'
-                          color='info'
-                          size='small'
-                          className='text-white'
-                          startIcon={<Plus size={14} />}
-                        >
-                          Set giá theo thời gian
-                        </Button>
-                        {priceFields.filter((f: any) => f.key && f.value).length > 0 && (
-                          <Typography variant='caption' color='text.secondary'>
-                            ({priceFields.filter((f: any) => f.key && f.value).length} mốc giá)
-                          </Typography>
+                    <Grid2 size={{ xs: 12 }}>
+                      <div style={{ border: '1px solid #e2e8f0', borderRadius: 8, overflow: 'hidden' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#f8fafc', padding: '8px 12px', borderBottom: '1px solid #e2e8f0' }}>
+                          <span style={{ fontSize: '12px', fontWeight: 600, color: '#334155' }}>Mốc giá theo thời gian</span>
+                          <Button size='small' startIcon={<Plus size={13} />}
+                            onClick={() => setPriceFields(prev => [...prev, { key: '', value: '', cost: '' }])}
+                            disabled={priceFields.length >= 6}
+                          >Thêm mốc</Button>
+                        </div>
+                        {priceFields.map((field, index) => (
+                          <div key={index} style={{ display: 'flex', gap: 8, alignItems: 'center', padding: '8px 12px', borderBottom: index < priceFields.length - 1 ? '1px solid #f1f5f9' : 'none' }}>
+                            <CustomTextField size='small' select value={field.key} onChange={(e: any) => {
+                              setPriceFields(prev => prev.map((f, i) => i === index ? { ...f, key: e.target.value } : f))
+                            }} sx={{ minWidth: 130 }} slotProps={{ select: { displayEmpty: true } }}>
+                              <MenuItem value=''><em>Thời gian</em></MenuItem>
+                              {[
+                                { value: '1', label: '1 ngày' }, { value: '3', label: '3 ngày' },
+                                { value: '7', label: '7 ngày' }, { value: '14', label: '14 ngày' },
+                                { value: '21', label: '21 ngày' }, { value: '30', label: '30 ngày' }
+                              ].filter(o => o.value === field.key || !priceFields.some(f => f.key === o.value))
+                                .map(o => <MenuItem key={o.value} value={o.value}>{o.label}</MenuItem>)}
+                            </CustomTextField>
+                            <CustomTextField size='small' type='number' placeholder='Giá bán' value={field.value}
+                              onChange={(e: any) => setPriceFields(prev => prev.map((f, i) => i === index ? { ...f, value: e.target.value } : f))}
+                              sx={{ width: 120 }} />
+                            <CustomTextField size='small' type='number' placeholder='Giá vốn' value={field.cost || ''}
+                              onChange={(e: any) => setPriceFields(prev => prev.map((f, i) => i === index ? { ...f, cost: e.target.value } : f))}
+                              sx={{ width: 120 }} />
+                            {priceFields.length > 1 && (
+                              <IconButton size='small' color='error'
+                                onClick={() => setPriceFields(prev => prev.filter((_, i) => i !== index))}>
+                                <X size={14} />
+                              </IconButton>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </Grid2>
+                  )}
+
+                  {/* Per_unit: chiết khấu theo số lượng */}
+                  {pricingMode === 'per_unit' && (
+                    <Grid2 size={{ xs: 12 }}>
+                      <div style={{ border: '1px solid #dbeafe', borderRadius: 8, overflow: 'hidden' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#eff6ff', padding: '8px 12px', borderBottom: '1px solid #dbeafe' }}>
+                          <div>
+                            <span style={{ fontSize: '12px', fontWeight: 600, color: '#1e40af' }}>Chiết khấu theo số lượng</span>
+                            <div style={{ fontSize: '10px', color: '#64748b' }}>Mua nhiều proxy → giảm giá thêm (áp dụng sau chiết khấu thời gian)</div>
+                          </div>
+                          <Button size='small' startIcon={<Plus size={13} />}
+                            onClick={() => setQuantityTiers(prev => [...prev, { min: '', max: '', discount: '' }])}>
+                            Thêm mức
+                          </Button>
+                        </div>
+                        {quantityTiers.length === 0 && (
+                          <div style={{ padding: '12px', fontSize: '11.5px', color: '#94a3b8', textAlign: 'center' }}>
+                            Chưa có chiết khấu SL — giá giống nhau dù mua 1 hay 100 proxy
+                          </div>
                         )}
+                        {quantityTiers.map((tier, idx) => (
+                          <div key={idx} style={{ display: 'flex', gap: 8, alignItems: 'center', padding: '6px 12px', borderBottom: '1px solid #f1f5f9' }}>
+                            <CustomTextField size='small' type='number' placeholder='Từ SL' value={tier.min}
+                              onChange={(e: any) => setQuantityTiers(prev => prev.map((t, i) => i === idx ? { ...t, min: e.target.value } : t))}
+                              sx={{ width: 80 }} />
+                            <CustomTextField size='small' type='number' placeholder='Đến SL' value={tier.max}
+                              onChange={(e: any) => setQuantityTiers(prev => prev.map((t, i) => i === idx ? { ...t, max: e.target.value } : t))}
+                              sx={{ width: 80 }} />
+                            <CustomTextField size='small' type='number' placeholder='Giảm %' value={tier.discount}
+                              onChange={(e: any) => setQuantityTiers(prev => prev.map((t, i) => i === idx ? { ...t, discount: e.target.value } : t))}
+                              sx={{ width: 80 }} />
+                            {parseFloat(pricePerUnit) > 0 && parseFloat(tier.discount) > 0 && (
+                              <span style={{ fontSize: '11px', color: '#16a34a', whiteSpace: 'nowrap' }}>
+                                = {Math.round(parseFloat(pricePerUnit) * (1 - parseFloat(tier.discount) / 100)).toLocaleString('vi-VN')}đ/{timeUnit === 'month' ? 'th' : 'ng'}
+                              </span>
+                            )}
+                            <IconButton size='small' color='error'
+                              onClick={() => setQuantityTiers(prev => prev.filter((_, i) => i !== idx))}>
+                              <X size={14} />
+                            </IconButton>
+                          </div>
+                        ))}
                       </div>
                     </Grid2>
                   )}
@@ -1799,17 +1870,7 @@ return <Chip key={val} label={p?.label || val} size='small' />
         setFields={setMultiInputFields}
       />
 
-      <PriceByDurationModal
-        isOpen={isPriceModalOpen}
-        onClose={() => setIsPriceModalOpen(false)}
-        onSave={(fields) => {
-          setPriceFields(fields)
-          toast.success('Đã lưu giá thành công!')
-          setIsPriceModalOpen(false)
-        }}
-        fields={priceFields}
-        setFields={setPriceFields}
-      />
+      {/* PriceByDurationModal removed — giá theo thời gian giờ inline trong form */}
     </>
   )
 }
