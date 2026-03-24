@@ -448,6 +448,16 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
         parent_pricing_mode: parentPricingMode,
         allow_custom_auth: allowCustomAuth,
         discount_tiers: pricingMode === 'per_unit' ? discountTiers.filter(t => t.min && t.discount) : undefined,
+        // Lưu mốc giá nhập từ site mẹ → dùng tính giá vốn khi tạo đơn
+        cost_discount_tiers: (() => {
+          // Ưu tiên data mới từ site mẹ, fallback existing metadata
+          const tiers = selectedProduct?.supplier_discount_tiers
+            || existingMeta?.cost_discount_tiers
+          if (!tiers?.length || pricingMode !== 'per_unit') return existingMeta?.cost_discount_tiers || undefined
+          return tiers
+            .filter((t: any) => t.min && (t.discount || t.price))
+            .map((t: any) => ({ min: t.min, max: t.max || null, discount: t.discount || '0', ...(t.price ? { price: t.price } : {}) }))
+        })(),
         custom_fields: purchaseOptions.filter(o => o.key && o.label && (o.type !== 'select' || o.options.some(opt => opt.value))).map(o => ({
           key: o.key, param_name: o.param_name || o.key, label: o.label,
           type: o.type || 'select', required: o.required,
