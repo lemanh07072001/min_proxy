@@ -886,7 +886,7 @@ return (
                   className='data-table'
                   style={{ tableLayout: 'auto', minWidth: '100%', ...(isLoading || orders.length === 0 ? { height: '100%' } : {}) }}
                 >
-                  <thead className='table-header'>
+                  <thead className='table-header' style={{ position: 'sticky', top: 0, zIndex: 10, background: '#f8fafc' }}>
                     {table.getHeaderGroups().map(headerGroup => (
                       <tr key={headerGroup.id}>
                         {headerGroup.headers.map(header => (
