@@ -13,6 +13,7 @@ import {
   Clock3,
   Search,
   Eye,
+  FileText,
   XCircle,
   RefreshCw,
   Loader2,
@@ -62,6 +63,7 @@ import { useProviders } from '@/hooks/apis/useProviders'
 import { useRetryPartial, useRefundPartial, useRetryOrder } from '@/hooks/apis/useTickets'
 import useAxiosAuth from '@/hocs/useAxiosAuth'
 import OrderDetailModal from '@/views/Client/Admin/TransactionHistory/OrderDetailModal'
+import LogModal from '@/views/Client/Admin/TransactionHistory/LogModal'
 import FillProxiesDialog from '@/views/Client/Admin/Orders/FillProxiesDialog'
 
 const formatVND = (value: any) => new Intl.NumberFormat('vi-VN').format(Number(value) || 0) + 'đ'
@@ -176,6 +178,9 @@ export default function AdminOrdersPage() {
   const [retryFailedOrder, setRetryFailedOrder] = useState<any>(null)
   const [refundOrder, setRefundOrder] = useState<any>(null)
   const [fillProxiesOrder, setFillProxiesOrder] = useState<any>(null)
+
+  // Log modal
+  const [logOrderId, setLogOrderId] = useState<number | null>(null)
 
   // Renewal state
   const [renewalRetryOrder, setRenewalRetryOrder] = useState<any>(null)
@@ -421,6 +426,11 @@ return {
               <Tooltip title='Chi tiết'>
                 <IconButton size='small' color='primary' onClick={() => handleOpenDetail(order)}>
                   <Eye size={16} />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title='Log'>
+                <IconButton size='small' color='info' onClick={() => setLogOrderId(order.id)}>
+                  <FileText size={16} />
                 </IconButton>
               </Tooltip>
               {status === 5 && (
@@ -1049,6 +1059,8 @@ return (
         onClose={() => { setOrderDetailOpen(false); setSelectedOrder(null) }}
         orderData={selectedOrder}
       />
+
+      <LogModal isOpen={!!logOrderId} onClose={() => setLogOrderId(null)} orderId={logOrderId} />
 
       {/* Cancel + Refund Dialog */}
       <Dialog open={cancelDialogOpen} onClose={() => setCancelDialogOpen(false)}>
