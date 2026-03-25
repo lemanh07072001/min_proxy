@@ -687,9 +687,9 @@ function AdminRenewalSection({ histories, order }: { histories: OrderHistoryItem
 const HISTORY_STATUS: Record<number, { label: string; color: string }> = {
   0: { label: 'Đang chờ', color: '#f59e0b' },
   1: { label: 'Đang xử lý', color: '#3b82f6' },
-  2: { label: 'Thành công', color: '#22c55e' },
+  2: { label: 'Hoàn thành', color: '#22c55e' },
   3: { label: 'Thất bại', color: '#ef4444' },
-  4: { label: 'Đang dùng', color: '#22c55e' },
+  4: { label: 'Đang sử dụng', color: '#22c55e' },
   5: { label: 'Hết hạn', color: '#94a3b8' },
 }
 
