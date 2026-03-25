@@ -134,6 +134,24 @@ interface IpConfig {
   param_format: string
 }
 
+interface RenewConfig {
+  enabled: boolean
+  mode: string
+  url: string
+  method: string
+  auth_type: string
+  auth_param: string
+  params_json: string
+  item_param: string
+  duration_param: string
+  duration_map_json: string
+  response_mode: string
+  success_field: string
+  success_value: string
+  new_expiry_field: string
+  batch_delay_ms: string
+}
+
 interface FormValues {
   title: string
   token_api: string
@@ -145,6 +163,7 @@ interface FormValues {
   buy_static: ApiConfigBuy
   rotate: ApiConfigRotate
   ip_config: IpConfig
+  renew: RenewConfig
 }
 
 interface ModalAddProviderProps {
@@ -353,7 +372,29 @@ function parseApiConfig(apiConfig: any): Partial<FormValues> {
       max_ips: ipCfg.max_ips || 1,
       param: ipCfg.param || 'ip',
       param_format: ipCfg.param_format || 'single',
-    }
+    },
+    renew: (() => {
+      const r = apiConfig.renew
+      if (!r) return { ...defaultValues.renew }
+      const resp = r.response || {}
+      return {
+        enabled: true,
+        mode: r.mode || 'by_order',
+        url: r.url || '',
+        method: r.method || 'POST',
+        auth_type: r.auth_type || 'inherit',
+        auth_param: r.auth_param || '',
+        params_json: r.params ? JSON.stringify(r.params) : '',
+        item_param: r.item_param || 'proxy_id',
+        duration_param: r.duration_param || 'days',
+        duration_map_json: r.duration_map ? JSON.stringify(r.duration_map) : '',
+        response_mode: r.response_mode || 'immediate',
+        success_field: resp.success_field || '',
+        success_value: resp.success_value != null ? String(resp.success_value) : '',
+        new_expiry_field: resp.new_expiry_field || '',
+        batch_delay_ms: r.batch_delay_ms ? String(r.batch_delay_ms) : '0',
+      }
+    })(),
   }
 }
 
@@ -570,6 +611,41 @@ function buildApiConfig(form: FormValues): object | null {
       param: form.ip_config.param,
       param_format: form.ip_config.param_format,
     }
+  }
+
+  if (form.renew.enabled && form.renew.url) {
+    const r: any = {
+      mode: form.renew.mode,
+      url: form.renew.url,
+      method: form.renew.method,
+    }
+    if (form.renew.auth_type !== 'inherit') {
+      r.auth_type = form.renew.auth_type
+      if (form.renew.auth_param) r.auth_param = form.renew.auth_param
+    }
+    if (form.renew.params_json) {
+      try { r.params = JSON.parse(form.renew.params_json) } catch { /* skip */ }
+    }
+    if (form.renew.mode === 'by_item' && form.renew.item_param) {
+      r.item_param = form.renew.item_param
+    }
+    if (form.renew.duration_param) r.duration_param = form.renew.duration_param
+    if (form.renew.duration_map_json) {
+      try { r.duration_map = JSON.parse(form.renew.duration_map_json) } catch { /* skip */ }
+    }
+    if (form.renew.response_mode === 'deferred') r.response_mode = 'deferred'
+    if (parseInt(form.renew.batch_delay_ms) > 0) r.batch_delay_ms = parseInt(form.renew.batch_delay_ms)
+
+    const resp: any = {}
+    if (form.renew.success_field) resp.success_field = form.renew.success_field
+    if (form.renew.success_value !== '') {
+      const numVal = Number(form.renew.success_value)
+      resp.success_value = isNaN(numVal) ? form.renew.success_value : numVal
+    }
+    if (form.renew.new_expiry_field) resp.new_expiry_field = form.renew.new_expiry_field
+    if (Object.keys(resp).length > 0) r.response = resp
+
+    config.renew = r
   }
 
   return Object.keys(config).length > 0 ? config : null
@@ -1294,6 +1370,134 @@ function BuyConfigFields({
   )
 }
 
+// ─── Renew Config Fields ────────────────────────────
+
+function RenewConfigFields({ control }: { control: Control<FormValues> }) {
+  const enabled = useWatch({ control, name: 'renew.enabled' })
+  const mode = useWatch({ control, name: 'renew.mode' })
+
+  return (
+    <Grid2 container spacing={2}>
+      <Grid2 size={{ xs: 12 }}>
+        <Controller
+          name='renew.enabled'
+          control={control}
+          render={({ field: { value, onChange, ...field } }) => (
+            <CustomTextField
+              {...field}
+              value={value ? 'true' : 'false'}
+              onChange={(e) => onChange(e.target.value === 'true')}
+              fullWidth select label='Hỗ trợ gia hạn'
+            >
+              <MenuItem value='false'>Tắt</MenuItem>
+              <MenuItem value='true'>Bật</MenuItem>
+            </CustomTextField>
+          )}
+        />
+      </Grid2>
+
+      {enabled && (
+        <>
+          <Grid2 size={{ xs: 12, sm: 4 }}>
+            <Controller name='renew.mode' control={control} render={({ field }) => (
+              <CustomTextField {...field} fullWidth select label={<>Chế độ gia hạn <FieldHint text='Theo đơn hàng: 1 lệnh gia hạn tất cả proxy. Theo từng proxy: gọi API cho mỗi proxy.' /></>}>
+                <MenuItem value='by_order'>Theo đơn hàng</MenuItem>
+                <MenuItem value='by_item'>Theo từng proxy</MenuItem>
+              </CustomTextField>
+            )} />
+          </Grid2>
+          <Grid2 size={{ xs: 12, sm: 4 }}>
+            <Controller name='renew.method' control={control} render={({ field }) => (
+              <CustomTextField {...field} fullWidth select label='Method'>
+                <MenuItem value='GET'>GET</MenuItem>
+                <MenuItem value='POST'>POST</MenuItem>
+              </CustomTextField>
+            )} />
+          </Grid2>
+          <Grid2 size={{ xs: 12, sm: 4 }}>
+            <Controller name='renew.auth_type' control={control} render={({ field }) => (
+              <CustomTextField {...field} fullWidth select label='Auth'>
+                <MenuItem value='inherit'>Kế thừa từ API mua</MenuItem>
+                <MenuItem value='query'>Query param</MenuItem>
+                <MenuItem value='header'>Header</MenuItem>
+                <MenuItem value='bearer'>Bearer token</MenuItem>
+              </CustomTextField>
+            )} />
+          </Grid2>
+
+          <Grid2 size={{ xs: 12 }}>
+            <Controller name='renew.url' control={control} render={({ field }) => (
+              <CustomTextField {...field} fullWidth label={<>URL gia hạn <FieldHint text='Dùng {provider_order_code} hoặc {provider_item_id} làm placeholder. VD: https://api.provider.com/renew/{provider_order_code}' /></>} placeholder='https://api.provider.com/renew' />
+            )} />
+          </Grid2>
+
+          <Grid2 size={{ xs: 12, sm: 6 }}>
+            <Controller name='renew.params_json' control={control} render={({ field }) => (
+              <CustomTextField {...field} fullWidth label={<>Params (JSON) <FieldHint text='Params gửi kèm. Dùng {provider_order_code}, {provider_item_id}, {duration} làm placeholder.' /></>} placeholder='{"order_id": "{provider_order_code}"}' />
+            )} />
+          </Grid2>
+          <Grid2 size={{ xs: 12, sm: 3 }}>
+            <Controller name='renew.duration_param' control={control} render={({ field }) => (
+              <CustomTextField {...field} fullWidth label={<>Param thời hạn <FieldHint text='Tên param gửi số ngày gia hạn. VD: days, duration' /></>} placeholder='days' />
+            )} />
+          </Grid2>
+          <Grid2 size={{ xs: 12, sm: 3 }}>
+            <Controller name='renew.duration_map_json' control={control} render={({ field }) => (
+              <CustomTextField {...field} fullWidth label={<>Map thời hạn (JSON) <FieldHint text='Quy đổi ngày → giá trị gửi provider. VD: {"7":"weekly","30":"monthly"}. Bỏ trống = gửi số ngày.' /></>} placeholder='{"7":"7","30":"30"}' />
+            )} />
+          </Grid2>
+
+          {mode === 'by_item' && (
+            <>
+              <Grid2 size={{ xs: 6, sm: 4 }}>
+                <Controller name='renew.item_param' control={control} render={({ field }) => (
+                  <CustomTextField {...field} fullWidth label={<>Param ID proxy <FieldHint text='Tên param chứa ID proxy gửi cho provider. VD: proxy_id, id' /></>} placeholder='proxy_id' />
+                )} />
+              </Grid2>
+              <Grid2 size={{ xs: 6, sm: 4 }}>
+                <Controller name='renew.batch_delay_ms' control={control} render={({ field }) => (
+                  <CustomTextField {...field} fullWidth type='number' label={<>Delay giữa proxy (ms) <FieldHint text='Nếu provider giới hạn tốc độ, thêm delay giữa mỗi lệnh gia hạn.' /></>} placeholder='0' />
+                )} />
+              </Grid2>
+            </>
+          )}
+
+          {/* Response */}
+          <Grid2 size={{ xs: 12 }}>
+            <Divider sx={{ my: 1 }} />
+            <Typography variant='body2' fontWeight={600} sx={{ mb: 1 }}>
+              Response gia hạn
+            </Typography>
+          </Grid2>
+          <Grid2 size={{ xs: 6, sm: 3 }}>
+            <Controller name='renew.success_field' control={control} render={({ field }) => (
+              <CustomTextField {...field} fullWidth label='Field thành công' placeholder='status' />
+            )} />
+          </Grid2>
+          <Grid2 size={{ xs: 6, sm: 3 }}>
+            <Controller name='renew.success_value' control={control} render={({ field }) => (
+              <CustomTextField {...field} fullWidth label='Giá trị OK' placeholder='success' />
+            )} />
+          </Grid2>
+          <Grid2 size={{ xs: 12, sm: 6 }}>
+            <Controller name='renew.new_expiry_field' control={control} render={({ field }) => (
+              <CustomTextField {...field} fullWidth label={<>Field hạn mới <FieldHint text='Nếu provider trả ngày hết hạn mới. VD: data.expired_at. Bỏ trống = tự tính từ hạn hiện tại + số ngày.' /></>} placeholder='data.expired_at' />
+            )} />
+          </Grid2>
+          <Grid2 size={{ xs: 12, sm: 4 }}>
+            <Controller name='renew.response_mode' control={control} render={({ field }) => (
+              <CustomTextField {...field} fullWidth select label='Chế độ response'>
+                <MenuItem value='immediate'>Xác nhận ngay</MenuItem>
+                <MenuItem value='deferred'>Chờ xác nhận sau</MenuItem>
+              </CustomTextField>
+            )} />
+          </Grid2>
+        </>
+      )}
+    </Grid2>
+  )
+}
+
 // ─── Default values ─────────────────────────────────
 
 const defaultValues: FormValues = {
@@ -1323,6 +1527,23 @@ const defaultValues: FormValues = {
     max_ips: 1,
     param: 'ip',
     param_format: 'single',
+  },
+  renew: {
+    enabled: false,
+    mode: 'by_order',
+    url: '',
+    method: 'POST',
+    auth_type: 'inherit',
+    auth_param: '',
+    params_json: '',
+    item_param: 'proxy_id',
+    duration_param: 'days',
+    duration_map_json: '',
+    response_mode: 'immediate',
+    success_field: '',
+    success_value: '',
+    new_expiry_field: '',
+    batch_delay_ms: '0',
   }
 }
 
@@ -1679,6 +1900,16 @@ export default function ModalAddProvider({ open, onClose, type, providerData }: 
                       </>
                     )}
                   </Grid2>
+                </AccordionDetails>
+              </Accordion>
+
+              {/* ── Gia hạn (Renew) ── */}
+              <Accordion defaultExpanded={false} sx={{ mb: 1 }}>
+                <AccordionSummary expandIcon={<ChevronDown size={18} />}>
+                  <Typography fontWeight={600}>Cấu hình Gia hạn</Typography>
+                </AccordionSummary>
+                <AccordionDetails>
+                  <RenewConfigFields control={control} />
                 </AccordionDetails>
               </Accordion>
             </form>
