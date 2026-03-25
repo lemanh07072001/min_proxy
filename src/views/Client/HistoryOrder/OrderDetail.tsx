@@ -47,8 +47,7 @@ import { useCopy } from '@/app/hooks/useCopy'
 import { ORDER_STATUS_LABELS, ORDER_STATUS_COLORS } from '@/constants/orderStatus'
 import { useApiKeys } from '@/hooks/apis/useOrders'
 import { useRenewOrder, useRenewInfo } from '@/hooks/apis/useRenewal'
-import { useOrderHistories } from '@/hooks/apis/useOrderHistories'
-import { HistoryTimeline } from '@/views/Client/Admin/TransactionHistory/OrderDetailModal'
+import { useOrderHistories, type OrderHistoryItem } from '@/hooks/apis/useOrderHistories'
 
 const formatVND = (v: number) => new Intl.NumberFormat('vi-VN').format(v) + 'đ'
 
@@ -80,7 +79,6 @@ const OrderDetail: React.FC<OrderDetailProps> = ({ open, onClose, order }) => {
   const [, copy] = useCopy()
   const [copiedField, setCopiedField] = useState<string | null>(null)
   const [renewOpen, setRenewOpen] = useState(false)
-  const [detailTab, setDetailTab] = useState(0)
 
   const { data: apiKeysData = [], isLoading: isLoadingKeys } = useApiKeys(order?.id, open)
   const { data: histories = [], isLoading: loadingHistories } = useOrderHistories(order?.id ?? null, open)
@@ -274,7 +272,7 @@ return row.original?.key || row.original?.api_key || ''
     <>
       <Dialog
         open={open}
-        onClose={() => { setDetailTab(0); onClose() }}
+        onClose={onClose}
         fullWidth
         maxWidth={renewOpen ? 'lg' : 'md'}
         PaperProps={{
@@ -355,44 +353,14 @@ return row.original?.key || row.original?.api_key || ''
                 )}
               </Box>
 
-              {/* Status 11: đang gia hạn */}
-              {String(order.status) === '11' && (
-                <Box sx={{ px: '20px', pb: '8px' }}>
-                  <div style={{ padding: '10px 14px', background: '#eff6ff', borderRadius: 8, border: '1px solid #bfdbfe', fontSize: '13px', color: '#1d4ed8' }}>
-                    <RefreshCw size={14} style={{ display: 'inline', marginRight: 6, verticalAlign: -2 }} />
-                    Proxy vẫn hoạt động bình thường. Đang chờ gia hạn từ nhà cung cấp...
-                  </div>
-                </Box>
-              )}
+              {/* Renewal banner — hiện ngay khi có gia hạn đang xử lý hoặc thất bại */}
+              <RenewalBanner order={order} histories={histories} />
 
-              {/* Status 12: gia hạn thất bại */}
-              {String(order.status) === '12' && (
-                <Box sx={{ px: '20px', pb: '8px' }}>
-                  <div style={{ padding: '10px 14px', background: '#fef2f2', borderRadius: 8, border: '1px solid #fecaca', fontSize: '13px', color: '#dc2626' }}>
-                    Gia hạn thất bại. Vui lòng liên hệ admin để được hỗ trợ.
-                  </div>
-                </Box>
-              )}
+              {/* Divider */}
+              <Box sx={{ borderTop: '1px solid #f1f5f9' }} />
 
-              {/* Tabs */}
-              {histories.length > 0 ? (
-                <Tabs
-                  value={detailTab}
-                  onChange={(_, v) => setDetailTab(v)}
-                  sx={{
-                    borderBottom: '1px solid #f1f5f9', px: '20px',
-                    '& .MuiTab-root': { textTransform: 'none', fontWeight: 600, fontSize: '13px', minHeight: 42 }
-                  }}
-                >
-                  <Tab label={`Proxy (${apiKeysData.length})`} />
-                  <Tab label={`Gia hạn (${histories.length})`} />
-                </Tabs>
-              ) : (
-                <Box sx={{ borderTop: '1px solid #f1f5f9' }} />
-              )}
-
-              {/* Tab: Proxy list */}
-              {detailTab === 0 && <Box sx={{ p: '16px 20px' }}>
+              {/* Proxy list */}
+              <Box sx={{ p: '16px 20px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
                   <Typography sx={{ fontSize: '14px', fontWeight: 600, color: '#1e293b' }}>
                     Danh sách proxy ({totalRows})
@@ -491,14 +459,7 @@ return row.original?.key || row.original?.api_key || ''
                     </Typography>
                   </Box>
                 )}
-              </Box>}
-
-              {/* Tab: Gia hạn */}
-              {detailTab === 1 && (
-                <Box sx={{ p: '16px 20px' }}>
-                  <HistoryTimeline histories={histories} isLoading={loadingHistories} />
-                </Box>
-              )}
+              </Box>
             </div>
 
             {/* Right: Renewal panel */}
@@ -521,6 +482,70 @@ return row.original?.key || row.original?.api_key || ''
 
       {/* Inline renewal panel — no separate modal */}
     </>
+  )
+}
+
+const RENEWAL_STATUS: Record<number, { label: string; color: string }> = {
+  0: { label: 'Đang chờ xử lý', color: '#f59e0b' },
+  1: { label: 'Đang xử lý', color: '#3b82f6' },
+  3: { label: 'Thất bại', color: '#ef4444' },
+  4: { label: 'Thành công', color: '#22c55e' },
+}
+
+function RenewalBanner({ order, histories }: { order: any; histories: OrderHistoryItem[] }) {
+  if (!histories.length) return null
+
+  const formatVND = (v: number) => new Intl.NumberFormat('vi-VN').format(v) + 'đ'
+
+  // Lọc renewals, bỏ expired (5) và buy
+  const renewals = histories.filter(h => h.type === 'renewal')
+  if (!renewals.length) return null
+
+  // Bản ghi đang active (pending/processing/failed)
+  const active = renewals.find(h => [0, 1, 3].includes(h.status))
+  // Số lần thành công
+  const successCount = renewals.filter(h => h.status === 4 || h.status === 2).length
+
+  return (
+    <Box sx={{ px: '20px', pb: '8px', display: 'flex', flexDirection: 'column', gap: 1 }}>
+      {/* Active renewal — đang xử lý hoặc thất bại */}
+      {active && (() => {
+        const st = RENEWAL_STATUS[active.status] ?? { label: '?', color: '#94a3b8' }
+        const isFailed = active.status === 3
+        const isPending = active.status === 0 || active.status === 1
+
+        return (
+          <div style={{
+            padding: '12px 16px', borderRadius: 10,
+            background: isFailed ? '#fef2f2' : '#eff6ff',
+            border: `1px solid ${isFailed ? '#fecaca' : '#bfdbfe'}`,
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+              {isPending && <Loader size={14} style={{ color: st.color, animation: 'spin 1s linear infinite' }} />}
+              {isFailed && <AlertTriangle size={14} style={{ color: st.color }} />}
+              <span style={{ fontSize: '13px', fontWeight: 600, color: st.color }}>
+                Gia hạn {active.duration} ngày — {st.label}
+              </span>
+            </div>
+            <div style={{ fontSize: '12px', color: isFailed ? '#dc2626' : '#1d4ed8' }}>
+              {isPending && 'Proxy vẫn hoạt động bình thường. Đang chờ xử lý từ nhà cung cấp...'}
+              {isFailed && (active.note || 'Vui lòng liên hệ admin để được hỗ trợ.')}
+            </div>
+            <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: 4 }}>
+              {formatVND(active.amount)} • {active.created_at ? formatDateTimeLocal(active.created_at) : ''}
+            </div>
+          </div>
+        )
+      })()}
+
+      {/* Tóm tắt lịch sử — chỉ hiện khi đã gia hạn thành công ít nhất 1 lần */}
+      {successCount > 0 && (
+        <div style={{ fontSize: '12px', color: '#64748b', display: 'flex', alignItems: 'center', gap: 6, padding: '0 4px' }}>
+          <RefreshCw size={12} style={{ color: '#22c55e' }} />
+          Đã gia hạn thành công {successCount} lần
+        </div>
+      )}
+    </Box>
   )
 }
 

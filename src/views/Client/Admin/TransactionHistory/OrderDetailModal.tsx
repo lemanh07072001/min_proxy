@@ -306,6 +306,11 @@ return p || '-'
             </div>
           </div>
 
+          {/* Renewal section — hiện khi có gia hạn */}
+          {histories.length > 0 && (
+            <AdminRenewalSection histories={histories} order={order} />
+          )}
+
           {/* Tabs — sticky */}
           <Tabs
             value={tabIndex}
@@ -318,7 +323,6 @@ return p || '-'
           >
             <Tab label={`Proxy (${dataApiKeys?.length || 0})`} />
             <Tab label={`Logs (${orderLogs.length})`} />
-            {histories.length > 0 && <Tab label={`Gia hạn (${histories.length})`} />}
           </Tabs>
 
           {/* Tab content */}
@@ -428,10 +432,6 @@ return p || '-'
 
             {tabIndex === 1 && (
               <OrderLogsTimeline logs={orderLogs} isLoading={loadingLogs} />
-            )}
-
-            {tabIndex === 2 && (
-              <HistoryTimeline histories={histories} isLoading={loadingHistories} isAdmin />
             )}
           </div>
         </div>
@@ -612,6 +612,67 @@ function OrderLogsTimeline({ logs, isLoading }: { logs: OrderLog[]; isLoading: b
           </div>
         )
       })}
+    </div>
+  )
+}
+
+function AdminRenewalSection({ histories, order }: { histories: OrderHistoryItem[]; order: any }) {
+  const renewals = histories.filter(h => h.type === 'renewal')
+  if (!renewals.length) return null
+
+  const successCount = renewals.filter(h => h.status === 4 || h.status === 2).length
+  const fmtVND = (v: number) => new Intl.NumberFormat('vi-VN').format(v) + 'đ'
+
+  return (
+    <div style={{ padding: '0 20px 12px' }}>
+      {renewals.map((h, i) => {
+        const st = HISTORY_STATUS[h.status] ?? { label: '?', color: '#94a3b8' }
+        const isFailed = h.status === 3
+        const isPending = h.status === 0 || h.status === 1
+        const isSuccess = h.status === 4 || h.status === 2
+
+        return (
+          <div key={h.id} style={{
+            padding: '10px 14px', borderRadius: 8, marginBottom: 6,
+            background: isFailed ? '#fef2f2' : isPending ? '#eff6ff' : '#f0fdf4',
+            border: `1px solid ${isFailed ? '#fecaca' : isPending ? '#bfdbfe' : '#bbf7d0'}`,
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 6 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                {isPending && <Loader2 size={13} style={{ color: st.color, animation: 'spin 1s linear infinite' }} />}
+                <span style={{ fontSize: '12px', fontWeight: 600, color: st.color }}>{st.label}</span>
+                <span style={{ fontSize: '12px', color: '#374151' }}>
+                  {h.duration} ngày • {fmtVND(h.amount)}
+                </span>
+                {h.cost_amount != null && (
+                  <span style={{ fontSize: '11px', color: '#94a3b8' }}>Vốn: {fmtVND(h.cost_amount)}</span>
+                )}
+              </div>
+              <span style={{ fontSize: '11px', color: '#94a3b8' }}>
+                {h.created_at ? formatDateTimeLocal(h.created_at) : ''}
+              </span>
+            </div>
+
+            {isSuccess && h.new_expired_at && (
+              <div style={{ fontSize: '12px', color: '#16a34a', marginTop: 4 }}>
+                HH mới: {formatDateTimeLocal(h.new_expired_at)}
+              </div>
+            )}
+
+            {isFailed && h.note && (
+              <div style={{ fontSize: '12px', color: '#dc2626', marginTop: 4, background: '#fee2e2', padding: '4px 8px', borderRadius: 4 }}>
+                {h.note}
+              </div>
+            )}
+          </div>
+        )
+      })}
+
+      {successCount > 0 && (
+        <div style={{ fontSize: '11px', color: '#64748b', padding: '2px 4px' }}>
+          Tổng: {successCount} lần gia hạn thành công
+        </div>
+      )}
     </div>
   )
 }
