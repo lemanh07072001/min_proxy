@@ -33,6 +33,7 @@ import { formatDateTimeLocal } from '@/utils/formatDate'
 import { ORDER_STATUS_LABELS_ADMIN, ORDER_STATUS, ORDER_STATUS_COLORS } from '@/constants'
 import { useApiKeys } from '@/hooks/apis/useOrders'
 import { useOrderLogs, type OrderLog } from '@/hooks/apis/useOrderLogs'
+import { useOrderHistories, type OrderHistoryItem } from '@/hooks/apis/useOrderHistories'
 
 interface OrderDetailModalProps {
   isOpen: boolean
@@ -69,6 +70,7 @@ export default function OrderDetailModal({ isOpen, onClose, orderData, isLoading
   const orderId = orderData?.order?.id
   const { data: dataApiKeys, isLoading: loadingApiKeys } = useApiKeys(orderId, isOpen)
   const { data: orderLogs = [], isLoading: loadingLogs } = useOrderLogs(orderId, isOpen)
+  const { data: histories = [], isLoading: loadingHistories } = useOrderHistories(orderId, isOpen)
 
   const copyToClipboard = (text: string, field: string) => {
     navigator.clipboard.writeText(text)
@@ -316,6 +318,7 @@ return p || '-'
           >
             <Tab label={`Proxy (${dataApiKeys?.length || 0})`} />
             <Tab label={`Logs (${orderLogs.length})`} />
+            {histories.length > 0 && <Tab label={`Gia hạn (${histories.length})`} />}
           </Tabs>
 
           {/* Tab content */}
@@ -425,6 +428,10 @@ return p || '-'
 
             {tabIndex === 1 && (
               <OrderLogsTimeline logs={orderLogs} isLoading={loadingLogs} />
+            )}
+
+            {tabIndex === 2 && (
+              <HistoryTimeline histories={histories} isLoading={loadingHistories} isAdmin />
             )}
           </div>
         </div>
@@ -608,6 +615,109 @@ function OrderLogsTimeline({ logs, isLoading }: { logs: OrderLog[]; isLoading: b
     </div>
   )
 }
+
+const HISTORY_STATUS: Record<number, { label: string; color: string }> = {
+  0: { label: 'Đang chờ', color: '#f59e0b' },
+  1: { label: 'Đang xử lý', color: '#3b82f6' },
+  2: { label: 'Thành công', color: '#22c55e' },
+  3: { label: 'Thất bại', color: '#ef4444' },
+  4: { label: 'Đang dùng', color: '#22c55e' },
+  5: { label: 'Hết hạn', color: '#94a3b8' },
+}
+
+const HISTORY_TYPE_LABEL: Record<string, string> = {
+  buy: 'Mua',
+  renewal: 'Gia hạn',
+  refund_renewal: 'Hoàn tiền GH',
+}
+
+function HistoryTimeline({ histories, isLoading, isAdmin = false }: { histories: OrderHistoryItem[]; isLoading: boolean; isAdmin?: boolean }) {
+  if (isLoading) {
+    return (
+      <div style={{ textAlign: 'center', padding: '30px 0' }}>
+        <CircularProgress size={24} />
+        <p style={{ color: '#64748b', fontSize: '13px', marginTop: 8 }}>Đang tải...</p>
+      </div>
+    )
+  }
+
+  if (histories.length === 0) {
+    return (
+      <div style={{ textAlign: 'center', padding: '30px 0', background: '#f8fafc', borderRadius: 8, border: '1px solid #f1f5f9' }}>
+        <p style={{ color: '#94a3b8', fontSize: '13px' }}>Chưa có lịch sử gia hạn</p>
+      </div>
+    )
+  }
+
+  const formatVND = (v: number) => new Intl.NumberFormat('vi-VN').format(v) + 'đ'
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      {histories.map((h) => {
+        const status = HISTORY_STATUS[h.status] ?? { label: '?', color: '#94a3b8' }
+        const typeLabel = HISTORY_TYPE_LABEL[h.type] ?? h.type
+
+        return (
+          <div key={h.id} style={{
+            padding: '12px 14px', borderRadius: 8,
+            border: `1px solid ${h.status === 3 ? '#fecaca' : '#e2e8f0'}`,
+            background: h.status === 3 ? '#fef2f2' : '#fff',
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{
+                  fontSize: '11px', fontWeight: 600, padding: '2px 8px', borderRadius: 12,
+                  background: status.color + '18', color: status.color,
+                }}>
+                  {status.label}
+                </span>
+                <span style={{ fontSize: '12px', fontWeight: 600, color: '#374151' }}>
+                  {typeLabel}
+                </span>
+                <span style={{ fontSize: '12px', color: '#64748b' }}>
+                  {h.duration} ngày
+                </span>
+              </div>
+              <span style={{ fontSize: '11px', color: '#94a3b8' }}>
+                {h.created_at ? formatDateTimeLocal(h.created_at) : '—'}
+              </span>
+            </div>
+
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginTop: 8, fontSize: '12px' }}>
+              <span style={{ color: '#374151' }}>
+                <strong>{formatVND(h.amount)}</strong>
+              </span>
+              {isAdmin && h.cost_amount != null && (
+                <span style={{ color: '#94a3b8' }}>Vốn: {formatVND(h.cost_amount)}</span>
+              )}
+              {h.old_expired_at && (
+                <span style={{ color: '#94a3b8' }}>
+                  Cũ: {formatDateTimeLocal(h.old_expired_at)}
+                </span>
+              )}
+              {h.new_expired_at && (
+                <span style={{ color: '#22c55e' }}>
+                  Mới: {formatDateTimeLocal(h.new_expired_at)}
+                </span>
+              )}
+            </div>
+
+            {h.note && (
+              <div style={{
+                marginTop: 6, fontSize: '12px', color: h.status === 3 ? '#dc2626' : '#64748b',
+                ...(h.status === 3 ? { background: '#fee2e2', padding: '4px 8px', borderRadius: 4 } : {})
+              }}>
+                {h.note}
+              </div>
+            )}
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+export { HistoryTimeline }
 
 const navBtnStyle = (disabled: boolean): React.CSSProperties => ({
   padding: '4px 12px', fontSize: '12px',

@@ -47,6 +47,8 @@ import { useCopy } from '@/app/hooks/useCopy'
 import { ORDER_STATUS_LABELS, ORDER_STATUS_COLORS } from '@/constants/orderStatus'
 import { useApiKeys } from '@/hooks/apis/useOrders'
 import { useRenewOrder, useRenewInfo } from '@/hooks/apis/useRenewal'
+import { useOrderHistories } from '@/hooks/apis/useOrderHistories'
+import { HistoryTimeline } from '@/views/Client/Admin/TransactionHistory/OrderDetailModal'
 
 const formatVND = (v: number) => new Intl.NumberFormat('vi-VN').format(v) + 'đ'
 
@@ -78,8 +80,10 @@ const OrderDetail: React.FC<OrderDetailProps> = ({ open, onClose, order }) => {
   const [, copy] = useCopy()
   const [copiedField, setCopiedField] = useState<string | null>(null)
   const [renewOpen, setRenewOpen] = useState(false)
+  const [detailTab, setDetailTab] = useState(0)
 
   const { data: apiKeysData = [], isLoading: isLoadingKeys } = useApiKeys(order?.id, open)
+  const { data: histories = [], isLoading: loadingHistories } = useOrderHistories(order?.id ?? null, open)
 
   const copyWithFeedback = (text: string, field: string, msg?: string) => {
     copy(text, msg)
@@ -270,7 +274,7 @@ return row.original?.key || row.original?.api_key || ''
     <>
       <Dialog
         open={open}
-        onClose={onClose}
+        onClose={() => { setDetailTab(0); onClose() }}
         fullWidth
         maxWidth={renewOpen ? 'lg' : 'md'}
         PaperProps={{
@@ -365,16 +369,30 @@ return row.original?.key || row.original?.api_key || ''
               {String(order.status) === '12' && (
                 <Box sx={{ px: '20px', pb: '8px' }}>
                   <div style={{ padding: '10px 14px', background: '#fef2f2', borderRadius: 8, border: '1px solid #fecaca', fontSize: '13px', color: '#dc2626' }}>
-                    Gia hạn thất bại. Tiền đã được hoàn lại. Vui lòng liên hệ admin để được hỗ trợ.
+                    Gia hạn thất bại. Vui lòng liên hệ admin để được hỗ trợ.
                   </div>
                 </Box>
               )}
 
-              {/* Divider */}
-              <Box sx={{ borderTop: '1px solid #f1f5f9' }} />
+              {/* Tabs */}
+              {histories.length > 0 ? (
+                <Tabs
+                  value={detailTab}
+                  onChange={(_, v) => setDetailTab(v)}
+                  sx={{
+                    borderBottom: '1px solid #f1f5f9', px: '20px',
+                    '& .MuiTab-root': { textTransform: 'none', fontWeight: 600, fontSize: '13px', minHeight: 42 }
+                  }}
+                >
+                  <Tab label={`Proxy (${apiKeysData.length})`} />
+                  <Tab label={`Gia hạn (${histories.length})`} />
+                </Tabs>
+              ) : (
+                <Box sx={{ borderTop: '1px solid #f1f5f9' }} />
+              )}
 
-              {/* Proxy list section */}
-              <Box sx={{ p: '16px 20px' }}>
+              {/* Tab: Proxy list */}
+              {detailTab === 0 && <Box sx={{ p: '16px 20px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
                   <Typography sx={{ fontSize: '14px', fontWeight: 600, color: '#1e293b' }}>
                     Danh sách proxy ({totalRows})
@@ -473,7 +491,14 @@ return row.original?.key || row.original?.api_key || ''
                     </Typography>
                   </Box>
                 )}
-              </Box>
+              </Box>}
+
+              {/* Tab: Gia hạn */}
+              {detailTab === 1 && (
+                <Box sx={{ p: '16px 20px' }}>
+                  <HistoryTimeline histories={histories} isLoading={loadingHistories} />
+                </Box>
+              )}
             </div>
 
             {/* Right: Renewal panel */}
