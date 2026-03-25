@@ -1427,13 +1427,36 @@ function RenewConfigFields({ control }: { control: Control<FormValues> }) {
 
           <Grid2 size={{ xs: 12 }}>
             <Controller name='renew.url' control={control} render={({ field }) => (
-              <CustomTextField {...field} fullWidth label={<>URL gia hạn <FieldHint text='Dùng {provider_order_code} hoặc {provider_item_id} làm placeholder. VD: https://api.provider.com/renew/{provider_order_code}' /></>} placeholder='https://api.provider.com/renew' />
+              <CustomTextField {...field} fullWidth
+                label={<>URL gia hạn <FieldHint text={
+                  'Có 2 cách truyền mã đơn hàng/proxy cho NCC:\n\n' +
+                  '1. Trong URL: dùng {provider_order_code} hoặc {provider_item_id}\n' +
+                  '   VD: https://api.ncc.com/renew/{provider_order_code}\n\n' +
+                  '2. Trong Params bên dưới: URL giữ nguyên, mã đơn truyền qua body/query\n' +
+                  '   VD: https://api.ncc.com/renew (params có order_id)\n\n' +
+                  '{provider_order_code} = mã đơn hàng trên NCC (lưu khi mua)\n' +
+                  '{provider_item_id} = mã từng proxy trên NCC\n' +
+                  '{duration} = số ngày gia hạn'
+                } /></>}
+                placeholder='https://api.ncc.com/renew/{provider_order_code}'
+              />
             )} />
           </Grid2>
 
           <Grid2 size={{ xs: 12, sm: 6 }}>
             <Controller name='renew.params_json' control={control} render={({ field }) => (
-              <CustomTextField {...field} fullWidth label={<>Params (JSON) <FieldHint text='Params gửi kèm. Dùng {provider_order_code}, {provider_item_id}, {duration} làm placeholder.' /></>} placeholder='{"order_id": "{provider_order_code}"}' />
+              <CustomTextField {...field} fullWidth
+                label={<>Params gửi kèm (JSON) <FieldHint text={
+                  'Các tham số gửi cho NCC khi gia hạn.\n\n' +
+                  'Dùng placeholder:\n' +
+                  '  {provider_order_code} = mã đơn hàng trên NCC\n' +
+                  '  {provider_item_id} = mã proxy trên NCC\n' +
+                  '  {duration} = số ngày gia hạn\n\n' +
+                  'VD: {"order_id": "{provider_order_code}", "days": "{duration}"}\n\n' +
+                  'Bỏ trống nếu NCC chỉ cần thông tin trong URL.'
+                } /></>}
+                placeholder='{"order_id": "{provider_order_code}"}'
+              />
             )} />
           </Grid2>
           <Grid2 size={{ xs: 12, sm: 3 }}>

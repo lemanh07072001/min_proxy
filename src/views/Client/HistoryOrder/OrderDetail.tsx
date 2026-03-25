@@ -328,7 +328,8 @@ return row.original?.key || row.original?.api_key || ''
               </Box>
 
               {/* Nút gia hạn — chỉ hiện khi in_use/in_use_partial/expired */}
-              {order.order_type !== 1 && ['2', '3', '4'].includes(String(order.status)) && (
+              {/* Nút gia hạn — chỉ hiện khi còn hạn (in_use, in_use_partial) */}
+              {order.order_type !== 1 && ['2', '3'].includes(String(order.status)) && (
                 <Box sx={{ px: '20px', pb: '8px', display: 'flex', gap: 1 }}>
                   <button
                     onClick={() => setRenewOpen(true)}
