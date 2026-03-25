@@ -1335,10 +1335,10 @@ function BuyConfigFields({
                 <Grid2 size={{ xs: 12, sm: 4 }}>
                   <Controller name={`${prefix}.protocol_override_enabled`} control={control} render={({ field: { value, onChange, ...field } }) => (
                     <CustomTextField {...field} value={value ? 'true' : 'false'} onChange={(e) => onChange(e.target.value === 'true')} fullWidth select
-                      label={<>Gửi protocol cho provider <FieldHint text='Bật nếu provider cần biết user chọn HTTP hay SOCKS5' /></>}
+                      label={<>Giao thức (HTTP/SOCKS5) <FieldHint text='Khi khách chọn HTTP hoặc SOCKS5, hệ thống sẽ gửi giá trị tương ứng cho nhà cung cấp qua tên biến bên dưới. Bỏ "type" trong Params mặc định nếu bật.' /></>}
                     >
-                      <MenuItem value='false'>Không</MenuItem>
-                      <MenuItem value='true'>Có</MenuItem>
+                      <MenuItem value='false'>Không gửi</MenuItem>
+                      <MenuItem value='true'>Gửi theo lựa chọn khách</MenuItem>
                     </CustomTextField>
                   )} />
                 </Grid2>
@@ -1346,17 +1346,17 @@ function BuyConfigFields({
                   <>
                     <Grid2 size={{ xs: 4, sm: 2.67 }}>
                       <Controller name={`${prefix}.protocol_override_param`} control={control} render={({ field }) => (
-                        <CustomTextField {...field} fullWidth label='Tên param' placeholder='type' />
+                        <CustomTextField {...field} fullWidth label={<>Tên biến <FieldHint text='Tên biến gửi cho NCC. VD: type, protocol' /></>} placeholder='type' />
                       )} />
                     </Grid2>
                     <Grid2 size={{ xs: 4, sm: 2.67 }}>
                       <Controller name={`${prefix}.protocol_override_http`} control={control} render={({ field }) => (
-                        <CustomTextField {...field} fullWidth label='HTTP gửi =' placeholder='HTTP' />
+                        <CustomTextField {...field} fullWidth label={<>Khi chọn HTTP <FieldHint text='Giá trị gửi cho NCC khi khách chọn HTTP. VD: HTTP, http' /></>} placeholder='HTTP' />
                       )} />
                     </Grid2>
                     <Grid2 size={{ xs: 4, sm: 2.67 }}>
                       <Controller name={`${prefix}.protocol_override_socks5`} control={control} render={({ field }) => (
-                        <CustomTextField {...field} fullWidth label='SOCKS5 gửi =' placeholder='SOCKS5' />
+                        <CustomTextField {...field} fullWidth label={<>Khi chọn SOCKS5 <FieldHint text='Giá trị gửi cho NCC khi khách chọn SOCKS5. VD: SOCKS5, socks5' /></>} placeholder='SOCKS5' />
                       )} />
                     </Grid2>
                   </>
