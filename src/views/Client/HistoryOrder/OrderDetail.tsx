@@ -327,7 +327,7 @@ return row.original?.key || row.original?.api_key || ''
                 <InfoCard icon={<Clock size={16} />} label='Loại' value={order.order_type === 1 ? 'Gia hạn' : 'Mua mới'} />
               </Box>
 
-              {/* Nút gia hạn */}
+              {/* Nút gia hạn — chỉ hiện khi in_use/in_use_partial/expired */}
               {order.order_type !== 1 && ['2', '3', '4'].includes(String(order.status)) && (
                 <Box sx={{ px: '20px', pb: '8px', display: 'flex', gap: 1 }}>
                   <button
@@ -342,6 +342,25 @@ return row.original?.key || row.original?.api_key || ''
                     <RefreshCw size={15} />
                     {selectedCount > 0 ? `Gia hạn ${selectedCount} proxy đã chọn` : 'Gia hạn tất cả'}
                   </button>
+                </Box>
+              )}
+
+              {/* Status 11: đang gia hạn */}
+              {String(order.status) === '11' && (
+                <Box sx={{ px: '20px', pb: '8px' }}>
+                  <div style={{ padding: '10px 14px', background: '#eff6ff', borderRadius: 8, border: '1px solid #bfdbfe', fontSize: '13px', color: '#1d4ed8' }}>
+                    <RefreshCw size={14} style={{ display: 'inline', marginRight: 6, verticalAlign: -2 }} />
+                    Proxy vẫn hoạt động bình thường. Đang chờ gia hạn từ nhà cung cấp...
+                  </div>
+                </Box>
+              )}
+
+              {/* Status 12: gia hạn thất bại */}
+              {String(order.status) === '12' && (
+                <Box sx={{ px: '20px', pb: '8px' }}>
+                  <div style={{ padding: '10px 14px', background: '#fef2f2', borderRadius: 8, border: '1px solid #fecaca', fontSize: '13px', color: '#dc2626' }}>
+                    Gia hạn thất bại. Tiền đã được hoàn lại. Vui lòng liên hệ admin để được hỗ trợ.
+                  </div>
                 </Box>
               )}
 

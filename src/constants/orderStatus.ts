@@ -15,6 +15,8 @@ export const ORDER_STATUS = {
   REFUNDED_ALL: '8',       // Hoàn tiền toàn bộ
   RETRY_PROCESSING_PARTIAL: '9',   // Đang mua bù (retry partial)
   AWAITING_PROVIDER: '10',          // Đã gọi provider, chờ provider trả proxy
+  AWAITING_RENEWAL: '11',           // Đang chờ gia hạn
+  RENEWAL_FAILED: '12',             // Gia hạn thất bại
 } as const
 
 export type OrderStatusType = (typeof ORDER_STATUS)[keyof typeof ORDER_STATUS]
@@ -34,6 +36,8 @@ export const ORDER_STATUS_LABELS: Record<string, string> = {
   [ORDER_STATUS.REFUNDED_ALL]: 'Đã hoàn tiền',
   [ORDER_STATUS.RETRY_PROCESSING_PARTIAL]: 'Đang tạo proxy',
   [ORDER_STATUS.AWAITING_PROVIDER]: 'Chờ tạo proxy',
+  [ORDER_STATUS.AWAITING_RENEWAL]: 'Đang gia hạn',
+  [ORDER_STATUS.RENEWAL_FAILED]: 'Gia hạn thất bại',
 }
 
 /**
@@ -43,6 +47,8 @@ export const ORDER_STATUS_LABELS_ADMIN: Record<string, string> = {
   ...ORDER_STATUS_LABELS,
   [ORDER_STATUS.RETRY_PROCESSING_PARTIAL]: 'Đang mua bù',
   [ORDER_STATUS.AWAITING_PROVIDER]: 'Chờ đối tác',
+  [ORDER_STATUS.AWAITING_RENEWAL]: 'Đang gia hạn',
+  [ORDER_STATUS.RENEWAL_FAILED]: 'Gia hạn thất bại',
 }
 
 /**
@@ -61,6 +67,8 @@ export const ORDER_STATUS_COLORS: Record<string, string> = {
   [ORDER_STATUS.REFUNDED_ALL]: 'default',
   [ORDER_STATUS.RETRY_PROCESSING_PARTIAL]: 'warning',
   [ORDER_STATUS.AWAITING_PROVIDER]: 'info',
+  [ORDER_STATUS.AWAITING_RENEWAL]: 'info',
+  [ORDER_STATUS.RENEWAL_FAILED]: 'error',
 }
 
 /**
@@ -81,6 +89,8 @@ export const TRANSACTION_TYPES = {
   GIAHAN: 'GIAHAN',
   THANHTOAN_V4: 'THANHTOAN_V4',
   GIAHAN_V4: 'GIAHAN_V4',
+  RENEWAL: 'RENEWAL',
+  REFUND_RENEWAL: 'REFUND_RENEWAL',
   RUT_HOA_HONG_AFFILIATE: 'RUT_HOA_HONG_AFFILIATE'
 } as const
 
@@ -103,6 +113,8 @@ export const TRANSACTION_TYPE_LABELS: Record<string, string> = {
   [TRANSACTION_TYPES.GIAHAN]: 'Gia hạn',
   [TRANSACTION_TYPES.THANHTOAN_V4]: 'Thanh toán',
   [TRANSACTION_TYPES.GIAHAN_V4]: 'Gia hạn',
+  [TRANSACTION_TYPES.RENEWAL]: 'Gia hạn proxy',
+  [TRANSACTION_TYPES.REFUND_RENEWAL]: 'Hoàn tiền gia hạn',
   [TRANSACTION_TYPES.RUT_HOA_HONG_AFFILIATE]: 'Rút hoa hồng',
 
   // Deposit types (BankAuto)
