@@ -625,6 +625,10 @@ function AdminRenewalSection({ histories, order }: { histories: OrderHistoryItem
 
   return (
     <div style={{ padding: '0 20px 12px' }}>
+      <div style={{ fontSize: '13px', fontWeight: 600, color: '#374151', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+        <RefreshCw size={14} style={{ color: '#6366f1' }} />
+        Lịch sử gia hạn ({renewals.length})
+      </div>
       {renewals.map((h, i) => {
         const st = HISTORY_STATUS[h.status] ?? { label: '?', color: '#94a3b8' }
         const isFailed = h.status === 3
@@ -648,9 +652,12 @@ function AdminRenewalSection({ histories, order }: { histories: OrderHistoryItem
                   <span style={{ fontSize: '11px', color: '#94a3b8' }}>Vốn: {fmtVND(h.cost_amount)}</span>
                 )}
               </div>
-              <span style={{ fontSize: '11px', color: '#94a3b8' }}>
-                {h.created_at ? formatDateTimeLocal(h.created_at) : ''}
-              </span>
+              <div style={{ fontSize: '11px', color: '#94a3b8', textAlign: 'right' }}>
+                <div>{h.created_at ? formatDateTimeLocal(h.created_at) : ''}</div>
+                {h.updated_at && h.updated_at !== h.created_at && (
+                  <div>Cập nhật: {formatDateTimeLocal(h.updated_at)}</div>
+                )}
+              </div>
             </div>
 
             {isSuccess && h.new_expired_at && (

@@ -485,66 +485,78 @@ return row.original?.key || row.original?.api_key || ''
   )
 }
 
-const RENEWAL_STATUS: Record<number, { label: string; color: string }> = {
-  0: { label: 'Đang chờ xử lý', color: '#f59e0b' },
-  1: { label: 'Đang xử lý', color: '#3b82f6' },
-  3: { label: 'Thất bại', color: '#ef4444' },
-  4: { label: 'Thành công', color: '#22c55e' },
+const RENEWAL_STATUS: Record<number, { label: string; color: string; bg: string; border: string }> = {
+  0: { label: 'Đang chờ', color: '#f59e0b', bg: '#fffbeb', border: '#fde68a' },
+  1: { label: 'Đang xử lý', color: '#3b82f6', bg: '#eff6ff', border: '#bfdbfe' },
+  2: { label: 'Thành công', color: '#22c55e', bg: '#f0fdf4', border: '#bbf7d0' },
+  3: { label: 'Thất bại', color: '#ef4444', bg: '#fef2f2', border: '#fecaca' },
+  4: { label: 'Thành công', color: '#22c55e', bg: '#f0fdf4', border: '#bbf7d0' },
+  5: { label: 'Hết hạn', color: '#94a3b8', bg: '#f8fafc', border: '#e2e8f0' },
 }
 
 function RenewalBanner({ order, histories }: { order: any; histories: OrderHistoryItem[] }) {
-  if (!histories.length) return null
-
-  const formatVND = (v: number) => new Intl.NumberFormat('vi-VN').format(v) + 'đ'
-
-  // Lọc renewals, bỏ expired (5) và buy
   const renewals = histories.filter(h => h.type === 'renewal')
   if (!renewals.length) return null
 
-  // Bản ghi đang active (pending/processing/failed)
-  const active = renewals.find(h => [0, 1, 3].includes(h.status))
-  // Số lần thành công
-  const successCount = renewals.filter(h => h.status === 4 || h.status === 2).length
+  const fmtVND = (v: number) => new Intl.NumberFormat('vi-VN').format(v) + 'đ'
 
   return (
-    <Box sx={{ px: '20px', pb: '8px', display: 'flex', flexDirection: 'column', gap: 1 }}>
-      {/* Active renewal — đang xử lý hoặc thất bại */}
-      {active && (() => {
-        const st = RENEWAL_STATUS[active.status] ?? { label: '?', color: '#94a3b8' }
-        const isFailed = active.status === 3
-        const isPending = active.status === 0 || active.status === 1
+    <Box sx={{ px: '20px', pb: '8px' }}>
+      <div style={{ fontSize: '13px', fontWeight: 600, color: '#374151', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+        <RefreshCw size={14} style={{ color: '#6366f1' }} />
+        Lịch sử gia hạn
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+        {renewals.map((h) => {
+          const st = RENEWAL_STATUS[h.status] ?? { label: '?', color: '#94a3b8', bg: '#f8fafc', border: '#e2e8f0' }
+          const isPending = h.status === 0 || h.status === 1
+          const isFailed = h.status === 3
+          const isSuccess = h.status === 4 || h.status === 2
 
-        return (
-          <div style={{
-            padding: '12px 16px', borderRadius: 10,
-            background: isFailed ? '#fef2f2' : '#eff6ff',
-            border: `1px solid ${isFailed ? '#fecaca' : '#bfdbfe'}`,
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-              {isPending && <Loader size={14} style={{ color: st.color, animation: 'spin 1s linear infinite' }} />}
-              {isFailed && <AlertTriangle size={14} style={{ color: st.color }} />}
-              <span style={{ fontSize: '13px', fontWeight: 600, color: st.color }}>
-                Gia hạn {active.duration} ngày — {st.label}
-              </span>
-            </div>
-            <div style={{ fontSize: '12px', color: isFailed ? '#dc2626' : '#1d4ed8' }}>
-              {isPending && 'Proxy vẫn hoạt động bình thường. Đang chờ xử lý từ nhà cung cấp...'}
-              {isFailed && (active.note || 'Vui lòng liên hệ admin để được hỗ trợ.')}
-            </div>
-            <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: 4 }}>
-              {formatVND(active.amount)} • {active.created_at ? formatDateTimeLocal(active.created_at) : ''}
-            </div>
-          </div>
-        )
-      })()}
+          return (
+            <div key={h.id} style={{
+              padding: '10px 14px', borderRadius: 8,
+              background: st.bg, border: `1px solid ${st.border}`,
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 6 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  {isPending && <Loader size={13} style={{ color: st.color, animation: 'spin 1s linear infinite' }} />}
+                  <span style={{
+                    fontSize: '11px', fontWeight: 600, padding: '2px 8px', borderRadius: 10,
+                    background: st.color + '18', color: st.color,
+                  }}>
+                    {st.label}
+                  </span>
+                  <span style={{ fontSize: '12px', color: '#374151' }}>
+                    {h.duration} ngày • {fmtVND(h.amount)}
+                  </span>
+                </div>
+                <span style={{ fontSize: '11px', color: '#94a3b8' }}>
+                  {h.created_at ? formatDateTimeLocal(h.created_at) : ''}
+                </span>
+              </div>
 
-      {/* Tóm tắt lịch sử — chỉ hiện khi đã gia hạn thành công ít nhất 1 lần */}
-      {successCount > 0 && (
-        <div style={{ fontSize: '12px', color: '#64748b', display: 'flex', alignItems: 'center', gap: 6, padding: '0 4px' }}>
-          <RefreshCw size={12} style={{ color: '#22c55e' }} />
-          Đã gia hạn thành công {successCount} lần
-        </div>
-      )}
+              {isSuccess && h.new_expired_at && (
+                <div style={{ fontSize: '12px', color: '#16a34a', marginTop: 4 }}>
+                  Hết hạn mới: {formatDateTimeLocal(h.new_expired_at)}
+                </div>
+              )}
+
+              {isPending && (
+                <div style={{ fontSize: '12px', color: '#1d4ed8', marginTop: 4 }}>
+                  Proxy vẫn hoạt động bình thường. Đang chờ xử lý...
+                </div>
+              )}
+
+              {isFailed && (
+                <div style={{ fontSize: '12px', color: '#dc2626', marginTop: 4 }}>
+                  Gia hạn không thành công. Vui lòng liên hệ admin để được hỗ trợ.
+                </div>
+              )}
+            </div>
+          )
+        })}
+      </div>
     </Box>
   )
 }
