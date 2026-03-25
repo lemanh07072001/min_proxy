@@ -25,6 +25,8 @@ interface RenewalDialogProps {
   pricingMode?: 'fixed' | 'per_unit'
   pricePerUnit?: number
   timeUnit?: 'day' | 'month'
+  renewalDurationMode?: 'custom' | 'original'
+  originalDuration?: number
 }
 
 const RenewalDialog: React.FC<RenewalDialogProps> = ({
@@ -40,9 +42,14 @@ const RenewalDialog: React.FC<RenewalDialogProps> = ({
   pricingMode = 'fixed',
   pricePerUnit = 0,
   timeUnit = 'day',
+  renewalDurationMode = 'custom',
+  originalDuration = 30,
 }) => {
-  const [selectedDuration, setSelectedDuration] = useState(priceOptions[0]?.key || '30')
-  const [customDuration, setCustomDuration] = useState(30)
+  const isOriginalMode = renewalDurationMode === 'original'
+  const [selectedDuration, setSelectedDuration] = useState(
+    isOriginalMode ? String(originalDuration) : (priceOptions[0]?.key || '30')
+  )
+  const [customDuration, setCustomDuration] = useState(isOriginalMode ? originalDuration : 30)
 
   const dispatch = useDispatch<AppDispatch>()
   const { sodu } = useSelector((state: RootState) => state.user)
@@ -126,7 +133,14 @@ const RenewalDialog: React.FC<RenewalDialogProps> = ({
           </div>
 
           {/* Duration selector */}
-          {isPerUnit ? (
+          {isOriginalMode ? (
+            <div className='checkout-section'>
+              <label className='checkout-section-label'>THỜI HẠN GIA HẠN</label>
+              <div style={{ padding: '10px 14px', background: '#eff6ff', borderRadius: 8, border: '1px solid #bfdbfe', fontSize: '13px', color: '#1d4ed8' }}>
+                Gia hạn {originalDuration} {timeUnit === 'month' ? 'tháng' : 'ngày'} (theo lần mua đầu)
+              </div>
+            </div>
+          ) : isPerUnit ? (
             <div className='checkout-section'>
               <label className='checkout-section-label'>
                 {timeUnit === 'month' ? 'SỐ THÁNG GIA HẠN' : 'SỐ NGÀY GIA HẠN'}

@@ -497,6 +497,8 @@ return row.original?.key || row.original?.api_key || ''
             { key: '7', label: '7 ngày', price: (order.price_per_unit || 0) * 7 },
             { key: '30', label: '30 ngày', price: (order.price_per_unit || 0) * 30 },
           ]}
+          renewalDurationMode={(order as any).renewal_duration_mode || 'custom'}
+          originalDuration={(order as any).time || 30}
         />
       )}
     </>
