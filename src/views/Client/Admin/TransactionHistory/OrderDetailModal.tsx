@@ -620,7 +620,7 @@ function AdminRenewalSection({ histories, order }: { histories: OrderHistoryItem
   const renewals = histories.filter(h => h.type === 'renewal')
   if (!renewals.length) return null
 
-  const successCount = renewals.filter(h => h.status === 4 || h.status === 2).length
+  const successCount = renewals.filter(h => h.status === 4 || h.status === 5).length
   const fmtVND = (v: number) => new Intl.NumberFormat('vi-VN').format(v) + 'đ'
 
   return (
@@ -633,7 +633,7 @@ function AdminRenewalSection({ histories, order }: { histories: OrderHistoryItem
         const st = HISTORY_STATUS[h.status] ?? { label: '?', color: '#94a3b8' }
         const isFailed = h.status === 3
         const isPending = h.status === 0 || h.status === 1
-        const isSuccess = h.status === 4 || h.status === 2
+        const isSuccess = h.status === 4 || h.status === 5
 
         return (
           <div key={h.id} style={{
@@ -687,7 +687,6 @@ function AdminRenewalSection({ histories, order }: { histories: OrderHistoryItem
 const HISTORY_STATUS: Record<number, { label: string; color: string }> = {
   0: { label: 'Đang chờ', color: '#f59e0b' },
   1: { label: 'Đang xử lý', color: '#3b82f6' },
-  2: { label: 'Hoàn thành', color: '#22c55e' },
   3: { label: 'Thất bại', color: '#ef4444' },
   4: { label: 'Đang sử dụng', color: '#22c55e' },
   5: { label: 'Hết hạn', color: '#94a3b8' },

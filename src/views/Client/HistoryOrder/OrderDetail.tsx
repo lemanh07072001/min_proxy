@@ -561,7 +561,6 @@ return row.original?.key || row.original?.api_key || ''
 const RENEWAL_STATUS: Record<number, { label: string; color: string; bg: string; border: string }> = {
   0: { label: 'Đang chờ', color: '#f59e0b', bg: '#fffbeb', border: '#fde68a' },
   1: { label: 'Đang xử lý', color: '#3b82f6', bg: '#eff6ff', border: '#bfdbfe' },
-  2: { label: 'Hoàn thành', color: '#22c55e', bg: '#f0fdf4', border: '#bbf7d0' },
   3: { label: 'Thất bại', color: '#ef4444', bg: '#fef2f2', border: '#fecaca' },
   4: { label: 'Đang sử dụng', color: '#22c55e', bg: '#f0fdf4', border: '#bbf7d0' },
   5: { label: 'Hết hạn', color: '#94a3b8', bg: '#f8fafc', border: '#e2e8f0' },
@@ -590,7 +589,7 @@ function RenewalHistory({ renewals }: { renewals: OrderHistoryItem[] }) {
         const st = RENEWAL_STATUS[h.status] ?? { label: '?', color: '#94a3b8', bg: '#f8fafc', border: '#e2e8f0' }
         const isPending = h.status === 0 || h.status === 1
         const isFailed = h.status === 3
-        const isSuccess = h.status === 4 || h.status === 2
+        const isSuccess = h.status === 4 || h.status === 5
 
         return (
           <div key={h.id}>
