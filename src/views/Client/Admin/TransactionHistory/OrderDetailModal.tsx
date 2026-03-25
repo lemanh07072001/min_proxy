@@ -650,58 +650,70 @@ function HistoryTimeline({ histories, isLoading, isAdmin = false }: { histories:
   }
 
   const formatVND = (v: number) => new Intl.NumberFormat('vi-VN').format(v) + 'đ'
+  const isPending = (s: number) => s === 0 || s === 1
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-      {histories.map((h) => {
+      {histories.map((h, i) => {
         const status = HISTORY_STATUS[h.status] ?? { label: '?', color: '#94a3b8' }
         const typeLabel = HISTORY_TYPE_LABEL[h.type] ?? h.type
+        const isRetried = isAdmin && h.metadata?.admin_retry
 
         return (
           <div key={h.id} style={{
             padding: '12px 14px', borderRadius: 8,
-            border: `1px solid ${h.status === 3 ? '#fecaca' : '#e2e8f0'}`,
-            background: h.status === 3 ? '#fef2f2' : '#fff',
+            border: `1px solid ${h.status === 3 ? '#fecaca' : isPending(h.status) ? '#bfdbfe' : '#e2e8f0'}`,
+            background: h.status === 3 ? '#fef2f2' : isPending(h.status) ? '#eff6ff' : '#fff',
           }}>
+            {/* Header: status + type + duration + time */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ fontSize: '13px', fontWeight: 600, color: '#374151' }}>
+                  Lần {histories.length - i}
+                </span>
                 <span style={{
                   fontSize: '11px', fontWeight: 600, padding: '2px 8px', borderRadius: 12,
                   background: status.color + '18', color: status.color,
+                  display: 'flex', alignItems: 'center', gap: 4,
                 }}>
+                  {isPending(h.status) && <Loader2 size={11} style={{ animation: 'spin 1s linear infinite' }} />}
                   {status.label}
                 </span>
-                <span style={{ fontSize: '12px', fontWeight: 600, color: '#374151' }}>
-                  {typeLabel}
-                </span>
-                <span style={{ fontSize: '12px', color: '#64748b' }}>
-                  {h.duration} ngày
-                </span>
+                {isRetried && (
+                  <span style={{ fontSize: '10px', padding: '1px 6px', borderRadius: 8, background: '#f3e8ff', color: '#7c3aed' }}>
+                    Admin retry
+                  </span>
+                )}
               </div>
-              <span style={{ fontSize: '11px', color: '#94a3b8' }}>
-                {h.created_at ? formatDateTimeLocal(h.created_at) : '—'}
-              </span>
+              <div style={{ fontSize: '11px', color: '#94a3b8', textAlign: 'right' }}>
+                <div>{h.created_at ? formatDateTimeLocal(h.created_at) : '—'}</div>
+                {h.updated_at && h.updated_at !== h.created_at && (
+                  <div>Cập nhật: {formatDateTimeLocal(h.updated_at)}</div>
+                )}
+              </div>
             </div>
 
+            {/* Info: amount, duration, expired dates */}
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginTop: 8, fontSize: '12px' }}>
               <span style={{ color: '#374151' }}>
-                <strong>{formatVND(h.amount)}</strong>
+                <strong>{formatVND(h.amount)}</strong> • {h.duration} ngày
               </span>
               {isAdmin && h.cost_amount != null && (
                 <span style={{ color: '#94a3b8' }}>Vốn: {formatVND(h.cost_amount)}</span>
               )}
               {h.old_expired_at && (
                 <span style={{ color: '#94a3b8' }}>
-                  Cũ: {formatDateTimeLocal(h.old_expired_at)}
+                  HH cũ: {formatDateTimeLocal(h.old_expired_at)}
                 </span>
               )}
               {h.new_expired_at && (
-                <span style={{ color: '#22c55e' }}>
-                  Mới: {formatDateTimeLocal(h.new_expired_at)}
+                <span style={{ color: '#22c55e', fontWeight: 500 }}>
+                  HH mới: {formatDateTimeLocal(h.new_expired_at)}
                 </span>
               )}
             </div>
 
+            {/* Note — lỗi hoặc ghi chú */}
             {h.note && (
               <div style={{
                 marginTop: 6, fontSize: '12px', color: h.status === 3 ? '#dc2626' : '#64748b',

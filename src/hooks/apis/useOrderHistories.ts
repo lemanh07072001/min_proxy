@@ -12,6 +12,7 @@ export interface OrderHistoryItem {
   new_expired_at: string | null
   note: string | null
   created_at: string
+  updated_at: string
   // admin only
   cost_amount?: number
   metadata?: any
