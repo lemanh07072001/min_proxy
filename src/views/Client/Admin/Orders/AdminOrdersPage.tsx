@@ -60,6 +60,7 @@ import { useAdminOrders } from '@/hooks/apis/useOrderReport'
 import { useCancelOrder, useResendOrder } from '@/hooks/apis/useOrders'
 import { useProviders } from '@/hooks/apis/useProviders'
 import { useRetryPartial, useRefundPartial, useRetryOrder } from '@/hooks/apis/useTickets'
+import useAxiosAuth from '@/hocs/useAxiosAuth'
 import OrderDetailModal from '@/views/Client/Admin/TransactionHistory/OrderDetailModal'
 import FillProxiesDialog from '@/views/Client/Admin/Orders/FillProxiesDialog'
 
@@ -76,7 +77,9 @@ const STATUS_CONFIG: Record<number, { label: string; color: string }> = {
   7: { label: 'Chờ hoàn tiền', color: '#A855F7' },
   8: { label: 'Đã hoàn toàn bộ', color: '#EC4899' },
   9: { label: 'Đang mua bù', color: '#14B8A6' },
-  10: { label: 'Chờ nhà cung cấp', color: '#0EA5E9' }
+  10: { label: 'Chờ nhà cung cấp', color: '#0EA5E9' },
+  11: { label: 'Đang gia hạn', color: '#6366F1' },
+  12: { label: 'Gia hạn lỗi', color: '#DC2626' },
 }
 
 function StatCard({ title, value, icon: Icon, color }: { title: string; value: string | number; icon: any; color: string }) {
@@ -320,6 +323,30 @@ return {
     })
   }, [retryOrder, retryMutation])
 
+  const axiosAuth = useAxiosAuth()
+
+  const handleRenewalRetry = useCallback(async (order: any) => {
+    if (!confirm(`Retry gia hạn đơn ${order.order_code}? Sẽ trừ tiền user lại.`)) return
+    try {
+      const res = await axiosAuth.post('/admin/renewal-retry', { order_id: order.id })
+      toast.success(res?.data?.message || 'Đã retry gia hạn!')
+      queryClient.invalidateQueries({ queryKey: ['adminOrders'] })
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || 'Lỗi retry gia hạn')
+    }
+  }, [axiosAuth, queryClient])
+
+  const handleRenewalDismiss = useCallback(async (order: any) => {
+    if (!confirm(`Bỏ qua gia hạn lỗi đơn ${order.order_code}? Đơn sẽ về trạng thái trước đó.`)) return
+    try {
+      const res = await axiosAuth.post('/admin/renewal-dismiss', { order_id: order.id })
+      toast.success(res?.data?.message || 'Đã bỏ qua gia hạn lỗi.')
+      queryClient.invalidateQueries({ queryKey: ['adminOrders'] })
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || 'Lỗi')
+    }
+  }, [axiosAuth, queryClient])
+
   const handleRefund = useCallback(() => {
     if (!refundOrder) return
     refundMutation.mutate(refundOrder.id, {
@@ -403,6 +430,20 @@ return {
                   <Tooltip title='Thêm proxy thủ công'>
                     <IconButton size='small' color='primary' onClick={() => setFillProxiesOrder(order)}>
                       <PlusCircle size={16} />
+                    </IconButton>
+                  </Tooltip>
+                </>
+              )}
+              {status === 12 && (
+                <>
+                  <Tooltip title='Retry gia hạn'>
+                    <IconButton size='small' color='warning' onClick={() => handleRenewalRetry(order)}>
+                      <RotateCcw size={16} />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title='Bỏ qua (khôi phục trạng thái cũ)'>
+                    <IconButton size='small' color='default' onClick={() => handleRenewalDismiss(order)}>
+                      <XCircle size={16} />
                     </IconButton>
                   </Tooltip>
                 </>
