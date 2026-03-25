@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useMemo, useState } from 'react'
+import React, { useMemo, useState, useCallback } from 'react'
 
 import {
   Dialog,
@@ -36,13 +36,17 @@ import {
   CheckCircle
 } from 'lucide-react'
 
-import { RefreshCw } from 'lucide-react'
+import { RefreshCw, Loader, AlertTriangle } from 'lucide-react'
+import { toast } from 'react-toastify'
+import { useDispatch, useSelector } from 'react-redux'
 
+import { subtractBalance } from '@/store/userSlice'
+import type { AppDispatch, RootState } from '@/store'
 import { formatDateTimeLocal } from '@/utils/formatDate'
 import { useCopy } from '@/app/hooks/useCopy'
 import { ORDER_STATUS_LABELS, ORDER_STATUS_COLORS } from '@/constants/orderStatus'
 import { useApiKeys } from '@/hooks/apis/useOrders'
-import RenewalDialog from '@/components/renewal-dialog/RenewalDialog'
+import { useRenewOrder } from '@/hooks/apis/useRenewal'
 
 const formatVND = (v: number) => new Intl.NumberFormat('vi-VN').format(v) + 'đ'
 
@@ -268,13 +272,14 @@ return row.original?.key || row.original?.api_key || ''
         open={open}
         onClose={onClose}
         fullWidth
-        maxWidth='md'
+        maxWidth={renewOpen ? 'lg' : 'md'}
         PaperProps={{
           sx: {
             borderRadius: '12px',
             maxHeight: '85vh',
             mt: '5vh',
-            mb: 'auto'
+            mb: 'auto',
+            transition: 'max-width 0.3s ease',
           }
         }}
       >
@@ -301,7 +306,9 @@ return row.original?.key || row.original?.api_key || ''
 
         <DialogContent sx={{ p: 0 }}>
           {order ? (
-            <>
+            <div style={{ display: 'flex' }}>
+            {/* Left: Order detail */}
+            <div style={{ flex: 1, minWidth: 0 }}>
               {/* Order info cards */}
               <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '12px', p: '16px 20px' }}>
                 <InfoCard icon={<ShoppingCart size={16} />} label='Dịch vụ' value={order.service_name || '-'} />
@@ -327,21 +334,20 @@ return row.original?.key || row.original?.api_key || ''
                 <InfoCard icon={<Clock size={16} />} label='Loại' value={order.order_type === 1 ? 'Gia hạn' : 'Mua mới'} />
               </Box>
 
-              {/* Nút gia hạn — chỉ hiện khi in_use/in_use_partial/expired */}
-              {/* Nút gia hạn — chỉ hiện khi còn hạn (in_use, in_use_partial) */}
-              {order.order_type !== 1 && ['2', '3'].includes(String(order.status)) && (
-                <Box sx={{ px: '20px', pb: '8px', display: 'flex', gap: 1 }}>
+              {/* Nút gia hạn — nhỏ gọn, chỉ khi còn hạn */}
+              {order.order_type !== 1 && ['2', '3'].includes(String(order.status)) && !renewOpen && (
+                <Box sx={{ px: '20px', pb: '8px' }}>
                   <button
                     onClick={() => setRenewOpen(true)}
                     style={{
-                      display: 'flex', alignItems: 'center', gap: 6,
-                      padding: '8px 16px', fontSize: '13px', fontWeight: 600,
-                      background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)', color: '#fff',
-                      border: 'none', borderRadius: 8, cursor: 'pointer'
+                      display: 'inline-flex', alignItems: 'center', gap: 5,
+                      padding: '6px 14px', fontSize: '12px', fontWeight: 600,
+                      background: '#3b82f6', color: '#fff',
+                      border: 'none', borderRadius: 6, cursor: 'pointer'
                     }}
                   >
-                    <RefreshCw size={15} />
-                    {selectedCount > 0 ? `Gia hạn ${selectedCount} proxy đã chọn` : 'Gia hạn tất cả'}
+                    <RefreshCw size={13} />
+                    {selectedCount > 0 ? `Gia hạn ${selectedCount} đã chọn` : 'Gia hạn'}
                   </button>
                 </Box>
               )}
@@ -469,7 +475,18 @@ return row.original?.key || row.original?.api_key || ''
                   </Box>
                 )}
               </Box>
-            </>
+            </div>
+
+            {/* Right: Renewal panel */}
+            {renewOpen && (
+              <RenewalInlinePanel
+                order={order}
+                quantity={selectedCount > 0 ? selectedCount : order.quantity}
+                selectedItemKeys={selectedCount > 0 ? table.getSelectedRowModel().rows.map((r: any) => r.original.key) : undefined}
+                onClose={() => setRenewOpen(false)}
+              />
+            )}
+            </div>
           ) : (
             <Box sx={{ textAlign: 'center', py: 4 }}>
               <Typography sx={{ color: '#94a3b8' }}>Không có dữ liệu đơn hàng</Typography>
@@ -478,31 +495,125 @@ return row.original?.key || row.original?.api_key || ''
         </DialogContent>
       </Dialog>
 
-      {/* Renewal Dialog */}
-      {order && (
-        <RenewalDialog
-          open={renewOpen}
-          onClose={() => setRenewOpen(false)}
-          orderId={order.id}
-          orderCode={order.order_code}
-          productName={order.service_name || 'Proxy'}
-          itemCount={order.quantity}
-          selectedItemKeys={
-            selectedCount > 0
-              ? table.getSelectedRowModel().rows.map((r: any) => r.original.key)
-              : undefined
-          }
-          currentExpiry={order.expired_at ? formatDateTimeLocal(order.expired_at) : undefined}
-          priceOptions={[
-            { key: '1', label: '1 ngày', price: order.price_per_unit || 0 },
-            { key: '7', label: '7 ngày', price: (order.price_per_unit || 0) * 7 },
-            { key: '30', label: '30 ngày', price: (order.price_per_unit || 0) * 30 },
-          ]}
-          renewalDurationMode={(order as any).renewal_duration_mode || 'custom'}
-          originalDuration={(order as any).time || 30}
-        />
-      )}
+      {/* Inline renewal panel — no separate modal */}
     </>
+  )
+}
+
+function RenewalInlinePanel({ order, quantity, selectedItemKeys, onClose }: {
+  order: any
+  quantity: number
+  selectedItemKeys?: string[]
+  onClose: () => void
+}) {
+  const [duration, setDuration] = useState('30')
+  const dispatch = useDispatch<AppDispatch>()
+  const { sodu } = useSelector((state: RootState) => state.user)
+  const { mutate, isPending, isSuccess } = useRenewOrder()
+
+  const pricePerUnit = order.price_per_unit || 0
+  const days = parseInt(duration) || 30
+  const unitPrice = pricePerUnit * days
+  const total = unitPrice * quantity
+
+  const handleRenew = () => {
+    if (isPending || isSuccess) return
+    if (sodu < total) {
+      toast.error('Số dư không đủ.')
+      return
+    }
+
+    mutate(
+      { order_id: order.id, duration: days, item_keys: selectedItemKeys },
+      {
+        onSuccess: (data) => {
+          if (data?.success === false) {
+            toast.error(data?.message || 'Lỗi gia hạn.')
+          } else {
+            dispatch(subtractBalance(total))
+            toast.success(data?.message || 'Đã tạo lệnh gia hạn!')
+          }
+        },
+        onError: (err: any) => toast.error(err.response?.data?.message || 'Lỗi không xác định.'),
+      }
+    )
+  }
+
+  return (
+    <div style={{
+      width: 280, borderLeft: '1px solid #e2e8f0', background: '#f8fafc',
+      padding: 16, display: 'flex', flexDirection: 'column', gap: 12, flexShrink: 0,
+    }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <span style={{ fontSize: 14, fontWeight: 700, color: '#1e293b' }}>Gia hạn</span>
+        <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', fontSize: 18 }}>×</button>
+      </div>
+
+      <div style={{ fontSize: 12, color: '#64748b' }}>
+        {selectedItemKeys ? `${quantity} proxy đã chọn` : `Tất cả ${quantity} proxy`}
+      </div>
+
+      {/* Duration */}
+      <div>
+        <div style={{ fontSize: 11, fontWeight: 600, color: '#475569', marginBottom: 6 }}>Thời hạn</div>
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+          {['1', '7', '30'].map(d => (
+            <button
+              key={d}
+              onClick={() => setDuration(d)}
+              style={{
+                padding: '5px 12px', fontSize: 12, fontWeight: 600, borderRadius: 6, cursor: 'pointer',
+                border: '1.5px solid', transition: 'all 0.15s',
+                background: duration === d ? '#1e293b' : '#fff',
+                color: duration === d ? '#fff' : '#64748b',
+                borderColor: duration === d ? '#1e293b' : '#e2e8f0',
+              }}
+            >
+              {d} ngày
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Price */}
+      <div style={{ background: '#fff', borderRadius: 8, padding: 12, border: '1px solid #e2e8f0' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: '#64748b', marginBottom: 4 }}>
+          <span>Đơn giá</span>
+          <span>{unitPrice.toLocaleString('vi-VN')}đ</span>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: '#64748b', marginBottom: 4 }}>
+          <span>Số lượng</span>
+          <span>×{quantity}</span>
+        </div>
+        <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: 6, marginTop: 4, display: 'flex', justifyContent: 'space-between', fontSize: 14, fontWeight: 700 }}>
+          <span>Tổng</span>
+          <span style={{ color: 'var(--primary-color, #3b82f6)' }}>{total.toLocaleString('vi-VN')}đ</span>
+        </div>
+      </div>
+
+      {/* Balance warning */}
+      {sodu < total && (
+        <div style={{ fontSize: 11, color: '#dc2626', display: 'flex', alignItems: 'center', gap: 4 }}>
+          <AlertTriangle size={13} /> Thiếu {(total - sodu).toLocaleString('vi-VN')}đ
+        </div>
+      )}
+
+      {/* Button */}
+      <button
+        onClick={isSuccess ? onClose : handleRenew}
+        disabled={isPending || sodu < total}
+        style={{
+          width: '100%', padding: '10px', fontSize: 13, fontWeight: 700, borderRadius: 8, border: 'none', cursor: 'pointer',
+          background: isSuccess ? '#16a34a' : '#3b82f6', color: '#fff',
+          opacity: (isPending || sodu < total) ? 0.6 : 1,
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+        }}
+      >
+        {isPending ? <><Loader size={14} className='animate-pulse' /> Đang xử lý...</>
+          : isSuccess ? 'Thành công!'
+          : <><RefreshCw size={14} /> Gia hạn {days} ngày</>}
+      </button>
+    </div>
   )
 }
 
