@@ -73,6 +73,16 @@ export interface BrandingSettings {
   deposit_preset_amounts: number[] | null
   deposit_notify_telegram: string | null
 
+  // Landing page
+  landing_pricing: {
+    viettel?: { price?: string; originalPrice?: string; discount?: string }
+    fpt?: { price?: string; originalPrice?: string; discount?: string }
+    vnpt?: { price?: string; originalPrice?: string; discount?: string }
+  } | null
+
+  // Menu labels
+  menu_labels: Record<string, string> | null
+
   // Mode
   site_mode: SiteMode | null
 }

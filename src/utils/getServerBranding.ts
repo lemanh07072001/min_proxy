@@ -85,6 +85,8 @@ export async function getServerBranding(): Promise<BrandingSettings> {
     deposit_min_amount: null,
     deposit_preset_amounts: null,
     deposit_notify_telegram: null,
+    landing_pricing: null,
+    menu_labels: null,
     site_mode: 'child',
   }
 }

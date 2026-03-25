@@ -176,6 +176,8 @@ const defaultBranding: BrandingSettings = {
   deposit_min_amount: null,
   deposit_preset_amounts: null,
   deposit_notify_telegram: null,
+  landing_pricing: null,
+  menu_labels: null,
 }
 
 const defaultBank: BankSettings = {
@@ -463,6 +465,8 @@ export default function SiteSettingsForm() {
     { label: 'Sản phẩm', icon: <ShoppingCart size={16} /> },
     { label: 'Thanh toán & Giao dịch', icon: <CreditCard size={16} /> },
     ...(isChild ? [{ label: 'Nhà cung cấp', icon: <Truck size={16} /> }] : []),
+    { label: 'Landing Page', icon: <ShoppingCart size={16} /> },
+    { label: 'Cài đặt chung', icon: <Settings size={16} /> },
   ]
 
   // ─── Render ──────────────────────────────────────────────────────────────
@@ -1867,6 +1871,98 @@ export default function SiteSettingsForm() {
                   </span>
                 )}
               </div>
+            </div>
+          )}
+
+          {/* ═══════════════ Tab Landing Page ═══════════════ */}
+          {activeTab === availableTabs.findIndex(t => t.label === 'Landing Page') && activeTab >= 0 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+              <SectionCard title='Giá 3 gói trên Landing Page' description='Sửa giá hiển thị cho 3 gói Viettel / FPT / VNPT. Cache SSR 5 phút.'>
+                {['viettel', 'fpt', 'vnpt'].map(key => {
+                  const label = key === 'viettel' ? 'Viettel Proxy' : key === 'fpt' ? 'FPT Proxy' : 'VNPT Proxy'
+                  const currentVal = (branding.landing_pricing as any)?.[key] || {}
+                  return (
+                    <div key={key} style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 12 }}>
+                      <span style={{ width: 100, fontWeight: 600, fontSize: 13 }}>{label}</span>
+                      <TextField
+                        size='small'
+                        label='Giá bán'
+                        placeholder='18.000'
+                        value={currentVal.price || ''}
+                        onChange={e => setBranding(prev => ({
+                          ...prev,
+                          landing_pricing: {
+                            ...(prev.landing_pricing || {}),
+                            [key]: { ...(prev.landing_pricing as any)?.[key], price: e.target.value }
+                          }
+                        }))}
+                        sx={{ width: 120 }}
+                      />
+                      <TextField
+                        size='small'
+                        label='Giá gốc'
+                        placeholder='25.000'
+                        value={currentVal.originalPrice || ''}
+                        onChange={e => setBranding(prev => ({
+                          ...prev,
+                          landing_pricing: {
+                            ...(prev.landing_pricing || {}),
+                            [key]: { ...(prev.landing_pricing as any)?.[key], originalPrice: e.target.value }
+                          }
+                        }))}
+                        sx={{ width: 120 }}
+                      />
+                      <TextField
+                        size='small'
+                        label='Giảm giá'
+                        placeholder='28%'
+                        value={currentVal.discount || ''}
+                        onChange={e => setBranding(prev => ({
+                          ...prev,
+                          landing_pricing: {
+                            ...(prev.landing_pricing || {}),
+                            [key]: { ...(prev.landing_pricing as any)?.[key], discount: e.target.value }
+                          }
+                        }))}
+                        sx={{ width: 100 }}
+                      />
+                    </div>
+                  )
+                })}
+              </SectionCard>
+            </div>
+          )}
+
+          {/* ═══════════════ Tab Cài đặt chung ═══════════════ */}
+          {activeTab === availableTabs.findIndex(t => t.label === 'Cài đặt chung') && activeTab >= 0 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+              <SectionCard title='Tên menu sidebar' description='Đổi tên hiển thị các mục menu. Bỏ trống = giữ mặc định. Cache SSR 5 phút.'>
+                {[
+                  { key: 'home', label: 'Trang chủ', defaultVal: 'Trang chủ' },
+                  { key: 'products', label: 'Sản phẩm', defaultVal: 'Sản phẩm' },
+                  { key: 'finance', label: 'Tài chính', defaultVal: 'Tài chính' },
+                  { key: 'earn', label: 'Kiếm tiền', defaultVal: 'Kiếm tiền' },
+                  { key: 'support', label: 'Hỗ trợ', defaultVal: 'Hỗ trợ' },
+                  { key: 'admin', label: 'Quản trị', defaultVal: 'Quản trị' },
+                ].map(item => (
+                  <div key={item.key} style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 10 }}>
+                    <span style={{ width: 80, fontSize: 13, color: '#64748b' }}>{item.defaultVal}</span>
+                    <TextField
+                      size='small'
+                      placeholder={item.defaultVal}
+                      value={(branding.menu_labels as any)?.[item.key] || ''}
+                      onChange={e => setBranding(prev => ({
+                        ...prev,
+                        menu_labels: {
+                          ...(prev.menu_labels || {}),
+                          [item.key]: e.target.value
+                        }
+                      }))}
+                      sx={{ width: 200 }}
+                    />
+                  </div>
+                ))}
+              </SectionCard>
             </div>
           )}
 

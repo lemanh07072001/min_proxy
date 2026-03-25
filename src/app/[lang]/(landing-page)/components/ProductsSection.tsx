@@ -10,8 +10,16 @@ import { useTranslation } from 'react-i18next'
 
 import Link from '@components/Link'
 
-export default function ProductsSection({ local }: { local: string }) {
+interface LandingPricing {
+  viettel?: { price?: string; originalPrice?: string; discount?: string }
+  fpt?: { price?: string; originalPrice?: string; discount?: string }
+  vnpt?: { price?: string; originalPrice?: string; discount?: string }
+}
+
+export default function ProductsSection({ local, landingPricing }: { local: string; landingPricing?: LandingPricing | null }) {
   const { t } = useTranslation()
+
+  const p = landingPricing || {}
 
   const products = [
     {
@@ -19,10 +27,10 @@ export default function ProductsSection({ local }: { local: string }) {
       name: t('landing.products.cards.viettel.name'),
       provider: 'Viettel',
       img: '/images/softwares/viettel.png',
-      price: '18.000',
-      originalPrice: '25.000',
+      price: p.viettel?.price || '18.000',
+      originalPrice: p.viettel?.originalPrice || '25.000',
       period: t('time.months'),
-      discount: '28%',
+      discount: p.viettel?.discount || '28%',
       features: (t('landing.products.cards.viettel.features', { returnObjects: true }) as string[] || []),
       color: '#e53e3e',
       popular: false,
@@ -33,10 +41,10 @@ export default function ProductsSection({ local }: { local: string }) {
       name: t('landing.products.cards.fpt.name'),
       provider: 'FPT',
       img: '/images/softwares/fpt.png',
-      price: '18.000',
-      originalPrice: '24.000',
+      price: p.fpt?.price || '18.000',
+      originalPrice: p.fpt?.originalPrice || '24.000',
       period: t('time.months'),
-      discount: '25%',
+      discount: p.fpt?.discount || '25%',
       features: (t('landing.products.cards.fpt.features', { returnObjects: true }) as string[] || []),
       color: '#f56500',
       popular: true,
@@ -47,10 +55,10 @@ export default function ProductsSection({ local }: { local: string }) {
       name: t('landing.products.cards.vnpt.name'),
       provider: 'VNPT',
       img: '/images/softwares/vnpt.png',
-      price: '18.000',
-      originalPrice: '26.000',
+      price: p.vnpt?.price || '18.000',
+      originalPrice: p.vnpt?.originalPrice || '26.000',
       period: t('time.months'),
-      discount: '31%',
+      discount: p.vnpt?.discount || '31%',
       features: (t('landing.products.cards.vnpt.features', { returnObjects: true }) as string[] || []),
       color: '#3182ce',
       popular: false,

@@ -36,11 +36,13 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function Page({ params }: { params: Promise<{ lang: string }> }) {
   const { lang } = await params
+  const branding = await getServerBranding()
+  const landingPricing = (branding as any).landing_pricing || null
 
   return (
     <div>
       <Hero />
-      <ProductsSection local={lang} />
+      <ProductsSection local={lang} landingPricing={landingPricing} />
       <VietnamCoverageSection />
       <PartnersSection />
       <TestimonialsSection />
