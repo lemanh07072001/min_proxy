@@ -2,9 +2,6 @@
 
 import { createContext, useContext, ReactNode } from 'react'
 
-import { ToastContainer } from 'react-toastify'
-
-import 'react-toastify/dist/ReactToastify.css'
 import Button from '@mui/material/Button'
 
 import ScrollToTop from '@core/components/scroll-to-top'
@@ -35,22 +32,6 @@ export default function LayoutProvider({ children }: LayoutProviderProps) {
   return (
     <LayoutContext.Provider value={{}}>
       {children}
-      
-      {/* ToastContainer được đặt ở đây để tránh re-render */}
-      <ToastContainer
-        position="top-center"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss={false}
-        draggable={false}
-        pauseOnHover
-        theme="light"
-        limit={3}
-        style={{ zIndex: 99999 }}
-      />
 
       {/* ScrollToTop được đặt ở đây để tránh re-render */}
       <ScrollToTop className='mui-fixed'>
