@@ -567,6 +567,7 @@ export default function ServiceFormModal({ open, onClose, serviceId, initialData
 
   const [purchaseOptions, setPurchaseOptions] = useState<PurchaseOption[]>([])
   const [allowCustomAuth, setAllowCustomAuth] = useState(false)
+  const [renewable, setRenewable] = useState(false)
   const [discountTiers, setDiscountTiers] = useState<DiscountTier[]>([])
   const [costDiscountTiers, setCostDiscountTiers] = useState<DiscountTier[]>([])
 
@@ -734,6 +735,7 @@ return { values: {}, errors: formattedErrors }
       // Load purchase options + allow_custom_auth từ metadata
       const meta = serviceData.metadata || {}
       setAllowCustomAuth(!!meta.allow_custom_auth)
+      setRenewable(!!meta.renewable)
       setDiscountTiers(meta.discount_tiers || [])
       setCostDiscountTiers(meta.cost_discount_tiers || [])
       setQuantityTiers(meta.quantity_tiers || [])
@@ -788,6 +790,7 @@ return { values: {}, errors: formattedErrors }
       setPriceFields([{ key: '', value: '', cost: '' }])
       setPurchaseOptions([])
       setAllowCustomAuth(false)
+      setRenewable(false)
       setDiscountTiers([])
       setQuantityTiers([])
       setPricingMode('fixed')
@@ -853,6 +856,7 @@ return { values: {}, errors: formattedErrors }
     const metadataFinal = {
       ...(metadata || {}),
       allow_custom_auth: allowCustomAuth,
+      renewable: renewable || undefined,
       discount_tiers: pricingMode === 'per_unit' ? discountTiers.filter(t => t.min && t.discount) : undefined,
       cost_discount_tiers: pricingMode === 'per_unit' ? costDiscountTiers.filter(t => t.min && t.discount) : undefined,
       quantity_tiers: pricingMode === 'per_unit' && quantityTiers.length > 0
@@ -1455,6 +1459,19 @@ return <Chip key={val} label={p?.label || val} size='small' />
                     </div>
                   </Grid2>
                 )}
+
+                {/* Cho phép gia hạn */}
+                <Grid2 size={{ xs: 6, sm: 3 }}>
+                  <CustomTextField
+                    fullWidth select
+                    label='Cho phép gia hạn'
+                    value={renewable ? 'true' : 'false'}
+                    onChange={e => setRenewable(e.target.value === 'true')}
+                  >
+                    <MenuItem value='false'>Không</MenuItem>
+                    <MenuItem value='true'>Có</MenuItem>
+                  </CustomTextField>
+                </Grid2>
 
                 <Grid2 size={{ xs: 6, sm: 3 }}>
                   <Controller
