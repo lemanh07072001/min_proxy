@@ -9,7 +9,7 @@ export async function POST(request: Request) {
     const { protocol, format_proxy, list_proxy } = await request.json()
 
     if (!list_proxy || !format_proxy) {
-      return NextResponse.json({ status: 'error', message: 'Thiếu thông tin proxy.' }, { status: 400 })
+      return NextResponse.json({ proxy: '', status: 'error', responseTime: -1, message: 'Thiếu thông tin proxy.' })
     }
 
     // Parse proxy string theo format
@@ -20,7 +20,7 @@ export async function POST(request: Request) {
     const password = parts[3] || ''
 
     if (!host || !port) {
-      return NextResponse.json({ status: 'error', message: 'Proxy không đúng định dạng.' }, { status: 400 })
+      return NextResponse.json({ proxy: list_proxy, status: 'error', responseTime: -1, message: 'Proxy không đúng định dạng.' })
     }
 
     // Build proxy agent theo protocol
@@ -69,9 +69,13 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json({
-      proxy: '',
+      proxy: list_proxy || '',
+      ip: host || '',
+      protocol: protocol || '',
       status: 'error',
+      responseTime: -1,
+      type: format_proxy || '',
       message: errorMessage,
-    }, { status: 500 })
+    })
   }
 }
