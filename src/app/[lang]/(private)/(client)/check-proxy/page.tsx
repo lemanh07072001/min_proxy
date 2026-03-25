@@ -21,11 +21,15 @@ export default function CheckProxyPage() {
   const [checkedProxy, setCheckedProxy] = useState<ProxyData[]>([])
 
   useEffect(() => {
-    if (!checkedProxy || checkedProxy.length === 0) return
+    if (!checkedProxy) return
+
+    // checkedProxy có thể là object (1 proxy) hoặc array
+    const proxyArr = Array.isArray(checkedProxy) ? checkedProxy : [checkedProxy]
+    if (proxyArr.length === 0) return
 
     setCheckResults(prevResults =>
       prevResults.map(item => {
-        const matchedProxy = checkedProxy.find(checked => checked.proxy === item.proxy)
+        const matchedProxy = proxyArr.find(checked => checked.proxy === item.proxy)
 
         return matchedProxy ? { ...item, ...matchedProxy } : item
       })
