@@ -7,6 +7,7 @@ import { X, ShoppingCart, Loader, AlertTriangle, Tag, Clock, CheckCircle } from 
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'react-toastify'
 import { useDispatch, useSelector } from 'react-redux'
+import { useRouter } from 'next/navigation'
 
 import QuantityControl from '@components/form/input-quantity/QuantityControl'
 import ProtocolSelector from '@components/form/protocol-selector/ProtocolSelector'
@@ -94,6 +95,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({
   const dispatch = useDispatch<AppDispatch>()
   const queryClient = useQueryClient()
   const axiosAuth = useAxiosAuth()
+  const router = useRouter()
   const { sodu } = useSelector((state: RootState) => state.user)
   const isSubmitting = useRef(false)
 
@@ -217,19 +219,14 @@ return pct > 0 ? Math.round(pct) : null
         toast.error('Lỗi hệ thống, xin vui lòng liên hệ Admin.')
       } else {
         setPurchaseSuccess(true)
+        setApiError('') // Clear lỗi cũ
         dispatch(subtractBalance(total))
-        toast.success(data.data.message || 'Mua proxy thành công.')
 
         const queryKey = productType === 'static' ? 'orderProxyStatic' : 'proxyData'
 
         queryClient.invalidateQueries({ queryKey: [queryKey] })
         queryClient.invalidateQueries({ queryKey: ['userOrders'] })
         queryClient.invalidateQueries({ queryKey: ['profile'] })
-
-        // Reset sau 2s để khách có thể mua tiếp
-        setTimeout(() => {
-          setPurchaseSuccess(false)
-        }, 2000)
       }
     },
     onError: (error: any) => {
@@ -709,11 +706,19 @@ return (
             </div>
           </div>
 
-          {/* Lỗi từ API — hiện inline thay vì toast */}
-          {apiError && (
+          {/* Lỗi từ API */}
+          {apiError && !purchaseSuccess && (
             <div className='checkout-warning'>
               <AlertTriangle size={16} />
               <span>{apiError}</span>
+            </div>
+          )}
+
+          {/* Mua thành công */}
+          {purchaseSuccess && (
+            <div style={{ padding: '10px 14px', background: '#f0fdf4', borderRadius: 8, border: '1px solid #bbf7d0', fontSize: '13px', color: '#16a34a', display: 'flex', alignItems: 'center', gap: 8 }}>
+              <CheckCircle size={16} />
+              <span>Mua proxy thành công!</span>
             </div>
           )}
         </div>
@@ -724,27 +729,46 @@ return (
             <span className='total-text'>Tổng Cộng:</span>
             <span className='total-amount'>{total.toLocaleString('vi-VN')}đ</span>
           </div>
-          <button
-            type='button'
-            className='checkout-pay-btn'
-            onClick={purchaseSuccess ? onClose : handlePurchase}
-            disabled={isPending || purchaseSuccess}
-            style={purchaseSuccess ? { background: '#16a34a' } : undefined}
-          >
-            {isPending ? (
-              <>
-                <Loader size={18} className='animate-pulse' /> Đang xử lý...
-              </>
-            ) : purchaseSuccess ? (
-              <>
-                <CheckCircle size={18} /> Mua thành công
-              </>
-            ) : (
-              <>
-                <ShoppingCart size={18} /> Thanh Toán
-              </>
-            )}
-          </button>
+          {purchaseSuccess ? (
+            <div style={{ display: 'flex', gap: 8, width: '100%' }}>
+              <button
+                type='button'
+                className='checkout-pay-btn'
+                style={{ flex: 1 }}
+                onClick={() => {
+                  setPurchaseSuccess(false)
+                  setApiError('')
+                  isSubmitting.current = false
+                }}
+              >
+                <ShoppingCart size={18} /> Mua tiếp
+              </button>
+              <button
+                type='button'
+                className='checkout-pay-btn'
+                style={{ flex: 1, background: '#334155' }}
+                onClick={() => {
+                  onClose()
+                  router.push('/history-order')
+                }}
+              >
+                Lịch sử đơn hàng
+              </button>
+            </div>
+          ) : (
+            <button
+              type='button'
+              className='checkout-pay-btn'
+              onClick={handlePurchase}
+              disabled={isPending}
+            >
+              {isPending ? (
+                <><Loader size={18} className='animate-pulse' /> Đang xử lý...</>
+              ) : (
+                <><ShoppingCart size={18} /> Thanh Toán</>
+              )}
+            </button>
+          )}
         </div>
       </div>
     </div>
