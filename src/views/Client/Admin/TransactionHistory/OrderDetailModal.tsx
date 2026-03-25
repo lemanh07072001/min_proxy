@@ -577,6 +577,30 @@ function OrderLogsTimeline({ logs, isLoading }: { logs: OrderLog[]; isLoading: b
                   />
                 </details>
               )}
+
+              {/* Context debug — auth, headers, params, config keys */}
+              {log.context && (() => {
+                const { service_name, service_code, provider_name, provider_code, quantity, price_per_unit, total_amount, proxy_type, time_days, request_params, response, ...rest } = log.context
+                if (Object.keys(rest).length === 0) return null
+                return (
+                  <details style={{ marginTop: 4 }} open={isError}>
+                    <summary style={{ fontSize: '11px', color: isError ? '#f97316' : '#94a3b8', cursor: 'pointer', fontWeight: 500 }}>
+                      Debug chi tiết
+                    </summary>
+                    <textarea
+                      readOnly
+                      value={JSON.stringify(rest, null, 2)}
+                      style={{
+                        fontSize: '11px', color: '#fbbf24', background: '#0f172a',
+                        padding: '8px 10px', borderRadius: 6, marginTop: 4,
+                        width: '100%', minHeight: 60, maxHeight: 400,
+                        border: '1px solid #1e293b', resize: 'both',
+                        fontFamily: 'monospace', whiteSpace: 'pre', overflow: 'auto',
+                      }}
+                    />
+                  </details>
+                )
+              })()}
             </div>
           </div>
         )
