@@ -36,10 +36,13 @@ import {
   CheckCircle
 } from 'lucide-react'
 
+import { RefreshCw } from 'lucide-react'
+
 import { formatDateTimeLocal } from '@/utils/formatDate'
 import { useCopy } from '@/app/hooks/useCopy'
 import { ORDER_STATUS_LABELS, ORDER_STATUS_COLORS } from '@/constants/orderStatus'
 import { useApiKeys } from '@/hooks/apis/useOrders'
+import RenewalDialog from '@/components/renewal-dialog/RenewalDialog'
 
 const formatVND = (v: number) => new Intl.NumberFormat('vi-VN').format(v) + 'đ'
 
@@ -70,6 +73,7 @@ const OrderDetail: React.FC<OrderDetailProps> = ({ open, onClose, order }) => {
   const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 })
   const [, copy] = useCopy()
   const [copiedField, setCopiedField] = useState<string | null>(null)
+  const [renewOpen, setRenewOpen] = useState(false)
 
   const { data: apiKeysData = [], isLoading: isLoadingKeys } = useApiKeys(order?.id, open)
 
@@ -323,6 +327,24 @@ return row.original?.key || row.original?.api_key || ''
                 <InfoCard icon={<Clock size={16} />} label='Loại' value={order.order_type === 1 ? 'Gia hạn' : 'Mua mới'} />
               </Box>
 
+              {/* Nút gia hạn */}
+              {order.order_type !== 1 && ['2', '3', '4'].includes(String(order.status)) && (
+                <Box sx={{ px: '20px', pb: '8px', display: 'flex', gap: 1 }}>
+                  <button
+                    onClick={() => setRenewOpen(true)}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 6,
+                      padding: '8px 16px', fontSize: '13px', fontWeight: 600,
+                      background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)', color: '#fff',
+                      border: 'none', borderRadius: 8, cursor: 'pointer'
+                    }}
+                  >
+                    <RefreshCw size={15} />
+                    {selectedCount > 0 ? `Gia hạn ${selectedCount} proxy đã chọn` : 'Gia hạn tất cả'}
+                  </button>
+                </Box>
+              )}
+
               {/* Divider */}
               <Box sx={{ borderTop: '1px solid #f1f5f9' }} />
 
@@ -436,6 +458,28 @@ return row.original?.key || row.original?.api_key || ''
         </DialogContent>
       </Dialog>
 
+      {/* Renewal Dialog */}
+      {order && (
+        <RenewalDialog
+          open={renewOpen}
+          onClose={() => setRenewOpen(false)}
+          orderId={order.id}
+          orderCode={order.order_code}
+          productName={order.service_name || 'Proxy'}
+          itemCount={order.quantity}
+          selectedItemKeys={
+            selectedCount > 0
+              ? table.getSelectedRowModel().rows.map((r: any) => r.original.key)
+              : undefined
+          }
+          currentExpiry={order.expired_at ? formatDateTimeLocal(order.expired_at) : undefined}
+          priceOptions={[
+            { key: '1', label: '1 ngày', price: order.price_per_unit || 0 },
+            { key: '7', label: '7 ngày', price: (order.price_per_unit || 0) * 7 },
+            { key: '30', label: '30 ngày', price: (order.price_per_unit || 0) * 30 },
+          ]}
+        />
+      )}
     </>
   )
 }
