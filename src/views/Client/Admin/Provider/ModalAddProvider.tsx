@@ -1425,6 +1425,17 @@ function RenewConfigFields({ control }: { control: Control<FormValues> }) {
             )} />
           </Grid2>
 
+          {renewAuthType && renewAuthType !== 'inherit' && renewAuthType !== 'bearer' && (
+            <Grid2 size={{ xs: 12, sm: 4 }}>
+              <Controller name='renew.auth_param' control={control} render={({ field }) => (
+                <CustomTextField {...field} fullWidth
+                  label={<>Tên param auth <FieldHint text='Tên param/header chứa API key. VD: apikey, key, token, api_key...' /></>}
+                  placeholder={renewAuthType === 'header' ? 'apikey' : 'key'}
+                />
+              )} />
+            </Grid2>
+          )}
+
           <Grid2 size={{ xs: 12 }}>
             <Controller name='renew.url' control={control} render={({ field }) => (
               <CustomTextField {...field} fullWidth
@@ -1583,9 +1594,10 @@ export default function ModalAddProvider({ open, onClose, type, providerData }: 
     formState: { errors }
   } = useForm<FormValues>({ defaultValues })
 
-  // Chỉ watch conditional fields cho rotate/ip sections
+  // Chỉ watch conditional fields
   const rotateEnabled = useWatch({ control, name: 'rotate.enabled' })
   const ipEnabled = useWatch({ control, name: 'ip_config.enabled' })
+  const renewAuthType = useWatch({ control, name: 'renew.auth_type' })
   // JSON preview với debounce 300ms
   const [jsonPreview, setJsonPreview] = useState('// Chưa có cấu hình API')
   const debounceRef = useRef<ReturnType<typeof setTimeout>>()
