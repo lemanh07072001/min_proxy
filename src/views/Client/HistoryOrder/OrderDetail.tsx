@@ -46,7 +46,7 @@ import { formatDateTimeLocal } from '@/utils/formatDate'
 import { useCopy } from '@/app/hooks/useCopy'
 import { ORDER_STATUS_LABELS, ORDER_STATUS_COLORS } from '@/constants/orderStatus'
 import { useApiKeys } from '@/hooks/apis/useOrders'
-import { useRenewOrder } from '@/hooks/apis/useRenewal'
+import { useRenewOrder, useRenewInfo } from '@/hooks/apis/useRenewal'
 
 const formatVND = (v: number) => new Intl.NumberFormat('vi-VN').format(v) + 'đ'
 
@@ -506,36 +506,57 @@ function RenewalInlinePanel({ order, quantity, selectedItemKeys, onClose }: {
   selectedItemKeys?: string[]
   onClose: () => void
 }) {
-  const [duration, setDuration] = useState('30')
+  const { data: renewInfo, isLoading: infoLoading } = useRenewInfo(order.id)
   const dispatch = useDispatch<AppDispatch>()
   const { sodu } = useSelector((state: RootState) => state.user)
   const { mutate, isPending, isSuccess } = useRenewOrder()
 
+  const isOriginal = renewInfo?.renewal_duration_mode === 'original'
+  const originalDays = renewInfo?.original_duration || (order.time ?? 30)
+  const [duration, setDuration] = useState(String(originalDays))
+
   const pricePerUnit = order.price_per_unit || 0
-  const days = parseInt(duration) || 30
+  const days = isOriginal ? originalDays : (parseInt(duration) || 30)
   const unitPrice = pricePerUnit * days
   const total = unitPrice * quantity
 
   const handleRenew = () => {
     if (isPending || isSuccess) return
-    if (sodu < total) {
-      toast.error('Số dư không đủ.')
-      return
-    }
+    if (sodu < total) { toast.error('Số dư không đủ.'); return }
 
     mutate(
       { order_id: order.id, duration: days, item_keys: selectedItemKeys },
       {
         onSuccess: (data) => {
-          if (data?.success === false) {
-            toast.error(data?.message || 'Lỗi gia hạn.')
-          } else {
-            dispatch(subtractBalance(total))
-            toast.success(data?.message || 'Đã tạo lệnh gia hạn!')
-          }
+          if (data?.success === false) toast.error(data?.message || 'Lỗi gia hạn.')
+          else { dispatch(subtractBalance(total)); toast.success(data?.message || 'Đã tạo lệnh gia hạn!') }
         },
         onError: (err: any) => toast.error(err.response?.data?.message || 'Lỗi không xác định.'),
       }
+    )
+  }
+
+  // Loading renew info
+  if (infoLoading) {
+    return (
+      <div style={{ width: 280, borderLeft: '1px solid #e2e8f0', background: '#f8fafc', padding: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+        <Loader size={20} className='animate-pulse' style={{ color: '#94a3b8' }} />
+      </div>
+    )
+  }
+
+  // Can't renew
+  if (renewInfo && !renewInfo.can_renew) {
+    return (
+      <div style={{ width: 280, borderLeft: '1px solid #e2e8f0', background: '#f8fafc', padding: 16, flexShrink: 0 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+          <span style={{ fontSize: 14, fontWeight: 700, color: '#1e293b' }}>Gia hạn</span>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', fontSize: 18 }}>×</button>
+        </div>
+        <div style={{ fontSize: 12, color: '#dc2626', padding: '10px 12px', background: '#fef2f2', borderRadius: 8, border: '1px solid #fecaca' }}>
+          {renewInfo.reason || 'Không thể gia hạn.'}
+        </div>
+      </div>
     )
   }
 
@@ -554,31 +575,37 @@ function RenewalInlinePanel({ order, quantity, selectedItemKeys, onClose }: {
       </div>
 
       {/* Duration */}
-      <div>
-        <div style={{ fontSize: 11, fontWeight: 600, color: '#475569', marginBottom: 6 }}>Thời hạn</div>
-        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-          {['1', '7', '30'].map(d => (
-            <button
-              key={d}
-              onClick={() => setDuration(d)}
-              style={{
-                padding: '5px 12px', fontSize: 12, fontWeight: 600, borderRadius: 6, cursor: 'pointer',
-                border: '1.5px solid', transition: 'all 0.15s',
-                background: duration === d ? '#1e293b' : '#fff',
-                color: duration === d ? '#fff' : '#64748b',
-                borderColor: duration === d ? '#1e293b' : '#e2e8f0',
-              }}
-            >
-              {d} ngày
-            </button>
-          ))}
+      {isOriginal ? (
+        <div style={{ padding: '8px 12px', background: '#eff6ff', borderRadius: 8, border: '1px solid #bfdbfe', fontSize: 12, color: '#1d4ed8' }}>
+          Gia hạn {originalDays} ngày (theo lần mua đầu)
         </div>
-      </div>
+      ) : (
+        <div>
+          <div style={{ fontSize: 11, fontWeight: 600, color: '#475569', marginBottom: 6 }}>Thời hạn</div>
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+            {['1', '7', '30'].map(d => (
+              <button
+                key={d}
+                onClick={() => setDuration(d)}
+                style={{
+                  padding: '5px 12px', fontSize: 12, fontWeight: 600, borderRadius: 6, cursor: 'pointer',
+                  border: '1.5px solid', transition: 'all 0.15s',
+                  background: duration === d ? '#1e293b' : '#fff',
+                  color: duration === d ? '#fff' : '#64748b',
+                  borderColor: duration === d ? '#1e293b' : '#e2e8f0',
+                }}
+              >
+                {d} ngày
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Price */}
       <div style={{ background: '#fff', borderRadius: 8, padding: 12, border: '1px solid #e2e8f0' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: '#64748b', marginBottom: 4 }}>
-          <span>Đơn giá</span>
+          <span>Đơn giá ({days} ngày)</span>
           <span>{unitPrice.toLocaleString('vi-VN')}đ</span>
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: '#64748b', marginBottom: 4 }}>
@@ -591,14 +618,12 @@ function RenewalInlinePanel({ order, quantity, selectedItemKeys, onClose }: {
         </div>
       </div>
 
-      {/* Balance warning */}
       {sodu < total && (
         <div style={{ fontSize: 11, color: '#dc2626', display: 'flex', alignItems: 'center', gap: 4 }}>
           <AlertTriangle size={13} /> Thiếu {(total - sodu).toLocaleString('vi-VN')}đ
         </div>
       )}
 
-      {/* Button */}
       <button
         onClick={isSuccess ? onClose : handleRenew}
         disabled={isPending || sodu < total}
