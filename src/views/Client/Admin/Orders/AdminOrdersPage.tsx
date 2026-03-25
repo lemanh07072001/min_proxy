@@ -177,6 +177,11 @@ export default function AdminOrdersPage() {
   const [refundOrder, setRefundOrder] = useState<any>(null)
   const [fillProxiesOrder, setFillProxiesOrder] = useState<any>(null)
 
+  // Renewal state
+  const [renewalRetryOrder, setRenewalRetryOrder] = useState<any>(null)
+  const [renewalDismissOrder, setRenewalDismissOrder] = useState<any>(null)
+  const [renewalLoading, setRenewalLoading] = useState(false)
+
   // Data - Tab 0
   const { data: ordersData, isLoading, isFetching } = useAdminOrders(
     {
@@ -277,11 +282,15 @@ return {
     if (!orderToCancel) return
     cancelMutation.mutate(orderToCancel.id, {
       onSuccess: (data: any) => {
-        toast.success(data?.message || 'Hủy đơn + hoàn tiền thành công')
         setCancelDialogOpen(false)
         setOrderToCancel(null)
+        toast.success(data?.message || 'Hủy đơn + hoàn tiền thành công')
       },
-      onError: (error: any) => toast.error(error?.response?.data?.message || 'Có lỗi xảy ra')
+      onError: (error: any) => {
+        setCancelDialogOpen(false)
+        setOrderToCancel(null)
+        toast.error(error?.response?.data?.message || 'Có lỗi xảy ra')
+      }
     })
   }, [orderToCancel, cancelMutation])
 
@@ -294,11 +303,15 @@ return {
     if (!orderToResend) return
     resendMutation.mutate(orderToResend.id, {
       onSuccess: (data: any) => {
-        toast.success(data?.message || 'Gửi lại đơn thành công')
         setResendDialogOpen(false)
         setOrderToResend(null)
+        toast.success(data?.message || 'Gửi lại đơn thành công')
       },
-      onError: (error: any) => toast.error(error?.response?.data?.message || 'Có lỗi xảy ra')
+      onError: (error: any) => {
+        setResendDialogOpen(false)
+        setOrderToResend(null)
+        toast.error(error?.response?.data?.message || 'Có lỗi xảy ra')
+      }
     })
   }, [orderToResend, resendMutation])
 
@@ -316,45 +329,61 @@ return {
     if (!retryOrder) return
     retryMutation.mutate(retryOrder.id, {
       onSuccess: (data: any) => {
-        toast.success(data?.message || 'Đã đẩy đơn vào queue mua bù!')
         setRetryOrder(null)
+        toast.success(data?.message || 'Đã đẩy đơn vào queue mua bù!')
       },
-      onError: (error: any) => toast.error(error?.response?.data?.message || 'Có lỗi xảy ra')
+      onError: (error: any) => {
+        setRetryOrder(null)
+        toast.error(error?.response?.data?.message || 'Có lỗi xảy ra')
+      }
     })
   }, [retryOrder, retryMutation])
 
   const axiosAuth = useAxiosAuth()
 
-  const handleRenewalRetry = useCallback(async (order: any) => {
-    if (!confirm(`Retry gia hạn đơn ${order.order_code}? Tiền đã trừ từ lần đầu, không trừ thêm.`)) return
+  const handleConfirmRenewalRetry = useCallback(async () => {
+    if (!renewalRetryOrder) return
+    setRenewalLoading(true)
     try {
-      const res = await axiosAuth.post('/admin/renewal-retry', { order_id: order.id })
+      const res = await axiosAuth.post('/admin/renewal-retry', { order_id: renewalRetryOrder.id })
+      setRenewalRetryOrder(null)
       toast.success(res?.data?.message || 'Đã retry gia hạn!')
       queryClient.invalidateQueries({ queryKey: ['adminOrders'] })
     } catch (err: any) {
+      setRenewalRetryOrder(null)
       toast.error(err?.response?.data?.message || 'Lỗi retry gia hạn')
+    } finally {
+      setRenewalLoading(false)
     }
-  }, [axiosAuth, queryClient])
+  }, [renewalRetryOrder, axiosAuth, queryClient])
 
-  const handleRenewalDismiss = useCallback(async (order: any) => {
-    if (!confirm(`Bỏ qua gia hạn lỗi đơn ${order.order_code}? Đơn sẽ về trạng thái trước đó.`)) return
+  const handleConfirmRenewalDismiss = useCallback(async () => {
+    if (!renewalDismissOrder) return
+    setRenewalLoading(true)
     try {
-      const res = await axiosAuth.post('/admin/renewal-dismiss', { order_id: order.id })
+      const res = await axiosAuth.post('/admin/renewal-dismiss', { order_id: renewalDismissOrder.id })
+      setRenewalDismissOrder(null)
       toast.success(res?.data?.message || 'Đã bỏ qua gia hạn lỗi.')
       queryClient.invalidateQueries({ queryKey: ['adminOrders'] })
     } catch (err: any) {
+      setRenewalDismissOrder(null)
       toast.error(err?.response?.data?.message || 'Lỗi')
+    } finally {
+      setRenewalLoading(false)
     }
-  }, [axiosAuth, queryClient])
+  }, [renewalDismissOrder, axiosAuth, queryClient])
 
   const handleRefund = useCallback(() => {
     if (!refundOrder) return
     refundMutation.mutate(refundOrder.id, {
       onSuccess: (data: any) => {
-        toast.success(data?.message || 'Hoàn tiền thành công!')
         setRefundOrder(null)
+        toast.success(data?.message || 'Hoàn tiền thành công!')
       },
-      onError: (error: any) => toast.error(error?.response?.data?.message || 'Có lỗi xảy ra')
+      onError: (error: any) => {
+        setRefundOrder(null)
+        toast.error(error?.response?.data?.message || 'Có lỗi xảy ra')
+      }
     })
   }, [refundOrder, refundMutation])
 
@@ -437,12 +466,12 @@ return {
               {status === 12 && (
                 <>
                   <Tooltip title='Retry gia hạn'>
-                    <IconButton size='small' color='warning' onClick={() => handleRenewalRetry(order)}>
+                    <IconButton size='small' color='warning' onClick={() => setRenewalRetryOrder(order)}>
                       <RotateCcw size={16} />
                     </IconButton>
                   </Tooltip>
                   <Tooltip title='Bỏ qua (khôi phục trạng thái cũ)'>
-                    <IconButton size='small' color='default' onClick={() => handleRenewalDismiss(order)}>
+                    <IconButton size='small' color='default' onClick={() => setRenewalDismissOrder(order)}>
                       <XCircle size={16} />
                     </IconButton>
                   </Tooltip>
@@ -1113,10 +1142,11 @@ return (
 
               retryFailedMutation.mutate(retryFailedOrder.id, {
                 onSuccess: (data: any) => {
-                  toast.success(data?.message || 'Đã đẩy lại đơn hàng')
                   setRetryFailedOrder(null)
+                  toast.success(data?.message || 'Đã đẩy lại đơn hàng')
                 },
                 onError: (err: any) => {
+                  setRetryFailedOrder(null)
                   toast.error(err?.response?.data?.message || 'Lỗi khi retry')
                 }
               })
@@ -1142,6 +1172,54 @@ return (
           }}
         />
       )}
+
+      {/* Renewal Retry Dialog */}
+      <Dialog open={!!renewalRetryOrder} onClose={() => setRenewalRetryOrder(null)}>
+        <DialogTitle>Retry gia hạn</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Đẩy lại đơn <strong>#{renewalRetryOrder?.order_code}</strong> vào queue gia hạn?
+            <br /><br />
+            Tiền đã trừ từ lần đầu, không trừ thêm.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setRenewalRetryOrder(null)} color='inherit'>Hủy</Button>
+          <Button
+            onClick={handleConfirmRenewalRetry}
+            color='warning'
+            variant='contained'
+            disabled={renewalLoading}
+            sx={{ color: '#fff' }}
+          >
+            {renewalLoading ? <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} /> : 'Xác nhận retry'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Renewal Dismiss Dialog */}
+      <Dialog open={!!renewalDismissOrder} onClose={() => setRenewalDismissOrder(null)}>
+        <DialogTitle>Bỏ qua gia hạn lỗi</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Bỏ qua gia hạn lỗi đơn <strong>#{renewalDismissOrder?.order_code}</strong>?
+            <br /><br />
+            Đơn sẽ về trạng thái trước đó. Tiền đã trừ sẽ không được hoàn tự động.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setRenewalDismissOrder(null)} color='inherit'>Hủy</Button>
+          <Button
+            onClick={handleConfirmRenewalDismiss}
+            color='error'
+            variant='contained'
+            disabled={renewalLoading}
+            sx={{ color: '#fff' }}
+          >
+            {renewalLoading ? <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} /> : 'Xác nhận bỏ qua'}
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       {/* Refund Dialog */}
       <Dialog open={!!refundOrder} onClose={() => setRefundOrder(null)}>
