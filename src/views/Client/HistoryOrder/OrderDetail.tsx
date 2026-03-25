@@ -234,51 +234,52 @@ return row.original?.key || row.original?.api_key || ''
     copy(texts.join('\n'), `Đã copy ${texts.length} ${order?.service_type === '0' ? 'proxy' : 'API key'}!`)
   }
 
+  const [exportFormat, setExportFormat] = useState<'txt' | 'csv' | 'json'>('txt')
+  const [exportProtocol, setExportProtocol] = useState<'http' | 'socks5'>('http')
+
   const getExportRows = () => {
     const selectedRows = table.getFilteredSelectedRowModel().rows
     return selectedRows.length > 0 ? selectedRows.map((r: any) => r.original) : apiKeysData
   }
 
-  const exportProxy = (format: 'txt' | 'csv' | 'json') => {
+  const getProxyString = (item: any, protocol: 'http' | 'socks5') => {
+    const p = item.proxy || item.proxys
+    if (!p || typeof p !== 'object') return item.key || item.api_key || ''
+    if (protocol === 'socks5') return p.socks5 || p.SOCKS5 || p.http || p.HTTP || ''
+    return p.http || p.HTTP || p.socks5 || p.SOCKS5 || ''
+  }
+
+  const handleExport = () => {
     const rows = getExportRows()
     if (!rows.length) return
 
+    const isProxy = order?.service_type === '0'
     let content: string
-    let ext: string
+    let ext = exportFormat
     let mime: string
 
-    if (format === 'json') {
-      const data = rows.map((item: any) => ({
-        key: item.key || item.api_key || '',
-        proxy: item.proxy || item.proxys || null,
-        expired_at: item.expired_at || null,
-      }))
-      content = JSON.stringify(data, null, 2)
-      ext = 'json'
-      mime = 'application/json'
-    } else if (format === 'csv') {
-      const lines = rows.map((item: any) => {
-        const key = item.key || item.api_key || ''
-        const proxy = (() => {
-          const p = item.proxy || item.proxys
-          if (p && typeof p === 'object') return p.http || p.HTTP || p.socks5 || p.SOCK5 || ''
-          return p || ''
-        })()
-        return `${key},${proxy},${item.expired_at || ''}`
+    if (exportFormat === 'json') {
+      const data = rows.map((item: any) => {
+        if (isProxy) {
+          return { proxy: getProxyString(item, exportProtocol), expired_at: item.expired_at || null }
+        }
+        return { key: item.key || item.api_key || '', expired_at: item.expired_at || null }
       })
-      content = 'key,proxy,expired_at\n' + lines.join('\n')
-      ext = 'csv'
+      content = JSON.stringify(data, null, 2)
+      mime = 'application/json'
+    } else if (exportFormat === 'csv') {
+      const header = isProxy ? 'proxy,expired_at' : 'key,expired_at'
+      const lines = rows.map((item: any) => {
+        const val = isProxy ? getProxyString(item, exportProtocol) : (item.key || item.api_key || '')
+        return `${val},${item.expired_at || ''}`
+      })
+      content = header + '\n' + lines.join('\n')
       mime = 'text/csv'
     } else {
       content = rows.map((item: any) => {
-        if (order?.service_type === '0') {
-          const p = item.proxy || item.proxys || {}
-          const vals = Object.entries(p).filter(([k]) => k !== 'loaiproxy').map(([_, v]) => v)
-          return String(vals[0] || '')
-        }
+        if (isProxy) return getProxyString(item, exportProtocol)
         return item.key || item.api_key || ''
       }).filter(Boolean).join('\n')
-      ext = 'txt'
       mime = 'text/plain'
     }
 
@@ -286,7 +287,7 @@ return row.original?.key || row.original?.api_key || ''
     const url = window.URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = url
-    link.download = `${order?.order_code || 'order'}_proxies.${ext}`
+    link.download = `${order?.order_code || 'order'}_${isProxy ? exportProtocol : 'keys'}.${ext}`
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
@@ -403,7 +404,7 @@ return row.original?.key || row.original?.api_key || ''
                   <Typography sx={{ fontSize: '14px', fontWeight: 600, color: '#1e293b' }}>
                     Danh sách proxy ({totalRows})
                   </Typography>
-                  <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                  <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
                     {selectedCount > 0 && (
                       <>
                         <span style={{ fontSize: '12px', color: '#64748b' }}>Đã chọn: {selectedCount}</span>
@@ -420,8 +421,33 @@ return row.original?.key || row.original?.api_key || ''
                         </button>
                       </>
                     )}
+                    {order?.service_type === '0' && (
+                      <select
+                        value={exportProtocol}
+                        onChange={e => setExportProtocol(e.target.value as 'http' | 'socks5')}
+                        style={{
+                          padding: '4px 8px', fontSize: '12px', borderRadius: 6,
+                          border: '1px solid #e2e8f0', background: '#fff', color: '#374151', cursor: 'pointer'
+                        }}
+                      >
+                        <option value='http'>HTTP</option>
+                        <option value='socks5'>SOCKS5</option>
+                      </select>
+                    )}
+                    <select
+                      value={exportFormat}
+                      onChange={e => setExportFormat(e.target.value as 'txt' | 'csv' | 'json')}
+                      style={{
+                        padding: '4px 8px', fontSize: '12px', borderRadius: 6,
+                        border: '1px solid #e2e8f0', background: '#fff', color: '#374151', cursor: 'pointer'
+                      }}
+                    >
+                      <option value='txt'>TXT</option>
+                      <option value='csv'>CSV</option>
+                      <option value='json'>JSON</option>
+                    </select>
                     <button
-                      onClick={() => exportProxy('txt')}
+                      onClick={handleExport}
                       style={{
                         display: 'flex', alignItems: 'center', gap: 4,
                         padding: '5px 10px', fontSize: '12px', fontWeight: 500,
@@ -429,27 +455,7 @@ return row.original?.key || row.original?.api_key || ''
                         borderRadius: 6, cursor: 'pointer'
                       }}
                     >
-                      <FileDown size={13} /> TXT
-                    </button>
-                    <button
-                      onClick={() => exportProxy('csv')}
-                      style={{
-                        padding: '5px 10px', fontSize: '12px', fontWeight: 500,
-                        background: '#f0fdf4', color: '#16a34a', border: '1px solid #bbf7d0',
-                        borderRadius: 6, cursor: 'pointer'
-                      }}
-                    >
-                      CSV
-                    </button>
-                    <button
-                      onClick={() => exportProxy('json')}
-                      style={{
-                        padding: '5px 10px', fontSize: '12px', fontWeight: 500,
-                        background: '#fefce8', color: '#ca8a04', border: '1px solid #fde68a',
-                        borderRadius: 6, cursor: 'pointer'
-                      }}
-                    >
-                      JSON
+                      <FileDown size={13} /> Xuất {selectedCount > 0 ? `(${selectedCount})` : `(${totalRows})`}
                     </button>
                   </div>
                 </div>
