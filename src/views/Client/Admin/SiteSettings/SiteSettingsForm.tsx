@@ -292,6 +292,8 @@ export default function SiteSettingsForm() {
         deposit_min_amount: brandingData.deposit_min_amount ?? null,
         deposit_preset_amounts: brandingData.deposit_preset_amounts ?? null,
         deposit_notify_telegram: brandingData.deposit_notify_telegram ?? null,
+        landing_pricing: brandingData.landing_pricing ?? null,
+        menu_labels: brandingData.menu_labels ?? null,
       })
     }
   }, [brandingData])
