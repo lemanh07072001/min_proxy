@@ -12,14 +12,9 @@ import {
   Clock3,
   Search,
   X,
-  Eye,
-  XCircle,
-  FileText,
   RefreshCw,
   Loader2,
-  Clock,
   CircleX,
-  AlertCircle,
   RotateCcw,
   User,
   ArrowDownWideNarrow,
@@ -38,29 +33,16 @@ import MenuItem from '@mui/material/MenuItem'
 import InputAdornment from '@mui/material/InputAdornment'
 import IconButton from '@mui/material/IconButton'
 import Tooltip from '@mui/material/Tooltip'
-import Dialog from '@mui/material/Dialog'
-import DialogActions from '@mui/material/DialogActions'
-import DialogContent from '@mui/material/DialogContent'
-import DialogContentText from '@mui/material/DialogContentText'
-import DialogTitle from '@mui/material/DialogTitle'
 import Button from '@mui/material/Button'
 import Pagination from '@mui/material/Pagination'
 
-import { toast } from 'react-toastify'
-
 import { formatDateTimeLocal } from '@/utils/formatDate'
 import DetailUserModal from '@/views/Client/Admin/TransactionHistory/DetailUserModal'
-import LogModal from '@/views/Client/Admin/TransactionHistory/LogModal'
-import OrderDetailModal from '@/views/Client/Admin/TransactionHistory/OrderDetailModal'
 import { useUserOrders } from '@/hooks/apis/useUserOrders'
-import { useCancelOrder, useResendOrder } from '@/hooks/apis/useOrders'
 import { useAdminTransactionHistory } from '@/hooks/apis/useAdminTransactionHistory'
 import CustomTextField from '@/@core/components/mui/TextField'
 import useMediaQuery from '@/@menu/hooks/useMediaQuery'
 import {
-  ORDER_STATUS,
-  ORDER_STATUS_LABELS_ADMIN,
-  ORDER_STATUS_COLORS,
   TRANSACTION_TYPES,
   TRANSACTION_TYPE_LABELS
 } from '@/constants'
@@ -89,14 +71,7 @@ export default function TableDepositHistory() {
 
   // Modals
   const [isModalDetailUserOpen, setIsModalDetailUserOpen] = useState(false)
-  const [isLogModalOpen, setIsLogModalOpen] = useState(false)
-  const [isOrderDetailModalOpen, setIsOrderDetailModalOpen] = useState(false)
-  const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false)
-  const [isResendDialogOpen, setIsResendDialogOpen] = useState(false)
   const [selectedUserId, setSelectedUserId] = useState<number | undefined>()
-  const [selectedOrderData, setSelectedOrderData] = useState<any>(null)
-  const [orderToCancel, setOrderToCancel] = useState<any>(null)
-  const [orderToResend, setOrderToResend] = useState<any>(null)
 
   // Apply tất cả filter cùng lúc khi click "Tìm kiếm"
   const handleApplyFilters = useCallback(() => {
@@ -137,9 +112,6 @@ export default function TableDepositHistory() {
 
   const dataOrders = useMemo(() => apiResponse?.data ?? [], [apiResponse])
 
-  const cancelOrderMutation = useCancelOrder()
-  const resendOrderMutation = useResendOrder()
-
   const { data: sampleUser = [], isLoading: loadingModal, refetch } = useUserOrders(selectedUserId)
 
   // Badge helpers — đảm bảo contrast tốt, label đủ rõ ràng, không bị cắt
@@ -163,7 +135,10 @@ export default function TableDepositHistory() {
         return <Chip label={label} size='small' icon={<CircleX />} color='error' sx={chipSx} />
       case TRANSACTION_TYPES.GIAHAN:
       case TRANSACTION_TYPES.GIAHAN_V4:
+      case TRANSACTION_TYPES.RENEWAL:
         return <Chip label={label} size='small' icon={<RefreshCw />} color='info' sx={chipSx} />
+      case TRANSACTION_TYPES.REFUND_RENEWAL:
+        return <Chip label={label} size='small' icon={<RotateCcw />} color='warning' sx={chipWarning} />
       case TRANSACTION_TYPES.NAPTIEN:
       case TRANSACTION_TYPES.NAPTIEN_AUTO:
       case TRANSACTION_TYPES.NAPTIEN_PAY2S:
@@ -176,55 +151,6 @@ export default function TableDepositHistory() {
     }
   }
 
-  const getStatusBadge = (status: string) => {
-    const label = ORDER_STATUS_LABELS_ADMIN[status]
-    const color = ORDER_STATUS_COLORS[status as keyof typeof ORDER_STATUS_COLORS]
-
-    if (!label) {
-      return <Chip label='Không xác định' size='small' icon={<CircleQuestionMark />} color='default' />
-    }
-
-    let icon = <CircleQuestionMark size={16} />
-
-    switch (status) {
-      case ORDER_STATUS.PENDING:
-      case ORDER_STATUS.PROCESSING:
-      case ORDER_STATUS.RETRY_PROCESSING_PARTIAL:
-        icon = <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} />
-        break
-      case ORDER_STATUS.IN_USE:
-        icon = <BadgeCheck size={16} />
-        break
-      case ORDER_STATUS.IN_USE_PARTIAL:
-        icon = <AlertCircle size={16} />
-        break
-      case ORDER_STATUS.EXPIRED:
-        icon = <Clock size={16} />
-        break
-      case ORDER_STATUS.FAILED:
-        icon = <CircleX size={16} />
-        break
-      case ORDER_STATUS.PARTIAL_REFUNDED:
-      case ORDER_STATUS.WAITING_REFUND:
-      case ORDER_STATUS.REFUNDED_ALL:
-        icon = <RotateCcw size={16} />
-        break
-    }
-
-    // Fix contrast: warning chips cần text trắng
-    const needsWhiteText = color === 'warning'
-
-    return (
-      <Chip
-        label={label}
-        size='small'
-        icon={icon}
-        color={color as any}
-        sx={needsWhiteText ? chipWarning : chipSx}
-      />
-    )
-  }
-
   // Columns
   const columns = useMemo(
     () => [
@@ -234,46 +160,16 @@ export default function TableDepositHistory() {
         size: isMobile ? 60 : 50
       },
       {
-        header: 'Thao tác',
+        header: '',
         id: 'actions',
-        size: 120,
-        cell: ({ row }: { row: any }) => {
-          const orderStatus = row.original?.order?.status
-
-          return (
-            <div className='flex gap-1'>
-              <Tooltip title='Chi tiết đơn hàng'>
-                <IconButton size='small' color='primary' onClick={() => handleOpenOrderDetailModal(row.original)}>
-                  <Eye size={16} />
-                </IconButton>
-              </Tooltip>
-              <Tooltip title='Xem log đơn hàng'>
-                <IconButton size='small' color='info' onClick={() => handleOpenLogModal(row.original)}>
-                  <FileText size={16} />
-                </IconButton>
-              </Tooltip>
-              <Tooltip title='Thông tin user'>
-                <IconButton size='small' color='info' onClick={() => handleOpenModalUserDetail(row.original?.user?.id)}>
-                  <User size={16} />
-                </IconButton>
-              </Tooltip>
-              {orderStatus === ORDER_STATUS.FAILED && (
-                <>
-                  <Tooltip title='Hủy đơn + hoàn tiền'>
-                    <IconButton size='small' color='error' onClick={() => handleOpenCancelDialog(row.original)}>
-                      <XCircle size={16} />
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip title='Gửi lại đơn'>
-                    <IconButton size='small' color='success' onClick={() => handleOpenResendDialog(row.original)}>
-                      <RefreshCw size={16} />
-                    </IconButton>
-                  </Tooltip>
-                </>
-              )}
-            </div>
-          )
-        }
+        size: 50,
+        cell: ({ row }: { row: any }) => (
+          <Tooltip title='Thông tin user'>
+            <IconButton size='small' color='info' onClick={() => handleOpenModalUserDetail(row.original?.user?.id)}>
+              <User size={16} />
+            </IconButton>
+          </Tooltip>
+        )
       },
       {
         header: 'User',
@@ -340,20 +236,6 @@ export default function TableDepositHistory() {
           </div>
         )
       },
-      {
-        header: 'Trạng thái',
-        size: 170,
-        cell: ({ row }: { row: any }) => {
-          const orderStatus = row.original?.order?.status
-
-          // Giao dịch không có order (NAPTIEN, RUT_HOA_HONG_AFFILIATE, ...) → mặc định "Hoàn thành"
-          if (orderStatus === undefined || orderStatus === null) {
-            return <Chip label='Hoàn thành' size='small' icon={<BadgeCheck size={16} />} color='success' sx={chipSx} />
-          }
-
-          return getStatusBadge(orderStatus)
-        }
-      }
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [isMobile]
@@ -378,54 +260,6 @@ export default function TableDepositHistory() {
   const handleOpenModalUserDetail = (userId: number) => {
     setSelectedUserId(userId)
     setIsModalDetailUserOpen(true)
-  }
-
-  const handleOpenLogModal = (orderData: any) => {
-    setSelectedOrderData(orderData)
-    setIsLogModalOpen(true)
-  }
-
-  const handleOpenOrderDetailModal = (orderData: any) => {
-    setSelectedOrderData(orderData)
-    setIsOrderDetailModalOpen(true)
-  }
-
-  const handleOpenCancelDialog = (orderData: any) => {
-    setOrderToCancel(orderData)
-    setIsCancelDialogOpen(true)
-  }
-
-  const handleConfirmCancel = () => {
-    if (!orderToCancel?.order?.id) return
-    cancelOrderMutation.mutate(orderToCancel.order.id, {
-      onSuccess: () => {
-        setIsCancelDialogOpen(false)
-        setOrderToCancel(null)
-        toast.success('Hủy đơn hàng thành công!')
-      },
-      onError: (error: any) => {
-        toast.error(error?.response?.data?.message || 'Có lỗi xảy ra khi hủy đơn hàng')
-      }
-    })
-  }
-
-  const handleOpenResendDialog = (orderData: any) => {
-    setOrderToResend(orderData)
-    setIsResendDialogOpen(true)
-  }
-
-  const handleConfirmResend = () => {
-    if (!orderToResend?.order?.id) return
-    resendOrderMutation.mutate(orderToResend.order.id, {
-      onSuccess: () => {
-        setIsResendDialogOpen(false)
-        setOrderToResend(null)
-        toast.success('Gửi lại đơn hàng thành công!')
-      },
-      onError: (error: any) => {
-        toast.error(error?.response?.data?.message || 'Có lỗi xảy ra khi gửi lại đơn hàng')
-      }
-    })
   }
 
   const hasActiveFilters = !!(searchQuery || typeFilter || limit !== 100 || sortOrder !== 'desc')
@@ -506,8 +340,10 @@ export default function TableDepositHistory() {
               <MenuItem value={TRANSACTION_TYPES.GIAHAN}>Gia hạn</MenuItem>
               <MenuItem value={TRANSACTION_TYPES.THANHTOAN_V4}>Mua proxy V4</MenuItem>
               <MenuItem value={TRANSACTION_TYPES.GIAHAN_V4}>Gia hạn V4</MenuItem>
+              <MenuItem value={TRANSACTION_TYPES.RENEWAL}>Gia hạn proxy</MenuItem>
               <MenuItem value={TRANSACTION_TYPES.REFUND_PARTIAL}>Hoàn tiền 1 phần</MenuItem>
               <MenuItem value={TRANSACTION_TYPES.REFUND_FULL}>Hoàn tiền toàn bộ</MenuItem>
+              <MenuItem value={TRANSACTION_TYPES.REFUND_RENEWAL}>Hoàn tiền gia hạn</MenuItem>
               <MenuItem value={TRANSACTION_TYPES.RUT_HOA_HONG_AFFILIATE}>Rút hoa hồng</MenuItem>
             </CustomTextField>
 
@@ -705,58 +541,6 @@ export default function TableDepositHistory() {
         data={sampleUser}
         isLoading={loadingModal}
       />
-
-      <LogModal isOpen={isLogModalOpen} onClose={() => setIsLogModalOpen(false)} orderId={selectedOrderData?.order?.id ?? null} />
-
-      <OrderDetailModal
-        isOpen={isOrderDetailModalOpen}
-        onClose={() => {
-          setIsOrderDetailModalOpen(false)
-          setSelectedOrderData(null)
-        }}
-        orderData={selectedOrderData}
-        isLoading={false}
-      />
-
-      {/* Cancel Order Dialog */}
-      <Dialog open={isCancelDialogOpen} onClose={() => setIsCancelDialogOpen(false)}>
-        <DialogTitle>Xác nhận hủy đơn hàng</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            Bạn có chắc muốn hủy đơn <strong>#{orderToCancel?.order?.order_code}</strong>?
-            <br />
-            Tiền sẽ được hoàn lại cho user.
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setIsCancelDialogOpen(false)} color='inherit'>
-            Quay lại
-          </Button>
-          <Button onClick={handleConfirmCancel} color='error' variant='contained' sx={{ color: '#fff' }}>
-            Xác nhận hủy
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Resend Order Dialog */}
-      <Dialog open={isResendDialogOpen} onClose={() => setIsResendDialogOpen(false)}>
-        <DialogTitle>Xác nhận gửi lại đơn hàng</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            Gửi lại đơn <strong>#{orderToResend?.order?.order_code}</strong>?
-            <br />
-            Hệ thống sẽ xử lý lại đơn hàng này.
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setIsResendDialogOpen(false)} color='inherit'>
-            Hủy
-          </Button>
-          <Button onClick={handleConfirmResend} color='success' variant='contained' sx={{ color: '#fff' }}>
-            Xác nhận gửi lại
-          </Button>
-        </DialogActions>
-      </Dialog>
     </>
   )
 }
