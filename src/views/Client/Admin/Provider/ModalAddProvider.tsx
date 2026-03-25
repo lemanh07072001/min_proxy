@@ -1375,6 +1375,7 @@ function BuyConfigFields({
 function RenewConfigFields({ control }: { control: Control<FormValues> }) {
   const enabled = useWatch({ control, name: 'renew.enabled' })
   const mode = useWatch({ control, name: 'renew.mode' })
+  const renewAuthType = useWatch({ control, name: 'renew.auth_type' })
 
   return (
     <Grid2 container spacing={2}>
@@ -1597,7 +1598,6 @@ export default function ModalAddProvider({ open, onClose, type, providerData }: 
   // Chỉ watch conditional fields
   const rotateEnabled = useWatch({ control, name: 'rotate.enabled' })
   const ipEnabled = useWatch({ control, name: 'ip_config.enabled' })
-  const renewAuthType = useWatch({ control, name: 'renew.auth_type' })
   // JSON preview với debounce 300ms
   const [jsonPreview, setJsonPreview] = useState('// Chưa có cấu hình API')
   const debounceRef = useRef<ReturnType<typeof setTimeout>>()
