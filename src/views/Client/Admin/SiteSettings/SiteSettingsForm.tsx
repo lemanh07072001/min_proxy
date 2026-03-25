@@ -1877,7 +1877,9 @@ export default function SiteSettingsForm() {
           {/* ═══════════════ Tab Landing Page ═══════════════ */}
           {activeTab === availableTabs.findIndex(t => t.label === 'Landing Page') && activeTab >= 0 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-              <SectionCard title='Giá 3 gói trên Landing Page' description='Sửa giá hiển thị cho 3 gói Viettel / FPT / VNPT. Cache SSR 5 phút.'>
+              <div style={{ background: '#f8fafc', borderRadius: 12, padding: 20, border: '1px solid #e2e8f0' }}>
+                <div style={{ fontSize: 14, fontWeight: 700, color: '#1e293b', marginBottom: 4 }}>Giá 3 gói trên Landing Page</div>
+                <div style={{ fontSize: 12, color: '#64748b', marginBottom: 16 }}>Sửa giá hiển thị cho 3 gói Viettel / FPT / VNPT. Cache SSR 5 phút.</div>
                 {['viettel', 'fpt', 'vnpt'].map(key => {
                   const label = key === 'viettel' ? 'Viettel Proxy' : key === 'fpt' ? 'FPT Proxy' : 'VNPT Proxy'
                   const currentVal = (branding.landing_pricing as any)?.[key] || {}
@@ -1929,14 +1931,16 @@ export default function SiteSettingsForm() {
                     </div>
                   )
                 })}
-              </SectionCard>
+              </div>
             </div>
           )}
 
           {/* ═══════════════ Tab Cài đặt chung ═══════════════ */}
           {activeTab === availableTabs.findIndex(t => t.label === 'Cài đặt chung') && activeTab >= 0 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-              <SectionCard title='Tên menu sidebar' description='Đổi tên hiển thị các mục menu. Bỏ trống = giữ mặc định. Cache SSR 5 phút.'>
+              <div style={{ background: '#f8fafc', borderRadius: 12, padding: 20, border: '1px solid #e2e8f0' }}>
+                <div style={{ fontSize: 14, fontWeight: 700, color: '#1e293b', marginBottom: 4 }}>Tên menu sidebar</div>
+                <div style={{ fontSize: 12, color: '#64748b', marginBottom: 16 }}>Đổi tên hiển thị các mục menu. Bỏ trống = giữ mặc định. Cache SSR 5 phút.</div>
                 {[
                   { key: 'home', label: 'Trang chủ', defaultVal: 'Trang chủ' },
                   { key: 'products', label: 'Sản phẩm', defaultVal: 'Sản phẩm' },
@@ -1962,7 +1966,7 @@ export default function SiteSettingsForm() {
                     />
                   </div>
                 ))}
-              </SectionCard>
+              </div>
             </div>
           )}
 
