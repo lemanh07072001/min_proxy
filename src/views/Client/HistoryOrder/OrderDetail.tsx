@@ -502,61 +502,84 @@ function RenewalBanner({ order, histories }: { order: any; histories: OrderHisto
 
   return (
     <Box sx={{ px: '20px', pb: '8px' }}>
-      <div style={{ fontSize: '13px', fontWeight: 600, color: '#374151', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+      <div style={{ fontSize: '13px', fontWeight: 600, color: '#374151', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
         <RefreshCw size={14} style={{ color: '#6366f1' }} />
-        Lịch sử gia hạn
+        Lịch sử gia hạn ({renewals.length})
       </div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-        {renewals.map((h) => {
-          const st = RENEWAL_STATUS[h.status] ?? { label: '?', color: '#94a3b8', bg: '#f8fafc', border: '#e2e8f0' }
-          const isPending = h.status === 0 || h.status === 1
-          const isFailed = h.status === 3
-          const isSuccess = h.status === 4 || h.status === 2
 
-          return (
-            <div key={h.id} style={{
-              padding: '10px 14px', borderRadius: 8,
-              background: st.bg, border: `1px solid ${st.border}`,
+      {/* Table header */}
+      <div style={{ display: 'grid', gridTemplateColumns: '50px 1fr 100px 100px 1fr 90px', gap: 0, fontSize: '11px', fontWeight: 600, color: '#94a3b8', padding: '0 12px 6px', borderBottom: '1px solid #e2e8f0' }}>
+        <span>Lần</span>
+        <span>Ngày</span>
+        <span>Thời hạn</span>
+        <span>Số tiền</span>
+        <span>Hết hạn</span>
+        <span>Trạng thái</span>
+      </div>
+
+      {/* Rows */}
+      {renewals.map((h, i) => {
+        const st = RENEWAL_STATUS[h.status] ?? { label: '?', color: '#94a3b8', bg: '#f8fafc', border: '#e2e8f0' }
+        const isPending = h.status === 0 || h.status === 1
+        const isFailed = h.status === 3
+        const isSuccess = h.status === 4 || h.status === 2
+
+        return (
+          <div key={h.id}>
+            <div style={{
+              display: 'grid', gridTemplateColumns: '50px 1fr 100px 100px 1fr 90px',
+              gap: 0, padding: '10px 12px', alignItems: 'center',
+              borderBottom: '1px solid #f1f5f9', fontSize: '12px',
+              background: isFailed ? '#fef2f2' : isPending ? '#eff6ff' : 'transparent',
             }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 6 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  {isPending && <Loader size={13} style={{ color: st.color, animation: 'spin 1s linear infinite' }} />}
-                  <span style={{
-                    fontSize: '11px', fontWeight: 600, padding: '2px 8px', borderRadius: 10,
-                    background: st.color + '18', color: st.color,
-                  }}>
-                    {st.label}
-                  </span>
-                  <span style={{ fontSize: '12px', color: '#374151' }}>
-                    {h.duration} ngày • {fmtVND(h.amount)}
-                  </span>
-                </div>
-                <span style={{ fontSize: '11px', color: '#94a3b8' }}>
-                  {h.created_at ? formatDateTimeLocal(h.created_at) : ''}
-                </span>
+              {/* Lần */}
+              <span style={{ fontWeight: 600, color: '#374151' }}>#{renewals.length - i}</span>
+
+              {/* Ngày */}
+              <span style={{ color: '#64748b' }}>
+                {h.created_at ? formatDateTimeLocal(h.created_at) : '—'}
+              </span>
+
+              {/* Thời hạn */}
+              <span style={{ color: '#374151' }}>{h.duration} ngày</span>
+
+              {/* Số tiền */}
+              <span style={{ fontWeight: 600, color: '#374151' }}>{fmtVND(h.amount)}</span>
+
+              {/* Hết hạn */}
+              <div style={{ color: '#64748b', fontSize: '11px' }}>
+                {h.old_expired_at && <div>{formatDateTimeLocal(h.old_expired_at)}</div>}
+                {isSuccess && h.new_expired_at && (
+                  <div style={{ color: '#16a34a', fontWeight: 500 }}>→ {formatDateTimeLocal(h.new_expired_at)}</div>
+                )}
+                {!h.old_expired_at && !h.new_expired_at && '—'}
               </div>
 
-              {isSuccess && h.new_expired_at && (
-                <div style={{ fontSize: '12px', color: '#16a34a', marginTop: 4 }}>
-                  Hết hạn mới: {formatDateTimeLocal(h.new_expired_at)}
-                </div>
-              )}
-
-              {isPending && (
-                <div style={{ fontSize: '12px', color: '#1d4ed8', marginTop: 4 }}>
-                  Proxy vẫn hoạt động bình thường. Đang chờ xử lý...
-                </div>
-              )}
-
-              {isFailed && (
-                <div style={{ fontSize: '12px', color: '#dc2626', marginTop: 4 }}>
-                  Gia hạn không thành công. Vui lòng liên hệ admin để được hỗ trợ.
-                </div>
-              )}
+              {/* Trạng thái */}
+              <span style={{
+                fontSize: '11px', fontWeight: 600, padding: '2px 8px', borderRadius: 10,
+                background: st.color + '18', color: st.color,
+                display: 'inline-flex', alignItems: 'center', gap: 4, width: 'fit-content',
+              }}>
+                {isPending && <Loader size={11} style={{ animation: 'spin 1s linear infinite' }} />}
+                {st.label}
+              </span>
             </div>
-          )
-        })}
-      </div>
+
+            {/* Ghi chú dưới row — chỉ khi pending hoặc failed */}
+            {isPending && (
+              <div style={{ padding: '4px 12px 8px', fontSize: '11px', color: '#1d4ed8' }}>
+                Proxy vẫn hoạt động bình thường. Đang chờ xử lý...
+              </div>
+            )}
+            {isFailed && (
+              <div style={{ padding: '4px 12px 8px', fontSize: '11px', color: '#dc2626' }}>
+                Gia hạn không thành công. Vui lòng liên hệ admin để được hỗ trợ.
+              </div>
+            )}
+          </div>
+        )
+      })}
     </Box>
   )
 }
