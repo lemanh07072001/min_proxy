@@ -167,7 +167,8 @@ const VerticalMenu = ({ scrollMenu }: Props) => {
   const params = useParams()
   const { lang: locale } = params
   const { isAdmin, isLoading: isAdminLoading, hasPermission } = useRole()
-  const { isChild } = useBranding()
+  const { isChild, menu_labels } = useBranding()
+  const ml = (menu_labels || {}) as Record<string, string>
 
   const [isInitialLoad, setIsInitialLoad] = useState(true)
 
@@ -281,7 +282,7 @@ const VerticalMenu = ({ scrollMenu }: Props) => {
         renderExpandedMenuItemIcon={{ icon: <CircleSmall size={10} /> }}
         menuSectionStyles={themeMenuSectionStyles}
       >
-        <MenuSection label='Trang chủ' rootStyles={menuSectionHeaderStyles}>
+        <MenuSection label={ml.home || 'Trang chủ'} rootStyles={menuSectionHeaderStyles}>
           <MenuItem
             icon={<House size={20} strokeWidth={1.5} />}
             {...nav('home')}
@@ -291,7 +292,7 @@ const VerticalMenu = ({ scrollMenu }: Props) => {
           </MenuItem>
         </MenuSection>
 
-        <MenuSection label='Sản phẩm' rootStyles={menuSectionHeaderStyles}>
+        <MenuSection label={ml.products || 'Sản phẩm'} rootStyles={menuSectionHeaderStyles}>
           <MenuItem
             icon={<EthernetPort size={20} strokeWidth={1.5} />}
             {...nav('proxy-tinh')}
@@ -325,7 +326,7 @@ const VerticalMenu = ({ scrollMenu }: Props) => {
           </MenuItem>
         </MenuSection>
 
-        <MenuSection label='Tài chính' rootStyles={menuSectionHeaderStyles}>
+        <MenuSection label={ml.finance || 'Tài chính'} rootStyles={menuSectionHeaderStyles}>
           <MenuItem
             icon={<Wallet size={20} strokeWidth={1.5} />}
             {...nav('recharge')}
@@ -343,7 +344,7 @@ const VerticalMenu = ({ scrollMenu }: Props) => {
           </MenuItem>
         </MenuSection>
 
-        <MenuSection label='Kiếm tiền' rootStyles={menuSectionHeaderStyles}>
+        <MenuSection label={ml.earn || 'Kiếm tiền'} rootStyles={menuSectionHeaderStyles}>
           <MenuItem
             icon={<Link size={20} strokeWidth={1.5} />}
             {...nav('affiliate')}
@@ -361,7 +362,7 @@ const VerticalMenu = ({ scrollMenu }: Props) => {
           </MenuItem>
         </MenuSection>
 
-        <MenuSection label='Hỗ trợ' rootStyles={menuSectionHeaderStyles}>
+        <MenuSection label={ml.support || 'Hỗ trợ'} rootStyles={menuSectionHeaderStyles}>
           <MenuItem
             icon={<FileText size={20} strokeWidth={1.5} />}
             rootStyles={getMenuItemStyles('docs-api')}
@@ -387,7 +388,7 @@ const VerticalMenu = ({ scrollMenu }: Props) => {
 
         {/* Admin Menu Section */}
         {!isAdminLoading && isAdmin && (
-          <MenuSection label='Quản trị' rootStyles={menuSectionHeaderStyles}>
+          <MenuSection label={ml.admin || 'Quản trị'} rootStyles={menuSectionHeaderStyles}>
             {/* Tổng quan */}
             {hasPermission('admin.dashboard') && (
               <MenuItem
