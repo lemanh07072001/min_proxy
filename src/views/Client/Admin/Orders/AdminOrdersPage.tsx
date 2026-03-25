@@ -326,7 +326,7 @@ return {
   const axiosAuth = useAxiosAuth()
 
   const handleRenewalRetry = useCallback(async (order: any) => {
-    if (!confirm(`Retry gia hạn đơn ${order.order_code}? Sẽ trừ tiền user lại.`)) return
+    if (!confirm(`Retry gia hạn đơn ${order.order_code}? Tiền đã trừ từ lần đầu, không trừ thêm.`)) return
     try {
       const res = await axiosAuth.post('/admin/renewal-retry', { order_id: order.id })
       toast.success(res?.data?.message || 'Đã retry gia hạn!')
