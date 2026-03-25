@@ -279,7 +279,6 @@ return row.original?.key || row.original?.api_key || ''
             maxHeight: '85vh',
             mt: '5vh',
             mb: 'auto',
-            transition: 'max-width 0.3s ease',
           }
         }}
       >
@@ -332,25 +331,25 @@ return row.original?.key || row.original?.api_key || ''
                   )}
                 </Box>
                 <InfoCard icon={<Clock size={16} />} label='Loại' value={order.order_type === 1 ? 'Gia hạn' : 'Mua mới'} />
-              </Box>
 
-              {/* Nút gia hạn — nhỏ gọn, chỉ khi còn hạn */}
-              {order.order_type !== 1 && ['2', '3'].includes(String(order.status)) && !renewOpen && (
-                <Box sx={{ px: '20px', pb: '8px' }}>
-                  <button
+                {/* Nút gia hạn — trong grid, cùng hàng với info cards */}
+                {order.order_type !== 1 && ['2', '3'].includes(String(order.status)) && !renewOpen && (
+                  <Box sx={{
+                    p: '10px 12px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    background: '#eff6ff', border: '1px solid #bfdbfe', cursor: 'pointer',
+                    '&:hover': { background: '#dbeafe' }, transition: 'background 0.15s',
+                  }}
                     onClick={() => setRenewOpen(true)}
-                    style={{
-                      display: 'inline-flex', alignItems: 'center', gap: 5,
-                      padding: '6px 14px', fontSize: '12px', fontWeight: 600,
-                      background: '#3b82f6', color: '#fff',
-                      border: 'none', borderRadius: 6, cursor: 'pointer'
-                    }}
                   >
-                    <RefreshCw size={13} />
-                    {selectedCount > 0 ? `Gia hạn ${selectedCount} đã chọn` : 'Gia hạn'}
-                  </button>
-                </Box>
-              )}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <RefreshCw size={15} style={{ color: '#3b82f6' }} />
+                      <Typography sx={{ fontSize: '13px', fontWeight: 600, color: '#2563eb' }}>
+                        {selectedCount > 0 ? `Gia hạn ${selectedCount}` : 'Gia hạn'}
+                      </Typography>
+                    </div>
+                  </Box>
+                )}
+              </Box>
 
               {/* Status 11: đang gia hạn */}
               {String(order.status) === '11' && (
