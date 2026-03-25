@@ -79,9 +79,11 @@ const OrderDetail: React.FC<OrderDetailProps> = ({ open, onClose, order }) => {
   const [, copy] = useCopy()
   const [copiedField, setCopiedField] = useState<string | null>(null)
   const [renewOpen, setRenewOpen] = useState(false)
+  const [detailTab, setDetailTab] = useState(0)
 
   const { data: apiKeysData = [], isLoading: isLoadingKeys } = useApiKeys(order?.id, open)
-  const { data: histories = [], isLoading: loadingHistories } = useOrderHistories(order?.id ?? null, open)
+  const { data: histories = [] } = useOrderHistories(order?.id ?? null, open)
+  const renewals = useMemo(() => histories.filter(h => h.type === 'renewal'), [histories])
 
   const copyWithFeedback = (text: string, field: string, msg?: string) => {
     copy(text, msg)
@@ -232,30 +234,59 @@ return row.original?.key || row.original?.api_key || ''
     copy(texts.join('\n'), `Đã copy ${texts.length} ${order?.service_type === '0' ? 'proxy' : 'API key'}!`)
   }
 
-  const handleDownloadSelected = () => {
+  const getExportRows = () => {
     const selectedRows = table.getFilteredSelectedRowModel().rows
+    return selectedRows.length > 0 ? selectedRows.map((r: any) => r.original) : apiKeysData
+  }
 
-    if (selectedRows.length === 0) return
+  const exportProxy = (format: 'txt' | 'csv' | 'json') => {
+    const rows = getExportRows()
+    if (!rows.length) return
 
-    const texts = selectedRows.map((row: any) => {
-      if (order?.service_type === '0') {
-        const proxys = row.original.proxy || row.original.proxys || {}
-        const vals = Object.entries(proxys).filter(([k]) => k !== 'loaiproxy').map(([_, v]) => v)
+    let content: string
+    let ext: string
+    let mime: string
 
+    if (format === 'json') {
+      const data = rows.map((item: any) => ({
+        key: item.key || item.api_key || '',
+        proxy: item.proxy || item.proxys || null,
+        expired_at: item.expired_at || null,
+      }))
+      content = JSON.stringify(data, null, 2)
+      ext = 'json'
+      mime = 'application/json'
+    } else if (format === 'csv') {
+      const lines = rows.map((item: any) => {
+        const key = item.key || item.api_key || ''
+        const proxy = (() => {
+          const p = item.proxy || item.proxys
+          if (p && typeof p === 'object') return p.http || p.HTTP || p.socks5 || p.SOCK5 || ''
+          return p || ''
+        })()
+        return `${key},${proxy},${item.expired_at || ''}`
+      })
+      content = 'key,proxy,expired_at\n' + lines.join('\n')
+      ext = 'csv'
+      mime = 'text/csv'
+    } else {
+      content = rows.map((item: any) => {
+        if (order?.service_type === '0') {
+          const p = item.proxy || item.proxys || {}
+          const vals = Object.entries(p).filter(([k]) => k !== 'loaiproxy').map(([_, v]) => v)
+          return String(vals[0] || '')
+        }
+        return item.key || item.api_key || ''
+      }).filter(Boolean).join('\n')
+      ext = 'txt'
+      mime = 'text/plain'
+    }
 
-return String(vals[0] || '')
-      }
-
-
-return row.original?.key || row.original?.api_key || ''
-    }).filter(Boolean)
-
-    const blob = new Blob([texts.join('\n')], { type: 'text/plain;charset=utf-8' })
+    const blob = new Blob([content], { type: `${mime};charset=utf-8` })
     const url = window.URL.createObjectURL(blob)
     const link = document.createElement('a')
-
     link.href = url
-    link.download = `${order?.order_code || 'order'}_proxies_${new Date().toISOString().split('T')[0]}.txt`
+    link.download = `${order?.order_code || 'order'}_proxies.${ext}`
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
@@ -272,7 +303,7 @@ return row.original?.key || row.original?.api_key || ''
     <>
       <Dialog
         open={open}
-        onClose={onClose}
+        onClose={() => { setDetailTab(0); onClose() }}
         fullWidth
         maxWidth={renewOpen ? 'lg' : 'md'}
         PaperProps={{
@@ -353,45 +384,74 @@ return row.original?.key || row.original?.api_key || ''
                 )}
               </Box>
 
-              {/* Renewal banner — hiện ngay khi có gia hạn đang xử lý hoặc thất bại */}
-              <RenewalBanner order={order} histories={histories} />
+              {/* Tabs */}
+              <Tabs
+                value={detailTab}
+                onChange={(_, v) => setDetailTab(v)}
+                sx={{
+                  borderBottom: '1px solid #f1f5f9', px: '20px',
+                  '& .MuiTab-root': { textTransform: 'none', fontWeight: 600, fontSize: '13px', minHeight: 42 }
+                }}
+              >
+                <Tab label={`Proxy (${totalRows})`} />
+                {renewals.length > 0 && <Tab label={`Gia hạn (${renewals.length})`} />}
+              </Tabs>
 
-              {/* Divider */}
-              <Box sx={{ borderTop: '1px solid #f1f5f9' }} />
-
-              {/* Proxy list */}
-              <Box sx={{ p: '16px 20px' }}>
+              {/* Tab: Proxy */}
+              {detailTab === 0 && <Box sx={{ p: '16px 20px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
                   <Typography sx={{ fontSize: '14px', fontWeight: 600, color: '#1e293b' }}>
                     Danh sách proxy ({totalRows})
                   </Typography>
-                  {selectedCount > 0 && (
-                    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                      <span style={{ fontSize: '12px', color: '#64748b' }}>Đã chọn: {selectedCount}</span>
-                      <button
-                        onClick={handleCopySelected}
-                        style={{
-                          display: 'flex', alignItems: 'center', gap: 4,
-                          padding: '5px 10px', fontSize: '12px', fontWeight: 500,
-                          background: '#f0fdf4', color: '#16a34a', border: '1px solid #bbf7d0',
-                          borderRadius: 6, cursor: 'pointer'
-                        }}
-                      >
-                        <Copy size={13} /> Copy
-                      </button>
-                      <button
-                        onClick={handleDownloadSelected}
-                        style={{
-                          display: 'flex', alignItems: 'center', gap: 4,
-                          padding: '5px 10px', fontSize: '12px', fontWeight: 500,
-                          background: '#eff6ff', color: '#2563eb', border: '1px solid #bfdbfe',
-                          borderRadius: 6, cursor: 'pointer'
-                        }}
-                      >
-                        <FileDown size={13} /> Tải
-                      </button>
-                    </div>
-                  )}
+                  <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                    {selectedCount > 0 && (
+                      <>
+                        <span style={{ fontSize: '12px', color: '#64748b' }}>Đã chọn: {selectedCount}</span>
+                        <button
+                          onClick={handleCopySelected}
+                          style={{
+                            display: 'flex', alignItems: 'center', gap: 4,
+                            padding: '5px 10px', fontSize: '12px', fontWeight: 500,
+                            background: '#f0fdf4', color: '#16a34a', border: '1px solid #bbf7d0',
+                            borderRadius: 6, cursor: 'pointer'
+                          }}
+                        >
+                          <Copy size={13} /> Copy
+                        </button>
+                      </>
+                    )}
+                    <button
+                      onClick={() => exportProxy('txt')}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: 4,
+                        padding: '5px 10px', fontSize: '12px', fontWeight: 500,
+                        background: '#eff6ff', color: '#2563eb', border: '1px solid #bfdbfe',
+                        borderRadius: 6, cursor: 'pointer'
+                      }}
+                    >
+                      <FileDown size={13} /> TXT
+                    </button>
+                    <button
+                      onClick={() => exportProxy('csv')}
+                      style={{
+                        padding: '5px 10px', fontSize: '12px', fontWeight: 500,
+                        background: '#f0fdf4', color: '#16a34a', border: '1px solid #bbf7d0',
+                        borderRadius: 6, cursor: 'pointer'
+                      }}
+                    >
+                      CSV
+                    </button>
+                    <button
+                      onClick={() => exportProxy('json')}
+                      style={{
+                        padding: '5px 10px', fontSize: '12px', fontWeight: 500,
+                        background: '#fefce8', color: '#ca8a04', border: '1px solid #fde68a',
+                        borderRadius: 6, cursor: 'pointer'
+                      }}
+                    >
+                      JSON
+                    </button>
+                  </div>
                 </div>
 
                 {isLoadingKeys ? (
@@ -459,7 +519,14 @@ return row.original?.key || row.original?.api_key || ''
                     </Typography>
                   </Box>
                 )}
-              </Box>
+              </Box>}
+
+              {/* Tab: Gia hạn */}
+              {detailTab === 1 && renewals.length > 0 && (
+                <Box sx={{ p: '16px 20px' }}>
+                  <RenewalHistory renewals={renewals} />
+                </Box>
+              )}
             </div>
 
             {/* Right: Renewal panel */}
@@ -494,18 +561,13 @@ const RENEWAL_STATUS: Record<number, { label: string; color: string; bg: string;
   5: { label: 'Hết hạn', color: '#94a3b8', bg: '#f8fafc', border: '#e2e8f0' },
 }
 
-function RenewalBanner({ order, histories }: { order: any; histories: OrderHistoryItem[] }) {
-  const renewals = histories.filter(h => h.type === 'renewal')
+function RenewalHistory({ renewals }: { renewals: OrderHistoryItem[] }) {
   if (!renewals.length) return null
 
   const fmtVND = (v: number) => new Intl.NumberFormat('vi-VN').format(v) + 'đ'
 
   return (
-    <Box sx={{ px: '20px', pb: '8px' }}>
-      <div style={{ fontSize: '13px', fontWeight: 600, color: '#374151', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
-        <RefreshCw size={14} style={{ color: '#6366f1' }} />
-        Lịch sử gia hạn ({renewals.length})
-      </div>
+    <div>
 
       {/* Table header */}
       <div style={{ display: 'grid', gridTemplateColumns: '50px 1fr 100px 100px 1fr 90px', gap: 0, fontSize: '11px', fontWeight: 600, color: '#94a3b8', padding: '0 12px 6px', borderBottom: '1px solid #e2e8f0' }}>
@@ -580,7 +642,7 @@ function RenewalBanner({ order, histories }: { order: any; histories: OrderHisto
           </div>
         )
       })}
-    </Box>
+    </div>
   )
 }
 
