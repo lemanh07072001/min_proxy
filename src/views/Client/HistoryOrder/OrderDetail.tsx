@@ -36,7 +36,7 @@ import {
   CheckCircle
 } from 'lucide-react'
 
-import { RefreshCw, Loader, AlertTriangle } from 'lucide-react'
+import { RefreshCw, Loader, AlertTriangle, ChevronDown, ChevronRight, Undo2 } from 'lucide-react'
 import { toast } from 'react-toastify'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -46,7 +46,8 @@ import { formatDateTimeLocal } from '@/utils/formatDate'
 import { useCopy } from '@/app/hooks/useCopy'
 import { ORDER_STATUS_LABELS, ORDER_STATUS_COLORS } from '@/constants/orderStatus'
 import { useApiKeys } from '@/hooks/apis/useOrders'
-import { useRenewOrder, useRenewInfo } from '@/hooks/apis/useRenewal'
+import { useRenewOrder, useRenewInfo, useRenewalRefund, useOrderHistoryLogs } from '@/hooks/apis/useRenewal'
+import { useRole } from '@/hooks/useRole'
 import { useOrderHistories, type OrderHistoryItem } from '@/hooks/apis/useOrderHistories'
 
 const formatVND = (v: number) => new Intl.NumberFormat('vi-VN').format(v) + 'đ'
@@ -561,27 +562,49 @@ return row.original?.key || row.original?.api_key || ''
 const RENEWAL_STATUS: Record<number, { label: string; color: string; bg: string; border: string }> = {
   0: { label: 'Đang chờ', color: '#f59e0b', bg: '#fffbeb', border: '#fde68a' },
   1: { label: 'Đang xử lý', color: '#3b82f6', bg: '#eff6ff', border: '#bfdbfe' },
+  2: { label: 'Thành công', color: '#22c55e', bg: '#f0fdf4', border: '#bbf7d0' },
   3: { label: 'Thất bại', color: '#ef4444', bg: '#fef2f2', border: '#fecaca' },
   4: { label: 'Đang sử dụng', color: '#22c55e', bg: '#f0fdf4', border: '#bbf7d0' },
   5: { label: 'Hết hạn', color: '#94a3b8', bg: '#f8fafc', border: '#e2e8f0' },
+  6: { label: 'Hoàn thành 1 phần', color: '#f97316', bg: '#fff7ed', border: '#fed7aa' },
+  7: { label: 'Đã hoàn tiền', color: '#8b5cf6', bg: '#f5f3ff', border: '#ddd6fe' },
 }
 
 function RenewalHistory({ renewals }: { renewals: OrderHistoryItem[] }) {
+  const { isAdmin } = useRole()
+  const refundMutation = useRenewalRefund()
+  const [expandedLogId, setExpandedLogId] = useState<number | null>(null)
+
   if (!renewals.length) return null
 
   const fmtVND = (v: number) => new Intl.NumberFormat('vi-VN').format(v) + 'đ'
+
+  const canRefund = (status: number) => [3, 6].includes(status) // FAILED, PARTIAL
+
+  const handleRefund = async (h: OrderHistoryItem) => {
+    if (!confirm(`Hoàn ${fmtVND(h.amount)} cho lần gia hạn #${h.id}?`)) return
+
+    try {
+      const res = await refundMutation.mutateAsync({ historyId: h.id })
+      toast.info(res?.message || 'Đã hoàn tiền')
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || 'Lỗi hoàn tiền')
+    }
+  }
 
   return (
     <div>
 
       {/* Table header */}
-      <div style={{ display: 'grid', gridTemplateColumns: '50px 1fr 100px 100px 1fr 90px', gap: 0, fontSize: '11px', fontWeight: 600, color: '#94a3b8', padding: '0 12px 6px', borderBottom: '1px solid #e2e8f0' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isAdmin ? '30px 50px 1fr 80px 90px 1fr 100px 70px' : '50px 1fr 100px 100px 1fr 90px', gap: 0, fontSize: '11px', fontWeight: 600, color: '#94a3b8', padding: '0 12px 6px', borderBottom: '1px solid #e2e8f0' }}>
+        {isAdmin && <span></span>}
         <span>Lần</span>
         <span>Ngày</span>
         <span>Thời hạn</span>
         <span>Số tiền</span>
         <span>Hết hạn</span>
         <span>Trạng thái</span>
+        {isAdmin && <span></span>}
       </div>
 
       {/* Rows */}
@@ -589,16 +612,28 @@ function RenewalHistory({ renewals }: { renewals: OrderHistoryItem[] }) {
         const st = RENEWAL_STATUS[h.status] ?? { label: '?', color: '#94a3b8', bg: '#f8fafc', border: '#e2e8f0' }
         const isPending = h.status === 0 || h.status === 1
         const isFailed = h.status === 3
+        const isRefunded = h.status === 7
         const isSuccess = h.status === 4 || h.status === 5
+        const isExpanded = expandedLogId === h.id
 
         return (
           <div key={h.id}>
             <div style={{
-              display: 'grid', gridTemplateColumns: '50px 1fr 100px 100px 1fr 90px',
+              display: 'grid', gridTemplateColumns: isAdmin ? '30px 50px 1fr 80px 90px 1fr 100px 70px' : '50px 1fr 100px 100px 1fr 90px',
               gap: 0, padding: '10px 12px', alignItems: 'center',
               borderBottom: '1px solid #f1f5f9', fontSize: '12px',
-              background: isFailed ? '#fef2f2' : isPending ? '#eff6ff' : 'transparent',
-            }}>
+              background: isFailed ? '#fef2f2' : isPending ? '#eff6ff' : isRefunded ? '#f5f3ff' : 'transparent',
+              cursor: isAdmin ? 'pointer' : 'default',
+            }}
+              onClick={() => isAdmin && setExpandedLogId(isExpanded ? null : h.id)}
+            >
+              {/* Expand icon (admin) */}
+              {isAdmin && (
+                <span style={{ color: '#94a3b8' }}>
+                  {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                </span>
+              )}
+
               {/* Lần */}
               <span style={{ fontWeight: 600, color: '#374151' }}>#{renewals.length - i}</span>
 
@@ -611,7 +646,9 @@ function RenewalHistory({ renewals }: { renewals: OrderHistoryItem[] }) {
               <span style={{ color: '#374151' }}>{h.duration} ngày</span>
 
               {/* Số tiền */}
-              <span style={{ fontWeight: 600, color: '#374151' }}>{fmtVND(h.amount)}</span>
+              <span style={{ fontWeight: 600, color: isRefunded ? '#8b5cf6' : '#374151', textDecoration: isRefunded ? 'line-through' : 'none' }}>
+                {fmtVND(h.amount)}
+              </span>
 
               {/* Hết hạn */}
               <div style={{ color: '#64748b', fontSize: '11px' }}>
@@ -631,6 +668,25 @@ function RenewalHistory({ renewals }: { renewals: OrderHistoryItem[] }) {
                 {isPending && <Loader size={11} style={{ animation: 'spin 1s linear infinite' }} />}
                 {st.label}
               </span>
+
+              {/* Nút hoàn tiền (admin only) */}
+              {isAdmin && (
+                <div onClick={e => e.stopPropagation()}>
+                  {canRefund(h.status) && (
+                    <button
+                      disabled={refundMutation.isPending}
+                      onClick={() => handleRefund(h)}
+                      style={{
+                        fontSize: '10px', padding: '2px 8px', borderRadius: 6,
+                        border: '1px solid #ddd6fe', background: '#f5f3ff', color: '#7c3aed',
+                        cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 3,
+                      }}
+                    >
+                      <Undo2 size={10} /> Hoàn
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Ghi chú dưới row — chỉ khi pending hoặc failed */}
@@ -639,14 +695,74 @@ function RenewalHistory({ renewals }: { renewals: OrderHistoryItem[] }) {
                 Proxy vẫn hoạt động bình thường. Đang chờ xử lý...
               </div>
             )}
-            {isFailed && (
+            {isFailed && !isAdmin && (
               <div style={{ padding: '4px 12px 8px', fontSize: '11px', color: '#dc2626' }}>
                 Gia hạn không thành công. Vui lòng liên hệ admin để được hỗ trợ.
               </div>
             )}
+
+            {/* Admin: expandable log panel */}
+            {isAdmin && isExpanded && <HistoryLogPanel historyId={h.id} />}
           </div>
         )
       })}
+    </div>
+  )
+}
+
+/** Admin: log chi tiết per item per history — expandable row */
+function HistoryLogPanel({ historyId }: { historyId: number }) {
+  const { data: logs, isLoading } = useOrderHistoryLogs(historyId)
+
+  if (isLoading) return <div style={{ padding: '8px 12px', fontSize: '11px', color: '#94a3b8' }}>Loading logs...</div>
+  if (!logs?.length) return <div style={{ padding: '8px 12px', fontSize: '11px', color: '#cbd5e1' }}>Chưa có log</div>
+
+  const ACTION_COLORS: Record<string, string> = {
+    api_call_success: '#16a34a',
+    api_call_error: '#dc2626',
+    circuit_break: '#ea580c',
+    summary: '#2563eb',
+  }
+
+  return (
+    <div style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0', padding: '6px 12px 8px', maxHeight: 280, overflowY: 'auto' }}>
+      <table style={{ width: '100%', fontSize: '11px', borderCollapse: 'collapse' }}>
+        <thead>
+          <tr style={{ color: '#94a3b8', fontWeight: 600, fontSize: '10px', textTransform: 'uppercase' as const }}>
+            <th style={{ textAlign: 'left', padding: '3px 6px', width: 70 }}>Time</th>
+            <th style={{ textAlign: 'left', padding: '3px 6px', width: 90 }}>Action</th>
+            <th style={{ textAlign: 'left', padding: '3px 6px' }}>Message</th>
+            <th style={{ textAlign: 'left', padding: '3px 6px', width: 50 }}>HTTP</th>
+            <th style={{ textAlign: 'left', padding: '3px 6px', width: 50 }}>ms</th>
+            <th style={{ textAlign: 'left', padding: '3px 6px', width: 100 }}>Item</th>
+          </tr>
+        </thead>
+        <tbody>
+          {logs.map((log, i) => (
+            <tr key={i} style={{ borderTop: '1px solid #f1f5f9' }}>
+              <td style={{ padding: '3px 6px', color: '#94a3b8', fontFamily: 'monospace' }}>
+                {log.created_at ? new Date(log.created_at).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : ''}
+              </td>
+              <td style={{ padding: '3px 6px' }}>
+                <span style={{
+                  color: ACTION_COLORS[log.action] || '#64748b',
+                  fontWeight: 500,
+                }}>
+                  {log.action === 'api_call_success' ? 'OK' : log.action === 'api_call_error' ? 'ERROR' : log.action === 'circuit_break' ? 'CB STOP' : log.action}
+                </span>
+              </td>
+              <td style={{ padding: '3px 6px', color: log.action.includes('error') ? '#dc2626' : '#475569', maxWidth: 300, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const }}>
+                {log.message}
+              </td>
+              <td style={{ padding: '3px 6px', color: '#94a3b8' }}>{log.status_code ?? ''}</td>
+              <td style={{ padding: '3px 6px', color: '#94a3b8' }}>{log.duration_ms ?? ''}</td>
+              <td style={{ padding: '3px 6px', color: '#94a3b8', maxWidth: 100, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {log.item_key ?? ''}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   )
 }

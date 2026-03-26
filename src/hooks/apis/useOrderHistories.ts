@@ -7,7 +7,7 @@ export interface OrderHistoryItem {
   type: 'buy' | 'renewal' | 'refund_renewal'
   amount: number
   duration: number
-  status: number // 0=pending, 1=processing, 2=success, 3=failed, 4=in_use, 5=expired, 6=partial
+  status: number // 0=pending, 1=processing, 2=success, 3=failed, 4=in_use, 5=expired, 6=partial, 7=refunded
   old_expired_at: string | null
   new_expired_at: string | null
   note: string | null

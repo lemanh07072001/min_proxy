@@ -23,7 +23,8 @@ import {
   Settings,
   LifeBuoy,
   Landmark,
-  ShoppingCart
+  ShoppingCart,
+  Activity
 } from 'lucide-react'
 
 // MUI Imports
@@ -444,6 +445,16 @@ const VerticalMenu = ({ scrollMenu }: Props) => {
                 href={`/${locale}/admin/orders`}
               >
                 Quản lý đơn hàng
+              </MenuItem>
+            )}
+
+            {hasPermission('admin.transactionHistory') && !isChild && (
+              <MenuItem
+                icon={<Activity size={20} strokeWidth={1.5} />}
+                {...nav('admin/queue-monitor')}
+                href={`/${locale}/admin/queue-monitor`}
+              >
+                Queue Monitor
               </MenuItem>
             )}
 

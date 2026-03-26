@@ -49,3 +49,53 @@ export const useRenewOrder = () => {
     }
   })
 }
+
+// Admin: hoàn tiền 1 lần gia hạn
+export const useRenewalRefund = () => {
+  const axiosAuth = useAxiosAuth()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ historyId, reason }: { historyId: number; reason?: string }) => {
+      const res = await axiosAuth.post('/admin/renewal-refund', {
+        history_id: historyId,
+        reason,
+      })
+
+      return res?.data
+    },
+    onSuccess: (_, vars) => {
+      queryClient.invalidateQueries({ queryKey: ['orderHistories'] })
+      queryClient.invalidateQueries({ queryKey: ['userOrders'] })
+      queryClient.invalidateQueries({ queryKey: ['profile'] })
+    }
+  })
+}
+
+// Admin: log chi tiết per item per history
+export interface HistoryLogItem {
+  history_id: number
+  order_id: number
+  item_key: string | null
+  action: string
+  message: string
+  status_code: number | null
+  duration_ms: number | null
+  context: any
+  created_at: string
+}
+
+export const useOrderHistoryLogs = (historyId: number | null) => {
+  const axiosAuth = useAxiosAuth()
+
+  return useQuery<HistoryLogItem[]>({
+    queryKey: ['orderHistoryLogs', historyId],
+    queryFn: async () => {
+      const res = await axiosAuth.get(`/admin/order-history-logs/${historyId}`)
+
+      return res?.data?.data ?? []
+    },
+    enabled: !!historyId,
+    staleTime: 30_000,
+  })
+}
