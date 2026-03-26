@@ -81,6 +81,8 @@ const OrderDetail: React.FC<OrderDetailProps> = ({ open, onClose, order }) => {
   const [copiedField, setCopiedField] = useState<string | null>(null)
   const [renewOpen, setRenewOpen] = useState(false)
   const [detailTab, setDetailTab] = useState(0)
+  const [viewLogId, setViewLogId] = useState<number | null>(null)
+  const { isAdmin } = useRole()
 
   const { data: apiKeysData = [], isLoading: isLoadingKeys } = useApiKeys(order?.id, open)
   const { data: histories = [] } = useOrderHistories(order?.id ?? null, open)
@@ -396,7 +398,7 @@ return row.original?.key || row.original?.api_key || ''
                 }}
               >
                 <Tab label={`Proxy (${totalRows})`} />
-                {renewals.length > 0 && <Tab label={`Gia hạn (${renewals.length})`} />}
+                {renewals.length > 0 && <Tab label={`Lịch sử gia hạn (${renewals.length})`} />}
               </Tabs>
 
               {/* Tab: Proxy */}
@@ -528,10 +530,17 @@ return row.original?.key || row.original?.api_key || ''
                 )}
               </Box>}
 
-              {/* Tab: Gia hạn */}
+              {/* Tab: Lịch sử gia hạn */}
               {detailTab === 1 && renewals.length > 0 && (
-                <Box sx={{ p: '16px 20px' }}>
-                  <RenewalHistory renewals={renewals} />
+                <Box sx={{ display: 'flex', gap: 0 }}>
+                  <Box sx={{ flex: viewLogId ? '0 0 55%' : '1 1 100%', p: '16px 20px', transition: 'flex 0.2s', minWidth: 0 }}>
+                    <RenewalHistory renewals={renewals} viewLogId={viewLogId} onViewLog={id => setViewLogId(viewLogId === id ? null : id)} />
+                  </Box>
+                  {isAdmin && viewLogId && (
+                    <Box sx={{ flex: '0 0 45%', borderLeft: '1px solid #e2e8f0', maxHeight: 400, overflowY: 'auto', p: '12px 16px' }}>
+                      <HistoryLogPanel historyId={viewLogId} />
+                    </Box>
+                  )}
                 </Box>
               )}
             </div>
@@ -570,11 +579,14 @@ const RENEWAL_STATUS: Record<number, { label: string; color: string; bg: string;
   7: { label: 'Đã hoàn tiền', color: '#8b5cf6', bg: '#f5f3ff', border: '#ddd6fe' },
 }
 
-function RenewalHistory({ renewals }: { renewals: OrderHistoryItem[] }) {
+function RenewalHistory({ renewals, viewLogId, onViewLog }: {
+  renewals: OrderHistoryItem[]
+  viewLogId?: number | null
+  onViewLog?: (id: number) => void
+}) {
   const { isAdmin } = useRole()
   const refundMutation = useRenewalRefund()
   const confirmMutation = useRenewalConfirm()
-  const [expandedLogId, setExpandedLogId] = useState<number | null>(null)
 
   if (!renewals.length) return null
 
@@ -627,7 +639,7 @@ function RenewalHistory({ renewals }: { renewals: OrderHistoryItem[] }) {
         const isFailed = h.status === 3
         const isRefunded = h.status === 7
         const isSuccess = h.status === 4 || h.status === 5
-        const isExpanded = expandedLogId === h.id
+        const isViewingLog = viewLogId === h.id
 
         return (
           <div key={h.id}>
@@ -635,15 +647,17 @@ function RenewalHistory({ renewals }: { renewals: OrderHistoryItem[] }) {
               display: 'grid', gridTemplateColumns: isAdmin ? '30px 50px 1fr 80px 90px 1fr 100px 70px' : '50px 1fr 100px 100px 1fr 90px',
               gap: 0, padding: '10px 12px', alignItems: 'center',
               borderBottom: '1px solid #f1f5f9', fontSize: '12px',
-              background: isFailed ? '#fef2f2' : isPending ? '#eff6ff' : isRefunded ? '#f5f3ff' : 'transparent',
-              cursor: isAdmin ? 'pointer' : 'default',
+              background: isViewingLog ? '#f0f9ff' : isFailed ? '#fef2f2' : isPending ? '#eff6ff' : isRefunded ? '#f5f3ff' : 'transparent',
             }}
-              onClick={() => isAdmin && setExpandedLogId(isExpanded ? null : h.id)}
             >
-              {/* Expand icon (admin) */}
+              {/* Log icon (admin) */}
               {isAdmin && (
-                <span style={{ color: '#94a3b8' }}>
-                  {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                <span
+                  style={{ color: isViewingLog ? '#2563eb' : '#94a3b8', cursor: 'pointer' }}
+                  onClick={() => onViewLog?.(h.id)}
+                  title='Xem log chi tiết'
+                >
+                  {isViewingLog ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
                 </span>
               )}
 
@@ -727,8 +741,7 @@ function RenewalHistory({ renewals }: { renewals: OrderHistoryItem[] }) {
               </div>
             )}
 
-            {/* Admin: expandable log panel */}
-            {isAdmin && isExpanded && <HistoryLogPanel historyId={h.id} />}
+            {/* Log panel giờ hiển thị bên phải — không expand dưới row nữa */}
           </div>
         )
       })}
@@ -746,6 +759,7 @@ function HistoryLogPanel({ historyId }: { historyId: number }) {
   const ACTION_COLORS: Record<string, string> = {
     api_call_success: '#16a34a',
     api_call_error: '#dc2626',
+    api_call_timeout: '#f59e0b',
     circuit_break: '#ea580c',
     summary: '#2563eb',
   }
