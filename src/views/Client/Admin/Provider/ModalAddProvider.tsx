@@ -333,7 +333,7 @@ function parseBuySection(buy: any): ApiConfigBuy {
         return Object.entries(he).map(([status, message]) => ({ status, message: String(message) }))
       })(),
       fallback_message: buyResp.fallback_message || '',
-      proxies_path: buyResp.proxies_path || 'data.proxies',
+      proxies_path: (buy.response_mode === 'deferred' ? buyResp.order_id_field : buyResp.proxies_path) || 'data.proxies',
       proxy_format: buyResp.proxy_format || 'key',
       proxy_key_field: buyResp.proxy_key_field || buyResp.proxy_string_field || 'keyxoay',
       proxy_fields_ip: proxyFields.ip || '',
