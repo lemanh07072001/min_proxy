@@ -34,7 +34,7 @@ export const useOrderHistories = (orderId: number | null, enabled = true) => {
       const data = query.state.data
       if (!data) return false
       const hasProcessing = data.some(h => h.status === 0 || h.status === 1)
-      return hasProcessing ? 5000 : false
+      return hasProcessing ? 10000 : false
     },
   })
 }

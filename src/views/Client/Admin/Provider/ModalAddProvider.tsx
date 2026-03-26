@@ -650,7 +650,7 @@ function buildApiConfig(form: FormValues): object | null {
 
     // Inherit params — kế thừa tham số từ order/order_item
     const validInherit = (form.renew.inherit_params || []).filter(
-      (p: InheritParam) => p.field && p.param
+      (p: InheritParam) => p.field && p.param && ['order', 'order_item'].includes(p.source)
     )
     if (validInherit.length > 0) r.inherit_params = validInherit
 
