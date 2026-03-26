@@ -782,9 +782,9 @@ function RenewalInlinePanel({ order, quantity, selectedItemKeys, onClose }: {
   const originalDays = renewInfo?.original_duration || (order.time ?? 30)
   const [duration, setDuration] = useState(String(originalDays))
 
-  const pricePerUnit = order.price_per_unit || 0
   const days = isOriginal ? originalDays : (parseInt(duration) || 30)
-  const unitPrice = pricePerUnit * days
+  const prices = renewInfo?.prices ?? {}
+  const unitPrice = prices[String(days)] ?? (order.price_per_unit || 0)
   const total = unitPrice * quantity
 
   const handleRenew = () => {
