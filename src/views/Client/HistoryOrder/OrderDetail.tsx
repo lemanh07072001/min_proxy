@@ -36,7 +36,7 @@ import {
   CheckCircle
 } from 'lucide-react'
 
-import { RefreshCw, Loader, AlertTriangle, ChevronDown, ChevronRight, Undo2, CheckCircle } from 'lucide-react'
+import { RefreshCw, Loader, AlertTriangle, ChevronDown, ChevronRight, Undo2 } from 'lucide-react'
 import { toast } from 'react-toastify'
 import { useDispatch, useSelector } from 'react-redux'
 
