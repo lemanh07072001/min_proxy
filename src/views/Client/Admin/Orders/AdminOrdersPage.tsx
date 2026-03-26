@@ -437,7 +437,7 @@ return {
                       <XCircle size={16} />
                     </IconButton>
                   </Tooltip>
-                  <Tooltip title={(order.delivered_quantity ?? 0) > 0 ? 'Thử lại lấy proxy' : 'Thử lại mua hàng'}>
+                  <Tooltip title='Thử lại đơn hàng'>
                     <IconButton size='small' color='warning' onClick={() => setRetryFailedOrder(order)}>
                       <RotateCcw size={16} />
                     </IconButton>
@@ -451,7 +451,7 @@ return {
                       <CheckCircle size={16} />
                     </IconButton>
                   </Tooltip>
-                  <Tooltip title='Thêm proxy thủ công'>
+                  <Tooltip title='Thêm thủ công'>
                     <IconButton size='small' color='primary' onClick={() => setFillProxiesOrder(order)}>
                       <PlusCircle size={16} />
                     </IconButton>
@@ -475,7 +475,7 @@ return {
                       <DollarSign size={16} />
                     </IconButton>
                   </Tooltip>
-                  <Tooltip title='Thêm proxy thủ công'>
+                  <Tooltip title='Thêm thủ công'>
                     <IconButton size='small' color='primary' onClick={() => setFillProxiesOrder(order)}>
                       <PlusCircle size={16} />
                     </IconButton>
@@ -1148,8 +1148,8 @@ return (
         <DialogContent>
           <DialogContentText>
             {(retryFailedOrder?.delivered_quantity ?? 0) > 0
-              ? <>Đơn <strong>#{retryFailedOrder?.order_code}</strong> đã mua thành công nhưng chưa lấy được proxy. Thử lại lấy proxy?</>
-              : <>Đơn <strong>#{retryFailedOrder?.order_code}</strong> chưa mua được. Đẩy lại vào queue để thử mua?</>
+              ? <>Đơn <strong>#{retryFailedOrder?.order_code}</strong> đã xử lý nhưng chưa nhận được kết quả. Thử lại?</>
+              : <>Đơn <strong>#{retryFailedOrder?.order_code}</strong> chưa xử lý được. Đẩy lại vào queue?</>
             }
           </DialogContentText>
         </DialogContent>
@@ -1251,10 +1251,10 @@ return (
             fullWidth
             size='small'
             label='Mã đơn NCC (nếu có)'
-            placeholder='Nhập mã đơn từ NCC để hệ thống tự lấy proxy'
+            placeholder='Nhập mã đơn từ NCC để hệ thống tự lấy kết quả'
             value={confirmProviderCode}
             onChange={e => setConfirmProviderCode(e.target.value)}
-            helperText='Bỏ trống nếu đơn đã có proxy hoặc muốn import thủ công sau'
+            helperText='Bỏ trống nếu đơn đã có sản phẩm hoặc muốn import thủ công sau'
           />
         </DialogContent>
         <DialogActions>
