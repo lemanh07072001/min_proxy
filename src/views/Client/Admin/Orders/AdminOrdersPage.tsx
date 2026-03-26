@@ -451,6 +451,11 @@ return {
                       <CheckCircle size={16} />
                     </IconButton>
                   </Tooltip>
+                  <Tooltip title='Thêm proxy thủ công'>
+                    <IconButton size='small' color='primary' onClick={() => setFillProxiesOrder(order)}>
+                      <PlusCircle size={16} />
+                    </IconButton>
+                  </Tooltip>
                   <Tooltip title='Thử lại đơn hàng'>
                     <IconButton size='small' color='warning' onClick={() => setRetryFailedOrder(order)}>
                       <RotateCcw size={16} />
