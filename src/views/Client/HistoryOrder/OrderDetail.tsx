@@ -36,7 +36,7 @@ import {
   CheckCircle
 } from 'lucide-react'
 
-import { RefreshCw, Loader, AlertTriangle, ChevronDown, ChevronRight, Undo2 } from 'lucide-react'
+import { RefreshCw, Loader, AlertTriangle, ChevronDown, ChevronRight, Undo2, CheckCircle } from 'lucide-react'
 import { toast } from 'react-toastify'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -46,7 +46,7 @@ import { formatDateTimeLocal } from '@/utils/formatDate'
 import { useCopy } from '@/app/hooks/useCopy'
 import { ORDER_STATUS_LABELS, ORDER_STATUS_COLORS } from '@/constants/orderStatus'
 import { useApiKeys } from '@/hooks/apis/useOrders'
-import { useRenewOrder, useRenewInfo, useRenewalRefund, useOrderHistoryLogs } from '@/hooks/apis/useRenewal'
+import { useRenewOrder, useRenewInfo, useRenewalRefund, useRenewalConfirm, useOrderHistoryLogs } from '@/hooks/apis/useRenewal'
 import { useRole } from '@/hooks/useRole'
 import { useOrderHistories, type OrderHistoryItem } from '@/hooks/apis/useOrderHistories'
 
@@ -573,6 +573,7 @@ const RENEWAL_STATUS: Record<number, { label: string; color: string; bg: string;
 function RenewalHistory({ renewals }: { renewals: OrderHistoryItem[] }) {
   const { isAdmin } = useRole()
   const refundMutation = useRenewalRefund()
+  const confirmMutation = useRenewalConfirm()
   const [expandedLogId, setExpandedLogId] = useState<number | null>(null)
 
   if (!renewals.length) return null
@@ -580,6 +581,18 @@ function RenewalHistory({ renewals }: { renewals: OrderHistoryItem[] }) {
   const fmtVND = (v: number) => new Intl.NumberFormat('vi-VN').format(v) + 'đ'
 
   const canRefund = (status: number) => [3, 6].includes(status) // FAILED, PARTIAL
+  const canConfirm = (status: number) => [3, 6].includes(status) // FAILED, PARTIAL — NCC đã xử lý OK
+
+  const handleConfirmRenewal = async (h: OrderHistoryItem) => {
+    if (!confirm(`Xác nhận gia hạn lần #${h.id} thành công?\n(NCC đã xử lý OK — sẽ KHÔNG hoàn tiền)`)) return
+
+    try {
+      const res = await confirmMutation.mutateAsync({ historyId: h.id })
+      toast.info(res?.message || 'Đã xác nhận')
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || 'Lỗi xác nhận')
+    }
+  }
 
   const handleRefund = async (h: OrderHistoryItem) => {
     if (!confirm(`Hoàn ${fmtVND(h.amount)} cho lần gia hạn #${h.id}?`)) return
@@ -669,9 +682,22 @@ function RenewalHistory({ renewals }: { renewals: OrderHistoryItem[] }) {
                 {st.label}
               </span>
 
-              {/* Nút hoàn tiền (admin only) */}
+              {/* Nút admin: xác nhận thành công / hoàn tiền */}
               {isAdmin && (
-                <div onClick={e => e.stopPropagation()}>
+                <div onClick={e => e.stopPropagation()} style={{ display: 'flex', gap: 4 }}>
+                  {canConfirm(h.status) && (
+                    <button
+                      disabled={confirmMutation.isPending}
+                      onClick={() => handleConfirmRenewal(h)}
+                      style={{
+                        fontSize: '10px', padding: '2px 8px', borderRadius: 6,
+                        border: '1px solid #bbf7d0', background: '#f0fdf4', color: '#16a34a',
+                        cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 3,
+                      }}
+                    >
+                      <CheckCircle size={10} /> OK
+                    </button>
+                  )}
                   {canRefund(h.status) && (
                     <button
                       disabled={refundMutation.isPending}

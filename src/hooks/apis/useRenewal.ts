@@ -73,6 +73,49 @@ export const useRenewalRefund = () => {
   })
 }
 
+// Admin: xác nhận gia hạn thành công (NCC đã xử lý OK dù hệ thống báo timeout)
+export const useRenewalConfirm = () => {
+  const axiosAuth = useAxiosAuth()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ historyId, newExpiredAt }: { historyId: number; newExpiredAt?: string }) => {
+      const res = await axiosAuth.post('/admin/renewal-confirm', {
+        history_id: historyId,
+        new_expired_at: newExpiredAt,
+      })
+
+      return res?.data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['orderHistories'] })
+      queryClient.invalidateQueries({ queryKey: ['userOrders'] })
+    }
+  })
+}
+
+// Admin: xác nhận mua hàng thành công (timeout/fail nhưng NCC đã xử lý)
+export const useOrderConfirm = () => {
+  const axiosAuth = useAxiosAuth()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ orderId, providerOrderCode }: { orderId: number; providerOrderCode?: string }) => {
+      const res = await axiosAuth.post('/admin/order-confirm', {
+        order_id: orderId,
+        provider_order_code: providerOrderCode,
+      })
+
+      return res?.data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['userOrders'] })
+      queryClient.invalidateQueries({ queryKey: ['orderApiKeys'] })
+      queryClient.invalidateQueries({ queryKey: ['orderProxyStatic'] })
+    }
+  })
+}
+
 // Admin: log chi tiết per item per history
 export interface HistoryLogItem {
   history_id: number

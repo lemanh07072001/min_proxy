@@ -22,7 +22,8 @@ import {
   Package,
   X,
   PlusCircle,
-  RotateCcw
+  RotateCcw,
+  CheckCircle
 } from 'lucide-react'
 
 import {
@@ -60,6 +61,7 @@ import { useAdminOrders } from '@/hooks/apis/useOrderReport'
 import { useCancelOrder, useResendOrder } from '@/hooks/apis/useOrders'
 import { useProviders } from '@/hooks/apis/useProviders'
 import { useRetryPartial, useRefundPartial, useRetryOrder } from '@/hooks/apis/useTickets'
+import { useOrderConfirm } from '@/hooks/apis/useRenewal'
 import useAxiosAuth from '@/hocs/useAxiosAuth'
 import OrderDetailModal from '@/views/Client/Admin/TransactionHistory/OrderDetailModal'
 import FillProxiesDialog from '@/views/Client/Admin/Orders/FillProxiesDialog'
@@ -176,6 +178,11 @@ export default function AdminOrdersPage() {
   const [retryFailedOrder, setRetryFailedOrder] = useState<any>(null)
   const [refundOrder, setRefundOrder] = useState<any>(null)
   const [fillProxiesOrder, setFillProxiesOrder] = useState<any>(null)
+
+  // Confirm order state (timeout orders)
+  const [confirmOrder, setConfirmOrder] = useState<any>(null)
+  const [confirmProviderCode, setConfirmProviderCode] = useState('')
+  const orderConfirmMutation = useOrderConfirm()
 
   // Renewal state
   const [renewalRetryOrder, setRenewalRetryOrder] = useState<any>(null)
@@ -438,11 +445,18 @@ return {
                 </>
               )}
               {status === 1 && order.retry >= (order.max_retry ?? 3) && (
-                <Tooltip title='Thử lại đơn hàng'>
-                  <IconButton size='small' color='warning' onClick={() => setRetryFailedOrder(order)}>
-                    <RotateCcw size={16} />
-                  </IconButton>
-                </Tooltip>
+                <>
+                  <Tooltip title='Xác nhận NCC đã xử lý OK'>
+                    <IconButton size='small' color='success' onClick={() => { setConfirmOrder(order); setConfirmProviderCode('') }}>
+                      <CheckCircle size={16} />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title='Thử lại đơn hàng'>
+                    <IconButton size='small' color='warning' onClick={() => setRetryFailedOrder(order)}>
+                      <RotateCcw size={16} />
+                    </IconButton>
+                  </Tooltip>
+                </>
               )}
               {status === 3 && (
                 <>
@@ -1217,6 +1231,49 @@ return (
             sx={{ color: '#fff' }}
           >
             {renewalLoading ? <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} /> : 'Xác nhận bỏ qua'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Order Confirm Dialog (timeout orders) */}
+      <Dialog open={!!confirmOrder} onClose={() => setConfirmOrder(null)} maxWidth='sm' fullWidth>
+        <DialogTitle>Xác nhận đơn hàng thành công</DialogTitle>
+        <DialogContent>
+          <DialogContentText sx={{ mb: 2 }}>
+            Xác nhận NCC đã xử lý đơn <strong>#{confirmOrder?.order_code}</strong>?
+          </DialogContentText>
+          <TextField
+            fullWidth
+            size='small'
+            label='Mã đơn NCC (nếu có)'
+            placeholder='Nhập mã đơn từ NCC để hệ thống tự lấy proxy'
+            value={confirmProviderCode}
+            onChange={e => setConfirmProviderCode(e.target.value)}
+            helperText='Bỏ trống nếu đơn đã có proxy hoặc muốn import thủ công sau'
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmOrder(null)} color='inherit'>Hủy</Button>
+          <Button
+            onClick={async () => {
+              try {
+                const res = await orderConfirmMutation.mutateAsync({
+                  orderId: confirmOrder?.id,
+                  providerOrderCode: confirmProviderCode || undefined,
+                })
+                toast.info(res?.message || 'Đã xác nhận')
+                setConfirmOrder(null)
+                queryClient.invalidateQueries({ queryKey: ['adminOrders'] })
+              } catch (err: any) {
+                toast.error(err?.response?.data?.message || 'Lỗi xác nhận')
+              }
+            }}
+            color='success'
+            variant='contained'
+            disabled={orderConfirmMutation.isPending}
+            sx={{ color: '#fff' }}
+          >
+            {orderConfirmMutation.isPending ? <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} /> : 'Xác nhận'}
           </Button>
         </DialogActions>
       </Dialog>
