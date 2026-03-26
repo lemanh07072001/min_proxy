@@ -634,12 +634,13 @@ function AdminRenewalSection({ histories, order }: { histories: OrderHistoryItem
         const isFailed = h.status === 3
         const isPending = h.status === 0 || h.status === 1
         const isSuccess = h.status === 4 || h.status === 5
+        const isPartial = h.status === 6
 
         return (
           <div key={h.id} style={{
             padding: '10px 14px', borderRadius: 8, marginBottom: 6,
-            background: isFailed ? '#fef2f2' : isPending ? '#eff6ff' : '#f0fdf4',
-            border: `1px solid ${isFailed ? '#fecaca' : isPending ? '#bfdbfe' : '#bbf7d0'}`,
+            background: isFailed ? '#fef2f2' : isPending ? '#eff6ff' : isPartial ? '#fff7ed' : '#f0fdf4',
+            border: `1px solid ${isFailed ? '#fecaca' : isPending ? '#bfdbfe' : isPartial ? '#fed7aa' : '#bbf7d0'}`,
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 6 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -666,6 +667,8 @@ function AdminRenewalSection({ histories, order }: { histories: OrderHistoryItem
               </div>
             )}
 
+            <RenewalProgress metadata={h.metadata} status={h.status} />
+
             {isFailed && h.note && (
               <div style={{ fontSize: '12px', color: '#dc2626', marginTop: 4, background: '#fee2e2', padding: '4px 8px', borderRadius: 4 }}>
                 {h.note}
@@ -690,6 +693,39 @@ const HISTORY_STATUS: Record<number, { label: string; color: string }> = {
   3: { label: 'Thất bại', color: '#ef4444' },
   4: { label: 'Đang sử dụng', color: '#22c55e' },
   5: { label: 'Hết hạn', color: '#94a3b8' },
+  6: { label: 'Hoàn thành 1 phần', color: '#f97316' },
+}
+
+function RenewalProgress({ metadata, status }: { metadata?: any; status: number }) {
+  const total = metadata?.total
+  const success = metadata?.success ?? 0
+  const failed = metadata?.failed ?? 0
+  const processed = success + failed
+
+  if (!total || total <= 1) return null
+
+  const isProcessing = status === 0 || status === 1
+  const isPartial = status === 6
+  if (!isProcessing && !isPartial) return null
+
+  const pct = Math.round((processed / total) * 100)
+
+  return (
+    <div style={{ marginTop: 6 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '11px', color: '#64748b' }}>
+        <span>{success}/{total} thành công</span>
+        {failed > 0 && <span style={{ color: '#ef4444' }}>{failed} lỗi</span>}
+        <span>{pct}%</span>
+      </div>
+      <div style={{ height: 4, background: '#e5e7eb', borderRadius: 2, marginTop: 3, overflow: 'hidden' }}>
+        <div style={{
+          height: '100%', borderRadius: 2, transition: 'width 0.3s',
+          width: `${pct}%`,
+          background: failed > 0 ? '#f97316' : '#22c55e',
+        }} />
+      </div>
+    </div>
+  )
 }
 
 const HISTORY_TYPE_LABEL: Record<string, string> = {
@@ -779,6 +815,9 @@ function HistoryTimeline({ histories, isLoading, isAdmin = false }: { histories:
                 </span>
               )}
             </div>
+
+            {/* Progress bar cho by_item */}
+            <RenewalProgress metadata={h.metadata} status={h.status} />
 
             {/* Note — lỗi hoặc ghi chú */}
             {h.note && (
