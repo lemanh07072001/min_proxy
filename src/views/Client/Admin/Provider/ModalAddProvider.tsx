@@ -134,6 +134,12 @@ interface IpConfig {
   param_format: string
 }
 
+interface InheritParam {
+  source: 'order' | 'order_item'
+  field: string
+  param: string
+}
+
 interface RenewConfig {
   enabled: boolean
   mode: string
@@ -142,7 +148,6 @@ interface RenewConfig {
   auth_type: string
   auth_param: string
   params_json: string
-  item_param: string
   duration_param: string
   duration_map_json: string
   response_mode: string
@@ -150,6 +155,7 @@ interface RenewConfig {
   success_value: string
   new_expiry_field: string
   batch_delay_ms: string
+  inherit_params: InheritParam[]
 }
 
 interface FormValues {
@@ -385,7 +391,6 @@ function parseApiConfig(apiConfig: any): Partial<FormValues> {
         auth_type: r.auth_type || 'inherit',
         auth_param: r.auth_param || '',
         params_json: r.params ? JSON.stringify(r.params) : '',
-        item_param: r.item_param || 'proxy_id',
         duration_param: r.duration_param || 'days',
         duration_map_json: r.duration_map ? JSON.stringify(r.duration_map) : '',
         response_mode: r.response_mode || 'immediate',
@@ -393,6 +398,7 @@ function parseApiConfig(apiConfig: any): Partial<FormValues> {
         success_value: resp.success_value != null ? String(resp.success_value) : '',
         new_expiry_field: resp.new_expiry_field || '',
         batch_delay_ms: r.batch_delay_ms ? String(r.batch_delay_ms) : '0',
+        inherit_params: r.inherit_params || [],
       }
     })(),
   }
@@ -626,9 +632,6 @@ function buildApiConfig(form: FormValues): object | null {
     if (form.renew.params_json) {
       try { r.params = JSON.parse(form.renew.params_json) } catch { /* skip */ }
     }
-    if (form.renew.mode === 'by_item' && form.renew.item_param) {
-      r.item_param = form.renew.item_param
-    }
     if (form.renew.duration_param) r.duration_param = form.renew.duration_param
     if (form.renew.duration_map_json) {
       try { r.duration_map = JSON.parse(form.renew.duration_map_json) } catch { /* skip */ }
@@ -644,6 +647,12 @@ function buildApiConfig(form: FormValues): object | null {
     }
     if (form.renew.new_expiry_field) resp.new_expiry_field = form.renew.new_expiry_field
     if (Object.keys(resp).length > 0) r.response = resp
+
+    // Inherit params — kế thừa tham số từ order/order_item
+    const validInherit = (form.renew.inherit_params || []).filter(
+      (p: InheritParam) => p.field && p.param
+    )
+    if (validInherit.length > 0) r.inherit_params = validInherit
 
     config.renew = r
   }
@@ -1370,6 +1379,91 @@ function BuyConfigFields({
   )
 }
 
+// ─── Inherit Params Table ────────────────────────────
+
+const ORDER_FIELDS = [
+  { value: 'order_code', label: 'Mã đơn hàng' },
+  { value: 'quantity', label: 'Số lượng' },
+  { value: 'time', label: 'Thời hạn gốc (ngày)' },
+  { value: 'country', label: 'Quốc gia' },
+  { value: 'protocol', label: 'Giao thức' },
+  { value: 'ip_version', label: 'IP version' },
+  { value: 'proxy_type', label: 'Loại proxy' },
+]
+
+const ITEM_FIELDS = [
+  { value: 'provider_order_code', label: 'Mã đơn NCC' },
+  { value: 'provider_item_id', label: 'ID proxy NCC' },
+  { value: 'proxy.ip', label: 'IP' },
+  { value: 'proxy.port', label: 'Port' },
+  { value: 'proxy.username', label: 'Username' },
+  { value: 'proxy.password', label: 'Password' },
+  { value: 'key', label: 'Key hệ thống' },
+]
+
+function InheritParamsTable({ control }: { control: Control<FormValues> }) {
+  const { fields, append, remove } = useFieldArray({ control, name: 'renew.inherit_params' as any })
+
+  return (
+    <Grid2 size={{ xs: 12 }}>
+      <Divider sx={{ my: 1 }} />
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+        <Typography variant='body2' fontWeight={600}>
+          Kế thừa tham số <FieldHint text={
+            'Lấy dữ liệu từ đơn hàng gốc hoặc proxy để gửi kèm khi gia hạn.\n\n' +
+            '• Nguồn: chọn lấy từ Order hay Order Item\n' +
+            '• Field: chọn field hệ thống cần lấy giá trị\n' +
+            '• Param NCC: tên param gửi cho nhà cung cấp\n\n' +
+            'VD: NCC cần country_code → chọn nguồn "Order", field "country", param "country_code"'
+          } />
+        </Typography>
+        <Button size='small' onClick={() => append({ source: 'order', field: '', param: '' })}>
+          + Thêm
+        </Button>
+      </Box>
+      {fields.map((f, i) => (
+        <InheritParamRow key={f.id} control={control} index={i} onRemove={() => remove(i)} />
+      ))}
+      {fields.length === 0 && (
+        <Typography variant='body2' color='text.secondary' sx={{ mb: 1, fontStyle: 'italic' }}>
+          Không có tham số kế thừa. Chỉ gửi các biến mặc định (provider_order_code, provider_item_id, duration).
+        </Typography>
+      )}
+    </Grid2>
+  )
+}
+
+function InheritParamRow({ control, index, onRemove }: { control: Control<FormValues>, index: number, onRemove: () => void }) {
+  const source = useWatch({ control, name: `renew.inherit_params.${index}.source` as any })
+  const fieldOptions = source === 'order_item' ? ITEM_FIELDS : ORDER_FIELDS
+
+  return (
+    <Box sx={{ display: 'flex', gap: 1, mb: 1, alignItems: 'center' }}>
+      <Controller name={`renew.inherit_params.${index}.source` as any} control={control} render={({ field }) => (
+        <CustomTextField {...field} select size='small' sx={{ minWidth: 130 }} label='Nguồn'>
+          <MenuItem value='order'>Order</MenuItem>
+          <MenuItem value='order_item'>Order Item</MenuItem>
+        </CustomTextField>
+      )} />
+      <Controller name={`renew.inherit_params.${index}.field` as any} control={control} render={({ field }) => (
+        <CustomTextField {...field} select size='small' sx={{ minWidth: 160 }} label='Field hệ thống'>
+          {fieldOptions.map(o => <MenuItem key={o.value} value={o.value}>{o.label}</MenuItem>)}
+          <MenuItem value='__custom'>Tự nhập...</MenuItem>
+        </CustomTextField>
+      )} />
+      {useWatch({ control, name: `renew.inherit_params.${index}.field` as any }) === '__custom' && (
+        <Controller name={`renew.inherit_params.${index}.field` as any} control={control} render={({ field }) => (
+          <CustomTextField {...field} size='small' sx={{ minWidth: 120 }} label='Field' placeholder='metadata.xxx' />
+        )} />
+      )}
+      <Controller name={`renew.inherit_params.${index}.param` as any} control={control} render={({ field }) => (
+        <CustomTextField {...field} size='small' sx={{ minWidth: 130 }} label='Param NCC' placeholder='country_code' />
+      )} />
+      <IconButton size='small' onClick={onRemove} color='error'><i className='tabler-trash' /></IconButton>
+    </Box>
+  )
+}
+
 // ─── Renew Config Fields ────────────────────────────
 
 function RenewConfigFields({ control }: { control: Control<FormValues> }) {
@@ -1482,19 +1576,15 @@ function RenewConfigFields({ control }: { control: Control<FormValues> }) {
           </Grid2>
 
           {mode === 'by_item' && (
-            <>
-              <Grid2 size={{ xs: 6, sm: 4 }}>
-                <Controller name='renew.item_param' control={control} render={({ field }) => (
-                  <CustomTextField {...field} fullWidth label={<>Param ID proxy <FieldHint text='Tên param chứa ID proxy gửi cho provider. VD: proxy_id, id' /></>} placeholder='proxy_id' />
-                )} />
-              </Grid2>
-              <Grid2 size={{ xs: 6, sm: 4 }}>
-                <Controller name='renew.batch_delay_ms' control={control} render={({ field }) => (
-                  <CustomTextField {...field} fullWidth type='number' label={<>Delay giữa proxy (ms) <FieldHint text='Nếu provider giới hạn tốc độ, thêm delay giữa mỗi lệnh gia hạn.' /></>} placeholder='0' />
-                )} />
-              </Grid2>
-            </>
+            <Grid2 size={{ xs: 6, sm: 4 }}>
+              <Controller name='renew.batch_delay_ms' control={control} render={({ field }) => (
+                <CustomTextField {...field} fullWidth type='number' label={<>Delay giữa proxy (ms) <FieldHint text='Nếu provider giới hạn tốc độ, thêm delay giữa mỗi lệnh gia hạn.' /></>} placeholder='0' />
+              )} />
+            </Grid2>
           )}
+
+          {/* Inherit params */}
+          <InheritParamsTable control={control} />
 
           {/* Response */}
           <Grid2 size={{ xs: 12 }}>
@@ -1570,13 +1660,13 @@ const defaultValues: FormValues = {
     auth_type: 'inherit',
     auth_param: '',
     params_json: '',
-    item_param: 'proxy_id',
     duration_param: 'days',
     duration_map_json: '',
     response_mode: 'immediate',
     success_field: '',
     success_value: '',
     new_expiry_field: '',
+    inherit_params: [],
     batch_delay_ms: '0',
   }
 }
