@@ -1,6 +1,11 @@
 # MKT Proxy — Frontend (Next.js 15)
 
-> **Dự án gồm 2 repo riêng biệt.** Để Claude Code hiểu đầy đủ context, cần gộp vào 1 workspace.
+> **⚠️ ĐỌC TRƯỚC KHI LÀM BẤT CỨ GÌ:**
+> Dự án này gồm 2 repo (FE + BE). Nếu workspace hiện tại chỉ chứa FE, bạn PHẢI đọc thêm repo BE để có context đầy đủ.
+> - **Repo BE** nằm tại thư mục anh em: `../BE/` (cùng cấp với thư mục FE này)
+> - **BE CLAUDE.md**: `../BE/CLAUDE.md` — đọc file này để hiểu BE context
+> - **BE Developer Guide**: `../BE/DEVELOPER-GUIDE.md` — changelog BE ở section 15
+> - Nếu `../BE/` không tồn tại, yêu cầu user clone BE repo vào cùng thư mục cha
 
 ## Setup workspace (BẮT BUỘC cho dev mới)
 
@@ -9,8 +14,8 @@
 mkdir mktProxies && cd mktProxies
 
 # 2. Clone cả 2 repo vào cùng thư mục
-git clone <BE_REPO_URL> BE
-git clone <FE_REPO_URL> FE
+git clone https://gitlab.com/longlv197/proxy.git BE
+git clone https://github.com/lemanh07072001/min_proxy.git FE
 
 # 3. Mở workspace ở thư mục gốc (KHÔNG mở riêng BE hoặc FE)
 #    VSCode: File → Open Folder → chọn mktProxies/
