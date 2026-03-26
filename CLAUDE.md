@@ -1,11 +1,11 @@
 # MKT Proxy — Frontend (Next.js 15)
 
-> **⚠️ ĐỌC TRƯỚC KHI LÀM BẤT CỨ GÌ:**
-> Dự án này gồm 2 repo (FE + BE). Nếu workspace hiện tại chỉ chứa FE, bạn PHẢI đọc thêm repo BE để có context đầy đủ.
-> - **Repo BE** nằm tại thư mục anh em: `../BE/` (cùng cấp với thư mục FE này)
-> - **BE CLAUDE.md**: `../BE/CLAUDE.md` — đọc file này để hiểu BE context
+> **⚠️ DỰ ÁN GỒM 2 REPO — TỰ ĐỘNG ĐỌC REPO KIA:**
+> - **Repo BE** nằm tại `../BE/` (cùng cấp với thư mục FE này)
+> - Khi bắt đầu session, **tự kiểm tra** `../BE/` có tồn tại không:
+>   - **Có** → đọc `../BE/CLAUDE.md` để hiểu BE context, KHÔNG cần hỏi user
+>   - **Không** → thông báo user: "Repo BE chưa có, clone bằng: `git clone https://gitlab.com/longlv197/proxy.git ../BE`"
 > - **BE Developer Guide**: `../BE/DEVELOPER-GUIDE.md` — changelog BE ở section 15
-> - Nếu `../BE/` không tồn tại, yêu cầu user clone BE repo vào cùng thư mục cha
 
 ## Setup workspace (BẮT BUỘC cho dev mới)
 
