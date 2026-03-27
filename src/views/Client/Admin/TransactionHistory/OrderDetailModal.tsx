@@ -458,6 +458,43 @@ function InfoCell({ label, value, icon, highlight }: { label: string; value: str
   )
 }
 
+/** Code block có copy + resize tự do */
+function CodeBlock({ value, color = '#93c5fd', open }: { value: string; color?: string; open?: boolean }) {
+  const [copied, setCopied] = useState(false)
+  const formatted = (() => {
+    if (typeof value === 'string') {
+      try { return JSON.stringify(JSON.parse(value), null, 2) } catch { return value }
+    }
+    return JSON.stringify(value, null, 2)
+  })()
+
+  return (
+    <div style={{ position: 'relative', marginTop: 4 }}>
+      <button
+        onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(formatted); setCopied(true); setTimeout(() => setCopied(false), 1500) }}
+        style={{
+          position: 'absolute', top: 4, right: 4, zIndex: 1,
+          background: copied ? '#22c55e' : '#334155', border: 'none', borderRadius: 4,
+          color: '#fff', fontSize: '10px', padding: '2px 8px', cursor: 'pointer',
+          transition: 'background 0.2s',
+        }}
+      >
+        {copied ? 'Copied!' : 'Copy'}
+      </button>
+      <pre style={{
+        fontSize: '11px', color, background: '#0f172a',
+        padding: '8px 10px', borderRadius: 6,
+        minHeight: 40, maxHeight: 'none',
+        border: '1px solid #1e293b', resize: 'vertical', overflow: 'auto',
+        fontFamily: 'monospace', whiteSpace: 'pre-wrap', wordBreak: 'break-all',
+        margin: 0,
+      }}>
+        {formatted}
+      </pre>
+    </div>
+  )
+}
+
 function OrderLogsTimeline({ logs, isLoading }: { logs: OrderLog[]; isLoading: boolean }) {
   if (isLoading) {
     return (
@@ -547,17 +584,7 @@ function OrderLogsTimeline({ logs, isLoading }: { logs: OrderLog[]; isLoading: b
               {(log.request_body || log.context?.request_params) && (
                 <details style={{ marginTop: 6 }} open={isError}>
                   <summary style={{ fontSize: '11px', color: '#3b82f6', cursor: 'pointer', fontWeight: 500 }}>Request payload</summary>
-                  <textarea
-                    readOnly
-                    value={JSON.stringify(log.request_body || log.context?.request_params, null, 2)}
-                    style={{
-                      fontSize: '11px', color: '#93c5fd', background: '#0f172a',
-                      padding: '8px 10px', borderRadius: 6, marginTop: 4,
-                      width: '100%', minHeight: 60, maxHeight: 400,
-                      border: '1px solid #1e293b', resize: 'both',
-                      fontFamily: 'monospace', whiteSpace: 'pre', overflow: 'auto',
-                    }}
-                  />
+                  <CodeBlock value={JSON.stringify(log.request_body || log.context?.request_params, null, 2)} color='#93c5fd' />
                 </details>
               )}
 
@@ -567,23 +594,7 @@ function OrderLogsTimeline({ logs, isLoading }: { logs: OrderLog[]; isLoading: b
                   <summary style={{ fontSize: '11px', color: isError ? '#ef4444' : '#22c55e', cursor: 'pointer', fontWeight: 500 }}>
                     Response {log.duration_ms ? `(${log.duration_ms}ms)` : ''}
                   </summary>
-                  <textarea
-                    readOnly
-                    value={(() => {
-                      const raw = log.response_body || log.context?.response
-                      if (typeof raw === 'string') {
-                        try { return JSON.stringify(JSON.parse(raw), null, 2) } catch { return raw }
-                      }
-                      return JSON.stringify(raw, null, 2)
-                    })()}
-                    style={{
-                      fontSize: '11px', color: isError ? '#fca5a5' : '#86efac', background: '#0f172a',
-                      padding: '8px 10px', borderRadius: 6, marginTop: 4,
-                      width: '100%', minHeight: 60, maxHeight: 400,
-                      border: '1px solid #1e293b', resize: 'both',
-                      fontFamily: 'monospace', whiteSpace: 'pre', overflow: 'auto',
-                    }}
-                  />
+                  <CodeBlock value={log.response_body || log.context?.response} color={isError ? '#fca5a5' : '#86efac'} />
                 </details>
               )}
 
@@ -596,17 +607,7 @@ function OrderLogsTimeline({ logs, isLoading }: { logs: OrderLog[]; isLoading: b
                     <summary style={{ fontSize: '11px', color: isError ? '#f97316' : '#94a3b8', cursor: 'pointer', fontWeight: 500 }}>
                       Debug chi tiết
                     </summary>
-                    <textarea
-                      readOnly
-                      value={JSON.stringify(rest, null, 2)}
-                      style={{
-                        fontSize: '11px', color: '#fbbf24', background: '#0f172a',
-                        padding: '8px 10px', borderRadius: 6, marginTop: 4,
-                        width: '100%', minHeight: 60, maxHeight: 400,
-                        border: '1px solid #1e293b', resize: 'both',
-                        fontFamily: 'monospace', whiteSpace: 'pre', overflow: 'auto',
-                      }}
-                    />
+                    <CodeBlock value={JSON.stringify(rest, null, 2)} color='#fbbf24' />
                   </details>
                 )
               })()}
@@ -692,9 +693,14 @@ function AdminRenewalSection({ histories, order, viewLogId, onViewLog }: {
         )}
       </div>
 
-      {/* Right: log panel */}
+      {/* Right: log panel — slide in */}
       {viewLogId && (
-        <div style={{ flex: '0 0 45%', borderLeft: '1px solid #e2e8f0', maxHeight: 350, overflowY: 'auto', padding: '12px 16px' }}>
+        <div style={{
+          flex: '0 0 48%', borderLeft: '1px solid #e2e8f0',
+          overflowY: 'auto', padding: '12px 16px',
+          animation: 'slideInRight 0.2s ease-out',
+        }}>
+          <style>{`@keyframes slideInRight { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }`}</style>
           <AdminHistoryLogPanel historyId={viewLogId} />
         </div>
       )}
@@ -761,47 +767,24 @@ function AdminHistoryLogPanel({ historyId }: { historyId: number }) {
             {/* Request payload */}
             {log.request && (
               <details style={{ marginTop: 4 }} open={isError}>
-                <summary style={{ color: '#3b82f6', cursor: 'pointer', fontWeight: 500 }}>Request</summary>
-                <pre style={{
-                  fontSize: '10px', color: '#93c5fd', background: '#0f172a',
-                  padding: '6px 8px', borderRadius: 4, marginTop: 2,
-                  maxHeight: 200, overflow: 'auto', whiteSpace: 'pre-wrap', wordBreak: 'break-all'
-                }}>
-                  {JSON.stringify(log.request, null, 2)}
-                </pre>
+                <summary style={{ fontSize: '11px', color: '#3b82f6', cursor: 'pointer', fontWeight: 500 }}>Request</summary>
+                <CodeBlock value={JSON.stringify(log.request, null, 2)} color='#93c5fd' />
               </details>
             )}
 
             {/* Response */}
             {log.response && (
               <details style={{ marginTop: 3 }} open={isError}>
-                <summary style={{ color: isError ? '#ef4444' : '#22c55e', cursor: 'pointer', fontWeight: 500 }}>Response</summary>
-                <pre style={{
-                  fontSize: '10px', color: isError ? '#fca5a5' : '#86efac', background: '#0f172a',
-                  padding: '6px 8px', borderRadius: 4, marginTop: 2,
-                  maxHeight: 200, overflow: 'auto', whiteSpace: 'pre-wrap', wordBreak: 'break-all'
-                }}>
-                  {(() => {
-                    if (typeof log.response === 'string') {
-                      try { return JSON.stringify(JSON.parse(log.response), null, 2) } catch { return log.response }
-                    }
-                    return JSON.stringify(log.response, null, 2)
-                  })()}
-                </pre>
+                <summary style={{ fontSize: '11px', color: isError ? '#ef4444' : '#22c55e', cursor: 'pointer', fontWeight: 500 }}>Response</summary>
+                <CodeBlock value={log.response} color={isError ? '#fca5a5' : '#86efac'} />
               </details>
             )}
 
             {/* Headers */}
             {ctx.headers && (
               <details style={{ marginTop: 3 }}>
-                <summary style={{ color: '#94a3b8', cursor: 'pointer', fontWeight: 500 }}>Headers</summary>
-                <pre style={{
-                  fontSize: '10px', color: '#fbbf24', background: '#0f172a',
-                  padding: '6px 8px', borderRadius: 4, marginTop: 2,
-                  maxHeight: 150, overflow: 'auto', whiteSpace: 'pre-wrap'
-                }}>
-                  {JSON.stringify(ctx.headers, null, 2)}
-                </pre>
+                <summary style={{ fontSize: '11px', color: '#94a3b8', cursor: 'pointer', fontWeight: 500 }}>Headers</summary>
+                <CodeBlock value={JSON.stringify(ctx.headers, null, 2)} color='#fbbf24' />
               </details>
             )}
           </div>
