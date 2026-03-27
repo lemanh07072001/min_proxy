@@ -53,14 +53,6 @@ export const ORDER_STATUS_LABELS_ADMIN: Record<string, string> = {
 }
 
 /**
- * Order Status Colors cho Admin — failed hiện đỏ (khác user)
- */
-export const ORDER_STATUS_COLORS_ADMIN: Record<string, string> = {
-  ...ORDER_STATUS_COLORS,
-  [ORDER_STATUS.FAILED]: 'error',
-}
-
-/**
  * Order Status Colors
  * Màu sắc tương ứng với mỗi trạng thái (dùng cho Chip MUI)
  */
@@ -78,6 +70,14 @@ export const ORDER_STATUS_COLORS: Record<string, string> = {
   [ORDER_STATUS.AWAITING_PROVIDER]: 'info',
   [ORDER_STATUS.AWAITING_RENEWAL]: 'info',
   [ORDER_STATUS.RENEWAL_FAILED]: 'error',
+}
+
+/**
+ * Order Status Colors cho Admin — failed hiện đỏ (khác user)
+ */
+export const ORDER_STATUS_COLORS_ADMIN: Record<string, string> = {
+  ...ORDER_STATUS_COLORS,
+  [ORDER_STATUS.FAILED]: 'error',
 }
 
 /**
