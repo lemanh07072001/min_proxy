@@ -125,56 +125,16 @@ export default function HistoryOrderPage() {
   const columns = useMemo(
     () => [
       {
-        header: '',
-        id: 'actions',
-        size: 45,
-        cell: ({ row }: { row: any }) => (
-          <CustomIconButton
-            aria-label='Xem chi tiết'
-            color='info'
-            variant='tonal'
-            size='small'
-            onClick={() => {
-              setSelectedOrder(row.original)
-              setOpen(true)
-            }}
-          >
-            <Eye size={16} />
-          </CustomIconButton>
-        )
-      },
-      {
         accessorKey: 'order_code',
-        header: 'Đơn hàng',
-        minSize: 160,
+        header: 'Mã đơn',
+        minSize: 140,
         cell: ({ row }: { row: any }) => {
           const o = row.original
-          const qty = o.quantity
-          const delivered = o.delivered_quantity
-          const isMissing = delivered != null && delivered !== qty
 
           return (
             <div style={{ lineHeight: 1.4 }}>
               <div style={{ fontWeight: 600, fontSize: '12px' }}>{o.order_code}</div>
-              <div style={{ fontSize: '11px', color: '#64748b' }}>
-                {fmtVND(o.total_amount)} · {isMissing ? <span style={{ color: '#EF4444' }}>{delivered}/{qty}</span> : `${qty}`} sản phẩm
-              </div>
-            </div>
-          )
-        }
-      },
-      {
-        header: 'Sản phẩm',
-        minSize: 170,
-        cell: ({ row }: { row: any }) => {
-          const o = row.original
-
-          return (
-            <div style={{ lineHeight: 1.4 }}>
-              <div style={{ fontWeight: 600, fontSize: '12px' }}>{o.service_name || '-'}</div>
-              <div style={{ fontSize: '10px', color: '#94a3b8', fontFamily: 'monospace' }}>
-                #{o.service_id} · {o.service_code || o.proxy_type || '-'}
-              </div>
+              <div style={{ fontSize: '11px', color: '#64748b' }}>{o.service_name || '-'}</div>
             </div>
           )
         }
@@ -223,6 +183,37 @@ export default function HistoryOrderPage() {
                 <div style={{ fontSize: '11px', color: '#16a34a', fontWeight: 500 }}>{remaining}</div>
               )}
             </div>
+          )
+        }
+      },
+      {
+        header: '',
+        id: 'actions',
+        size: 130,
+        cell: ({ row }: { row: any }) => {
+          const status = Number(row.original.status)
+          const isActive = [2, 3].includes(status) // in_use, in_use_partial
+          const isPending = [0, 1, 10, 11].includes(status)
+
+          const label = isActive ? 'Xem sản phẩm' : isPending ? 'Đang xử lý...' : 'Xem chi tiết'
+          const color = isActive ? '#16a34a' : isPending ? '#94a3b8' : '#64748b'
+          const bg = isActive ? '#f0fdf4' : 'transparent'
+          const border = isActive ? '#bbf7d0' : '#e2e8f0'
+
+          return (
+            <button
+              disabled={isPending}
+              onClick={() => { setSelectedOrder(row.original); setOpen(true) }}
+              style={{
+                fontSize: '11px', fontWeight: 600, padding: '5px 12px', borderRadius: 6,
+                border: `1px solid ${border}`, background: bg, color,
+                cursor: isPending ? 'default' : 'pointer',
+                display: 'flex', alignItems: 'center', gap: 4, whiteSpace: 'nowrap',
+              }}
+            >
+              {isActive && <Eye size={12} />}
+              {label}
+            </button>
           )
         }
       },
