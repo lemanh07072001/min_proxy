@@ -23,17 +23,19 @@ export default function BalanceCardClient({ isWalletVisible, isInitialLoad }: Ba
   const dispatch = useDispatch()
   const axiosAuth = useAxiosAuth()
 
-  // Auto-refresh balance mỗi 30s
+  // Fetch ngay khi load + auto-refresh mỗi 30s
   useEffect(() => {
     if (status !== 'authenticated') return
 
+    // Lấy số dư thật từ DB ngay lập tức
+    axiosAuth.post('/me').then(res => {
+      if (res?.data) dispatch(setUser(res.data))
+    }).catch(() => {})
+
     const interval = setInterval(() => {
-      axiosAuth
-        .post('/me')
-        .then(res => {
-          if (res?.data) dispatch(setUser(res.data))
-        })
-        .catch(() => {})
+      axiosAuth.post('/me').then(res => {
+        if (res?.data) dispatch(setUser(res.data))
+      }).catch(() => {})
     }, 30000)
 
     return () => clearInterval(interval)

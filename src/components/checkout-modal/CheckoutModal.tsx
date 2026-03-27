@@ -11,7 +11,7 @@ import { useRouter } from 'next/navigation'
 
 import QuantityControl from '@components/form/input-quantity/QuantityControl'
 import ProtocolSelector from '@components/form/protocol-selector/ProtocolSelector'
-import { setUser } from '@/store/userSlice'
+import { setUser, subtractBalance } from '@/store/userSlice'
 import type { AppDispatch, RootState } from '@/store'
 import useAxiosAuth from '@/hocs/useAxiosAuth'
 
@@ -221,7 +221,8 @@ return pct > 0 ? Math.round(pct) : null
         setPurchaseSuccess(true)
         setApiError('')
 
-        // Lấy số dư thật từ DB — không dùng local subtract
+        // Instant UI feedback + verify từ DB sau
+        dispatch(subtractBalance(total))
         axiosAuth.post('/me').then(res => {
           if (res?.data) dispatch(setUser(res.data))
         }).catch(() => {})

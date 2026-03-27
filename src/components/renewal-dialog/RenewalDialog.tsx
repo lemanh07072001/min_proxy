@@ -6,7 +6,7 @@ import { RefreshCw, Loader, CheckCircle, AlertTriangle } from 'lucide-react'
 import { toast } from 'react-toastify'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { setUser } from '@/store/userSlice'
+import { setUser, subtractBalance } from '@/store/userSlice'
 import type { AppDispatch, RootState } from '@/store'
 import { useRenewOrder } from '@/hooks/apis/useRenewal'
 import useAxiosAuth from '@/hocs/useAxiosAuth'
@@ -85,6 +85,7 @@ const RenewalDialog: React.FC<RenewalDialogProps> = ({
           if (data?.success === false) {
             toast.error(data?.message || 'Lỗi gia hạn.')
           } else {
+            dispatch(subtractBalance(total))
             axiosAuth.post('/me').then(res => { if (res?.data) dispatch(setUser(res.data)) }).catch(() => {})
             toast.success(data?.message || 'Gia hạn thành công!')
             setTimeout(() => onClose(), 2000)

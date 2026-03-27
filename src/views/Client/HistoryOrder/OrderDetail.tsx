@@ -40,7 +40,7 @@ import { RefreshCw, Loader, AlertTriangle, ChevronDown, ChevronRight, Undo2 } fr
 import { toast } from 'react-toastify'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { setUser } from '@/store/userSlice'
+import { setUser, subtractBalance } from '@/store/userSlice'
 import type { AppDispatch, RootState } from '@/store'
 import { formatDateTimeLocal } from '@/utils/formatDate'
 import { useCopy } from '@/app/hooks/useCopy'
@@ -838,7 +838,7 @@ function RenewalInlinePanel({ order, quantity, selectedItemKeys, onClose }: {
       {
         onSuccess: (data) => {
           if (data?.success === false) toast.error(data?.message || 'Lỗi gia hạn.')
-          else { axiosAuth.post('/me').then(r => { if (r?.data) dispatch(setUser(r.data)) }).catch(() => {}); toast.success(data?.message || 'Đã tạo lệnh gia hạn!') }
+          else { dispatch(subtractBalance(total)); axiosAuth.post('/me').then(r => { if (r?.data) dispatch(setUser(r.data)) }).catch(() => {}); toast.success(data?.message || 'Đã tạo lệnh gia hạn!') }
         },
         onError: (err: any) => toast.error(err.response?.data?.message || 'Lỗi không xác định.'),
       }
