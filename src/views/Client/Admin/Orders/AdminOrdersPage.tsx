@@ -482,6 +482,13 @@ return {
                   </Tooltip>
                 </>
               )}
+              {status === 10 && (
+                <Tooltip title='Thêm thủ công'>
+                  <IconButton size='small' color='primary' onClick={() => setFillProxiesOrder(order)}>
+                    <PlusCircle size={16} />
+                  </IconButton>
+                </Tooltip>
+              )}
               {status === 12 && (
                 <>
                   <Tooltip title='Retry gia hạn'>
