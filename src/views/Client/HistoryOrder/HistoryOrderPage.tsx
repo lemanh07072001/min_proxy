@@ -140,34 +140,25 @@ export default function HistoryOrderPage() {
         }
       },
       {
-        header: 'Số lượng',
-        size: 70,
-        cell: ({ row }: { row: any }) => {
-          const { quantity: qty, delivered_quantity: delivered } = row.original
-          const isMissing = delivered != null && delivered < qty
-
-          return (
-            <span style={{ fontSize: '13px', fontWeight: 600, color: isMissing ? '#EF4444' : '#374151' }}>
-              {isMissing ? `${delivered}/${qty}` : qty}
-            </span>
-          )
-        }
-      },
-      {
-        header: 'Thời hạn',
-        size: 170,
+        header: 'Thông tin đơn hàng',
+        minSize: 200,
         cell: ({ row }: { row: any }) => {
           const o = row.original
+          const { quantity: qty, delivered_quantity: delivered } = o
+          const isMissing = delivered != null && delivered < qty
           const remaining = getTimeRemaining(o.expired_at, o.status)
 
           return (
-            <div style={{ lineHeight: 1.5, fontSize: '12px', color: '#64748b' }}>
-              {o.buy_at && <div>{formatDateTimeLocal(o.buy_at)}</div>}
-              {o.expired_at && (
-                <div>→ {formatDateTimeLocal(o.expired_at)}</div>
-              )}
+            <div style={{ lineHeight: 1.6, fontSize: '12px', color: '#64748b' }}>
+              <div>
+                <span style={{ fontWeight: 600, color: isMissing ? '#EF4444' : '#374151' }}>
+                  {isMissing ? `${delivered}/${qty}` : qty} sản phẩm
+                </span>
+              </div>
+              {o.buy_at && <div>Mua: {formatDateTimeLocal(o.buy_at)}</div>}
+              {o.expired_at && <div>HH: {formatDateTimeLocal(o.expired_at)}</div>}
               {remaining && (
-                <div style={{ color: '#16a34a', fontWeight: 500 }}>{remaining}</div>
+                <div style={{ color: '#16a34a', fontWeight: 600, fontSize: '12px' }}>{remaining}</div>
               )}
             </div>
           )
