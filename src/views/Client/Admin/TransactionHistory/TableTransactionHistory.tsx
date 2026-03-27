@@ -147,7 +147,7 @@ export default function TableDepositHistory() {
       case TRANSACTION_TYPES.RUT_HOA_HONG_AFFILIATE:
         return <Chip label={label} size='small' icon={<BadgeMinus />} color='secondary' sx={chipSx} />
       default:
-        return <Chip label={label} size='small' icon={<CircleQuestionMark />} color='default' sx={chipSx} />
+        return <Chip label={label} size='small' icon={<CircleQuestionMark />} color='secondary' sx={chipSx} />
     }
   }
 

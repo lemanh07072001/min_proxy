@@ -41,7 +41,9 @@ const TYPE_LABELS: Record<string, { label: string; color: 'success' | 'info' | '
   REFUND: { label: 'Hoàn tiền', color: 'secondary' },
   REFUND_PARTIAL: { label: 'Hoàn 1 phần', color: 'secondary' },
   REFUND_FULL: { label: 'Hoàn toàn bộ', color: 'secondary' },
-  RUT_HOA_HONG_AFFILIATE: { label: 'Rút hoa hồng', color: 'default' }
+  RENEWAL: { label: 'Gia hạn', color: 'warning' },
+  REFUND_RENEWAL: { label: 'Hoàn GH', color: 'secondary' },
+  RUT_HOA_HONG_AFFILIATE: { label: 'Rút hoa hồng', color: 'primary' }
 }
 
 function parseDescription(row: any): string {
@@ -92,7 +94,7 @@ return (
         header: 'Loại',
         cell: ({ row }: { row: any }) => {
           const type = row.original?.type || ''
-          const info = TYPE_LABELS[type] || { label: type, color: 'default' as const }
+          const info = TYPE_LABELS[type] || { label: type, color: 'secondary' as const }
 
           
 return <Chip label={info.label} size='small' color={info.color} />

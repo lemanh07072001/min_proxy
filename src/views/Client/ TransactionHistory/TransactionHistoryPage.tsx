@@ -56,7 +56,7 @@ export default function TransactionHistoryPage() {
           const type = row.original?.type || ''
           const noidung = row.original?.noidung || ''
 
-          const typeMap: Record<string, { label: string; color: 'success' | 'primary' | 'info' | 'error' | 'warning' | 'default'; text?: string }> = {
+          const typeMap: Record<string, { label: string; color: 'success' | 'primary' | 'info' | 'error' | 'warning' | 'secondary'; text?: string }> = {
             NAPTIEN: { label: 'Nạp', color: 'success', text: 'Nạp tiền thành công!' },
             NAPTIEN_AUTO: { label: 'Nạp', color: 'success', text: 'Nạp tiền tự động' },
             NAPTIEN_PAY2S: { label: 'Nạp', color: 'success', text: 'Nạp tiền tự động' },
@@ -67,12 +67,16 @@ export default function TransactionHistoryPage() {
             THANHTOAN_V4: { label: 'Mua', color: 'info' },
             GIAHAN: { label: 'Gia hạn', color: 'warning' },
             GIAHAN_V4: { label: 'Gia hạn', color: 'warning' },
+            RENEWAL: { label: 'Gia hạn', color: 'warning' },
             REFUND: { label: 'Hoàn', color: 'error' },
+            REFUND_PARTIAL: { label: 'Hoàn 1 phần', color: 'error' },
+            REFUND_FULL: { label: 'Hoàn tiền', color: 'error' },
+            REFUND_RENEWAL: { label: 'Hoàn GH', color: 'error' },
             FAILED: { label: 'Lỗi', color: 'error' },
-            RUT_HOA_HONG_AFFILIATE: { label: 'Rút HH', color: 'default' },
+            RUT_HOA_HONG_AFFILIATE: { label: 'Rút HH', color: 'secondary' },
           }
 
-          const cfg = typeMap[type] || { label: type || '?', color: 'default' as const }
+          const cfg = typeMap[type] || { label: type || '?', color: 'secondary' as const }
 
           return (
             <div>
