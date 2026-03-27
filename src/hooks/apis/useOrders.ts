@@ -40,11 +40,12 @@ export const useCancelOrder = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async (orderId: number) => {
-      const res = await axiosAuth.post(`/cancel-order/${orderId}`)
+    mutationFn: async ({ orderId, refundAmount }: { orderId: number; refundAmount?: number }) => {
+      const res = await axiosAuth.post(`/cancel-order/${orderId}`, {
+        refund_amount: refundAmount,
+      })
 
-
-return res?.data
+      return res?.data
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['orderProxyStatic'] })

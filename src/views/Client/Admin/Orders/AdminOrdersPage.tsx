@@ -280,14 +280,20 @@ return {
     setOrderDetailOpen(true)
   }, [])
 
+  const [cancelRefundType, setCancelRefundType] = useState<'full' | 'partial'>('full')
+  const [cancelRefundAmount, setCancelRefundAmount] = useState('')
+
   const handleOpenCancel = useCallback((order: any) => {
     setOrderToCancel(order)
+    setCancelRefundType('full')
+    setCancelRefundAmount(String(order?.total_amount ?? 0))
     setCancelDialogOpen(true)
   }, [])
 
   const handleConfirmCancel = useCallback(() => {
     if (!orderToCancel) return
-    cancelMutation.mutate(orderToCancel.id, {
+    const amount = cancelRefundType === 'partial' ? parseInt(cancelRefundAmount) || 0 : undefined
+    cancelMutation.mutate({ orderId: orderToCancel.id, refundAmount: amount } as any, {
       onSuccess: (data: any) => {
         setCancelDialogOpen(false)
         setOrderToCancel(null)
@@ -398,24 +404,6 @@ return {
   const columns = useMemo(
     () => [
       {
-        accessorKey: 'id',
-        header: () => (
-          <span
-            onClick={() => handleToggleSort('id')}
-            style={{ cursor: 'pointer', userSelect: 'none', display: 'inline-flex', alignItems: 'center', gap: 4 }}
-          >
-            ID
-            {sortBy === 'id' && (
-              <span style={{ fontSize: '11px' }}>{sortOrder === 'desc' ? '▼' : '▲'}</span>
-            )}
-          </span>
-        ),
-        size: 60,
-        cell: ({ row }: { row: any }) => (
-          <span style={{ fontWeight: 600, fontSize: '13px', color: '#64748b' }}>#{row.original.id}</span>
-        )
-      },
-      {
         header: 'Thao tác',
         id: 'actions',
         size: 110,
@@ -430,19 +418,19 @@ return {
                   <Eye size={16} />
                 </IconButton>
               </Tooltip>
+              {[0, 1, 5, 10].includes(status) && (status !== 1 || order.retry >= (order.max_retry ?? 3)) && (
+                <Tooltip title='Hủy + hoàn tiền'>
+                  <IconButton size='small' color='error' onClick={() => handleOpenCancel(order)}>
+                    <XCircle size={16} />
+                  </IconButton>
+                </Tooltip>
+              )}
               {status === 5 && (
-                <>
-                  <Tooltip title='Hủy + hoàn tiền'>
-                    <IconButton size='small' color='error' onClick={() => handleOpenCancel(order)}>
-                      <XCircle size={16} />
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip title='Thử lại đơn hàng'>
-                    <IconButton size='small' color='warning' onClick={() => setRetryFailedOrder(order)}>
-                      <RotateCcw size={16} />
-                    </IconButton>
-                  </Tooltip>
-                </>
+                <Tooltip title='Thử lại đơn hàng'>
+                  <IconButton size='small' color='warning' onClick={() => setRetryFailedOrder(order)}>
+                    <RotateCcw size={16} />
+                  </IconButton>
+                </Tooltip>
               )}
               {status === 1 && order.retry >= (order.max_retry ?? 3) && (
                 <>
@@ -508,52 +496,70 @@ return {
         }
       },
       {
-        accessorKey: 'order_code',
-        header: 'Mã đơn',
-        minSize: 180,
-        cell: ({ row }: { row: any }) => (
-          <div>
-            <span style={{ fontWeight: 600, fontSize: '13px' }}>{row.original.order_code}</span>
-            {(row.original.provider_order_code || row.original.supplier_order_code) && (
-              <div style={{ fontSize: '11px', fontFamily: 'monospace', color: '#6366f1', marginTop: 2 }} title='Mã đơn site mẹ'>
-                NCC: {row.original.provider_order_code || row.original.supplier_order_code}
-              </div>
+        accessorKey: 'id',
+        header: () => (
+          <span
+            onClick={() => handleToggleSort('id')}
+            style={{ cursor: 'pointer', userSelect: 'none', display: 'inline-flex', alignItems: 'center', gap: 4 }}
+          >
+            Đơn hàng
+            {sortBy === 'id' && (
+              <span style={{ fontSize: '11px' }}>{sortOrder === 'desc' ? '▼' : '▲'}</span>
             )}
-          </div>
-        )
+          </span>
+        ),
+        minSize: 160,
+        cell: ({ row }: { row: any }) => {
+          const o = row.original
+
+          return (
+            <div>
+              <span style={{ fontWeight: 600, fontSize: '13px' }}>{o.order_code}</span>
+              <div style={{ fontSize: '10px', color: '#94a3b8', fontFamily: 'monospace' }}>#{o.id}</div>
+              {(o.provider_order_code || o.supplier_order_code) && (
+                <div style={{ fontSize: '10px', fontFamily: 'monospace', color: '#6366f1' }} title='Mã đơn NCC'>
+                  NCC: {o.provider_order_code || o.supplier_order_code}
+                </div>
+              )}
+            </div>
+          )
+        }
       },
       {
-        header: 'User',
-        minSize: 120,
-        cell: ({ row }: { row: any }) => (
-          <span style={{ fontWeight: 600, fontSize: '13px' }}>{row.original.user_name || '-'}</span>
-        )
-      },
-      {
-        header: 'Dịch vụ',
-        minSize: 170,
-        cell: ({ row }: { row: any }) => (
-          <div>
-            <div style={{ fontSize: '13px' }}>{row.original.service_name || '-'}</div>
-            {row.original.service_code && (
-              <div style={{ fontSize: '10px', color: '#94a3b8', fontFamily: 'monospace' }}>
-                #{row.original.service_id}・{row.original.service_code}
+        header: 'Trạng thái',
+        minSize: 130,
+        cell: ({ row }: { row: any }) => {
+          const o = row.original
+          const status = o.status
+          const config = STATUS_CONFIG[status] || { label: `Status ${status}`, color: '#94A3B8' }
+          const retry = o.retry ?? 0
+          const maxRetry = o.max_retry ?? 3
+          const isLocked = o.is_locked
+
+          return (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                <Chip
+                  label={config.label}
+                  size='small'
+                  sx={{ backgroundColor: config.color + '18', color: config.color, fontWeight: 600, fontSize: '11px' }}
+                />
+                {isLocked && (
+                  <span style={{ fontSize: 10, color: '#f59e0b', fontWeight: 700 }} title='Đang xử lý (locked)'>🔒</span>
+                )}
               </div>
-            )}
-          </div>
-        )
+              {status === 1 && retry > 0 && (
+                <span style={{ fontSize: '10px', fontFamily: 'monospace', color: retry >= maxRetry ? '#dc2626' : '#94a3b8' }}>
+                  retry {retry}/{maxRetry} {retry >= maxRetry ? '⚠️' : ''}
+                </span>
+              )}
+            </div>
+          )
+        }
       },
-      // NCC: ẩn ở site con — sau này site con đấu ngoài thì bật lại
-      ...(!isChild ? [{
-        header: 'NCC',
-        minSize: 90,
-        cell: ({ row }: { row: any }) => (
-          <span style={{ fontSize: '13px' }}>{row.original.provider_name || '-'}</span>
-        )
-      }] : []),
       {
         header: 'SL',
-        size: 70,
+        size: 55,
         cell: ({ row }: { row: any }) => {
           const delivered = row.original.delivered_quantity ?? 0
           const total = row.original.quantity ?? 0
@@ -564,6 +570,23 @@ return (
             <span style={{ fontSize: '13px', color: isMissing ? '#EF4444' : undefined, fontWeight: isMissing ? 600 : undefined }}>
               {delivered}/{total}
             </span>
+          )
+        }
+      },
+      {
+        header: 'User / Dịch vụ',
+        minSize: 180,
+        cell: ({ row }: { row: any }) => {
+          const o = row.original
+
+          return (
+            <div style={{ lineHeight: 1.5 }}>
+              <div style={{ fontWeight: 600, fontSize: '13px' }}>{o.user_name || '-'}</div>
+              <div style={{ fontSize: '12px', color: '#64748b' }}>{o.service_name || '-'}</div>
+              {!isChild && o.provider_name && (
+                <div style={{ fontSize: '10px', color: '#94a3b8' }}>NCC: {o.provider_name}</div>
+              )}
+            </div>
           )
         }
       },
@@ -688,51 +711,6 @@ return (
             </div>
           )
         }
-      },
-      {
-        header: 'Trạng thái',
-        minSize: 130,
-        cell: ({ row }: { row: any }) => {
-          const o = row.original
-          const status = o.status
-          const config = STATUS_CONFIG[status] || { label: `Status ${status}`, color: '#94A3B8' }
-          const retry = o.retry ?? 0
-          const maxRetry = o.max_retry ?? 3
-          const isLocked = o.is_locked
-
-          return (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                <Chip
-                  label={config.label}
-                  size='small'
-                  sx={{ backgroundColor: config.color + '18', color: config.color, fontWeight: 600, fontSize: '11px' }}
-                />
-                {isLocked && (
-                  <span style={{ fontSize: 10, color: '#f59e0b', fontWeight: 700 }} title='Đang xử lý (locked)'>🔒</span>
-                )}
-              </div>
-              {status === 1 && retry > 0 && (
-                <span style={{ fontSize: '10px', fontFamily: 'monospace', color: retry >= maxRetry ? '#dc2626' : '#94a3b8' }}>
-                  retry {retry}/{maxRetry} {retry >= maxRetry ? '⚠️' : ''}
-                </span>
-              )}
-            </div>
-          )
-        }
-      },
-      {
-        header: 'Loại',
-        size: 95,
-        cell: ({ row }: { row: any }) => (
-          <Chip
-            label={row.original.order_type === 1 ? 'Gia hạn' : 'Mua'}
-            size='small'
-            color={row.original.order_type === 1 ? 'info' : 'default'}
-            variant='outlined'
-            sx={{ fontSize: '11px' }}
-          />
-        )
       },
       {
         id: 'created_at',
@@ -1077,17 +1055,37 @@ return (
       />
 
       {/* Cancel + Refund Dialog */}
-      <Dialog open={cancelDialogOpen} onClose={() => setCancelDialogOpen(false)}>
+      <Dialog open={cancelDialogOpen} onClose={() => setCancelDialogOpen(false)} maxWidth='xs' fullWidth>
         <DialogTitle>Hủy đơn + Hoàn tiền</DialogTitle>
         <DialogContent>
-          <DialogContentText>
-            Hủy đơn <strong>#{orderToCancel?.order_code}</strong> và hoàn tiền{' '}
-            <strong>{formatVND(orderToCancel?.total_amount ?? 0)}</strong> cho user{' '}
-            <strong>{orderToCancel?.user_name}</strong>?
+          <DialogContentText sx={{ mb: 2 }}>
+            Đơn <strong>#{orderToCancel?.order_code}</strong> — user <strong>{orderToCancel?.user_name}</strong>
+            <br />Tổng: <strong>{formatVND(orderToCancel?.total_amount ?? 0)}</strong>
           </DialogContentText>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', fontSize: '13px' }}>
+              <input type='radio' checked={cancelRefundType === 'full'} onChange={() => setCancelRefundType('full')} />
+              Hoàn hết ({formatVND(orderToCancel?.total_amount ?? 0)})
+            </label>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', fontSize: '13px' }}>
+              <input type='radio' checked={cancelRefundType === 'partial'} onChange={() => setCancelRefundType('partial')} />
+              Hoàn 1 phần
+            </label>
+            {cancelRefundType === 'partial' && (
+              <TextField
+                size='small'
+                type='number'
+                label='Số tiền hoàn'
+                value={cancelRefundAmount}
+                onChange={e => setCancelRefundAmount(e.target.value)}
+                inputProps={{ min: 0, max: orderToCancel?.total_amount ?? 0 }}
+                sx={{ ml: 3 }}
+              />
+            )}
+          </div>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setCancelDialogOpen(false)} color='inherit'>Hủy</Button>
+          <Button onClick={() => setCancelDialogOpen(false)} color='inherit'>Đóng</Button>
           <Button
             onClick={handleConfirmCancel}
             color='error'
@@ -1097,7 +1095,7 @@ return (
           >
             {cancelMutation.isPending
               ? <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} />
-              : 'Xác nhận hủy + hoàn tiền'}
+              : 'Xác nhận hoàn tiền'}
           </Button>
         </DialogActions>
       </Dialog>
