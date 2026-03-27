@@ -502,96 +502,67 @@ return {
             onClick={() => handleToggleSort('id')}
             style={{ cursor: 'pointer', userSelect: 'none', display: 'inline-flex', alignItems: 'center', gap: 4 }}
           >
-            Đơn hàng
+            Mã đơn
             {sortBy === 'id' && (
               <span style={{ fontSize: '11px' }}>{sortOrder === 'desc' ? '▼' : '▲'}</span>
             )}
           </span>
         ),
-        minSize: 160,
-        cell: ({ row }: { row: any }) => {
-          const o = row.original
-
-          return (
-            <div>
-              <span style={{ fontWeight: 600, fontSize: '13px' }}>{o.order_code}</span>
-              <div style={{ fontSize: '10px', color: '#94a3b8', fontFamily: 'monospace' }}>#{o.id}</div>
-              {(o.provider_order_code || o.supplier_order_code) && (
-                <div style={{ fontSize: '10px', fontFamily: 'monospace', color: '#6366f1' }} title='Mã đơn NCC'>
-                  NCC: {o.provider_order_code || o.supplier_order_code}
-                </div>
-              )}
-            </div>
-          )
-        }
+        minSize: 140,
+        cell: ({ row }: { row: any }) => (
+          <div style={{ lineHeight: 1.4 }}>
+            <div style={{ fontWeight: 600, fontSize: '12px' }}>{row.original.order_code}</div>
+            <div style={{ fontSize: '10px', color: '#94a3b8' }}>#{row.original.id}</div>
+          </div>
+        )
       },
       {
-        header: 'Trạng thái',
-        minSize: 130,
+        header: 'Tình trạng',
+        minSize: 120,
         cell: ({ row }: { row: any }) => {
-          const o = row.original
-          const status = o.status
-          const config = STATUS_CONFIG[status] || { label: `Status ${status}`, color: '#94A3B8' }
-          const retry = o.retry ?? 0
-          const maxRetry = o.max_retry ?? 3
-          const isLocked = o.is_locked
+          const { status, retry, max_retry: maxRetry = 3, is_locked, delivered_quantity: delivered = 0, quantity: total = 0 } = row.original
+          const config = STATUS_CONFIG[status] || { label: `#${status}`, color: '#94A3B8' }
+          const isMissing = delivered > 0 && delivered < total
 
           return (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                <Chip
-                  label={config.label}
-                  size='small'
-                  sx={{ backgroundColor: config.color + '18', color: config.color, fontWeight: 600, fontSize: '11px' }}
-                />
-                {isLocked && (
-                  <span style={{ fontSize: 10, color: '#f59e0b', fontWeight: 700 }} title='Đang xử lý (locked)'>🔒</span>
-                )}
-              </div>
-              {status === 1 && retry > 0 && (
-                <span style={{ fontSize: '10px', fontFamily: 'monospace', color: retry >= maxRetry ? '#dc2626' : '#94a3b8' }}>
-                  retry {retry}/{maxRetry} {retry >= maxRetry ? '⚠️' : ''}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Chip
+                label={config.label}
+                size='small'
+                sx={{ backgroundColor: config.color + '18', color: config.color, fontWeight: 600, fontSize: '11px', width: 'fit-content' }}
+              />
+              {isMissing && (
+                <span style={{ fontSize: '10px', color: '#EF4444', fontWeight: 600 }}>{delivered}/{total}</span>
+              )}
+              {status === 1 && (retry ?? 0) > 0 && (
+                <span style={{ fontSize: '10px', fontFamily: 'monospace', color: (retry ?? 0) >= maxRetry ? '#dc2626' : '#94a3b8' }}>
+                  {retry}/{maxRetry} {(retry ?? 0) >= maxRetry ? '⚠️' : ''}
                 </span>
               )}
+              {is_locked && <span style={{ fontSize: '10px', color: '#f59e0b' }}>🔒</span>}
             </div>
           )
         }
       },
       {
-        header: 'SL',
-        size: 55,
-        cell: ({ row }: { row: any }) => {
-          const delivered = row.original.delivered_quantity ?? 0
-          const total = row.original.quantity ?? 0
-          const isMissing = delivered < total
-
-
-return (
-            <span style={{ fontSize: '13px', color: isMissing ? '#EF4444' : undefined, fontWeight: isMissing ? 600 : undefined }}>
-              {delivered}/{total}
-            </span>
-          )
-        }
-      },
-      {
-        header: 'User / Dịch vụ',
-        minSize: 180,
+        header: 'Thông tin',
+        minSize: 170,
         cell: ({ row }: { row: any }) => {
           const o = row.original
 
           return (
             <div style={{ lineHeight: 1.5 }}>
-              <div style={{ fontWeight: 600, fontSize: '13px' }}>{o.user_name || '-'}</div>
-              <div style={{ fontSize: '12px', color: '#64748b' }}>{o.service_name || '-'}</div>
+              <div style={{ fontWeight: 600, fontSize: '12px' }}>{o.user_name || '-'}</div>
+              <div style={{ fontSize: '11px', color: '#64748b' }}>{o.service_name || '-'}</div>
               {!isChild && o.provider_name && (
-                <div style={{ fontSize: '10px', color: '#94a3b8' }}>NCC: {o.provider_name}</div>
+                <div style={{ fontSize: '10px', color: '#94a3b8' }}>{o.provider_name}</div>
               )}
             </div>
           )
         }
       },
       {
-        header: 'Đơn giá / ngày',
+        header: 'Đơn giá',
         minSize: 220,
         cell: ({ row }: { row: any }) => {
           const o = row.original
@@ -672,8 +643,8 @@ return (
         }
       },
       {
-        header: 'Tổng đơn',
-        minSize: 150,
+        header: 'Tổng',
+        minSize: 140,
         cell: ({ row }: { row: any }) => {
           const o = row.original
           const totalSell = o.total_amount ?? 0
@@ -719,7 +690,7 @@ return (
             onClick={() => handleToggleSort('created_at')}
             style={{ cursor: 'pointer', userSelect: 'none', display: 'inline-flex', alignItems: 'center', gap: 4 }}
           >
-            Thời gian
+            Ngày
             {sortBy === 'created_at' && (
               <span style={{ fontSize: '11px' }}>{sortOrder === 'desc' ? '▼' : '▲'}</span>
             )}
