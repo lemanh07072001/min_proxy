@@ -17,7 +17,7 @@ import { useSession } from 'next-auth/react'
 
 import CustomTextField from '@/@core/components/mui/TextField'
 import { TICKET_STATUS, TICKET_STATUS_LABELS, TICKET_STATUS_COLORS, TICKET_TYPE_LABELS } from '@/constants/ticketStatus'
-import { ORDER_STATUS_LABELS_ADMIN, ORDER_STATUS_COLORS } from '@/constants/orderStatus'
+import { ORDER_STATUS_LABELS_ADMIN, ORDER_STATUS_COLORS_ADMIN } from '@/constants/orderStatus'
 import { useResolveTicket, useAdminReply } from '@/hooks/apis/useTickets'
 import { formatDateTimeLocal } from '@/utils/formatDate'
 
@@ -153,7 +153,7 @@ export default function ResolveTicketDialog({ open, onClose, ticket }: Props) {
                 <div>Proxy: {ticket.order.delivered_quantity ?? '?'}/{ticket.order.quantity}</div>
                 <Chip
                   label={ORDER_STATUS_LABELS_ADMIN[ticket.order.status] || '?'}
-                  color={(ORDER_STATUS_COLORS[ticket.order.status] || 'default') as any}
+                  color={(ORDER_STATUS_COLORS_ADMIN[ticket.order.status] || 'default') as any}
                   size='small' sx={{ mt: 0.5, height: 20, fontSize: '10px' }}
                 />
               </div>

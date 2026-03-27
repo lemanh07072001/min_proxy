@@ -30,7 +30,7 @@ export const ORDER_STATUS_LABELS: Record<string, string> = {
   [ORDER_STATUS.IN_USE]: 'Có thể sử dụng',
   [ORDER_STATUS.IN_USE_PARTIAL]: 'Thiếu proxy',
   [ORDER_STATUS.EXPIRED]: 'Hết hạn',
-  [ORDER_STATUS.FAILED]: 'Lỗi đơn hàng',
+  [ORDER_STATUS.FAILED]: 'Đang xử lý',
   [ORDER_STATUS.PARTIAL_REFUNDED]: 'Đã hoàn tiền 1 phần',
   [ORDER_STATUS.WAITING_REFUND]: 'Chờ hoàn tiền',
   [ORDER_STATUS.REFUNDED_ALL]: 'Đã hoàn tiền',
@@ -45,10 +45,19 @@ export const ORDER_STATUS_LABELS: Record<string, string> = {
  */
 export const ORDER_STATUS_LABELS_ADMIN: Record<string, string> = {
   ...ORDER_STATUS_LABELS,
+  [ORDER_STATUS.FAILED]: 'Thất bại',
   [ORDER_STATUS.RETRY_PROCESSING_PARTIAL]: 'Đang mua bù',
   [ORDER_STATUS.AWAITING_PROVIDER]: 'Chờ đối tác',
   [ORDER_STATUS.AWAITING_RENEWAL]: 'Đang gia hạn',
   [ORDER_STATUS.RENEWAL_FAILED]: 'Gia hạn thất bại',
+}
+
+/**
+ * Order Status Colors cho Admin — failed hiện đỏ (khác user)
+ */
+export const ORDER_STATUS_COLORS_ADMIN: Record<string, string> = {
+  ...ORDER_STATUS_COLORS,
+  [ORDER_STATUS.FAILED]: 'error',
 }
 
 /**
@@ -61,7 +70,7 @@ export const ORDER_STATUS_COLORS: Record<string, string> = {
   [ORDER_STATUS.IN_USE]: 'success',
   [ORDER_STATUS.IN_USE_PARTIAL]: 'error',
   [ORDER_STATUS.EXPIRED]: 'secondary',
-  [ORDER_STATUS.FAILED]: 'error',
+  [ORDER_STATUS.FAILED]: 'warning',
   [ORDER_STATUS.PARTIAL_REFUNDED]: 'warning',
   [ORDER_STATUS.WAITING_REFUND]: 'info',
   [ORDER_STATUS.REFUNDED_ALL]: 'secondary',

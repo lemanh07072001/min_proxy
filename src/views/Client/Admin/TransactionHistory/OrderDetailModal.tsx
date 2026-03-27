@@ -30,7 +30,7 @@ import Tab from '@mui/material/Tab'
 import { Chip, Checkbox, CircularProgress } from '@mui/material'
 
 import { formatDateTimeLocal } from '@/utils/formatDate'
-import { ORDER_STATUS_LABELS_ADMIN, ORDER_STATUS, ORDER_STATUS_COLORS } from '@/constants'
+import { ORDER_STATUS_LABELS_ADMIN, ORDER_STATUS, ORDER_STATUS_COLORS_ADMIN } from '@/constants'
 import { useApiKeys } from '@/hooks/apis/useOrders'
 import { useOrderLogs, type OrderLog } from '@/hooks/apis/useOrderLogs'
 import { useOrderHistories, type OrderHistoryItem } from '@/hooks/apis/useOrderHistories'
@@ -110,7 +110,7 @@ return p || '-'
 
   const getStatusBadge = (status: string) => {
     const label = ORDER_STATUS_LABELS_ADMIN[status]
-    const color = ORDER_STATUS_COLORS[status as keyof typeof ORDER_STATUS_COLORS]
+    const color = ORDER_STATUS_COLORS_ADMIN[status as keyof typeof ORDER_STATUS_COLORS_ADMIN]
 
     if (!label) return <Chip label='?' size='small' color='default' />
 
