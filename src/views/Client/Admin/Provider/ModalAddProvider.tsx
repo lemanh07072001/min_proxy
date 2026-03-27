@@ -1545,13 +1545,7 @@ function InheritParamsTable({ control }: { control: Control<FormValues> }) {
       <Divider sx={{ my: 1 }} />
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
         <Typography variant='body2' fontWeight={600}>
-          Kế thừa tham số <FieldHint text={
-            'Lấy dữ liệu từ đơn hàng gốc hoặc proxy để gửi kèm khi gia hạn.\n\n' +
-            '• Nguồn: chọn lấy từ Order hay Order Item\n' +
-            '• Field: chọn field hệ thống cần lấy giá trị\n' +
-            '• Param NCC: tên param gửi cho nhà cung cấp\n\n' +
-            'VD: NCC cần country_code → chọn nguồn "Order", field "country", param "country_code"'
-          } />
+          Lấy thông tin từ đơn hàng gốc
         </Typography>
         <Button size='small' onClick={() => append({ source: 'order', field: '', param: '' })}>
           + Thêm
@@ -1562,7 +1556,7 @@ function InheritParamsTable({ control }: { control: Control<FormValues> }) {
       ))}
       {fields.length === 0 && (
         <Typography variant='body2' color='text.secondary' sx={{ mb: 1, fontStyle: 'italic' }}>
-          Không có tham số kế thừa. Chỉ gửi các biến mặc định (provider_order_code, provider_item_id, duration).
+          NCC chỉ cần mã đơn/mã proxy/số ngày — không cần thêm thông tin khác.
         </Typography>
       )}
     </Grid2>
@@ -1576,13 +1570,13 @@ function InheritParamRow({ control, index, onRemove }: { control: Control<FormVa
   return (
     <Box sx={{ display: 'flex', gap: 1, mb: 1, alignItems: 'center' }}>
       <Controller name={`renew.inherit_params.${index}.source` as any} control={control} render={({ field }) => (
-        <CustomTextField {...field} select size='small' sx={{ minWidth: 130 }} label='Nguồn'>
-          <MenuItem value='order'>Order</MenuItem>
-          <MenuItem value='order_item'>Order Item</MenuItem>
+        <CustomTextField {...field} select size='small' sx={{ minWidth: 130 }} label='Lấy từ'>
+          <MenuItem value='order'>Đơn hàng</MenuItem>
+          <MenuItem value='order_item'>Proxy</MenuItem>
         </CustomTextField>
       )} />
       <Controller name={`renew.inherit_params.${index}.field` as any} control={control} render={({ field }) => (
-        <CustomTextField {...field} select size='small' sx={{ minWidth: 160 }} label='Field hệ thống'>
+        <CustomTextField {...field} select size='small' sx={{ minWidth: 160 }} label='Thông tin cần lấy'>
           {fieldOptions.map(o => <MenuItem key={o.value} value={o.value}>{o.label}</MenuItem>)}
           <MenuItem value='__custom'>Tự nhập...</MenuItem>
         </CustomTextField>
@@ -1593,7 +1587,7 @@ function InheritParamRow({ control, index, onRemove }: { control: Control<FormVa
         )} />
       )}
       <Controller name={`renew.inherit_params.${index}.param` as any} control={control} render={({ field }) => (
-        <CustomTextField {...field} size='small' sx={{ minWidth: 130 }} label='Param NCC' placeholder='country_code' />
+        <CustomTextField {...field} size='small' sx={{ minWidth: 130 }} label='NCC gọi là gì?' placeholder='country_code' />
       )} />
       <IconButton size='small' onClick={onRemove} color='error'><i className='tabler-trash' /></IconButton>
     </Box>
@@ -1631,9 +1625,9 @@ function RenewConfigFields({ control }: { control: Control<FormValues> }) {
         <>
           <Grid2 size={{ xs: 12, sm: 4 }}>
             <Controller name='renew.mode' control={control} render={({ field }) => (
-              <CustomTextField {...field} fullWidth select label={<>Chế độ gia hạn <FieldHint text='Theo đơn hàng: 1 lệnh gia hạn tất cả proxy. Theo từng proxy: gọi API cho mỗi proxy.' /></>}>
-                <MenuItem value='by_order'>Theo đơn hàng</MenuItem>
-                <MenuItem value='by_item'>Theo từng proxy</MenuItem>
+              <CustomTextField {...field} fullWidth select label='Cách gia hạn'>
+                <MenuItem value='by_order'>1 lệnh cho cả đơn</MenuItem>
+                <MenuItem value='by_item'>Gọi riêng từng proxy</MenuItem>
               </CustomTextField>
             )} />
           </Grid2>
@@ -1647,10 +1641,10 @@ function RenewConfigFields({ control }: { control: Control<FormValues> }) {
           </Grid2>
           <Grid2 size={{ xs: 12, sm: 4 }}>
             <Controller name='renew.auth_type' control={control} render={({ field }) => (
-              <CustomTextField {...field} fullWidth select label='Auth'>
-                <MenuItem value='inherit'>Kế thừa từ API mua</MenuItem>
-                <MenuItem value='query'>Query param</MenuItem>
-                <MenuItem value='header'>Header</MenuItem>
+              <CustomTextField {...field} fullWidth select label='Xác thực NCC'>
+                <MenuItem value='inherit'>Giống lúc mua</MenuItem>
+                <MenuItem value='query'>Key trong URL (?key=xxx)</MenuItem>
+                <MenuItem value='header'>Key trong header</MenuItem>
                 <MenuItem value='bearer'>Bearer token</MenuItem>
               </CustomTextField>
             )} />
@@ -1660,7 +1654,7 @@ function RenewConfigFields({ control }: { control: Control<FormValues> }) {
             <Grid2 size={{ xs: 12, sm: 4 }}>
               <Controller name='renew.auth_param' control={control} render={({ field }) => (
                 <CustomTextField {...field} fullWidth
-                  label={<>Tên param auth <FieldHint text='Tên param/header chứa API key. VD: apikey, key, token, api_key...' /></>}
+                  label='NCC gọi tên key là gì?'
                   placeholder={renewAuthType === 'header' ? 'apikey' : 'key'}
                 />
               )} />
@@ -1689,7 +1683,7 @@ function RenewConfigFields({ control }: { control: Control<FormValues> }) {
 
           <Grid2 size={{ xs: 12, sm: 4 }}>
             <Controller name='renew.duration_param' control={control} render={({ field }) => (
-              <CustomTextField {...field} fullWidth label={<>Tên param thời hạn <FieldHint text='Tên param gửi số ngày gia hạn. VD: days, duration' /></>} placeholder='days' />
+              <CustomTextField {...field} fullWidth label='NCC gọi "số ngày" là gì?' placeholder='days' helperText='Tên tham số gửi số ngày. VD: days, duration, period' />
             )} />
           </Grid2>
 
@@ -1699,7 +1693,7 @@ function RenewConfigFields({ control }: { control: Control<FormValues> }) {
           {mode === 'by_item' && (
             <Grid2 size={{ xs: 6, sm: 4 }}>
               <Controller name='renew.batch_delay_ms' control={control} render={({ field }) => (
-                <CustomTextField {...field} fullWidth type='number' label={<>Delay giữa proxy (ms) <FieldHint text='Nếu provider giới hạn tốc độ, thêm delay giữa mỗi lệnh gia hạn.' /></>} placeholder='0' />
+                <CustomTextField {...field} fullWidth type='number' label='Nghỉ giữa mỗi proxy (ms)' placeholder='0' helperText='Nếu NCC giới hạn tốc độ gọi. 0 = không nghỉ' />
               )} />
             </Grid2>
           )}
@@ -1711,12 +1705,12 @@ function RenewConfigFields({ control }: { control: Control<FormValues> }) {
           <Grid2 size={{ xs: 12 }}>
             <Divider sx={{ my: 1 }} />
             <Typography variant='body2' fontWeight={600} sx={{ mb: 1 }}>
-              Response gia hạn
+              NCC trả về thế nào khi thành công?
             </Typography>
           </Grid2>
           <Grid2 size={{ xs: 6, sm: 3 }}>
             <Controller name='renew.success_field' control={control} render={({ field }) => (
-              <CustomTextField {...field} fullWidth label='Field thành công' placeholder='status' />
+              <CustomTextField {...field} fullWidth label='Field báo OK' placeholder='status' />
             )} />
           </Grid2>
           <Grid2 size={{ xs: 6, sm: 3 }}>
@@ -1726,14 +1720,14 @@ function RenewConfigFields({ control }: { control: Control<FormValues> }) {
           </Grid2>
           <Grid2 size={{ xs: 12, sm: 6 }}>
             <Controller name='renew.new_expiry_field' control={control} render={({ field }) => (
-              <CustomTextField {...field} fullWidth label={<>Field hạn mới <FieldHint text='Nếu provider trả ngày hết hạn mới. VD: data.expired_at. Bỏ trống = tự tính từ hạn hiện tại + số ngày.' /></>} placeholder='data.expired_at' />
+              <CustomTextField {...field} fullWidth label='Field ngày hết hạn mới' placeholder='data.expired_at' helperText='Bỏ trống = tự tính từ hạn cũ + số ngày' />
             )} />
           </Grid2>
           <Grid2 size={{ xs: 12, sm: 4 }}>
             <Controller name='renew.response_mode' control={control} render={({ field }) => (
-              <CustomTextField {...field} fullWidth select label='Chế độ response'>
-                <MenuItem value='immediate'>Xác nhận ngay</MenuItem>
-                <MenuItem value='deferred'>Chờ xác nhận sau</MenuItem>
+              <CustomTextField {...field} fullWidth select label='NCC xác nhận thế nào?'>
+                <MenuItem value='immediate'>Trả kết quả ngay</MenuItem>
+                <MenuItem value='deferred'>Cần gọi lại sau để kiểm tra</MenuItem>
               </CustomTextField>
             )} />
           </Grid2>
