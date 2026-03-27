@@ -151,14 +151,14 @@ export default function HistoryOrderPage() {
           return (
             <div style={{ lineHeight: 1.6, fontSize: '12px', color: '#64748b' }}>
               <div>
-                <span style={{ fontWeight: 600, color: isMissing ? '#EF4444' : '#374151' }}>
-                  {isMissing ? `${delivered}/${qty}` : qty} sản phẩm
+                Số lượng: <span style={{ fontWeight: 600, color: isMissing ? '#EF4444' : '#374151' }}>
+                  {isMissing ? `${delivered}/${qty}` : qty}
                 </span>
               </div>
-              {o.buy_at && <div>Mua: {formatDateTimeLocal(o.buy_at)}</div>}
-              {o.expired_at && <div>HH: {formatDateTimeLocal(o.expired_at)}</div>}
+              {o.buy_at && <div>Ngày mua: {formatDateTimeLocal(o.buy_at)}</div>}
+              {o.expired_at && <div>Hết hạn: {formatDateTimeLocal(o.expired_at)}</div>}
               {remaining && (
-                <div style={{ color: '#16a34a', fontWeight: 600, fontSize: '12px' }}>{remaining}</div>
+                <div style={{ color: '#16a34a', fontWeight: 600, fontSize: '12px' }}>Còn lại: {remaining}</div>
               )}
             </div>
           )
