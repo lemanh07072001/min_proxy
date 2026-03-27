@@ -175,18 +175,37 @@ export default function HistoryOrderPage() {
       },
       {
         header: 'Trạng thái',
-        size: 150,
+        size: 120,
         cell: ({ row }: { row: any }) => {
           const status = Number(row.original.status)
           const isPending = PENDING_STATUSES.includes(status)
-          const isActive = [2, 3].includes(status)
 
           return (
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               {getStatusBadge(String(status))}
               {isPending && <Loader2 size={14} color='#3B82F6' style={{ animation: 'spin 1s linear infinite' }} />}
-              {!isPending && <span style={{ color: isActive ? '#16a34a' : '#94a3b8', fontSize: '14px' }}>›</span>}
             </div>
+          )
+        }
+      },
+      {
+        header: '',
+        id: 'action',
+        size: 120,
+        cell: ({ row }: { row: any }) => {
+          const status = Number(row.original.status)
+          const isActive = [2, 3].includes(status)
+          const isPending = [0, 1, 10, 11].includes(status)
+
+          if (isPending) return <span style={{ fontSize: '11px', color: '#94a3b8' }}>Đang xử lý...</span>
+
+          return (
+            <span style={{
+              fontSize: '12px', fontWeight: 600, color: isActive ? '#16a34a' : '#64748b',
+              display: 'flex', alignItems: 'center', gap: 4,
+            }}>
+              {isActive ? 'Xem sản phẩm' : 'Chi tiết'} <Eye size={13} />
+            </span>
           )
         }
       },
