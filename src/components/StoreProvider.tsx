@@ -10,13 +10,14 @@ import { setUser } from '@/store/userSlice'
 
 function SessionSync() {
   const { data: session } = useSession()
+  const sessionUser = session?.user as any
 
-  // Mỗi khi session refresh (4 phút) → sync userData (gồm sodu) vào Redux
+  // Sync session → Redux mỗi khi sodu hoặc role thay đổi
   useEffect(() => {
-    if (session?.user) {
-      store.dispatch(setUser(session.user as any))
+    if (sessionUser?.id) {
+      store.dispatch(setUser(sessionUser))
     }
-  }, [session?.user])
+  }, [sessionUser?.sodu, sessionUser?.role, sessionUser?.id])
 
   return null
 }
