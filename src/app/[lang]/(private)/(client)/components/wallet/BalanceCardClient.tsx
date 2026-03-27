@@ -1,15 +1,11 @@
 'use client'
 
-import { useEffect } from 'react'
-
-import { useSelector, useDispatch } from 'react-redux'
+import { useSelector } from 'react-redux'
 import { useSession } from 'next-auth/react'
 import { Wallet } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
 
 import type { RootState } from '@/store'
-import { setUser } from '@/store/userSlice'
-import useAxiosAuth from '@/hocs/useAxiosAuth'
 
 interface BalanceCardClientProps {
   isWalletVisible: boolean
@@ -20,27 +16,6 @@ interface BalanceCardClientProps {
 export default function BalanceCardClient({ isWalletVisible, isInitialLoad }: BalanceCardClientProps) {
   const { status } = useSession()
   const { sodu } = useSelector((state: RootState) => state.user)
-  const dispatch = useDispatch()
-  const axiosAuth = useAxiosAuth()
-
-  // Fetch ngay khi load + auto-refresh mỗi 30s
-  useEffect(() => {
-    if (status !== 'authenticated') return
-
-    // Lấy số dư thật từ DB ngay lập tức
-    axiosAuth.post('/me').then(res => {
-      if (res?.data) dispatch(setUser(res.data))
-    }).catch(() => {})
-
-    const interval = setInterval(() => {
-      axiosAuth.post('/me').then(res => {
-        if (res?.data) dispatch(setUser(res.data))
-      }).catch(() => {})
-    }, 30000)
-
-    return () => clearInterval(interval)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [status])
 
   // Ẩn balance card khi chưa đăng nhập
   if (status !== 'authenticated') return null

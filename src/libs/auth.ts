@@ -190,6 +190,24 @@ export const authOptions = {
         return token
       }
 
+      // Refresh sodu từ DB mỗi 30s — server-side, client nhận số đúng từ đầu
+      const SODU_REFRESH_MS = 30 * 1000
+      if (token.access_token && (!token.soduUpdatedAt || Date.now() - token.soduUpdatedAt > SODU_REFRESH_MS)) {
+        try {
+          const meRes = await fetch(`${process.env.API_URL}/me`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token.access_token}` }
+          })
+          if (meRes.ok) {
+            const meData = await meRes.json()
+            if (meData?.id) {
+              token.userData = meData
+              token.soduUpdatedAt = Date.now()
+            }
+          }
+        } catch {}
+      }
+
       // Buffer 60s - refresh sớm để tránh token hết hạn giữa chừng
       const BUFFER_MS = 60 * 1000
 
