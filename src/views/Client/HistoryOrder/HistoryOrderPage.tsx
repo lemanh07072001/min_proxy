@@ -120,77 +120,68 @@ export default function HistoryOrderPage() {
     return <Chip label={label} size='small' color={color} />
   }
 
+  const fmtVND = (v: number) => new Intl.NumberFormat('vi-VN').format(v) + 'đ'
+
   const columns = useMemo(
     () => [
       {
+        header: '',
+        id: 'actions',
+        size: 45,
+        cell: ({ row }: { row: any }) => (
+          <CustomIconButton
+            aria-label='Xem chi tiết'
+            color='info'
+            variant='tonal'
+            size='small'
+            onClick={() => {
+              setSelectedOrder(row.original)
+              setOpen(true)
+            }}
+          >
+            <Eye size={16} />
+          </CustomIconButton>
+        )
+      },
+      {
         accessorKey: 'order_code',
-        header: 'Mã đơn',
-        size: 170,
-        cell: ({ row }: { row: any }) => (
-          <span style={{ fontWeight: 600, fontSize: '13px' }}>{row.original.order_code}</span>
-        )
-      },
-      {
-        header: 'Dịch vụ',
-        size: 180,
-        cell: ({ row }: { row: any }) => (
-          <div>
-            <div style={{ fontWeight: 600, fontSize: '13px' }}>{row.original.service_name || '-'}</div>
-            {row.original.proxy_type && (
-              <span style={{ fontSize: '12px', color: '#94a3b8' }}>{row.original.proxy_type}</span>
-            )}
-          </div>
-        )
-      },
-      {
-        header: 'Số tiền',
-        size: 140,
-        cell: ({ row }: { row: any }) => (
-          <div>
-            <div style={{ fontWeight: 700, fontSize: '13px' }}>
-              {new Intl.NumberFormat('vi-VN').format(row.original.total_amount)}đ
-            </div>
-            <span style={{ fontSize: '12px', color: '#94a3b8' }}>
-              {new Intl.NumberFormat('vi-VN').format(row.original.price_per_unit)}đ/key
-            </span>
-          </div>
-        )
-      },
-      {
-        header: 'SL',
-        size: 70,
+        header: 'Đơn hàng',
+        minSize: 160,
         cell: ({ row }: { row: any }) => {
-          const qty = row.original.quantity
-          const delivered = row.original.delivered_quantity
+          const o = row.original
+          const qty = o.quantity
+          const delivered = o.delivered_quantity
           const isMissing = delivered != null && delivered !== qty
 
           return (
-            <span style={{
-              fontSize: '13px',
-              color: isMissing ? '#EF4444' : undefined,
-              fontWeight: isMissing ? 600 : undefined
-            }}>
-              {isMissing ? `${delivered}/${qty}` : qty}
-            </span>
+            <div style={{ lineHeight: 1.4 }}>
+              <div style={{ fontWeight: 600, fontSize: '12px' }}>{o.order_code}</div>
+              <div style={{ fontSize: '11px', color: '#64748b' }}>
+                {fmtVND(o.total_amount)} · {isMissing ? <span style={{ color: '#EF4444' }}>{delivered}/{qty}</span> : `${qty}`} sản phẩm
+              </div>
+            </div>
           )
         }
       },
       {
-        header: 'Loại',
-        size: 95,
-        cell: ({ row }: { row: any }) => (
-          <Chip
-            label={row.original.order_type === 1 ? 'Gia hạn' : 'Mua'}
-            size='small'
-            color={row.original.order_type === 1 ? 'info' : 'default'}
-            variant='outlined'
-            sx={{ fontSize: '11px' }}
-          />
-        )
+        header: 'Sản phẩm',
+        minSize: 170,
+        cell: ({ row }: { row: any }) => {
+          const o = row.original
+
+          return (
+            <div style={{ lineHeight: 1.4 }}>
+              <div style={{ fontWeight: 600, fontSize: '12px' }}>{o.service_name || '-'}</div>
+              <div style={{ fontSize: '10px', color: '#94a3b8', fontFamily: 'monospace' }}>
+                #{o.service_id} · {o.service_code || o.proxy_type || '-'}
+              </div>
+            </div>
+          )
+        }
       },
       {
         header: 'Trạng thái',
-        size: 140,
+        size: 130,
         cell: ({ row }: { row: any }) => {
           const status = String(row.original.status)
           const isPending = PENDING_STATUSES.includes(Number(status))
@@ -210,53 +201,31 @@ export default function HistoryOrderPage() {
         }
       },
       {
-        header: 'Ngày mua',
+        header: 'Thời hạn',
         size: 160,
-        cell: ({ row }: { row: any }) => (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#64748b', fontSize: '13px' }}>
-            <Clock3 size={13} />
-            {formatDateTimeLocal(row.original.buy_at)}
-          </div>
-        )
-      },
-      {
-        header: 'Hết hạn',
-        size: 170,
         cell: ({ row }: { row: any }) => {
-          const remaining = getTimeRemaining(row.original.expired_at, row.original.status)
+          const o = row.original
+          const remaining = getTimeRemaining(o.expired_at, o.status)
 
           return (
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#64748b', fontSize: '13px' }}>
-                <Clock size={13} />
-                {formatDateTimeLocal(row.original.expired_at)}
+            <div style={{ lineHeight: 1.5, fontSize: '12px', color: '#64748b' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                <Clock3 size={11} />
+                {o.buy_at ? formatDateTimeLocal(o.buy_at) : '-'}
               </div>
+              {o.expired_at && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <Clock size={11} />
+                  {formatDateTimeLocal(o.expired_at)}
+                </div>
+              )}
               {remaining && (
-                <span style={{ fontSize: '12px', color: '#16a34a', fontWeight: 500 }}>{remaining}</span>
+                <div style={{ fontSize: '11px', color: '#16a34a', fontWeight: 500 }}>{remaining}</div>
               )}
             </div>
           )
         }
       },
-      {
-        header: '',
-        id: 'actions',
-        size: 50,
-        cell: ({ row }: { row: any }) => (
-          <CustomIconButton
-            aria-label='Xem chi tiết'
-            color='info'
-            variant='tonal'
-            size='small'
-            onClick={() => {
-              setSelectedOrder(row.original)
-              setOpen(true)
-            }}
-          >
-            <Eye size={16} />
-          </CustomIconButton>
-        )
-      }
     ],
     []
   )
