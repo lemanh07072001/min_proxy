@@ -34,6 +34,7 @@ import { ORDER_STATUS_LABELS_ADMIN, ORDER_STATUS, ORDER_STATUS_COLORS } from '@/
 import { useApiKeys } from '@/hooks/apis/useOrders'
 import { useOrderLogs, type OrderLog } from '@/hooks/apis/useOrderLogs'
 import { useOrderHistories, type OrderHistoryItem } from '@/hooks/apis/useOrderHistories'
+import { useOrderHistoryLogs, type HistoryLogItem } from '@/hooks/apis/useRenewal'
 
 interface OrderDetailModalProps {
   isOpen: boolean
@@ -66,6 +67,7 @@ export default function OrderDetailModal({ isOpen, onClose, orderData, isLoading
   const [copiedField, setCopiedField] = useState<string | null>(null)
   const [rowSelection, setRowSelection] = useState({})
   const [tabIndex, setTabIndex] = useState(0)
+  const [viewLogId, setViewLogId] = useState<number | null>(null)
 
   const orderId = orderData?.order?.id
   const { data: dataApiKeys, isLoading: loadingApiKeys } = useApiKeys(orderId, isOpen)
@@ -245,7 +247,7 @@ return p || '-'
   })
 
   useEffect(() => {
-    if (!isOpen) { setRowSelection({}); setTabIndex(0) }
+    if (!isOpen) { setRowSelection({}); setTabIndex(0); setViewLogId(null) }
   }, [isOpen])
 
   if (!isOpen) return null
@@ -308,7 +310,7 @@ return p || '-'
 
           {/* Renewal section — hiện khi có gia hạn */}
           {histories.length > 0 && (
-            <AdminRenewalSection histories={histories} order={order} />
+            <AdminRenewalSection histories={histories} order={order} viewLogId={viewLogId} onViewLog={id => setViewLogId(viewLogId === id ? null : id)} />
           )}
 
           {/* Tabs — sticky */}
@@ -616,7 +618,9 @@ function OrderLogsTimeline({ logs, isLoading }: { logs: OrderLog[]; isLoading: b
   )
 }
 
-function AdminRenewalSection({ histories, order }: { histories: OrderHistoryItem[]; order: any }) {
+function AdminRenewalSection({ histories, order, viewLogId, onViewLog }: {
+  histories: OrderHistoryItem[]; order: any; viewLogId?: number | null; onViewLog?: (id: number) => void
+}) {
   const renewals = histories.filter(h => h.type === 'renewal')
   if (!renewals.length) return null
 
@@ -624,65 +628,121 @@ function AdminRenewalSection({ histories, order }: { histories: OrderHistoryItem
   const fmtVND = (v: number) => new Intl.NumberFormat('vi-VN').format(v) + 'đ'
 
   return (
-    <div style={{ padding: '0 20px 12px' }}>
-      <div style={{ fontSize: '13px', fontWeight: 600, color: '#374151', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
-        <RefreshCw size={14} style={{ color: '#6366f1' }} />
-        Lịch sử gia hạn ({renewals.length})
+    <div style={{ display: 'flex', gap: 0 }}>
+      {/* Left: renewal list */}
+      <div style={{ flex: viewLogId ? '0 0 55%' : '1 1 100%', padding: '0 20px 12px', transition: 'flex 0.2s', minWidth: 0 }}>
+        <div style={{ fontSize: '13px', fontWeight: 600, color: '#374151', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+          <RefreshCw size={14} style={{ color: '#6366f1' }} />
+          Lịch sử gia hạn ({renewals.length})
+        </div>
+        {renewals.map((h, i) => {
+          const st = HISTORY_STATUS[h.status] ?? { label: '?', color: '#94a3b8' }
+          const isFailed = h.status === 3
+          const isPending = h.status === 0 || h.status === 1
+          const isSuccess = h.status === 4 || h.status === 5
+          const isPartial = h.status === 6
+          const isViewing = viewLogId === h.id
+
+          return (
+            <div key={h.id} style={{
+              padding: '10px 14px', borderRadius: 8, marginBottom: 6, cursor: 'pointer',
+              background: isViewing ? '#f0f9ff' : isFailed ? '#fef2f2' : isPending ? '#eff6ff' : isPartial ? '#fff7ed' : '#f0fdf4',
+              border: `1px solid ${isViewing ? '#93c5fd' : isFailed ? '#fecaca' : isPending ? '#bfdbfe' : isPartial ? '#fed7aa' : '#bbf7d0'}`,
+            }} onClick={() => onViewLog?.(h.id)}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 6 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  {isPending && <Loader2 size={13} style={{ color: st.color, animation: 'spin 1s linear infinite' }} />}
+                  <span style={{ fontSize: '12px', fontWeight: 600, color: st.color }}>{st.label}</span>
+                  <span style={{ fontSize: '12px', color: '#374151' }}>
+                    {h.duration} ngày • {fmtVND(h.amount)}
+                  </span>
+                  {h.cost_amount != null && (
+                    <span style={{ fontSize: '11px', color: '#94a3b8' }}>Vốn: {fmtVND(h.cost_amount)}</span>
+                  )}
+                </div>
+                <div style={{ fontSize: '11px', color: '#94a3b8', textAlign: 'right' }}>
+                  <div>{h.created_at ? formatDateTimeLocal(h.created_at) : ''}</div>
+                  {h.updated_at && h.updated_at !== h.created_at && (
+                    <div>Cập nhật: {formatDateTimeLocal(h.updated_at)}</div>
+                  )}
+                </div>
+              </div>
+
+              {isSuccess && h.new_expired_at && (
+                <div style={{ fontSize: '12px', color: '#16a34a', marginTop: 4 }}>
+                  HH mới: {formatDateTimeLocal(h.new_expired_at)}
+                </div>
+              )}
+
+              <RenewalProgress metadata={h.metadata} status={h.status} />
+
+              {isFailed && h.note && (
+                <div style={{ fontSize: '12px', color: '#dc2626', marginTop: 4, background: '#fee2e2', padding: '4px 8px', borderRadius: 4 }}>
+                  {h.note}
+                </div>
+              )}
+            </div>
+          )
+        })}
+
+        {successCount > 0 && (
+          <div style={{ fontSize: '11px', color: '#64748b', padding: '2px 4px' }}>
+            Tổng: {successCount} lần gia hạn thành công
+          </div>
+        )}
       </div>
-      {renewals.map((h, i) => {
-        const st = HISTORY_STATUS[h.status] ?? { label: '?', color: '#94a3b8' }
-        const isFailed = h.status === 3
-        const isPending = h.status === 0 || h.status === 1
-        const isSuccess = h.status === 4 || h.status === 5
-        const isPartial = h.status === 6
+
+      {/* Right: log panel */}
+      {viewLogId && (
+        <div style={{ flex: '0 0 45%', borderLeft: '1px solid #e2e8f0', maxHeight: 350, overflowY: 'auto', padding: '12px 16px' }}>
+          <AdminHistoryLogPanel historyId={viewLogId} />
+        </div>
+      )}
+    </div>
+  )
+}
+
+/** Admin: log chi tiết per history */
+function AdminHistoryLogPanel({ historyId }: { historyId: number }) {
+  const { data: logs, isLoading } = useOrderHistoryLogs(historyId)
+
+  if (isLoading) return <div style={{ fontSize: '11px', color: '#94a3b8' }}>Loading...</div>
+  if (!logs?.length) return <div style={{ fontSize: '11px', color: '#cbd5e1' }}>Chưa có log</div>
+
+  const ACTION_LABELS: Record<string, { label: string; color: string }> = {
+    api_call_success: { label: 'OK', color: '#16a34a' },
+    api_call_error: { label: 'Lỗi', color: '#dc2626' },
+    api_call_timeout: { label: 'Timeout', color: '#f59e0b' },
+    circuit_break: { label: 'CB', color: '#ea580c' },
+    summary: { label: 'Tổng', color: '#2563eb' },
+  }
+
+  return (
+    <div>
+      <div style={{ fontSize: '12px', fontWeight: 600, color: '#374151', marginBottom: 8 }}>Log chi tiết</div>
+      {logs.map((log: HistoryLogItem, i: number) => {
+        const action = ACTION_LABELS[log.action] ?? { label: log.action, color: '#94a3b8' }
 
         return (
-          <div key={h.id} style={{
-            padding: '10px 14px', borderRadius: 8, marginBottom: 6,
-            background: isFailed ? '#fef2f2' : isPending ? '#eff6ff' : isPartial ? '#fff7ed' : '#f0fdf4',
-            border: `1px solid ${isFailed ? '#fecaca' : isPending ? '#bfdbfe' : isPartial ? '#fed7aa' : '#bbf7d0'}`,
-          }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 6 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                {isPending && <Loader2 size={13} style={{ color: st.color, animation: 'spin 1s linear infinite' }} />}
-                <span style={{ fontSize: '12px', fontWeight: 600, color: st.color }}>{st.label}</span>
-                <span style={{ fontSize: '12px', color: '#374151' }}>
-                  {h.duration} ngày • {fmtVND(h.amount)}
-                </span>
-                {h.cost_amount != null && (
-                  <span style={{ fontSize: '11px', color: '#94a3b8' }}>Vốn: {fmtVND(h.cost_amount)}</span>
-                )}
-              </div>
-              <div style={{ fontSize: '11px', color: '#94a3b8', textAlign: 'right' }}>
-                <div>{h.created_at ? formatDateTimeLocal(h.created_at) : ''}</div>
-                {h.updated_at && h.updated_at !== h.created_at && (
-                  <div>Cập nhật: {formatDateTimeLocal(h.updated_at)}</div>
-                )}
-              </div>
+          <div key={i} style={{ padding: '6px 0', borderBottom: '1px solid #f1f5f9', fontSize: '11px' }}>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+              <span style={{ color: '#94a3b8', fontFamily: 'monospace', width: 55, flexShrink: 0 }}>
+                {log.created_at ? new Date(log.created_at).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : ''}
+              </span>
+              <span style={{ color: action.color, fontWeight: 600, width: 50, flexShrink: 0 }}>{action.label}</span>
+              {log.duration_ms != null && (
+                <span style={{ color: '#94a3b8', flexShrink: 0 }}>{log.duration_ms}ms</span>
+              )}
+              {log.item_key && (
+                <span style={{ color: '#6366f1', fontFamily: 'monospace', fontSize: '10px' }}>{log.item_key}</span>
+              )}
             </div>
-
-            {isSuccess && h.new_expired_at && (
-              <div style={{ fontSize: '12px', color: '#16a34a', marginTop: 4 }}>
-                HH mới: {formatDateTimeLocal(h.new_expired_at)}
-              </div>
-            )}
-
-            <RenewalProgress metadata={h.metadata} status={h.status} />
-
-            {isFailed && h.note && (
-              <div style={{ fontSize: '12px', color: '#dc2626', marginTop: 4, background: '#fee2e2', padding: '4px 8px', borderRadius: 4 }}>
-                {h.note}
-              </div>
-            )}
+            <div style={{ color: '#64748b', marginTop: 2, wordBreak: 'break-all' }}>
+              {log.message?.replace(/\[.*?\/renew\]\s*/, '')}
+            </div>
           </div>
         )
       })}
-
-      {successCount > 0 && (
-        <div style={{ fontSize: '11px', color: '#64748b', padding: '2px 4px' }}>
-          Tổng: {successCount} lần gia hạn thành công
-        </div>
-      )}
     </div>
   )
 }
