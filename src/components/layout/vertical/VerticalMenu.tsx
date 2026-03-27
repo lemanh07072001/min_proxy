@@ -9,6 +9,7 @@ import {
   House,
   ShoppingBag,
   History,
+  ClipboardList,
   FileText,
   MessageCircleQuestionMark,
   Handshake,
@@ -317,13 +318,15 @@ const VerticalMenu = ({ scrollMenu }: Props) => {
           >
             Check Proxy
           </MenuItem>
+        </MenuSection>
 
+        <MenuSection label='Đơn hàng' rootStyles={menuSectionHeaderStyles}>
           <MenuItem
-            icon={<History size={20} strokeWidth={1.5} />}
+            icon={<ClipboardList size={20} strokeWidth={1.5} />}
             {...nav('history-order')}
             href={`/${locale}/history-order`}
           >
-            Lịch sử mua hàng
+            Đơn hàng của tôi
           </MenuItem>
         </MenuSection>
 

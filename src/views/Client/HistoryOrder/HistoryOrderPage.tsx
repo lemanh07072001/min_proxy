@@ -257,7 +257,7 @@ export default function HistoryOrderPage() {
                 <div className='page-icon'>
                   <List size={17} />
                 </div>
-                <h5 className='mb-0 font-semibold'>Lịch sử mua hàng</h5>
+                <h5 className='mb-0 font-semibold'>Đơn hàng của tôi</h5>
               </div>
               <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                 <TextField
