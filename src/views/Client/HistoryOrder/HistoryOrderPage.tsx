@@ -125,94 +125,67 @@ export default function HistoryOrderPage() {
   const columns = useMemo(
     () => [
       {
-        header: '',
-        id: 'actions',
-        size: 130,
-        cell: ({ row }: { row: any }) => {
-          const status = Number(row.original.status)
-          const isActive = [2, 3].includes(status)
-          const isPending = [0, 1, 10, 11].includes(status)
-
-          const label = isActive ? 'Xem sản phẩm' : isPending ? 'Đang xử lý...' : 'Xem chi tiết'
-          const color = isActive ? '#16a34a' : isPending ? '#94a3b8' : '#64748b'
-          const bg = isActive ? '#f0fdf4' : 'transparent'
-          const border = isActive ? '#bbf7d0' : '#e2e8f0'
-
-          return (
-            <button
-              disabled={isPending}
-              onClick={() => { setSelectedOrder(row.original); setOpen(true) }}
-              style={{
-                fontSize: '11px', fontWeight: 600, padding: '5px 12px', borderRadius: 6,
-                border: `1px solid ${border}`, background: bg, color,
-                cursor: isPending ? 'default' : 'pointer',
-                display: 'flex', alignItems: 'center', gap: 4, whiteSpace: 'nowrap',
-              }}
-            >
-              {isActive && <Eye size={12} />}
-              {label}
-            </button>
-          )
-        }
-      },
-      {
         accessorKey: 'order_code',
-        header: 'Mã đơn',
-        minSize: 140,
+        header: 'Sản phẩm',
+        minSize: 180,
         cell: ({ row }: { row: any }) => {
           const o = row.original
 
           return (
             <div style={{ lineHeight: 1.4 }}>
-              <div style={{ fontWeight: 600, fontSize: '12px' }}>{o.order_code}</div>
-              <div style={{ fontSize: '11px', color: '#64748b' }}>{o.service_name || '-'}</div>
+              <div style={{ fontWeight: 600, fontSize: '13px' }}>{o.service_name || '-'}</div>
+              <div style={{ fontSize: '11px', color: '#94a3b8' }}>{o.order_code} · {fmtVND(o.total_amount)}</div>
             </div>
           )
         }
       },
       {
-        header: 'Trạng thái',
-        size: 130,
+        header: 'Số lượng',
+        size: 70,
         cell: ({ row }: { row: any }) => {
-          const status = String(row.original.status)
-          const isPending = PENDING_STATUSES.includes(Number(status))
+          const { quantity: qty, delivered_quantity: delivered } = row.original
+          const isMissing = delivered != null && delivered < qty
 
           return (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              {getStatusBadge(status)}
-              {isPending && (
-                <Loader2
-                  size={14}
-                  color='#3B82F6'
-                  style={{ animation: 'spin 1s linear infinite' }}
-                />
-              )}
-            </div>
+            <span style={{ fontSize: '13px', fontWeight: 600, color: isMissing ? '#EF4444' : '#374151' }}>
+              {isMissing ? `${delivered}/${qty}` : qty}
+            </span>
           )
         }
       },
       {
         header: 'Thời hạn',
-        size: 160,
+        size: 170,
         cell: ({ row }: { row: any }) => {
           const o = row.original
           const remaining = getTimeRemaining(o.expired_at, o.status)
 
           return (
             <div style={{ lineHeight: 1.5, fontSize: '12px', color: '#64748b' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                <Clock3 size={11} />
-                {o.buy_at ? formatDateTimeLocal(o.buy_at) : '-'}
-              </div>
+              {o.buy_at && <div>{formatDateTimeLocal(o.buy_at)}</div>}
               {o.expired_at && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <Clock size={11} />
-                  {formatDateTimeLocal(o.expired_at)}
-                </div>
+                <div>→ {formatDateTimeLocal(o.expired_at)}</div>
               )}
               {remaining && (
-                <div style={{ fontSize: '11px', color: '#16a34a', fontWeight: 500 }}>{remaining}</div>
+                <div style={{ color: '#16a34a', fontWeight: 500 }}>{remaining}</div>
               )}
+            </div>
+          )
+        }
+      },
+      {
+        header: 'Trạng thái',
+        size: 150,
+        cell: ({ row }: { row: any }) => {
+          const status = Number(row.original.status)
+          const isPending = PENDING_STATUSES.includes(status)
+          const isActive = [2, 3].includes(status)
+
+          return (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              {getStatusBadge(String(status))}
+              {isPending && <Loader2 size={14} color='#3B82F6' style={{ animation: 'spin 1s linear infinite' }} />}
+              {!isPending && <span style={{ color: isActive ? '#16a34a' : '#94a3b8', fontSize: '14px' }}>›</span>}
             </div>
           )
         }
@@ -381,10 +354,17 @@ export default function HistoryOrderPage() {
                       <tr
                         className='table-row'
                         key={row.id}
-                        style={isPending ? {
-                          background: 'linear-gradient(135deg, #fefce8 0%, #fef9c3 100%)',
-                          borderLeft: '3px solid #f59e0b'
-                        } : undefined}
+                        onClick={() => { setSelectedOrder(row.original); setOpen(true) }}
+                        style={{
+                          cursor: 'pointer',
+                          transition: 'background 0.15s',
+                          ...(isPending ? {
+                            background: 'linear-gradient(135deg, #fefce8 0%, #fef9c3 100%)',
+                            borderLeft: '3px solid #f59e0b'
+                          } : {})
+                        }}
+                        onMouseEnter={e => { if (!isPending) (e.currentTarget as HTMLElement).style.background = '#f8fafc' }}
+                        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = isPending ? 'linear-gradient(135deg, #fefce8 0%, #fef9c3 100%)' : '' }}
                       >
                         {row.getVisibleCells().map(cell => (
                           <td className='table-cell' key={cell.id}>
