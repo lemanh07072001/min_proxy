@@ -11,7 +11,7 @@ import { useRouter } from 'next/navigation'
 
 import QuantityControl from '@components/form/input-quantity/QuantityControl'
 import ProtocolSelector from '@components/form/protocol-selector/ProtocolSelector'
-import { setUser, subtractBalance } from '@/store/userSlice'
+import { setBalance } from '@/store/userSlice'
 import type { AppDispatch, RootState } from '@/store'
 import useAxiosAuth from '@/hocs/useAxiosAuth'
 
@@ -221,11 +221,10 @@ return pct > 0 ? Math.round(pct) : null
         setPurchaseSuccess(true)
         setApiError('')
 
-        // Instant UI feedback + verify từ DB sau
-        dispatch(subtractBalance(total))
-        axiosAuth.post('/me').then(res => {
-          if (res?.data) dispatch(setUser(res.data))
-        }).catch(() => {})
+        // Số dư thật từ response — không cần gọi /me
+        if (data.data?.new_balance != null) {
+          dispatch(setBalance(data.data.new_balance))
+        }
 
         const queryKey = productType === 'static' ? 'orderProxyStatic' : 'proxyData'
 
