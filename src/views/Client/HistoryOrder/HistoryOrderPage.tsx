@@ -166,15 +166,33 @@ export default function HistoryOrderPage() {
       },
       {
         header: 'Trạng thái',
-        size: 120,
+        size: 150,
         cell: ({ row }: { row: any }) => {
           const status = Number(row.original.status)
           const isPending = PENDING_STATUSES.includes(status)
 
+          const hint: Record<number, string> = {
+            0: 'Vui lòng chờ...',
+            1: 'Vui lòng chờ...',
+            4: 'Gia hạn để tiếp tục',
+            5: 'Liên hệ hỗ trợ',
+            6: 'Đã hoàn vào tài khoản',
+            8: 'Đã hoàn vào tài khoản',
+            9: 'Vui lòng chờ...',
+            10: 'Vui lòng chờ...',
+            11: 'Vui lòng chờ...',
+            12: 'Liên hệ hỗ trợ',
+          }
+
           return (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              {getStatusBadge(String(status))}
-              {isPending && <Loader2 size={14} color='#3B82F6' style={{ animation: 'spin 1s linear infinite' }} />}
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                {getStatusBadge(String(status))}
+                {isPending && <Loader2 size={14} color='#3B82F6' style={{ animation: 'spin 1s linear infinite' }} />}
+              </div>
+              {hint[status] && (
+                <div style={{ fontSize: '10px', color: '#94a3b8', marginTop: 3 }}>{hint[status]}</div>
+              )}
             </div>
           )
         }
