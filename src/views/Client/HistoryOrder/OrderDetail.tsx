@@ -40,10 +40,11 @@ import { RefreshCw, Loader, AlertTriangle, ChevronDown, ChevronRight, Undo2 } fr
 import { toast } from 'react-toastify'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { subtractBalance } from '@/store/userSlice'
+import { setUser } from '@/store/userSlice'
 import type { AppDispatch, RootState } from '@/store'
 import { formatDateTimeLocal } from '@/utils/formatDate'
 import { useCopy } from '@/app/hooks/useCopy'
+import useAxiosAuth from '@/hocs/useAxiosAuth'
 import { ORDER_STATUS_LABELS, ORDER_STATUS_COLORS } from '@/constants/orderStatus'
 import { useApiKeys } from '@/hooks/apis/useOrders'
 import { useRenewOrder, useRenewInfo, useRenewalRefund, useRenewalConfirm, useOrderHistoryLogs } from '@/hooks/apis/useRenewal'
@@ -815,6 +816,7 @@ function RenewalInlinePanel({ order, quantity, selectedItemKeys, onClose }: {
 }) {
   const { data: renewInfo, isLoading: infoLoading } = useRenewInfo(order.id)
   const dispatch = useDispatch<AppDispatch>()
+  const axiosAuth = useAxiosAuth()
   const { sodu } = useSelector((state: RootState) => state.user)
   const { mutate, isPending, isSuccess } = useRenewOrder()
 
@@ -836,7 +838,7 @@ function RenewalInlinePanel({ order, quantity, selectedItemKeys, onClose }: {
       {
         onSuccess: (data) => {
           if (data?.success === false) toast.error(data?.message || 'Lỗi gia hạn.')
-          else { dispatch(subtractBalance(total)); toast.success(data?.message || 'Đã tạo lệnh gia hạn!') }
+          else { axiosAuth.post('/me').then(r => { if (r?.data) dispatch(setUser(r.data)) }).catch(() => {}); toast.success(data?.message || 'Đã tạo lệnh gia hạn!') }
         },
         onError: (err: any) => toast.error(err.response?.data?.message || 'Lỗi không xác định.'),
       }

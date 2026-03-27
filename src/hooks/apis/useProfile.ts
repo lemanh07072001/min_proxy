@@ -16,8 +16,8 @@ export const useProfile = () => {
       return res?.data ?? null
     },
     enabled: !!userId,
-    staleTime: 30 * 1000,
-    refetchInterval: 60 * 1000,
+    staleTime: 10 * 1000,
+    refetchInterval: 30 * 1000,
     refetchOnWindowFocus: true
   })
 }
