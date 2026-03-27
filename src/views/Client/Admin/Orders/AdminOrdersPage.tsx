@@ -502,19 +502,32 @@ return {
             onClick={() => handleToggleSort('id')}
             style={{ cursor: 'pointer', userSelect: 'none', display: 'inline-flex', alignItems: 'center', gap: 4 }}
           >
-            Mã đơn
+            Thông tin đơn hàng
             {sortBy === 'id' && (
               <span style={{ fontSize: '11px' }}>{sortOrder === 'desc' ? '▼' : '▲'}</span>
             )}
           </span>
         ),
-        minSize: 140,
-        cell: ({ row }: { row: any }) => (
-          <div style={{ lineHeight: 1.4 }}>
-            <div style={{ fontWeight: 600, fontSize: '12px' }}>{row.original.order_code}</div>
-            <div style={{ fontSize: '10px', color: '#94a3b8' }}>#{row.original.id}</div>
-          </div>
-        )
+        minSize: 190,
+        cell: ({ row }: { row: any }) => {
+          const o = row.original
+
+          return (
+            <div style={{ lineHeight: 1.5 }}>
+              <div style={{ fontWeight: 600, fontSize: '12px' }}>{o.order_code}</div>
+              <div style={{ fontSize: '11px', color: '#64748b' }}>
+                <span style={{ fontWeight: 500 }}>KH:</span> {o.user_name || '-'}
+              </div>
+              <div style={{ fontSize: '11px', color: '#64748b' }}>
+                <span style={{ fontWeight: 500 }}>SP:</span> {o.service_name || '-'}
+                {o.service_code && <span style={{ color: '#94a3b8', fontFamily: 'monospace' }}> #{o.service_id}·{o.service_code}</span>}
+              </div>
+              {!isChild && o.provider_name && (
+                <div style={{ fontSize: '10px', color: '#94a3b8' }}>NCC: {o.provider_name}</div>
+              )}
+            </div>
+          )
+        }
       },
       {
         header: 'Tình trạng',
@@ -540,23 +553,6 @@ return {
                 </span>
               )}
               {is_locked && <span style={{ fontSize: '10px', color: '#f59e0b' }}>🔒</span>}
-            </div>
-          )
-        }
-      },
-      {
-        header: 'Thông tin',
-        minSize: 170,
-        cell: ({ row }: { row: any }) => {
-          const o = row.original
-
-          return (
-            <div style={{ lineHeight: 1.5 }}>
-              <div style={{ fontWeight: 600, fontSize: '12px' }}>{o.user_name || '-'}</div>
-              <div style={{ fontSize: '11px', color: '#64748b' }}>{o.service_name || '-'}</div>
-              {!isChild && o.provider_name && (
-                <div style={{ fontSize: '10px', color: '#94a3b8' }}>{o.provider_name}</div>
-              )}
             </div>
           )
         }
