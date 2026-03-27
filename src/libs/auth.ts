@@ -143,7 +143,8 @@ export const authOptions = {
   ],
 
   session: {
-    strategy: 'jwt'
+    strategy: 'jwt',
+    maxAge: 365 * 24 * 60 * 60, // 1 năm — access token vẫn refresh ngắn hạn qua refreshToken()
   },
 
   pages: {
