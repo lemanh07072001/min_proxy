@@ -124,6 +124,8 @@ export interface HistoryLogItem {
   action: string
   message: string
   status_code: number | null
+  request: any
+  response: string | null
   duration_ms: number | null
   context: any
   created_at: string

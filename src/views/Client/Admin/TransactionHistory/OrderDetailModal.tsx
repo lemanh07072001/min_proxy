@@ -260,7 +260,7 @@ return p || '-'
       onClose={onClose}
       open={isOpen}
       closeAfterTransition={false}
-      maxWidth='md'
+      maxWidth={viewLogId ? 'lg' : 'md'}
       fullWidth
       PaperProps={{ sx: { borderRadius: '12px', maxHeight: '85vh', mt: '5vh', mb: 'auto' } }}
     >
@@ -308,11 +308,6 @@ return p || '-'
             </div>
           </div>
 
-          {/* Renewal section — hiện khi có gia hạn */}
-          {histories.length > 0 && (
-            <AdminRenewalSection histories={histories} order={order} viewLogId={viewLogId} onViewLog={id => setViewLogId(viewLogId === id ? null : id)} />
-          )}
-
           {/* Tabs — sticky */}
           <Tabs
             value={tabIndex}
@@ -325,6 +320,7 @@ return p || '-'
           >
             <Tab label={`Proxy (${dataApiKeys?.length || 0})`} />
             <Tab label={`Logs (${orderLogs.length})`} />
+            {histories.length > 0 && <Tab label={`Lịch sử gia hạn (${histories.length})`} />}
           </Tabs>
 
           {/* Tab content */}
@@ -434,6 +430,10 @@ return p || '-'
 
             {tabIndex === 1 && (
               <OrderLogsTimeline logs={orderLogs} isLoading={loadingLogs} />
+            )}
+
+            {tabIndex === 2 && histories.length > 0 && (
+              <AdminRenewalSection histories={histories} order={order} viewLogId={viewLogId} onViewLog={id => setViewLogId(viewLogId === id ? null : id)} />
             )}
           </div>
         </div>
@@ -722,14 +722,19 @@ function AdminHistoryLogPanel({ historyId }: { historyId: number }) {
       <div style={{ fontSize: '12px', fontWeight: 600, color: '#374151', marginBottom: 8 }}>Log chi tiết</div>
       {logs.map((log: HistoryLogItem, i: number) => {
         const action = ACTION_LABELS[log.action] ?? { label: log.action, color: '#94a3b8' }
+        const isError = log.action.includes('error') || log.action === 'api_call_timeout'
+        const ctx = log.context || {}
 
         return (
-          <div key={i} style={{ padding: '6px 0', borderBottom: '1px solid #f1f5f9', fontSize: '11px' }}>
-            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <div key={i} style={{ padding: '8px 0', borderBottom: '1px solid #f1f5f9', fontSize: '11px' }}>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
               <span style={{ color: '#94a3b8', fontFamily: 'monospace', width: 55, flexShrink: 0 }}>
                 {log.created_at ? new Date(log.created_at).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : ''}
               </span>
-              <span style={{ color: action.color, fontWeight: 600, width: 50, flexShrink: 0 }}>{action.label}</span>
+              <span style={{ color: action.color, fontWeight: 600, flexShrink: 0 }}>{action.label}</span>
+              {log.status_code != null && (
+                <span style={{ color: log.status_code >= 400 ? '#dc2626' : '#16a34a', fontSize: '10px' }}>HTTP {log.status_code}</span>
+              )}
               {log.duration_ms != null && (
                 <span style={{ color: '#94a3b8', flexShrink: 0 }}>{log.duration_ms}ms</span>
               )}
@@ -737,9 +742,68 @@ function AdminHistoryLogPanel({ historyId }: { historyId: number }) {
                 <span style={{ color: '#6366f1', fontFamily: 'monospace', fontSize: '10px' }}>{log.item_key}</span>
               )}
             </div>
-            <div style={{ color: '#64748b', marginTop: 2, wordBreak: 'break-all' }}>
+
+            {/* Method + URL */}
+            {ctx.method && (
+              <div style={{ color: '#3b82f6', marginTop: 3, fontFamily: 'monospace', fontSize: '10px', wordBreak: 'break-all' }}>
+                {ctx.method} {ctx.url}
+              </div>
+            )}
+
+            {/* Message */}
+            <div style={{
+              color: isError ? '#dc2626' : '#64748b', marginTop: 2, wordBreak: 'break-all',
+              ...(isError ? { background: '#fef2f2', padding: '3px 6px', borderRadius: 3 } : {})
+            }}>
               {log.message?.replace(/\[.*?\/renew\]\s*/, '')}
             </div>
+
+            {/* Request payload */}
+            {log.request && (
+              <details style={{ marginTop: 4 }} open={isError}>
+                <summary style={{ color: '#3b82f6', cursor: 'pointer', fontWeight: 500 }}>Request</summary>
+                <pre style={{
+                  fontSize: '10px', color: '#93c5fd', background: '#0f172a',
+                  padding: '6px 8px', borderRadius: 4, marginTop: 2,
+                  maxHeight: 200, overflow: 'auto', whiteSpace: 'pre-wrap', wordBreak: 'break-all'
+                }}>
+                  {JSON.stringify(log.request, null, 2)}
+                </pre>
+              </details>
+            )}
+
+            {/* Response */}
+            {log.response && (
+              <details style={{ marginTop: 3 }} open={isError}>
+                <summary style={{ color: isError ? '#ef4444' : '#22c55e', cursor: 'pointer', fontWeight: 500 }}>Response</summary>
+                <pre style={{
+                  fontSize: '10px', color: isError ? '#fca5a5' : '#86efac', background: '#0f172a',
+                  padding: '6px 8px', borderRadius: 4, marginTop: 2,
+                  maxHeight: 200, overflow: 'auto', whiteSpace: 'pre-wrap', wordBreak: 'break-all'
+                }}>
+                  {(() => {
+                    if (typeof log.response === 'string') {
+                      try { return JSON.stringify(JSON.parse(log.response), null, 2) } catch { return log.response }
+                    }
+                    return JSON.stringify(log.response, null, 2)
+                  })()}
+                </pre>
+              </details>
+            )}
+
+            {/* Headers */}
+            {ctx.headers && (
+              <details style={{ marginTop: 3 }}>
+                <summary style={{ color: '#94a3b8', cursor: 'pointer', fontWeight: 500 }}>Headers</summary>
+                <pre style={{
+                  fontSize: '10px', color: '#fbbf24', background: '#0f172a',
+                  padding: '6px 8px', borderRadius: 4, marginTop: 2,
+                  maxHeight: 150, overflow: 'auto', whiteSpace: 'pre-wrap'
+                }}>
+                  {JSON.stringify(ctx.headers, null, 2)}
+                </pre>
+              </details>
+            )}
           </div>
         )
       })}
