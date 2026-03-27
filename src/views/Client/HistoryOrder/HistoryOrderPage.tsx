@@ -377,6 +377,10 @@ export default function HistoryOrderPage() {
                 ) : (
                   table.getRowModel().rows.map(row => {
                     const isPending = PENDING_STATUSES.includes(Number(row.original.status))
+                    const isSelected = selectedOrder?.id === row.original.id && open
+                    const defaultBg = isPending
+                      ? 'linear-gradient(135deg, #fefce8 0%, #fef9c3 100%)'
+                      : isSelected ? '#f0f7ff' : ''
 
                     return (
                       <tr
@@ -386,13 +390,12 @@ export default function HistoryOrderPage() {
                         style={{
                           cursor: 'pointer',
                           transition: 'background 0.15s',
-                          ...(isPending ? {
-                            background: 'linear-gradient(135deg, #fefce8 0%, #fef9c3 100%)',
-                            borderLeft: '3px solid #f59e0b'
-                          } : {})
+                          background: defaultBg,
+                          ...(isPending ? { borderLeft: '3px solid #f59e0b' } : {}),
+                          ...(isSelected && !isPending ? { borderLeft: '3px solid #3b82f6' } : {}),
                         }}
-                        onMouseEnter={e => { if (!isPending) (e.currentTarget as HTMLElement).style.background = '#f8fafc' }}
-                        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = isPending ? 'linear-gradient(135deg, #fefce8 0%, #fef9c3 100%)' : '' }}
+                        onMouseEnter={e => { if (!isPending && !isSelected) (e.currentTarget as HTMLElement).style.background = '#f8fafc' }}
+                        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = defaultBg }}
                       >
                         {row.getVisibleCells().map(cell => (
                           <td className='table-cell' key={cell.id}>
