@@ -222,8 +222,8 @@ const RootLayout = async (props: ChildrenType & { params: Promise<{ lang: string
           <NavigationProgress />
           <I18nextProvider locale={params.lang as Locale}>
             <NextAuthProvider
-              refetchInterval={4 * 60}
-              refetchOnWindowFocus={false}
+              refetchInterval={60}
+              refetchOnWindowFocus={true}
               session={session as any}
               basePath={process.env.BASEPATH ? `${process.env.BASEPATH}/api/auth` : undefined}
             >
