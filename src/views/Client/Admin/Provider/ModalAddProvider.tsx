@@ -19,6 +19,8 @@ import AccordionDetails from '@mui/material/AccordionDetails'
 import { ChevronDown, Info, Plus, Trash2 } from 'lucide-react'
 import Tooltip from '@mui/material/Tooltip'
 import IconButton from '@mui/material/IconButton'
+import Checkbox from '@mui/material/Checkbox'
+import FormControlLabel from '@mui/material/FormControlLabel'
 
 import { toast } from 'react-toastify'
 
@@ -140,6 +142,17 @@ interface InheritParam {
   param: string
 }
 
+interface RenewParamRow {
+  param_name: string
+  value_type: 'provider_order_code' | 'provider_item_id' | 'duration' | 'custom'
+  custom_value: string
+}
+
+interface DurationMapRow {
+  days: string
+  send_value: string
+}
+
 interface RenewConfig {
   enabled: boolean
   mode: string
@@ -147,15 +160,41 @@ interface RenewConfig {
   method: string
   auth_type: string
   auth_param: string
-  params_json: string
+  params_rows: RenewParamRow[]
   duration_param: string
-  duration_map_json: string
+  duration_map_rows: DurationMapRow[]
+  duration_map_enabled: boolean
   response_mode: string
   success_field: string
   success_value: string
   new_expiry_field: string
   batch_delay_ms: string
   inherit_params: InheritParam[]
+}
+
+const SYSTEM_VARS: Record<string, RenewParamRow['value_type']> = {
+  '{provider_order_code}': 'provider_order_code',
+  '{provider_item_id}': 'provider_item_id',
+  '{duration}': 'duration',
+}
+const VALUE_MAP: Record<string, string> = {
+  provider_order_code: '{provider_order_code}',
+  provider_item_id: '{provider_item_id}',
+  duration: '{duration}',
+}
+const VALUE_LABELS: Record<string, string> = {
+  provider_order_code: 'Mã đơn NCC',
+  provider_item_id: 'Mã proxy NCC',
+  duration: 'Số ngày gia hạn',
+  custom: 'Nhập tự do',
+}
+
+function deserializeParamsRows(params: Record<string, string>): RenewParamRow[] {
+  return Object.entries(params).map(([param_name, value]) => ({
+    param_name,
+    value_type: SYSTEM_VARS[value] || 'custom',
+    custom_value: SYSTEM_VARS[value] ? '' : String(value),
+  }))
 }
 
 interface FormValues {
@@ -390,9 +429,10 @@ function parseApiConfig(apiConfig: any): Partial<FormValues> {
         method: r.method || 'POST',
         auth_type: r.auth_type || 'inherit',
         auth_param: r.auth_param || '',
-        params_json: r.params ? JSON.stringify(r.params) : '',
+        params_rows: r.params ? deserializeParamsRows(r.params) : [],
         duration_param: r.duration_param || 'days',
-        duration_map_json: r.duration_map ? JSON.stringify(r.duration_map) : '',
+        duration_map_rows: r.duration_map ? Object.entries(r.duration_map).map(([days, v]) => ({ days, send_value: String(v) })) : [],
+        duration_map_enabled: !!r.duration_map && Object.keys(r.duration_map).length > 0,
         response_mode: r.response_mode || 'immediate',
         success_field: resp.success_field || '',
         success_value: resp.success_value != null ? String(resp.success_value) : '',
@@ -629,12 +669,18 @@ function buildApiConfig(form: FormValues): object | null {
       r.auth_type = form.renew.auth_type
       if (form.renew.auth_param) r.auth_param = form.renew.auth_param
     }
-    if (form.renew.params_json) {
-      try { r.params = JSON.parse(form.renew.params_json) } catch { /* skip */ }
+    const validParams = (form.renew.params_rows || []).filter((p: RenewParamRow) => p.param_name)
+    if (validParams.length > 0) {
+      r.params = Object.fromEntries(
+        validParams.map((p: RenewParamRow) => [p.param_name, VALUE_MAP[p.value_type] || p.custom_value])
+      )
     }
     if (form.renew.duration_param) r.duration_param = form.renew.duration_param
-    if (form.renew.duration_map_json) {
-      try { r.duration_map = JSON.parse(form.renew.duration_map_json) } catch { /* skip */ }
+    if (form.renew.duration_map_enabled) {
+      const validMap = (form.renew.duration_map_rows || []).filter((d: DurationMapRow) => d.days)
+      if (validMap.length > 0) {
+        r.duration_map = Object.fromEntries(validMap.map((d: DurationMapRow) => [d.days, d.send_value]))
+      }
     }
     if (form.renew.response_mode === 'deferred') r.response_mode = 'deferred'
     if (parseInt(form.renew.batch_delay_ms) > 0) r.batch_delay_ms = parseInt(form.renew.batch_delay_ms)
@@ -1401,6 +1447,96 @@ const ITEM_FIELDS = [
   { value: 'key', label: 'Key hệ thống' },
 ]
 
+/** Tham số gửi NCC — bảng trực quan thay JSON */
+function RenewParamsTable({ control }: { control: Control<FormValues> }) {
+  const { fields, append, remove } = useFieldArray({ control, name: 'renew.params_rows' as any })
+
+  return (
+    <Grid2 size={{ xs: 12 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+        <Typography variant='body2' fontWeight={600}>Tham số gửi NCC</Typography>
+        <Button size='small' startIcon={<Plus size={14} />}
+          onClick={() => append({ param_name: '', value_type: 'custom', custom_value: '' })}>
+          Thêm
+        </Button>
+      </Box>
+      {fields.length === 0 && (
+        <Typography variant='caption' color='text.secondary' sx={{ fontStyle: 'italic' }}>
+          Chưa có tham số. Bấm "Thêm" nếu NCC cần gửi kèm dữ liệu.
+        </Typography>
+      )}
+      {fields.map((f, i) => (
+        <RenewParamRow key={f.id} index={i} control={control} onRemove={() => remove(i)} />
+      ))}
+    </Grid2>
+  )
+}
+
+function RenewParamRow({ index, control, onRemove }: { index: number; control: Control<FormValues>; onRemove: () => void }) {
+  const valueType = useWatch({ control, name: `renew.params_rows.${index}.value_type` as any })
+
+  return (
+    <Box sx={{ display: 'flex', gap: 1, mb: 0.5, alignItems: 'center' }}>
+      <Controller name={`renew.params_rows.${index}.param_name` as any} control={control} render={({ field }) => (
+        <CustomTextField {...field} size='small' placeholder='Tên param (VD: order_id)' sx={{ flex: 1 }} />
+      )} />
+      <Controller name={`renew.params_rows.${index}.value_type` as any} control={control} render={({ field }) => (
+        <CustomTextField {...field} size='small' select sx={{ minWidth: 170 }}>
+          {Object.entries(VALUE_LABELS).map(([k, v]) => (
+            <MenuItem key={k} value={k}>{v}</MenuItem>
+          ))}
+        </CustomTextField>
+      )} />
+      {valueType === 'custom' && (
+        <Controller name={`renew.params_rows.${index}.custom_value` as any} control={control} render={({ field }) => (
+          <CustomTextField {...field} size='small' placeholder='Giá trị' sx={{ flex: 1 }} />
+        )} />
+      )}
+      <IconButton size='small' onClick={onRemove} color='error'><Trash2 size={14} /></IconButton>
+    </Box>
+  )
+}
+
+/** Quy đổi thời hạn — ẩn mặc định, bật khi NCC dùng tên thay số ngày */
+function DurationMapSection({ control }: { control: Control<FormValues> }) {
+  const enabled = useWatch({ control, name: 'renew.duration_map_enabled' as any })
+  const { fields, append, remove } = useFieldArray({ control, name: 'renew.duration_map_rows' as any })
+
+  return (
+    <Grid2 size={{ xs: 12 }}>
+      <Controller name='renew.duration_map_enabled' control={control} render={({ field }) => (
+        <FormControlLabel
+          control={<Checkbox {...field} checked={!!field.value} size='small' />}
+          label={<Typography variant='body2'>NCC dùng tên thay số ngày (VD: weekly, monthly)</Typography>}
+        />
+      )} />
+      {enabled && (
+        <Box sx={{ mt: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.5 }}>
+            <Typography variant='caption' color='text.secondary'>Quy đổi: số ngày → giá trị gửi NCC</Typography>
+            <Button size='small' startIcon={<Plus size={14} />}
+              onClick={() => append({ days: '', send_value: '' })}>
+              Thêm
+            </Button>
+          </Box>
+          {fields.map((f, i) => (
+            <Box key={f.id} sx={{ display: 'flex', gap: 1, mb: 0.5, alignItems: 'center' }}>
+              <Controller name={`renew.duration_map_rows.${i}.days` as any} control={control} render={({ field }) => (
+                <CustomTextField {...field} size='small' placeholder='Số ngày (VD: 7)' sx={{ width: 120 }} />
+              )} />
+              <Typography variant='body2' color='text.secondary'>→</Typography>
+              <Controller name={`renew.duration_map_rows.${i}.send_value` as any} control={control} render={({ field }) => (
+                <CustomTextField {...field} size='small' placeholder='Gửi NCC (VD: weekly)' sx={{ flex: 1 }} />
+              )} />
+              <IconButton size='small' onClick={() => remove(i)} color='error'><Trash2 size={14} /></IconButton>
+            </Box>
+          ))}
+        </Box>
+      )}
+    </Grid2>
+  )
+}
+
 function InheritParamsTable({ control }: { control: Control<FormValues> }) {
   const { fields, append, remove } = useFieldArray({ control, name: 'renew.inherit_params' as any })
 
@@ -1534,46 +1670,31 @@ function RenewConfigFields({ control }: { control: Control<FormValues> }) {
           <Grid2 size={{ xs: 12 }}>
             <Controller name='renew.url' control={control} render={({ field }) => (
               <CustomTextField {...field} fullWidth
-                label={<>URL gia hạn <FieldHint text={
-                  'Dùng biến hệ thống thay cho biến của NCC:\n\n' +
-                  '• {provider_order_code} = mã đơn hàng trên NCC (transaction_id, order_id, ...)\n' +
-                  '• {provider_item_id} = mã từng proxy trên NCC (proxy_id, item_id, ...)\n' +
-                  '• {duration} = số ngày gia hạn\n\n' +
-                  'VD: NCC có URL /extend/{transaction_id}\n' +
-                  '→ Nhập: /extend/{provider_order_code}\n\n' +
-                  'Hoặc truyền qua Params bên dưới thay vì URL.'
-                } /></>}
+                label='URL gia hạn'
                 placeholder='https://api.ncc.com/renew/{provider_order_code}'
+                helperText={
+                  field.value?.includes('{')
+                    ? '↳ ' + field.value
+                        .replace(/\{provider_order_code\}/g, 'TXN-12345')
+                        .replace(/\{provider_item_id\}/g, 'PROXY-001')
+                        .replace(/\{duration\}/g, '30')
+                    : 'Dùng {provider_order_code} = mã đơn NCC, {provider_item_id} = mã proxy, {duration} = số ngày'
+                }
               />
             )} />
           </Grid2>
 
-          <Grid2 size={{ xs: 12, sm: 6 }}>
-            <Controller name='renew.params_json' control={control} render={({ field }) => (
-              <CustomTextField {...field} fullWidth
-                label={<>Params gửi kèm (JSON) <FieldHint text={
-                  'Tham số gửi cho NCC. Thay tên biến NCC bằng biến hệ thống:\n\n' +
-                  '• {provider_order_code} = mã đơn trên NCC (transaction_id, order_id, ...)\n' +
-                  '• {provider_item_id} = mã proxy trên NCC\n' +
-                  '• {duration} = số ngày gia hạn\n\n' +
-                  'VD: NCC cần order_id và days\n' +
-                  '→ {"order_id": "{provider_order_code}", "days": "{duration}"}\n\n' +
-                  'Bỏ trống nếu NCC chỉ cần thông tin trong URL.'
-                } /></>}
-                placeholder='{"order_id": "{provider_order_code}"}'
-              />
-            )} />
-          </Grid2>
-          <Grid2 size={{ xs: 12, sm: 3 }}>
+          {/* Tham số gửi NCC — visual table */}
+          <RenewParamsTable control={control} />
+
+          <Grid2 size={{ xs: 12, sm: 4 }}>
             <Controller name='renew.duration_param' control={control} render={({ field }) => (
-              <CustomTextField {...field} fullWidth label={<>Param thời hạn <FieldHint text='Tên param gửi số ngày gia hạn. VD: days, duration' /></>} placeholder='days' />
+              <CustomTextField {...field} fullWidth label={<>Tên param thời hạn <FieldHint text='Tên param gửi số ngày gia hạn. VD: days, duration' /></>} placeholder='days' />
             )} />
           </Grid2>
-          <Grid2 size={{ xs: 12, sm: 3 }}>
-            <Controller name='renew.duration_map_json' control={control} render={({ field }) => (
-              <CustomTextField {...field} fullWidth label={<>Map thời hạn (JSON) <FieldHint text='Quy đổi ngày → giá trị gửi provider. VD: {"7":"weekly","30":"monthly"}. Bỏ trống = gửi số ngày.' /></>} placeholder='{"7":"7","30":"30"}' />
-            )} />
-          </Grid2>
+
+          {/* Quy đổi thời hạn — ẩn mặc định */}
+          <DurationMapSection control={control} />
 
           {mode === 'by_item' && (
             <Grid2 size={{ xs: 6, sm: 4 }}>
@@ -1659,9 +1780,10 @@ const defaultValues: FormValues = {
     method: 'POST',
     auth_type: 'inherit',
     auth_param: '',
-    params_json: '',
+    params_rows: [],
     duration_param: 'days',
-    duration_map_json: '',
+    duration_map_rows: [],
+    duration_map_enabled: false,
     response_mode: 'immediate',
     success_field: '',
     success_value: '',
