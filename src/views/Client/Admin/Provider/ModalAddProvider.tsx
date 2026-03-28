@@ -881,6 +881,170 @@ function SavePreviewBox({ prefix, control }: { prefix: string; control: Control<
   )
 }
 
+// ─── Dry-run response parser ────────────────────────
+
+function ResponseDryRun({ prefix, control }: { prefix: string; control: Control<FormValues> }) {
+  const [input, setInput] = useState('')
+  const [result, setResult] = useState<{ lines: { label: string; value: string; status: 'ok' | 'error' | 'info' }[] } | null>(null)
+
+  const successField = useWatch({ control, name: `${prefix}.response.success_field` as any })
+  const successValue = useWatch({ control, name: `${prefix}.response.success_value` as any })
+  const responseType = useWatch({ control, name: `${prefix}.response.type` as any })
+  const proxiesPath = useWatch({ control, name: `${prefix}.response.proxies_path` as any })
+  const proxyFormat = useWatch({ control, name: `${prefix}.response.proxy_format` as any })
+  const proxyKeyField = useWatch({ control, name: `${prefix}.response.proxy_key_field` as any })
+  const proxyFieldsIp = useWatch({ control, name: `${prefix}.response.proxy_fields_ip` as any })
+  const proxyFieldsPort = useWatch({ control, name: `${prefix}.response.proxy_fields_port` as any })
+  const proxyFieldsUser = useWatch({ control, name: `${prefix}.response.proxy_fields_user` as any })
+  const proxyFieldsPass = useWatch({ control, name: `${prefix}.response.proxy_fields_pass` as any })
+  const itemIdField = useWatch({ control, name: `${prefix}.response.item_id_field` as any })
+  const responseMapping: any[] = useWatch({ control, name: `${prefix}.response.response_mapping` as any }) || []
+
+  const getByDotPath = (obj: any, path: string): any => {
+    return path.split('.').reduce((curr, key) => curr?.[key], obj)
+  }
+
+  const handleTest = () => {
+    if (!input.trim()) return
+    const lines: { label: string; value: string; status: 'ok' | 'error' | 'info' }[] = []
+
+    try {
+      const data = JSON.parse(input)
+
+      // 1. Check success field
+      if (successField) {
+        const actual = responseType === 'array_last_status'
+          ? (Array.isArray(data) ? data[data.length - 1]?.[successField] : data[successField])
+          : getByDotPath(data, successField)
+        const expected = successValue
+        const match = String(actual) === String(expected)
+        lines.push({
+          label: `Kiểm tra thành công: "${successField}" = ${expected}`,
+          value: actual !== undefined ? `Tìm thấy: ${actual} → ${match ? 'THÀNH CÔNG' : 'THẤT BẠI'}` : `Không tìm thấy trường "${successField}"`,
+          status: actual === undefined ? 'error' : match ? 'ok' : 'error',
+        })
+      }
+
+      // 2. Find proxies
+      let proxies: any[] = []
+      if (responseType === 'array_last_status' && Array.isArray(data)) {
+        proxies = data.slice(0, -1)
+        lines.push({ label: 'Danh sách proxy (bỏ phần tử cuối)', value: `Tìm thấy ${proxies.length} proxy`, status: proxies.length > 0 ? 'ok' : 'error' })
+      } else if (proxiesPath) {
+        const found = getByDotPath(data, proxiesPath)
+        if (Array.isArray(found)) {
+          proxies = found
+          lines.push({ label: `Danh sách proxy tại "${proxiesPath}"`, value: `Tìm thấy ${proxies.length} proxy`, status: proxies.length > 0 ? 'ok' : 'error' })
+        } else if (found !== undefined) {
+          lines.push({ label: `"${proxiesPath}"`, value: `Giá trị: ${JSON.stringify(found).substring(0, 50)} (không phải mảng)`, status: 'info' })
+        } else {
+          lines.push({ label: `"${proxiesPath}"`, value: 'Không tìm thấy', status: 'error' })
+        }
+      }
+
+      // 3. Parse first proxy
+      const sample = proxies[0]
+      if (sample) {
+        lines.push({ label: '--- Phân tích proxy đầu tiên ---', value: '', status: 'info' })
+        if (proxyFormat === 'key') {
+          const key = proxyKeyField || 'keyxoay'
+          const val = sample[key]
+          lines.push({ label: `Key proxy: "${key}"`, value: val !== undefined ? `✓ ${val}` : `✗ Không tìm thấy`, status: val !== undefined ? 'ok' : 'error' })
+        } else if (proxyFormat === 'string') {
+          const field = proxyKeyField || 'proxy'
+          const val = sample[field]
+          if (val) {
+            const parts = String(val).split(':')
+            lines.push({ label: `Chuỗi proxy: "${field}"`, value: `✓ ${val}`, status: 'ok' })
+            lines.push({ label: '  → IP', value: parts[0] || '(trống)', status: parts[0] ? 'ok' : 'error' })
+            lines.push({ label: '  → Port', value: parts[1] || '(trống)', status: parts[1] ? 'ok' : 'error' })
+            lines.push({ label: '  → User', value: parts[2] || '(trống)', status: parts[2] ? 'ok' : 'info' })
+            lines.push({ label: '  → Pass', value: parts[3] || '(trống)', status: parts[3] ? 'ok' : 'info' })
+          } else {
+            lines.push({ label: `Chuỗi proxy: "${field}"`, value: '✗ Không tìm thấy', status: 'error' })
+          }
+        } else if (proxyFormat === 'fields') {
+          const fields = [
+            { label: 'IP', key: proxyFieldsIp || 'ip' },
+            { label: 'Port', key: proxyFieldsPort || 'port' },
+            { label: 'User', key: proxyFieldsUser || 'username' },
+            { label: 'Pass', key: proxyFieldsPass || 'password' },
+          ]
+          fields.forEach(f => {
+            const val = sample[f.key]
+            lines.push({ label: `${f.label}: "${f.key}"`, value: val !== undefined ? `✓ ${val}` : `✗ Không tìm thấy`, status: val !== undefined ? 'ok' : 'error' })
+          })
+        }
+
+        // Item ID
+        if (itemIdField) {
+          const val = sample[itemIdField]
+          lines.push({ label: `ID proxy: "${itemIdField}"`, value: val !== undefined ? `✓ ${val}` : `✗ Không tìm thấy`, status: val !== undefined ? 'ok' : 'error' })
+        }
+
+        // Response mapping
+        responseMapping.filter(r => r?.from && r?.to).forEach(r => {
+          const val = getByDotPath(sample, r.from)
+          lines.push({ label: `${r.to}: "${r.from}"`, value: val !== undefined ? `✓ ${val}` : `✗ Không tìm thấy`, status: val !== undefined ? 'ok' : 'error' })
+        })
+      }
+    } catch {
+      lines.push({ label: 'Lỗi parse JSON', value: 'Response không đúng định dạng JSON', status: 'error' })
+    }
+
+    setResult({ lines })
+  }
+
+  return (
+    <Grid2 size={{ xs: 12 }}>
+      <Box sx={{ mt: 1, p: 1.5, background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 1.5 }}>
+        <Typography sx={{ fontSize: 12, fontWeight: 600, color: '#334155', mb: 0.5 }}>
+          Kiểm tra cấu hình — paste response mẫu từ nhà cung cấp
+        </Typography>
+        <Typography sx={{ fontSize: 11, color: '#64748b', mb: 1 }}>
+          Gọi thử API nhà cung cấp, copy kết quả trả về, paste vào đây. Hệ thống sẽ phân tích theo cấu hình ở trên và cho biết đọc được gì, thiếu gì.
+        </Typography>
+        <textarea
+          value={input}
+          onChange={e => setInput(e.target.value)}
+          placeholder='Paste JSON response từ nhà cung cấp vào đây...'
+          style={{
+            width: '100%', minHeight: 80, padding: 10, fontSize: 12,
+            fontFamily: 'monospace', border: '1px solid #e2e8f0', borderRadius: 6,
+            background: '#fff', resize: 'vertical', outline: 'none',
+          }}
+        />
+        <Box sx={{ mt: 1, display: 'flex', gap: 1, alignItems: 'center' }}>
+          <Button size='small' variant='contained' onClick={handleTest} disabled={!input.trim()}
+            sx={{ textTransform: 'none', fontSize: 12 }}>
+            Phân tích
+          </Button>
+          {result && (
+            <Button size='small' onClick={() => { setResult(null); setInput('') }}
+              sx={{ textTransform: 'none', fontSize: 12, color: '#64748b' }}>
+              Xoá
+            </Button>
+          )}
+        </Box>
+        {result && (
+          <Box sx={{ mt: 1, border: '1px solid #e2e8f0', borderRadius: 1, overflow: 'hidden' }}>
+            {result.lines.map((l, i) => (
+              <Box key={i} sx={{
+                display: 'flex', gap: 1, px: 1, py: 0.5, fontSize: 12,
+                background: l.status === 'error' ? '#fef2f2' : l.status === 'ok' ? '#f0fdf4' : '#fff',
+                borderBottom: '1px solid #f1f5f9',
+              }}>
+                <span style={{ color: l.status === 'error' ? '#dc2626' : l.status === 'ok' ? '#16a34a' : '#64748b', minWidth: 220, flexShrink: 0, fontWeight: 500 }}>{l.label}</span>
+                <span style={{ fontFamily: 'monospace', color: '#1e293b', wordBreak: 'break-all' }}>{l.value}</span>
+              </Box>
+            ))}
+          </Box>
+        )}
+      </Box>
+    </Grid2>
+  )
+}
+
 // ─── Reusable Buy Config Section ────────────────────
 
 function BuyConfigFields({
@@ -1148,12 +1312,19 @@ function BuyConfigFields({
                 </Grid2>
                 <Grid2 size={{ xs: 6, sm: 2 }}>
                   <Controller name={`${prefix}.response.success_field`} control={control} render={({ field }) => (
-                    <CustomTextField {...field} fullWidth label={<>Tên field kiểm tra <FieldHint text='Tên trường dùng để biết thành công/thất bại. VD: statusCode, success, status' /></>} placeholder='statusCode' />
+                    <CustomTextField {...field} fullWidth
+                      label={<>Trường kiểm tra <FieldHint text='Khi mua xong, hệ thống đọc trường này để biết thành công hay thất bại.\n\nVD: NCC trả {"success": true} → điền "success"\nVD: NCC trả {"statusCode": 200} → điền "statusCode"\n\nSai → hệ thống không phân biệt được lỗi, đơn hàng bị treo.' /></>}
+                      placeholder='statusCode'
+                      helperText='Sai → đơn hàng bị treo'
+                    />
                   )} />
                 </Grid2>
                 <Grid2 size={{ xs: 3, sm: 1.5 }}>
                   <Controller name={`${prefix}.response.success_value`} control={control} render={({ field }) => (
-                    <CustomTextField {...field} fullWidth label='Giá trị OK' placeholder='200' />
+                    <CustomTextField {...field} fullWidth
+                      label={<>Giá trị OK <FieldHint text='Giá trị của trường kiểm tra khi thành công.\n\nVD: NCC trả {"success": true} → điền true\nVD: NCC trả {"statusCode": 200} → điền 200' /></>}
+                      placeholder='200'
+                    />
                   )} />
                 </Grid2>
 
@@ -1161,9 +1332,9 @@ function BuyConfigFields({
                 <Grid2 size={{ xs: 12, sm: 4 }}>
                   <Controller name={`${prefix}.response.error_message_field`} control={control} render={({ field }) => (
                     <CustomTextField {...field} fullWidth
-                      label={<>Field chứa lý do lỗi <FieldHint text={'VD: đối tác trả {"statusCode":101, "message":"Hết hàng"}\n→ điền "message"\n→ hệ thống tự hiện "Hết hàng" khi có lỗi\n\nNên luôn điền field này.'} /></>}
+                      label={<>Trường lý do lỗi <FieldHint text='Khi đối tác trả lỗi, hệ thống đọc trường này để lấy lý do hiển thị cho admin.\n\nVD: NCC trả {"statusCode":101, "message":"Hết hàng"}\n→ điền "message"\n→ admin thấy "Hết hàng" trong log đơn hàng\n\nBỏ trống → admin chỉ thấy mã lỗi, không biết lý do.' /></>}
                       placeholder='message'
-                      helperText='Thay thế cho mã lỗi, hoặc dùng khi gặp mã lỗi chưa có trong danh sách bên dưới'
+                      helperText='Bỏ trống → admin không thấy lý do lỗi'
                     />
                   )} />
                 </Grid2>
@@ -1345,6 +1516,9 @@ function BuyConfigFields({
                     )} />
                   </Grid2>
                 )}
+
+                {/* ── TEST: Paste response mẫu ── */}
+                <ResponseDryRun prefix={prefix} control={control} />
               </Grid2>
             </Box>
           </Grid2>
