@@ -688,88 +688,71 @@ function ExpandableItemRow({ row }: { row: any }) {
   )
 }
 
-/** Panel chi tiết OrderItem — bảng 3 cột: Field / Giá trị / Nguồn NCC */
+/** Panel chi tiết OrderItem — list key:value rõ ràng */
 function ItemDetailPanel({ item }: { item: any }) {
   const PROXY_LABELS: Record<string, string> = {
-    http: 'HTTP proxy', socks5: 'SOCKS5 proxy', ip: 'IP', port: 'Port',
-    user: 'Username', pass: 'Password', loaiproxy: 'Giao thức',
-    HTTP: 'HTTP proxy', SOCK5: 'SOCKS5 proxy',
+    ip: 'IP', port: 'Port', user: 'Username', pass: 'Password',
+    loaiproxy: 'Giao thức', type_proxy: 'Loại proxy',
   }
 
-  // _field_origins lưu bởi BE: { ip: "ip", port: "port", region: "data.region", ... }
   const origins: Record<string, string> = item.metadata?._field_origins || {}
-
-  // Proxy fields
   const proxy = item.proxy || item.proxys
-  const proxyRows = proxy && typeof proxy === 'object'
+  const statusText = item.status === 0 ? 'Hoạt động' : item.status === 1 ? 'Đã tắt' : item.status === 2 ? 'Hết hạn' : `Mã ${item.status}`
+
+  type Row = { label: string; value: any; src?: string }
+
+  // Proxy fields — bỏ chuỗi dài (http/socks5), giữ field rõ ràng
+  const proxyRows: Row[] = proxy && typeof proxy === 'object'
     ? Object.entries(proxy)
-        .filter(([k]) => k !== 'http' && k !== 'socks5' && k !== 'HTTP' && k !== 'SOCK5') // bỏ chuỗi proxy dài, giữ fields rõ ràng
-        .map(([k, v]) => ({ label: PROXY_LABELS[k] || k, value: v, origin: origins[k] }))
+        .filter(([k]) => !['http', 'socks5', 'HTTP', 'SOCK5'].includes(k))
+        .map(([k, v]) => ({ label: PROXY_LABELS[k] || k, value: v, src: origins[k] }))
     : []
 
-  // Metadata (bỏ _field_origins ra khỏi display)
-  const metaRows = item.metadata && typeof item.metadata === 'object'
+  // Metadata (bỏ _field_origins)
+  const metaRows: Row[] = item.metadata && typeof item.metadata === 'object'
     ? Object.entries(item.metadata)
         .filter(([k]) => k !== '_field_origins')
-        .map(([k, v]) => ({ label: k, value: v, origin: origins[k] }))
+        .map(([k, v]) => ({ label: k, value: v, src: origins[k] }))
     : []
 
-  // Provider + system fields
-  const statusText = item.status === 0 ? 'Hoạt động' : item.status === 1 ? 'Đã tắt' : item.status === 2 ? 'Hết hạn' : `Mã ${item.status}`
-  const systemRows = [
+  // System + provider
+  const sysRows: Row[] = [
     { label: 'Key hệ thống', value: item.key },
     { label: 'Loại', value: item.type === 'ROTATING' ? 'Xoay (Rotating)' : item.type === 'STATIC' ? 'Tĩnh (Static)' : item.type },
     { label: 'Giao thức', value: item.protocol?.toUpperCase() },
-    { label: 'IP version', value: item.ip_version?.toUpperCase() },
     { label: 'Trạng thái', value: item.status != null ? statusText : null },
-    { label: 'Ngày kích hoạt', value: item.buy_at },
-    { label: 'Hết hạn', value: item.expired_at },
-    { label: 'API Key (NCC)', value: item.provider_key, origin: origins['api_key'] },
+    { label: 'Ngày kích hoạt', value: item.buy_at ? formatDateTimeLocal(item.buy_at) : null },
+    { label: 'Hết hạn', value: item.expired_at ? formatDateTimeLocal(item.expired_at) : null },
+    { label: 'API Key (NCC)', value: item.provider_key, src: origins['api_key'] },
     { label: 'Mã đơn (NCC)', value: item.provider_order_code },
-    { label: 'ID proxy (NCC)', value: item.provider_item_id, origin: origins['provider_item_id'] },
-  ].filter(f => f.value != null && f.value !== '') as { label: string; value: any; origin?: string }[]
+    { label: 'ID proxy (NCC)', value: item.provider_item_id, src: origins['provider_item_id'] },
+  ].filter(r => r.value != null && r.value !== '')
 
-  const hasOrigins = Object.keys(origins).length > 0
-
-  const th = { padding: '5px 10px', fontSize: '11px', fontWeight: 700 as const, color: '#475569', textAlign: 'left' as const, borderBottom: '1px solid #e2e8f0' }
-  const td = { padding: '4px 10px', fontSize: '11.5px', borderBottom: '1px solid #f1f5f9' }
-
-  const renderSection = (title: string, bg: string, color: string, rows: { label: string; value: any; origin?: string }[]) => {
-    if (rows.length === 0) return null
+  const renderGroup = (title: string, bg: string, color: string, rows: Row[]) => {
+    if (!rows.length) return null
     return (
-      <>
-        <tr><td colSpan={hasOrigins ? 3 : 2} style={{ background: bg, padding: '4px 10px', fontSize: '10px', fontWeight: 700, color, borderBottom: '1px solid #e2e8f0' }}>{title}</td></tr>
+      <div key={title} style={{ marginBottom: 6 }}>
+        <div style={{ background: bg, padding: '3px 10px', fontSize: '10px', fontWeight: 700, color, borderRadius: '4px 4px 0 0' }}>{title}</div>
         {rows.map((r, i) => (
-          <tr key={`${title}-${i}`} style={{ background: i % 2 === 0 ? '#fff' : '#fafbfc' }}>
-            <td style={{ ...td, color: '#64748b', width: '30%' }}>{r.label}</td>
-            <td style={{ ...td, fontFamily: 'monospace', fontWeight: 500, color: '#1e293b' }}>{fmtValue(r.value)}</td>
-            {hasOrigins && (
-              <td style={{ ...td, fontSize: '10px', color: '#b45309', fontFamily: 'monospace' }}>
-                {r.origin ? `← "${r.origin}"` : ''}
-              </td>
-            )}
-          </tr>
+          <div key={i} style={{
+            display: 'flex', alignItems: 'baseline', gap: 8,
+            padding: '3px 10px', fontSize: '12px', background: i % 2 === 0 ? '#fff' : '#fafbfc',
+            borderBottom: '1px solid #f1f5f9',
+          }}>
+            <span style={{ color: '#64748b', minWidth: 110, fontSize: '11px', flexShrink: 0 }}>{r.label}</span>
+            <span style={{ fontFamily: 'monospace', fontWeight: 500, color: '#1e293b', wordBreak: 'break-all', flex: 1 }}>{fmtValue(r.value)}</span>
+            {r.src && <span style={{ color: '#b45309', fontSize: '10px', fontFamily: 'monospace', flexShrink: 0 }}>← {r.src}</span>}
+          </div>
         ))}
-      </>
+      </div>
     )
   }
 
   return (
-    <div style={{ background: '#fafbfc', borderTop: '1px solid #e2e8f0' }}>
-      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-        <thead>
-          <tr style={{ background: '#f8fafc' }}>
-            <th style={{ ...th, width: '30%' }}>Tên</th>
-            <th style={th}>Giá trị</th>
-            {hasOrigins && <th style={{ ...th, width: '22%' }}>Trường NCC</th>}
-          </tr>
-        </thead>
-        <tbody>
-          {renderSection('Chi tiết proxy', '#eff6ff', '#1e40af', proxyRows)}
-          {renderSection('Thông tin thêm từ NCC', '#faf5ff', '#6b21a8', metaRows)}
-          {renderSection('Hệ thống & nhà cung cấp', '#f0fdf4', '#166534', systemRows)}
-        </tbody>
-      </table>
+    <div style={{ background: '#fafbfc', borderTop: '1px solid #e2e8f0', padding: '8px 6px' }}>
+      {renderGroup('Chi tiết proxy', '#eff6ff', '#1e40af', proxyRows)}
+      {renderGroup('Thông tin thêm từ NCC', '#faf5ff', '#6b21a8', metaRows)}
+      {renderGroup('Hệ thống & nhà cung cấp', '#f0fdf4', '#166534', sysRows)}
     </div>
   )
 }
