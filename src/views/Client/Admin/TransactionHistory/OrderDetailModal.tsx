@@ -515,6 +515,13 @@ function CodeBlock({ value, color = '#93c5fd', open }: { value: string; color?: 
   )
 }
 
+/** Format giá trị — xử lý object/array không bị [object Object] */
+const fmtValue = (v: any): string => {
+  if (v == null) return '—'
+  if (typeof v === 'object') { try { return JSON.stringify(v) } catch { return String(v) } }
+  return String(v)
+}
+
 /** Panel hiển thị toàn bộ data nội bộ của Order — expandable */
 function OrderRawDataPanel({ order }: { order: any }) {
   const [open, setOpen] = useState(false)
@@ -616,7 +623,7 @@ function OrderRawDataPanel({ order }: { order: any }) {
                 {order.metadata && typeof order.metadata === 'object' && (
                   <div style={{ fontFamily: 'monospace', fontSize: '11px', color: '#475569' }}>
                     {Object.entries(order.metadata).map(([k, v]) => (
-                      <div key={k}><span style={{ color: '#94a3b8' }}>{k}:</span> {String(v)}</div>
+                      <div key={k}><span style={{ color: '#94a3b8' }}>{k}:</span> {fmtValue(v)}</div>
                     ))}
                   </div>
                 )}
@@ -630,7 +637,7 @@ function OrderRawDataPanel({ order }: { order: any }) {
 }
 
 function DataField({ label, value }: { label: string; value: any }) {
-  const display = value != null && value !== '' ? String(value) : '—'
+  const display = value != null && value !== '' ? fmtValue(value) : '—'
   return (
     <div style={{ padding: '5px 12px', borderBottom: '1px solid #f1f5f9', fontSize: '11.5px' }}>
       <span style={{ color: '#94a3b8' }}>{label}: </span>
@@ -672,12 +679,6 @@ function ExpandableItemRow({ row }: { row: any }) {
       )}
     </>
   )
-}
-
-const fmtValue = (v: any): string => {
-  if (v == null) return '—'
-  if (typeof v === 'object') { try { return JSON.stringify(v) } catch { return String(v) } }
-  return String(v)
 }
 
 /** Panel chi tiết OrderItem — bảng 3 cột: Field / Giá trị / Nguồn NCC */
