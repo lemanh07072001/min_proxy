@@ -726,20 +726,41 @@ function buildApiConfig(form: FormValues): object | null {
 // ─── Response Mapping Table ─────────────────────────
 
 function ResponseMappingRow({ prefix, index, control, onRemove }: { prefix: string; index: number; control: Control<FormValues>; onRemove: () => void }) {
+  const store = useWatch({ control, name: `${prefix}.response.response_mapping.${index}.store` as any })
+  const isCustomObj = store && !['proxy', 'metadata', 'root'].includes(store) && store !== ''
+
   return (
-    <Box sx={{ display: 'flex', gap: 1, mb: 0.5, alignItems: 'center' }}>
+    <Box sx={{ display: 'flex', gap: 1, mb: 0.5, alignItems: 'center', flexWrap: 'wrap' }}>
       <Controller name={`${prefix}.response.response_mapping.${index}.from` as any} control={control} render={({ field }) => (
-        <CustomTextField {...field} size='small' placeholder='Trường NCC trả về (VD: data.region)' sx={{ flex: 1 }} />
+        <CustomTextField {...field} size='small' placeholder='Trường NCC (VD: data.region)' sx={{ flex: 1, minWidth: 150 }} />
       )} />
       <Controller name={`${prefix}.response.response_mapping.${index}.to` as any} control={control} render={({ field }) => (
-        <CustomTextField {...field} size='small' placeholder='Tên lưu trong hệ thống (VD: region)' sx={{ flex: 1 }} />
+        <CustomTextField {...field} size='small' placeholder='Tên field lưu (VD: region)' sx={{ flex: 1, minWidth: 120 }} />
       )} />
       <Controller name={`${prefix}.response.response_mapping.${index}.store` as any} control={control} render={({ field }) => (
-        <CustomTextField {...field} size='small' select sx={{ minWidth: 200 }}>
-          <MenuItem value='metadata'>Thông tin thêm (xem trong chi tiết)</MenuItem>
-          <MenuItem value='proxy'>Gắn vào proxy (hiện cùng IP/Port)</MenuItem>
+        <CustomTextField
+          {...field}
+          size='small'
+          select={!isCustomObj}
+          sx={{ minWidth: 180 }}
+          placeholder={isCustomObj ? 'Tên object...' : undefined}
+          helperText={isCustomObj ? `Lưu vào: ${store}.${'{field}'}` : undefined}
+        >
+          {!isCustomObj && [
+            <MenuItem key='root' value='root'>Cấp 1 (flat trên order_item)</MenuItem>,
+            <MenuItem key='proxy' value='proxy'>Trong object proxy</MenuItem>,
+            <MenuItem key='metadata' value='metadata'>Trong object metadata</MenuItem>,
+            <MenuItem key='_custom' value='_custom'>Object tự đặt tên...</MenuItem>,
+          ]}
         </CustomTextField>
       )} />
+      {store === '_custom' && (
+        <Controller name={`${prefix}.response.response_mapping.${index}.store` as any} control={control} render={({ field }) => (
+          <CustomTextField {...field} size='small' placeholder='Tên object (VD: extra_info)' sx={{ minWidth: 140 }}
+            onChange={e => { const v = e.target.value; if (v && v !== '_custom') field.onChange(v) }}
+          />
+        )} />
+      )}
       <IconButton size='small' onClick={onRemove} color='error'><Trash2 size={14} /></IconButton>
     </Box>
   )
@@ -787,115 +808,73 @@ function SavePreviewBox({ prefix, control }: { prefix: string; control: Control<
   const responseMode = useWatch({ control, name: `${prefix}.response_mode` as any })
   const responseMapping: any[] = useWatch({ control, name: `${prefix}.response.response_mapping` as any }) || []
 
-  type Row = { label: string; desc: string; nccField: string; where: string }
-  const rows: Row[] = []
-
+  // Build DB preview JSON
+  const dbPreview: Record<string, any> = {}
   if (proxyFormat === 'key') {
-    rows.push({
-      label: 'API Key proxy',
-      desc: 'Key dùng để đổi IP hoặc truy xuất proxy xoay',
-      nccField: proxyKeyField || 'keyxoay',
-      where: 'Chi tiết proxy',
+    dbPreview.provider_key = `← ${proxyKeyField || 'keyxoay'}`
+  } else {
+    const proxyObj: Record<string, string> = {}
+    if (proxyFormat === 'string') {
+      const f = proxyKeyField || 'proxy'
+      proxyObj.ip = `← ${f}:phần1`
+      proxyObj.port = `← ${f}:phần2`
+    } else if (proxyFormat === 'fields') {
+      proxyObj.ip = `← ${proxyFieldsIp || 'ip'}`
+      proxyObj.port = `← ${proxyFieldsPort || 'port'}`
+      proxyObj.user = `← ${proxyFieldsUser || 'username'}`
+      proxyObj.pass = `← ${proxyFieldsPass || 'password'}`
+    }
+    // Custom vào proxy
+    responseMapping.filter(r => r?.from && r?.to && r?.store === 'proxy').forEach(r => {
+      proxyObj[r.to] = `← ${r.from}`
     })
-  } else if (proxyFormat === 'string') {
-    const field = proxyKeyField || 'proxy'
-    rows.push(
-      { label: 'Proxy (chuỗi)', desc: 'Chuỗi đầy đủ ip:port:user:pass', nccField: `"${field}"`, where: 'Chi tiết proxy' },
-      { label: 'IP', desc: 'Tách từ chuỗi — phần 1', nccField: `"${field}" → phần 1`, where: 'Chi tiết proxy' },
-      { label: 'Port', desc: 'Tách từ chuỗi — phần 2', nccField: `"${field}" → phần 2`, where: 'Chi tiết proxy' },
-      { label: 'Username', desc: 'Tách từ chuỗi — phần 3', nccField: `"${field}" → phần 3`, where: 'Chi tiết proxy' },
-      { label: 'Password', desc: 'Tách từ chuỗi — phần 4', nccField: `"${field}" → phần 4`, where: 'Chi tiết proxy' },
-      { label: 'Giao thức', desc: 'HTTP / SOCKS5', nccField: 'Theo đơn hàng', where: 'Chi tiết proxy' },
-    )
-  } else if (proxyFormat === 'fields') {
-    rows.push(
-      { label: 'IP', desc: 'Địa chỉ IP proxy', nccField: `"${proxyFieldsIp || 'ip'}"`, where: 'Chi tiết proxy' },
-      { label: 'Port', desc: 'Cổng kết nối', nccField: `"${proxyFieldsPort || 'port'}"`, where: 'Chi tiết proxy' },
-      { label: 'Username', desc: 'Tài khoản xác thực', nccField: `"${proxyFieldsUser || 'username'}"`, where: 'Chi tiết proxy' },
-      { label: 'Password', desc: 'Mật khẩu xác thực', nccField: `"${proxyFieldsPass || 'password'}"`, where: 'Chi tiết proxy' },
-      { label: 'Giao thức', desc: 'HTTP / SOCKS5', nccField: proxyFieldsType ? `"${proxyFieldsType}"` : 'Theo đơn hàng', where: 'Chi tiết proxy' },
-    )
+    dbPreview.proxy = proxyObj
+  }
+  if (itemIdField) dbPreview.provider_item_id = `← ${itemIdField}`
+
+  // Root fields
+  const rootFields = responseMapping.filter(r => r?.from && r?.to && r?.store === 'root')
+  rootFields.forEach(r => { dbPreview[r.to] = `← ${r.from}` })
+
+  // Metadata
+  const metaFields = responseMapping.filter(r => r?.from && r?.to && (r?.store === 'metadata' || !r?.store))
+  if (metaFields.length > 0) {
+    const metaObj: Record<string, string> = {}
+    metaFields.forEach(r => { metaObj[r.to] = `← ${r.from}` })
+    dbPreview.metadata = metaObj
   }
 
-  if (itemIdField) {
-    rows.push({
-      label: 'ID proxy (NCC)',
-      desc: 'Mã proxy phía nhà cung cấp — dùng khi gia hạn hoặc xoay IP',
-      nccField: `"${itemIdField}"`,
-      where: 'Nội bộ',
-    })
-  }
+  // Custom objects
+  const customObjs = responseMapping.filter(r => r?.from && r?.to && r?.store && !['proxy', 'metadata', 'root', '_custom'].includes(r.store))
+  const grouped: Record<string, Record<string, string>> = {}
+  customObjs.forEach(r => { grouped[r.store] = grouped[r.store] || {}; grouped[r.store][r.to] = `← ${r.from}` })
+  Object.entries(grouped).forEach(([name, obj]) => { dbPreview[name] = obj })
 
-  if (responseMode === 'deferred') {
-    rows.push({
-      label: 'Mã đơn (NCC)',
-      desc: 'Mã đơn phía nhà cung cấp — hệ thống dùng để poll lấy proxy',
-      nccField: 'Từ kết quả API mua',
-      where: 'Nội bộ',
-    })
-  }
-
-  // response_mapping custom
-  responseMapping.forEach(r => {
-    if (!r?.from || !r?.to) return
-    rows.push({
-      label: r.to,
-      desc: r.store === 'proxy' ? 'Hiển thị cùng chi tiết proxy' : 'Lưu kèm đơn hàng, xem trong chi tiết',
-      nccField: `"${r.from}"`,
-      where: r.store === 'proxy' ? 'Chi tiết proxy' : 'Thông tin thêm',
-    })
-  })
-
-  const cellBase = { padding: '6px 10px', fontSize: '12px', borderBottom: '1px solid #e8ecf1' }
+  // System fields luôn có
+  dbPreview['// hệ thống tự sinh'] = 'key, type, protocol, status, buy_at, expired_at...'
 
   return (
     <Grid2 size={{ xs: 12 }}>
       <Box sx={{ mt: 1.5, border: '1px solid #bae6fd', borderRadius: 1.5, overflow: 'hidden' }}>
-        {/* Header */}
         <Box sx={{ background: '#f0f9ff', px: 1.5, py: 1, borderBottom: '1px solid #bae6fd' }}>
           <Typography sx={{ fontSize: 13, fontWeight: 700, color: '#0369a1' }}>
-            Bảng ánh xạ dữ liệu: Hệ thống ← Nhà cung cấp
+            Preview: Cấu trúc dữ liệu order_item trong DB
           </Typography>
           <Typography sx={{ fontSize: 11, color: '#64748b', mt: 0.3 }}>
-            Khi mua proxy, hệ thống tự động đọc kết quả nhà cung cấp trả về và lưu các trường sau.
+            Khi mua proxy, mỗi order_item sẽ được lưu trong database với cấu trúc như dưới đây.
           </Typography>
         </Box>
-
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead>
-            <tr style={{ background: '#f8fafc' }}>
-              <th style={{ ...cellBase, textAlign: 'left', fontWeight: 700, color: '#334155', width: '20%' }}>Hệ thống lưu</th>
-              <th style={{ ...cellBase, textAlign: 'left', fontWeight: 700, color: '#334155', width: '32%' }}>Ý nghĩa</th>
-              <th style={{ ...cellBase, textAlign: 'left', fontWeight: 700, color: '#334155', width: '28%' }}>Trường từ nhà cung cấp</th>
-              <th style={{ ...cellBase, textAlign: 'left', fontWeight: 700, color: '#334155', width: '20%' }}>Lưu vào</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((r, i) => (
-              <tr key={i} style={{ background: i % 2 === 0 ? '#fff' : '#fafbfc' }}>
-                <td style={{ ...cellBase, fontWeight: 600, color: '#1e293b' }}>{r.label}</td>
-                <td style={{ ...cellBase, color: '#64748b', fontSize: '11px' }}>{r.desc}</td>
-                <td style={{ ...cellBase, fontFamily: 'monospace', color: '#b45309', fontWeight: 500 }}>{r.nccField}</td>
-                <td style={cellBase}>
-                  <span style={{
-                    display: 'inline-block', padding: '2px 8px', borderRadius: 4, fontSize: '10px', fontWeight: 600,
-                    background: r.where === 'Chi tiết proxy' ? '#eff6ff' : r.where === 'Thông tin thêm' ? '#faf5ff' : '#f0fdf4',
-                    color: r.where === 'Chi tiết proxy' ? '#1e40af' : r.where === 'Thông tin thêm' ? '#7c3aed' : '#166534',
-                  }}>
-                    {r.where}
-                  </span>
-                </td>
-              </tr>
-            ))}
-            {rows.length === 0 && (
-              <tr>
-                <td colSpan={4} style={{ ...cellBase, textAlign: 'center', color: '#94a3b8', fontStyle: 'italic', padding: '16px 10px' }}>
-                  Vui lòng chọn "Format mỗi proxy" ở trên để xem bảng tóm tắt
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+        <pre style={{
+          margin: 0, padding: '12px 16px', fontSize: '12px', lineHeight: 1.7,
+          fontFamily: 'monospace', color: '#1e293b', background: '#fff',
+          whiteSpace: 'pre-wrap', wordBreak: 'break-word',
+        }}>
+          {JSON.stringify(dbPreview, null, 2)
+            .replace(/"← /g, '← "')
+            .replace(/"/g, '')
+            .replace(/← /g, '← ')
+          }
+        </pre>
       </Box>
     </Grid2>
   )
