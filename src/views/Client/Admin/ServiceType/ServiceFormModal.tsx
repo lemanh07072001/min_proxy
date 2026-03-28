@@ -23,7 +23,7 @@ import {
 } from '@mui/material'
 
 import { toast } from 'react-toastify'
-import { X, Plus, ChevronDown, AlertCircle, Eye, Shield, Wifi, Zap, Users, MapPin, RefreshCw, Clock, Info, ShoppingCart, CheckCircle, Globe, Tag, DollarSign } from 'lucide-react'
+import { X, Plus, ChevronDown, AlertCircle, Eye, Shield, Wifi, Zap, Users, MapPin, RefreshCw, Clock, Info, ShoppingCart, CheckCircle, Globe, Tag, DollarSign, Trash2 } from 'lucide-react'
 import { useForm, useWatch, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
@@ -565,6 +565,7 @@ export default function ServiceFormModal({ open, onClose, serviceId, initialData
   const [formErrors, setFormErrors] = useState<string[]>([])
   const [formSuccess, setFormSuccess] = useState('')
 
+  const [responseMappingRows, setResponseMappingRows] = useState<{ from: string; to: string; store: 'proxy' | 'metadata' }[]>([])
   const [purchaseOptions, setPurchaseOptions] = useState<PurchaseOption[]>([])
   const [allowCustomAuth, setAllowCustomAuth] = useState(false)
   const [renewable, setRenewable] = useState(false)
@@ -743,6 +744,11 @@ return { values: {}, errors: formattedErrors }
       setDiscountTiers(meta.discount_tiers || [])
       setCostDiscountTiers(meta.cost_discount_tiers || [])
       setQuantityTiers(meta.quantity_tiers || [])
+      setResponseMappingRows(
+        Array.isArray(meta.response_mapping)
+          ? meta.response_mapping.map((r: any) => ({ from: r.from || '', to: r.to || '', store: r.store || 'metadata' }))
+          : []
+      )
       if (meta.custom_fields && Array.isArray(meta.custom_fields)) {
         setPurchaseOptions(meta.custom_fields.map((f: any) => ({
           key: f.key || f.param || '',
@@ -793,6 +799,7 @@ return { values: {}, errors: formattedErrors }
       setMultiInputFields([{ key: '', value: '' }])
       setPriceFields([{ key: '', value: '', cost: '' }])
       setPurchaseOptions([])
+      setResponseMappingRows([])
       setAllowCustomAuth(false)
       setRenewable(false)
       setRenewalDuration('')
@@ -869,6 +876,9 @@ return { values: {}, errors: formattedErrors }
       cost_discount_tiers: pricingMode === 'per_unit' ? costDiscountTiers.filter(t => t.min && t.discount) : undefined,
       quantity_tiers: pricingMode === 'per_unit' && quantityTiers.length > 0
         ? quantityTiers.filter(t => t.min && t.discount) : undefined,
+      response_mapping: responseMappingRows.filter(r => r.from && r.to).length > 0
+        ? responseMappingRows.filter(r => r.from && r.to).map(r => ({ from: r.from, to: r.to, store: r.store }))
+        : undefined,
     }
 
     const submitData: any = {
@@ -1603,6 +1613,57 @@ return <Chip key={val} label={p?.label || val} size='small' />
                   control={control}
                   errors={errors}
                 />
+
+                {/* Lưu thêm dữ liệu từ nhà cung cấp — per sản phẩm */}
+                <Grid2 size={{ xs: 12 }}>
+                  <Box sx={{ mt: 1, p: 1.5, background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 1.5 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+                      <Box>
+                        <Typography variant='body2' fontWeight={600} sx={{ fontSize: 13 }}>
+                          Lưu thêm dữ liệu từ nhà cung cấp
+                        </Typography>
+                        <Typography variant='caption' color='text.secondary'>
+                          Khi mua sản phẩm này, hệ thống sẽ lấy thêm thông tin từ kết quả nhà cung cấp trả về. Để trống = dùng cấu hình mặc định của nhà cung cấp.
+                        </Typography>
+                      </Box>
+                      <Button size='small' startIcon={<Plus size={14} />} onClick={() => setResponseMappingRows(prev => [...prev, { from: '', to: '', store: 'metadata' }])}>
+                        Thêm
+                      </Button>
+                    </Box>
+                    {responseMappingRows.length === 0 && (
+                      <Typography variant='caption' color='text.secondary' sx={{ fontStyle: 'italic' }}>
+                        Chưa có. Bấm "Thêm" nếu sản phẩm này cần lưu thêm dữ liệu riêng (khác mặc định nhà cung cấp).
+                      </Typography>
+                    )}
+                    {responseMappingRows.map((row, i) => (
+                      <Box key={i} sx={{ display: 'flex', gap: 1, mb: 0.5, alignItems: 'center' }}>
+                        <CustomTextField
+                          size='small' value={row.from}
+                          onChange={e => { const next = [...responseMappingRows]; next[i] = { ...next[i], from: e.target.value }; setResponseMappingRows(next) }}
+                          placeholder='Trường NCC trả về (VD: data.region)'
+                          sx={{ flex: 1 }}
+                        />
+                        <CustomTextField
+                          size='small' value={row.to}
+                          onChange={e => { const next = [...responseMappingRows]; next[i] = { ...next[i], to: e.target.value }; setResponseMappingRows(next) }}
+                          placeholder='Tên lưu trong hệ thống (VD: region)'
+                          sx={{ flex: 1 }}
+                        />
+                        <CustomTextField
+                          size='small' select value={row.store}
+                          onChange={e => { const next = [...responseMappingRows]; next[i] = { ...next[i], store: e.target.value as any }; setResponseMappingRows(next) }}
+                          sx={{ minWidth: 220 }}
+                        >
+                          <MenuItem value='metadata'>Thông tin thêm (xem trong chi tiết)</MenuItem>
+                          <MenuItem value='proxy'>Gắn vào proxy (hiện cùng IP/Port)</MenuItem>
+                        </CustomTextField>
+                        <IconButton size='small' color='error' onClick={() => setResponseMappingRows(prev => prev.filter((_, idx) => idx !== i))}>
+                          <Trash2 size={14} />
+                        </IconButton>
+                      </Box>
+                    ))}
+                  </Box>
+                </Grid2>
               </Grid2>
               </CollapsibleSection>
 

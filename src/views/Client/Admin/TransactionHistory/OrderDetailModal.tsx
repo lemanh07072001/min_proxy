@@ -20,7 +20,10 @@ import {
   Zap,
   Globe,
   AlertTriangle,
-  RefreshCw
+  RefreshCw,
+  ChevronDown,
+  Database,
+  Eye
 } from 'lucide-react'
 
 import { useReactTable, getCoreRowModel, flexRender, getPaginationRowModel } from '@tanstack/react-table'
@@ -213,6 +216,26 @@ return p || '-'
         }
       },
       {
+        header: 'Thông tin thêm',
+        size: 140,
+        cell: ({ row }: { row: any }) => {
+          const meta = row.original.metadata
+          if (!meta || typeof meta !== 'object' || Object.keys(meta).length === 0) {
+            return <span style={{ color: '#cbd5e1', fontSize: '11px' }}>—</span>
+          }
+          return (
+            <div style={{ fontSize: '10px', lineHeight: 1.5 }}>
+              {Object.entries(meta).map(([k, v]) => (
+                <div key={k} title={`${k}: ${typeof v === 'object' ? JSON.stringify(v) : v}`} style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <span style={{ color: '#64748b' }}>{k}:</span>{' '}
+                  <span style={{ fontFamily: 'monospace', color: '#334155' }}>{typeof v === 'object' ? JSON.stringify(v) : String(v)}</span>
+                </div>
+              ))}
+            </div>
+          )
+        }
+      },
+      {
         header: 'Trạng thái', size: 100,
         cell: ({ row }: { row: any }) => {
           const s = row.original?.status
@@ -308,6 +331,9 @@ return p || '-'
             </div>
           </div>
 
+          {/* Order raw data — expandable */}
+          <OrderRawDataPanel order={order} />
+
           {/* Tabs — sticky */}
           <Tabs
             value={tabIndex}
@@ -387,13 +413,7 @@ return p || '-'
                         </thead>
                         <tbody>
                           {table.getRowModel().rows.map(row => (
-                            <tr key={row.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                              {row.getVisibleCells().map(cell => (
-                                <td key={cell.id} style={{ padding: '8px 10px' }}>
-                                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                                </td>
-                              ))}
-                            </tr>
+                            <ExpandableItemRow key={row.id} row={row} />
                           ))}
                         </tbody>
                       </table>
@@ -491,6 +511,277 @@ function CodeBlock({ value, color = '#93c5fd', open }: { value: string; color?: 
       }}>
         {formatted}
       </pre>
+    </div>
+  )
+}
+
+/** Panel hiển thị toàn bộ data nội bộ của Order — expandable */
+function OrderRawDataPanel({ order }: { order: any }) {
+  const [open, setOpen] = useState(false)
+  if (!order) return null
+
+  // Nhóm fields theo category
+  const pricing = [
+    { label: 'Giá bán/đơn vị', value: order.price_per_unit, fmt: 'vnd' },
+    { label: 'Doanh thu', value: order.total_amount, fmt: 'vnd' },
+    { label: 'Doanh thu thực', value: order.final_amount, fmt: 'vnd' },
+    { label: 'Giá vốn/đơn vị', value: order.cost_price, fmt: 'vnd' },
+    { label: 'Tổng vốn (dự kiến)', value: order.total_cost, fmt: 'vnd' },
+    { label: 'Tổng vốn (thực tế)', value: order.total_cost_final, fmt: 'vnd' },
+    { label: 'Đã hoàn tiền', value: order.refunded_amount, fmt: 'vnd' },
+    { label: 'Hoa hồng affiliate', value: order.affiliate_commission, fmt: 'vnd' },
+  ]
+
+  const details = [
+    { label: 'Mã đơn nội bộ', value: order.id },
+    { label: 'Mã đơn hàng', value: order.order_code },
+    { label: 'Mã khách hàng', value: order.user_id },
+    { label: 'Mã dịch vụ', value: order.type_service_id },
+    { label: 'Số lượng đặt', value: order.quantity },
+    { label: 'Số lượng đã giao', value: order.delivered_quantity },
+    { label: 'Thời hạn (ngày)', value: order.time },
+    { label: 'Loại proxy', value: order.proxy_type },
+    { label: 'Trạng thái (mã)', value: order.status },
+    { label: 'Số lần thử lại', value: order.retry },
+    { label: 'Nguồn đơn', value: order.source },
+    { label: 'Loại đơn', value: order.order_type },
+    { label: 'Đơn gốc (site mẹ)', value: order.parent_order_id },
+    { label: 'Mã giao dịch', value: order.transaction_id },
+  ]
+
+  const timestamps = [
+    { label: 'Mua lúc', value: order.buy_at },
+    { label: 'Hết hạn', value: order.expired_at },
+    { label: 'Tạo lúc', value: order.created_at },
+    { label: 'Cập nhật', value: order.updated_at },
+  ]
+
+  const fmtVND = (v: any) => v != null ? new Intl.NumberFormat('vi-VN').format(Number(v)) + 'đ' : '—'
+
+  return (
+    <div style={{ padding: '0 20px 8px' }}>
+      <button
+        onClick={() => setOpen(!open)}
+        style={{
+          display: 'flex', alignItems: 'center', gap: 6, width: '100%',
+          background: 'none', border: '1px solid #e2e8f0', borderRadius: 8,
+          padding: '6px 12px', cursor: 'pointer', fontSize: '12px', fontWeight: 600,
+          color: '#64748b', transition: 'all 0.15s',
+        }}
+      >
+        <Database size={14} />
+        Xem toàn bộ thông tin đơn hàng
+        <ChevronDown size={14} style={{ marginLeft: 'auto', transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+      </button>
+      {open && (
+        <div style={{ marginTop: 8, border: '1px solid #e2e8f0', borderRadius: 8, overflow: 'hidden' }}>
+          {/* Pricing */}
+          <div style={{ background: '#f0fdf4', padding: '6px 12px', fontSize: '11px', fontWeight: 700, color: '#166534', borderBottom: '1px solid #e2e8f0' }}>
+            💰 Tài chính
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 0 }}>
+            {pricing.map(f => (
+              <DataField key={f.label} label={f.label} value={f.fmt === 'vnd' ? fmtVND(f.value) : f.value} />
+            ))}
+          </div>
+
+          {/* Details */}
+          <div style={{ background: '#eff6ff', padding: '6px 12px', fontSize: '11px', fontWeight: 700, color: '#1e40af', borderTop: '1px solid #e2e8f0', borderBottom: '1px solid #e2e8f0' }}>
+            📋 Chi tiết đơn hàng
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 0 }}>
+            {details.map(f => (
+              <DataField key={f.label} label={f.label} value={f.value} />
+            ))}
+          </div>
+
+          {/* Timestamps */}
+          <div style={{ background: '#fefce8', padding: '6px 12px', fontSize: '11px', fontWeight: 700, color: '#854d0e', borderTop: '1px solid #e2e8f0', borderBottom: '1px solid #e2e8f0' }}>
+            🕐 Thời gian
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 0 }}>
+            {timestamps.map(f => (
+              <DataField key={f.label} label={f.label} value={f.value ? formatDateTimeLocal(f.value) : '—'} />
+            ))}
+          </div>
+
+          {/* Note + Metadata */}
+          {(order.note || order.metadata) && (
+            <>
+              <div style={{ background: '#faf5ff', padding: '6px 12px', fontSize: '11px', fontWeight: 700, color: '#6b21a8', borderTop: '1px solid #e2e8f0', borderBottom: '1px solid #e2e8f0' }}>
+                Ghi chú & thông tin thêm
+              </div>
+              <div style={{ padding: '8px 12px', fontSize: '12px' }}>
+                {order.note && <div style={{ color: '#dc2626', marginBottom: 4 }}><strong>Ghi chú:</strong> {order.note}</div>}
+                {order.metadata && typeof order.metadata === 'object' && (
+                  <div style={{ fontFamily: 'monospace', fontSize: '11px', color: '#475569' }}>
+                    {Object.entries(order.metadata).map(([k, v]) => (
+                      <div key={k}><span style={{ color: '#94a3b8' }}>{k}:</span> {String(v)}</div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function DataField({ label, value }: { label: string; value: any }) {
+  const display = value != null && value !== '' ? String(value) : '—'
+  return (
+    <div style={{ padding: '5px 12px', borderBottom: '1px solid #f1f5f9', fontSize: '11.5px' }}>
+      <span style={{ color: '#94a3b8' }}>{label}: </span>
+      <span style={{ fontWeight: 500, color: display === '—' ? '#cbd5e1' : '#1e293b', fontFamily: typeof value === 'number' ? 'monospace' : 'inherit' }}>{display}</span>
+    </div>
+  )
+}
+
+/** Expandable row cho OrderItem — click để xem chi tiết */
+function ExpandableItemRow({ row }: { row: any }) {
+  const [expanded, setExpanded] = useState(false)
+  const item = row.original
+  const colCount = row.getVisibleCells().length
+
+  return (
+    <>
+      <tr
+        style={{ borderBottom: expanded ? 'none' : '1px solid #f1f5f9', cursor: 'pointer', transition: 'background 0.15s' }}
+        onClick={(e) => {
+          // Không toggle khi click checkbox hoặc copy button
+          if ((e.target as HTMLElement).closest('input[type="checkbox"], button')) return
+          setExpanded(!expanded)
+        }}
+        onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = '#f8fafc' }}
+        onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = '' }}
+      >
+        {row.getVisibleCells().map((cell: any) => (
+          <td key={cell.id} style={{ padding: '8px 10px' }}>
+            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+          </td>
+        ))}
+      </tr>
+      {expanded && (
+        <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
+          <td colSpan={colCount} style={{ padding: 0 }}>
+            <ItemDetailPanel item={item} />
+          </td>
+        </tr>
+      )}
+    </>
+  )
+}
+
+const fmtValue = (v: any): string => {
+  if (v == null) return '—'
+  if (typeof v === 'object') { try { return JSON.stringify(v) } catch { return String(v) } }
+  return String(v)
+}
+
+/** Panel chi tiết OrderItem — hiện toàn bộ data dạng dễ đọc */
+function ItemDetailPanel({ item }: { item: any }) {
+  // Proxy object — label tiếng Việt
+  const PROXY_LABELS: Record<string, string> = {
+    http: 'HTTP proxy', socks5: 'SOCKS5 proxy', ip: 'IP', port: 'Port',
+    user: 'Username', pass: 'Password', loaiproxy: 'Giao thức',
+    HTTP: 'HTTP proxy', SOCK5: 'SOCKS5 proxy',
+  }
+  const proxy = item.proxy || item.proxys
+  const proxyFields = proxy && typeof proxy === 'object'
+    ? Object.entries(proxy).map(([k, v]) => ({ label: PROXY_LABELS[k] || k, rawKey: k, value: v }))
+    : []
+
+  // Metadata — giữ key gốc vì admin tự đặt tên
+  const meta = item.metadata && typeof item.metadata === 'object'
+    ? Object.entries(item.metadata).map(([k, v]) => ({ label: k, value: v }))
+    : []
+
+  // Provider fields
+  const providerFields = [
+    { label: 'API Key (NCC)', value: item.provider_key },
+    { label: 'Mã đơn (NCC)', value: item.provider_order_code },
+    { label: 'ID proxy (NCC)', value: item.provider_item_id },
+    { label: 'Đã gọi API', value: item.provider_called != null ? (item.provider_called ? 'Đã gọi' : 'Chưa gọi') : null },
+    { label: 'Gọi lúc', value: item.called_at },
+  ].filter(f => f.value != null && f.value !== '')
+
+  // General fields — tiếng Việt
+  const statusText = item.status === 0 ? 'Hoạt động' : item.status === 1 ? 'Đã tắt' : item.status === 2 ? 'Hết hạn' : `Mã ${item.status}`
+  const general = [
+    { label: 'Key hệ thống', value: item.key },
+    { label: 'Loại', value: item.type === 'ROTATING' ? 'Xoay (Rotating)' : item.type === 'STATIC' ? 'Tĩnh (Static)' : item.type },
+    { label: 'Giao thức', value: item.protocol?.toUpperCase() },
+    { label: 'IP version', value: item.ip_version?.toUpperCase() },
+    { label: 'Private', value: item.is_private != null ? (item.is_private ? 'Private' : 'Shared') : null },
+    { label: 'Trạng thái', value: item.status != null ? statusText : null },
+    { label: 'Tên proxy', value: item.name },
+    { label: 'Đơn hàng #', value: item.order_id },
+    { label: 'User #', value: item.user_id },
+    { label: 'Dịch vụ #', value: item.service_type_id },
+    { label: 'Lịch sử gia hạn #', value: item.renewal_history_id },
+    { label: 'Ngày kích hoạt', value: item.buy_at },
+    { label: 'Hết hạn', value: item.expired_at },
+  ].filter(f => f.value != null && f.value !== '')
+
+  const sectionStyle = (bg: string, color: string) => ({
+    background: bg, padding: '4px 12px', fontSize: '10px', fontWeight: 700 as const, color, borderBottom: '1px solid #e2e8f0',
+  })
+
+  const fieldStyle = { padding: '3px 12px', fontSize: '11px', borderBottom: '1px solid #f8fafc' as const }
+
+  return (
+    <div style={{ background: '#fafbfc', borderTop: '1px solid #e2e8f0' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: proxyFields.length > 0 ? '1fr 1fr' : '1fr', gap: 0 }}>
+        {/* Left: Proxy + Metadata */}
+        <div>
+          {proxyFields.length > 0 && (
+            <>
+              <div style={sectionStyle('#eff6ff', '#1e40af')}>Chi tiết proxy</div>
+              {proxyFields.map(f => (
+                <div key={f.rawKey} style={fieldStyle}>
+                  <span style={{ color: '#94a3b8' }}>{f.label}: </span>
+                  <span style={{ fontFamily: 'monospace', fontWeight: 500, color: '#1e293b' }}>{fmtValue(f.value)}</span>
+                </div>
+              ))}
+            </>
+          )}
+          {meta.length > 0 && (
+            <>
+              <div style={sectionStyle('#faf5ff', '#6b21a8')}>Thông tin thêm từ nhà cung cấp</div>
+              {meta.map(f => (
+                <div key={f.label} style={fieldStyle}>
+                  <span style={{ color: '#94a3b8' }}>{f.label}: </span>
+                  <span style={{ fontFamily: 'monospace', fontWeight: 500, color: '#1e293b' }}>{fmtValue(f.value)}</span>
+                </div>
+              ))}
+            </>
+          )}
+        </div>
+
+        {/* Right: Provider + General */}
+        <div style={{ borderLeft: proxyFields.length > 0 ? '1px solid #e2e8f0' : 'none' }}>
+          {providerFields.length > 0 && (
+            <>
+              <div style={sectionStyle('#fef3c7', '#92400e')}>Liên kết nhà cung cấp</div>
+              {providerFields.map(f => (
+                <div key={f.label} style={fieldStyle}>
+                  <span style={{ color: '#94a3b8' }}>{f.label}: </span>
+                  <span style={{ fontFamily: 'monospace', fontWeight: 500, color: '#1e293b' }}>{fmtValue(f.value)}</span>
+                </div>
+              ))}
+            </>
+          )}
+          <div style={sectionStyle('#f0fdf4', '#166534')}>Thông tin chung</div>
+          {general.map(f => (
+            <div key={f.label} style={fieldStyle}>
+              <span style={{ color: '#94a3b8' }}>{f.label}: </span>
+              <span style={{ fontFamily: 'monospace', fontWeight: 500, color: '#1e293b' }}>{fmtValue(f.value)}</span>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   )
 }

@@ -44,6 +44,12 @@ interface HttpErrorRule {
   message: string
 }
 
+interface ResponseMappingRule {
+  from: string
+  to: string
+  store: 'proxy' | 'metadata'
+}
+
 interface ApiConfigBuyResponse {
   type: string
   success_field: string
@@ -61,6 +67,7 @@ interface ApiConfigBuyResponse {
   proxy_fields_pass: string
   proxy_fields_type: string
   item_id_field: string
+  response_mapping: ResponseMappingRule[]
 }
 
 interface FetchProxiesConfig {
@@ -289,6 +296,7 @@ const defaultBuy: ApiConfigBuy = {
     proxy_fields_ip: '', proxy_fields_port: '',
     proxy_fields_user: '', proxy_fields_pass: '', proxy_fields_type: '',
     item_id_field: '',
+    response_mapping: [],
   }
 }
 
@@ -381,6 +389,9 @@ function parseBuySection(buy: any): ApiConfigBuy {
       proxy_fields_pass: proxyFields.pass || '',
       proxy_fields_type: proxyFields.type || '',
       item_id_field: buyResp.item_id_field || '',
+      response_mapping: Array.isArray(buyResp.response_mapping)
+        ? buyResp.response_mapping.map((r: any) => ({ from: r.from || '', to: r.to || '', store: r.store || 'metadata' }))
+        : [],
     }
   }
 }
@@ -554,6 +565,12 @@ function buildBuySection(buy: ApiConfigBuy): object | null {
   // Provider item ID field (VD: idproxy)
   if (buy.response.item_id_field) resp.item_id_field = buy.response.item_id_field
 
+  // Response mapping: lưu thêm field custom từ NCC response
+  const validMapping = buy.response.response_mapping.filter((r: ResponseMappingRule) => r.from && r.to)
+  if (validMapping.length > 0) {
+    resp.response_mapping = validMapping.map((r: ResponseMappingRule) => ({ from: r.from, to: r.to, store: r.store || 'metadata' }))
+  }
+
   // Deferred: order_id_field thay vì proxy data
   if (buy.response_mode === 'deferred') {
     result.response_mode = 'deferred'
@@ -704,6 +721,184 @@ function buildApiConfig(form: FormValues): object | null {
   }
 
   return Object.keys(config).length > 0 ? config : null
+}
+
+// ─── Response Mapping Table ─────────────────────────
+
+function ResponseMappingRow({ prefix, index, control, onRemove }: { prefix: string; index: number; control: Control<FormValues>; onRemove: () => void }) {
+  return (
+    <Box sx={{ display: 'flex', gap: 1, mb: 0.5, alignItems: 'center' }}>
+      <Controller name={`${prefix}.response.response_mapping.${index}.from` as any} control={control} render={({ field }) => (
+        <CustomTextField {...field} size='small' placeholder='Trường NCC trả về (VD: data.region)' sx={{ flex: 1 }} />
+      )} />
+      <Controller name={`${prefix}.response.response_mapping.${index}.to` as any} control={control} render={({ field }) => (
+        <CustomTextField {...field} size='small' placeholder='Tên lưu trong hệ thống (VD: region)' sx={{ flex: 1 }} />
+      )} />
+      <Controller name={`${prefix}.response.response_mapping.${index}.store` as any} control={control} render={({ field }) => (
+        <CustomTextField {...field} size='small' select sx={{ minWidth: 200 }}>
+          <MenuItem value='metadata'>Thông tin thêm (xem trong chi tiết)</MenuItem>
+          <MenuItem value='proxy'>Gắn vào proxy (hiện cùng IP/Port)</MenuItem>
+        </CustomTextField>
+      )} />
+      <IconButton size='small' onClick={onRemove} color='error'><Trash2 size={14} /></IconButton>
+    </Box>
+  )
+}
+
+function ResponseMappingTable({ prefix, control }: { prefix: string; control: Control<FormValues> }) {
+  const { fields, append, remove } = useFieldArray({ control, name: `${prefix}.response.response_mapping` as any })
+
+  return (
+    <Grid2 size={{ xs: 12 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1, mt: 1 }}>
+        <Typography variant='body2' fontWeight={600}>
+          Lưu thêm dữ liệu từ nhà cung cấp (mặc định)
+          <FieldHint text='Cấu hình mặc định cho tất cả sản phẩm của nhà cung cấp này. Từng sản phẩm có thể ghi đè riêng trong form sản phẩm.' />
+        </Typography>
+        <Button size='small' startIcon={<Plus size={14} />} onClick={() => append({ from: '', to: '', store: 'metadata' })}>
+          Thêm
+        </Button>
+      </Box>
+      {fields.length === 0 && (
+        <Typography variant='caption' color='text.secondary' sx={{ fontStyle: 'italic' }}>
+          Chưa có. Bấm "Thêm" nếu muốn lưu thêm dữ liệu từ kết quả nhà cung cấp trả về.
+        </Typography>
+      )}
+      {fields.map((f, i) => (
+        <ResponseMappingRow key={f.id} prefix={prefix} index={i} control={control} onRemove={() => remove(i)} />
+      ))}
+    </Grid2>
+  )
+}
+
+/**
+ * Bảng tóm tắt: khi mua proxy, hệ thống lưu gì, lấy từ đâu của NCC.
+ * Dùng tiếng Việt hoàn toàn, admin không cần biết code.
+ */
+function SavePreviewBox({ prefix, control }: { prefix: string; control: Control<FormValues> }) {
+  const proxyFormat = useWatch({ control, name: `${prefix}.response.proxy_format` as any })
+  const proxyKeyField = useWatch({ control, name: `${prefix}.response.proxy_key_field` as any })
+  const proxyFieldsIp = useWatch({ control, name: `${prefix}.response.proxy_fields_ip` as any })
+  const proxyFieldsPort = useWatch({ control, name: `${prefix}.response.proxy_fields_port` as any })
+  const proxyFieldsUser = useWatch({ control, name: `${prefix}.response.proxy_fields_user` as any })
+  const proxyFieldsPass = useWatch({ control, name: `${prefix}.response.proxy_fields_pass` as any })
+  const proxyFieldsType = useWatch({ control, name: `${prefix}.response.proxy_fields_type` as any })
+  const itemIdField = useWatch({ control, name: `${prefix}.response.item_id_field` as any })
+  const responseMode = useWatch({ control, name: `${prefix}.response_mode` as any })
+  const responseMapping: any[] = useWatch({ control, name: `${prefix}.response.response_mapping` as any }) || []
+
+  type Row = { label: string; desc: string; nccField: string; where: string }
+  const rows: Row[] = []
+
+  if (proxyFormat === 'key') {
+    rows.push({
+      label: 'API Key proxy',
+      desc: 'Key dùng để đổi IP hoặc truy xuất proxy xoay',
+      nccField: proxyKeyField || 'keyxoay',
+      where: 'Chi tiết proxy',
+    })
+  } else if (proxyFormat === 'string') {
+    const field = proxyKeyField || 'proxy'
+    rows.push(
+      { label: 'Proxy (chuỗi)', desc: 'Chuỗi đầy đủ ip:port:user:pass', nccField: `"${field}"`, where: 'Chi tiết proxy' },
+      { label: 'IP', desc: 'Tách từ chuỗi — phần 1', nccField: `"${field}" → phần 1`, where: 'Chi tiết proxy' },
+      { label: 'Port', desc: 'Tách từ chuỗi — phần 2', nccField: `"${field}" → phần 2`, where: 'Chi tiết proxy' },
+      { label: 'Username', desc: 'Tách từ chuỗi — phần 3', nccField: `"${field}" → phần 3`, where: 'Chi tiết proxy' },
+      { label: 'Password', desc: 'Tách từ chuỗi — phần 4', nccField: `"${field}" → phần 4`, where: 'Chi tiết proxy' },
+      { label: 'Giao thức', desc: 'HTTP / SOCKS5', nccField: 'Theo đơn hàng', where: 'Chi tiết proxy' },
+    )
+  } else if (proxyFormat === 'fields') {
+    rows.push(
+      { label: 'IP', desc: 'Địa chỉ IP proxy', nccField: `"${proxyFieldsIp || 'ip'}"`, where: 'Chi tiết proxy' },
+      { label: 'Port', desc: 'Cổng kết nối', nccField: `"${proxyFieldsPort || 'port'}"`, where: 'Chi tiết proxy' },
+      { label: 'Username', desc: 'Tài khoản xác thực', nccField: `"${proxyFieldsUser || 'username'}"`, where: 'Chi tiết proxy' },
+      { label: 'Password', desc: 'Mật khẩu xác thực', nccField: `"${proxyFieldsPass || 'password'}"`, where: 'Chi tiết proxy' },
+      { label: 'Giao thức', desc: 'HTTP / SOCKS5', nccField: proxyFieldsType ? `"${proxyFieldsType}"` : 'Theo đơn hàng', where: 'Chi tiết proxy' },
+    )
+  }
+
+  if (itemIdField) {
+    rows.push({
+      label: 'ID proxy (NCC)',
+      desc: 'Mã proxy phía nhà cung cấp — dùng khi gia hạn hoặc xoay IP',
+      nccField: `"${itemIdField}"`,
+      where: 'Nội bộ',
+    })
+  }
+
+  if (responseMode === 'deferred') {
+    rows.push({
+      label: 'Mã đơn (NCC)',
+      desc: 'Mã đơn phía nhà cung cấp — hệ thống dùng để poll lấy proxy',
+      nccField: 'Từ kết quả API mua',
+      where: 'Nội bộ',
+    })
+  }
+
+  // response_mapping custom
+  responseMapping.forEach(r => {
+    if (!r?.from || !r?.to) return
+    rows.push({
+      label: r.to,
+      desc: r.store === 'proxy' ? 'Hiển thị cùng chi tiết proxy' : 'Lưu kèm đơn hàng, xem trong chi tiết',
+      nccField: `"${r.from}"`,
+      where: r.store === 'proxy' ? 'Chi tiết proxy' : 'Thông tin thêm',
+    })
+  })
+
+  const cellBase = { padding: '6px 10px', fontSize: '12px', borderBottom: '1px solid #e8ecf1' }
+
+  return (
+    <Grid2 size={{ xs: 12 }}>
+      <Box sx={{ mt: 1.5, border: '1px solid #bae6fd', borderRadius: 1.5, overflow: 'hidden' }}>
+        {/* Header */}
+        <Box sx={{ background: '#f0f9ff', px: 1.5, py: 1, borderBottom: '1px solid #bae6fd' }}>
+          <Typography sx={{ fontSize: 13, fontWeight: 700, color: '#0369a1' }}>
+            Bảng ánh xạ dữ liệu: Hệ thống ← Nhà cung cấp
+          </Typography>
+          <Typography sx={{ fontSize: 11, color: '#64748b', mt: 0.3 }}>
+            Khi mua proxy, hệ thống tự động đọc kết quả nhà cung cấp trả về và lưu các trường sau.
+          </Typography>
+        </Box>
+
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ background: '#f8fafc' }}>
+              <th style={{ ...cellBase, textAlign: 'left', fontWeight: 700, color: '#334155', width: '20%' }}>Hệ thống lưu</th>
+              <th style={{ ...cellBase, textAlign: 'left', fontWeight: 700, color: '#334155', width: '32%' }}>Ý nghĩa</th>
+              <th style={{ ...cellBase, textAlign: 'left', fontWeight: 700, color: '#334155', width: '28%' }}>Trường từ nhà cung cấp</th>
+              <th style={{ ...cellBase, textAlign: 'left', fontWeight: 700, color: '#334155', width: '20%' }}>Lưu vào</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((r, i) => (
+              <tr key={i} style={{ background: i % 2 === 0 ? '#fff' : '#fafbfc' }}>
+                <td style={{ ...cellBase, fontWeight: 600, color: '#1e293b' }}>{r.label}</td>
+                <td style={{ ...cellBase, color: '#64748b', fontSize: '11px' }}>{r.desc}</td>
+                <td style={{ ...cellBase, fontFamily: 'monospace', color: '#b45309', fontWeight: 500 }}>{r.nccField}</td>
+                <td style={cellBase}>
+                  <span style={{
+                    display: 'inline-block', padding: '2px 8px', borderRadius: 4, fontSize: '10px', fontWeight: 600,
+                    background: r.where === 'Chi tiết proxy' ? '#eff6ff' : r.where === 'Thông tin thêm' ? '#faf5ff' : '#f0fdf4',
+                    color: r.where === 'Chi tiết proxy' ? '#1e40af' : r.where === 'Thông tin thêm' ? '#7c3aed' : '#166534',
+                  }}>
+                    {r.where}
+                  </span>
+                </td>
+              </tr>
+            ))}
+            {rows.length === 0 && (
+              <tr>
+                <td colSpan={4} style={{ ...cellBase, textAlign: 'center', color: '#94a3b8', fontStyle: 'italic', padding: '16px 10px' }}>
+                  Vui lòng chọn "Format mỗi proxy" ở trên để xem bảng tóm tắt
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </Box>
+    </Grid2>
+  )
 }
 
 // ─── Reusable Buy Config Section ────────────────────
@@ -1354,11 +1549,27 @@ function BuyConfigFields({
           )}
 
           {/* ═══════════════════════════════════════════════
-              SECTION 3/4: TUỲ CHỌN NÂNG CAO
+              SECTION: DỮ LIỆU LƯU TRỮ
+              ═══════════════════════════════════════════════ */}
+          <Grid2 size={{ xs: 12 }}>
+            <Box sx={{ ...sectionBox, background: '#f0f9ff', borderColor: '#93c5fd' }}>
+              {sectionTitle(
+                responseMode === 'deferred' ? '4. Dữ liệu hệ thống lưu khi mua' : '3. Dữ liệu hệ thống lưu khi mua',
+                'Bảng ánh xạ: hệ thống lấy gì từ kết quả nhà cung cấp trả về. Đây là cấu hình mặc định — từng sản phẩm có thể ghi đè riêng.'
+              )}
+              <Grid2 container spacing={2}>
+                <ResponseMappingTable prefix={prefix} control={control} />
+                <SavePreviewBox prefix={prefix} control={control} />
+              </Grid2>
+            </Box>
+          </Grid2>
+
+          {/* ═══════════════════════════════════════════════
+              SECTION: TUỲ CHỌN NÂNG CAO
               ═══════════════════════════════════════════════ */}
           <Grid2 size={{ xs: 12 }}>
             <Box sx={sectionBox}>
-              {sectionTitle(responseMode === 'deferred' ? '4. Tuỳ chọn nâng cao' : '3. Tuỳ chọn nâng cao')}
+              {sectionTitle(responseMode === 'deferred' ? '5. Tuỳ chọn nâng cao' : '4. Tuỳ chọn nâng cao')}
               <Grid2 container spacing={2}>
                 {/* User override */}
                 <Grid2 size={{ xs: 12, sm: 4 }}>
