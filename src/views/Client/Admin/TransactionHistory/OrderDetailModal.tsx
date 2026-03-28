@@ -739,10 +739,16 @@ function ItemDetailPanel({ item }: { item: any }) {
                 {fmtValue(r.val)}
               </span>
             </div>
-            {/* Dòng 2: field DB + nguồn NCC — nhỏ mờ bên dưới */}
-            <div style={{ display: 'flex', gap: 4, marginTop: 1, paddingLeft: 88 }}>
-              <span style={{ fontSize: '9px', color: '#b0b8c4', fontFamily: 'monospace' }}>{r.db}</span>
-              {r.from && <span style={{ fontSize: '9px', color: '#d97706', fontFamily: 'monospace' }}>← {r.from}</span>}
+            {/* Dòng 2: field DB + nguồn đối tác — nhỏ mờ bên dưới */}
+            <div style={{ display: 'flex', gap: 3, marginTop: 1, paddingLeft: 88, alignItems: 'center' }}>
+              <span style={{ fontSize: '9px', color: '#cbd5e1' }}>db:</span>
+              <span style={{ fontSize: '9px', color: '#94a3b8', fontFamily: 'monospace' }}>{r.db}</span>
+              {r.from && (
+                <>
+                  <span style={{ fontSize: '9px', color: '#cbd5e1', marginLeft: 4 }}>đối tác:</span>
+                  <span style={{ fontSize: '9px', color: '#d97706', fontFamily: 'monospace' }}>{r.from}</span>
+                </>
+              )}
             </div>
           </div>
         ))}
