@@ -653,7 +653,7 @@ function OrderRawDataPanel({ order }: { order: any }) {
   )
 }
 
-/** Expandable row cho OrderItem — click để xem chi tiết */
+/** Expandable row cho OrderItem — click row xem chi tiết bên dưới */
 function ExpandableItemRow({ row }: { row: any }) {
   const [expanded, setExpanded] = useState(false)
   const item = row.original
@@ -662,14 +662,17 @@ function ExpandableItemRow({ row }: { row: any }) {
   return (
     <>
       <tr
-        style={{ borderBottom: expanded ? 'none' : '1px solid #f1f5f9', cursor: 'pointer', transition: 'background 0.15s' }}
+        style={{
+          borderBottom: expanded ? 'none' : '1px solid #f1f5f9',
+          cursor: 'pointer', transition: 'background 0.15s',
+          background: expanded ? '#f0f4ff' : undefined,
+        }}
         onClick={(e) => {
-          // Không toggle khi click checkbox hoặc copy button
           if ((e.target as HTMLElement).closest('input[type="checkbox"], button')) return
           setExpanded(!expanded)
         }}
-        onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = '#f8fafc' }}
-        onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = '' }}
+        onMouseEnter={(e) => { if (!expanded) e.currentTarget.style.background = '#f8fafc' }}
+        onMouseLeave={(e) => { if (!expanded) e.currentTarget.style.background = '' }}
       >
         {row.getVisibleCells().map((cell: any) => (
           <td key={cell.id} style={{ padding: '8px 10px' }}>
@@ -678,9 +681,15 @@ function ExpandableItemRow({ row }: { row: any }) {
         ))}
       </tr>
       {expanded && (
-        <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
+        <tr style={{ borderBottom: '2px solid #e2e8f0' }}>
           <td colSpan={colCount} style={{ padding: 0 }}>
-            <ItemDetailPanel item={item} />
+            <div style={{ borderLeft: '3px solid #818cf8', background: '#f8f9ff', padding: '8px 0 4px' }}>
+              <div style={{ padding: '0 12px 6px', fontSize: '11px', fontWeight: 600, color: '#6366f1', display: 'flex', alignItems: 'center', gap: 6 }}>
+                <ChevronDown size={12} style={{ transform: 'rotate(180deg)' }} />
+                Chi tiết proxy — dữ liệu lưu trong hệ thống
+              </div>
+              <ItemDetailPanel item={item} />
+            </div>
           </td>
         </tr>
       )}
@@ -694,8 +703,7 @@ function ItemDetailPanel({ item }: { item: any }) {
   const proxy = item.proxy || item.proxys
   const sts = item.status === 0 ? 'Hoạt động' : item.status === 1 ? 'Đã tắt' : 'Hết hạn'
 
-  // Fallback: đơn cũ không có _field_origins → dùng tên field chuẩn làm nguồn đối tác
-  const FALLBACK_SRC: Record<string, string> = { ip: 'ip', port: 'port', user: 'username', pass: 'password', loaiproxy: 'protocol' }
+  const hasOrigins = Object.keys(origins).length > 0
 
   type R = { label: string; db: string; val: any; from?: string; group: 'proxy' | 'extra' | 'system' }
 
@@ -703,11 +711,11 @@ function ItemDetailPanel({ item }: { item: any }) {
   const extraRows: R[] = []
   const sysRows: R[] = []
 
-  // Proxy fields
+  // Proxy fields — chỉ hiện from khi có _field_origins thực tế, không đoán
   if (proxy && typeof proxy === 'object') {
     const names: Record<string, string> = { ip: 'IP', port: 'Port', user: 'Username', pass: 'Password', loaiproxy: 'Giao thức' }
     for (const k of ['ip', 'port', 'user', 'pass', 'loaiproxy']) {
-      if (proxy[k]) proxyRows.push({ label: names[k], db: `proxy.${k}`, val: proxy[k], from: origins[k] || FALLBACK_SRC[k], group: 'proxy' })
+      if (proxy[k]) proxyRows.push({ label: names[k], db: `proxy.${k}`, val: proxy[k], from: origins[k], group: 'proxy' })
     }
     Object.keys(proxy).filter(k => !['http','socks5','HTTP','SOCK5','ip','port','user','pass','loaiproxy'].includes(k)).forEach(k => {
       if (proxy[k]) proxyRows.push({ label: k, db: `proxy.${k}`, val: proxy[k], from: origins[k], group: 'proxy' })
@@ -728,9 +736,9 @@ function ItemDetailPanel({ item }: { item: any }) {
   if (item.status != null) sysRows.push({ label: 'Trạng thái', db: 'status', val: sts, group: 'system' })
   if (item.buy_at) sysRows.push({ label: 'Kích hoạt', db: 'buy_at', val: formatDateTimeLocal(item.buy_at), group: 'system' })
   if (item.expired_at) sysRows.push({ label: 'Hết hạn', db: 'expired_at', val: formatDateTimeLocal(item.expired_at), group: 'system' })
-  if (item.provider_key) sysRows.push({ label: 'Key NCC', db: 'provider_key', val: item.provider_key, from: origins['api_key'] || 'api_key', group: 'system' })
+  if (item.provider_key) sysRows.push({ label: 'Key NCC', db: 'provider_key', val: item.provider_key, from: origins['api_key'], group: 'system' })
   if (item.provider_order_code) sysRows.push({ label: 'Mã đơn NCC', db: 'provider_order_code', val: item.provider_order_code, group: 'system' })
-  if (item.provider_item_id) sysRows.push({ label: 'ID proxy NCC', db: 'provider_item_id', val: item.provider_item_id, from: origins['provider_item_id'] || 'id', group: 'system' })
+  if (item.provider_item_id) sysRows.push({ label: 'ID proxy NCC', db: 'provider_item_id', val: item.provider_item_id, from: origins['provider_item_id'], group: 'system' })
 
   const groupSep = (label: string, dotColor: string) => (
     <tr><td colSpan={4} style={{ padding: '6px 10px 3px', fontSize: '10px', fontWeight: 600, color: '#8895a7', borderBottom: 'none', background: '#fff' }}>
@@ -743,7 +751,14 @@ function ItemDetailPanel({ item }: { item: any }) {
       <td style={{ padding: '4px 10px', fontSize: '11px', color: '#7a8599', whiteSpace: 'nowrap', width: '15%' }}>{r.label}</td>
       <td style={{ padding: '4px 10px', fontSize: '13px', fontFamily: 'monospace', fontWeight: 600, color: '#1a202c', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '40%' }} title={fmtValue(r.val)}>{fmtValue(r.val)}</td>
       <td style={{ padding: '4px 10px', fontSize: '10px', fontFamily: 'monospace', color: '#b0b9c6', width: '22%' }}>{r.db}</td>
-      <td style={{ padding: '4px 10px', fontSize: '10px', fontFamily: 'monospace', color: '#c9a87c', width: '23%' }}>{r.from || <span style={{ color: '#dce1e8' }}>—</span>}</td>
+      <td style={{ padding: '4px 10px', fontSize: '10px', fontFamily: 'monospace', color: '#c9a87c', width: '23%' }}>
+        {r.from
+          ? r.from
+          : hasOrigins
+            ? <span style={{ color: '#dce1e8' }}>—</span>
+            : <span style={{ color: '#d0d5dd', fontStyle: 'italic', fontFamily: 'inherit' }}>chưa ghi nhận</span>
+        }
+      </td>
     </tr>
   ))
 
