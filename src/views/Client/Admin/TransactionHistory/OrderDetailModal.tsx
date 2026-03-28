@@ -732,37 +732,38 @@ function ItemDetailPanel({ item }: { item: any }) {
   if (item.provider_order_code) sysRows.push({ label: 'Mã đơn NCC', db: 'provider_order_code', val: item.provider_order_code, group: 'system' })
   if (item.provider_item_id) sysRows.push({ label: 'ID proxy NCC', db: 'provider_item_id', val: item.provider_item_id, from: origins['provider_item_id'] || 'id', group: 'system' })
 
-  const hd: React.CSSProperties = { padding: '6px 10px', fontSize: '10px', fontWeight: 600, color: '#78859b', textAlign: 'left', background: '#f8fafc', borderBottom: '1px solid #eef2f6', whiteSpace: 'nowrap', letterSpacing: '0.3px', textTransform: 'uppercase' }
-  const td: React.CSSProperties = { padding: '5px 10px', fontSize: '12px', borderBottom: '1px solid #f3f5f8' }
-  const groupHd = (label: string, bg: string, color: string) => (
-    <tr><td colSpan={4} style={{ padding: '4px 10px', fontSize: '10px', fontWeight: 700, color, background: bg, borderBottom: '1px solid #eef2f6', letterSpacing: '0.2px' }}>{label}</td></tr>
+  const groupSep = (label: string, dotColor: string) => (
+    <tr><td colSpan={4} style={{ padding: '6px 10px 3px', fontSize: '10px', fontWeight: 600, color: '#8895a7', borderBottom: 'none', background: '#fff' }}>
+      <span style={{ display: 'inline-block', width: 6, height: 6, borderRadius: '50%', background: dotColor, marginRight: 6, verticalAlign: 'middle' }} />
+      {label}
+    </td></tr>
   )
   const renderRows = (rows: R[]) => rows.map((r, i) => (
-    <tr key={`${r.db}-${i}`} style={{ background: i % 2 === 0 ? '#fff' : '#fafbfd' }}>
-      <td style={{ ...td, color: '#4a5568', fontWeight: 500, whiteSpace: 'nowrap' }}>{r.label}</td>
-      <td style={{ ...td, fontFamily: 'monospace', fontWeight: 600, color: '#2d3748', maxWidth: 240, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={fmtValue(r.val)}>{fmtValue(r.val)}</td>
-      <td style={{ ...td, fontFamily: 'monospace', fontSize: '11px', color: '#a0aec0' }}>{r.db}</td>
-      <td style={{ ...td, fontFamily: 'monospace', fontSize: '11px', color: '#c4956a' }}>{r.from || ''}</td>
+    <tr key={`${r.db}-${i}`} style={{ background: '#fff' }}>
+      <td style={{ padding: '4px 10px', fontSize: '11px', color: '#7a8599', whiteSpace: 'nowrap', width: '15%' }}>{r.label}</td>
+      <td style={{ padding: '4px 10px', fontSize: '13px', fontFamily: 'monospace', fontWeight: 600, color: '#1a202c', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '40%' }} title={fmtValue(r.val)}>{fmtValue(r.val)}</td>
+      <td style={{ padding: '4px 10px', fontSize: '10px', fontFamily: 'monospace', color: '#b0b9c6', width: '22%' }}>{r.db}</td>
+      <td style={{ padding: '4px 10px', fontSize: '10px', fontFamily: 'monospace', color: '#c9a87c', width: '23%' }}>{r.from || <span style={{ color: '#dce1e8' }}>—</span>}</td>
     </tr>
   ))
 
   return (
-    <div style={{ borderTop: '1px solid #eef2f6', background: '#fdfdfe', overflowX: 'auto' }}>
-      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+    <div style={{ borderTop: '1px solid #edf0f4', background: '#fff', overflowX: 'auto' }}>
+      <table style={{ width: '100%', borderCollapse: 'collapse', borderSpacing: 0 }}>
         <thead>
-          <tr>
-            <th style={hd}>Tên</th>
-            <th style={hd}>Giá trị</th>
-            <th style={{ ...hd, color: '#a0aec0' }}>Field hệ thống</th>
-            <th style={{ ...hd, color: '#c4956a' }}>Field đối tác</th>
+          <tr style={{ background: '#f7f9fb' }}>
+            <th style={{ padding: '5px 10px', fontSize: '9px', fontWeight: 600, color: '#9ca3af', textAlign: 'left', textTransform: 'uppercase', letterSpacing: '0.5px', borderBottom: '1px solid #edf0f4' }}>Tên</th>
+            <th style={{ padding: '5px 10px', fontSize: '9px', fontWeight: 600, color: '#6b7280', textAlign: 'left', textTransform: 'uppercase', letterSpacing: '0.5px', borderBottom: '1px solid #edf0f4' }}>Giá trị</th>
+            <th style={{ padding: '5px 10px', fontSize: '9px', fontWeight: 600, color: '#b0b9c6', textAlign: 'left', textTransform: 'uppercase', letterSpacing: '0.5px', borderBottom: '1px solid #edf0f4' }}>Field DB</th>
+            <th style={{ padding: '5px 10px', fontSize: '9px', fontWeight: 600, color: '#c9a87c', textAlign: 'left', textTransform: 'uppercase', letterSpacing: '0.5px', borderBottom: '1px solid #edf0f4' }}>Đối tác trả về</th>
           </tr>
         </thead>
         <tbody>
-          {proxyRows.length > 0 && groupHd('Proxy', '#eff6ff', '#3b82f6')}
+          {proxyRows.length > 0 && groupSep('Proxy', '#60a5fa')}
           {renderRows(proxyRows)}
-          {extraRows.length > 0 && groupHd('Thông tin thêm', '#faf5ff', '#8b5cf6')}
+          {extraRows.length > 0 && groupSep('Thông tin thêm', '#a78bfa')}
           {renderRows(extraRows)}
-          {sysRows.length > 0 && groupHd('Hệ thống', '#f0fdf4', '#22c55e')}
+          {sysRows.length > 0 && groupSep('Hệ thống', '#4ade80')}
           {renderRows(sysRows)}
         </tbody>
       </table>
