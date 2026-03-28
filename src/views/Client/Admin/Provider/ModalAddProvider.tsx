@@ -47,7 +47,7 @@ interface HttpErrorRule {
 interface ResponseMappingRule {
   from: string
   to: string
-  store: 'proxy' | 'metadata'
+  store: string
 }
 
 interface ApiConfigBuyResponse {
@@ -727,10 +727,11 @@ function buildApiConfig(form: FormValues): object | null {
 
 function ResponseMappingRow({ prefix, index, control, onRemove }: { prefix: string; index: number; control: Control<FormValues>; onRemove: () => void }) {
   const store = useWatch({ control, name: `${prefix}.response.response_mapping.${index}.store` as any })
-  const isCustomObj = store && !['proxy', 'metadata', 'root'].includes(store) && store !== ''
+  const presets = ['root', 'proxy', 'metadata']
+  const isCustom = !!store && !presets.includes(store)
 
   return (
-    <Box sx={{ display: 'flex', gap: 1, mb: 0.5, alignItems: 'center', flexWrap: 'wrap' }}>
+    <Box sx={{ display: 'flex', gap: 1, mb: 0.5, alignItems: 'center' }}>
       <Controller name={`${prefix}.response.response_mapping.${index}.from` as any} control={control} render={({ field }) => (
         <CustomTextField {...field} size='small' placeholder='Trường NCC (VD: data.region)' sx={{ flex: 1, minWidth: 150 }} />
       )} />
@@ -738,29 +739,29 @@ function ResponseMappingRow({ prefix, index, control, onRemove }: { prefix: stri
         <CustomTextField {...field} size='small' placeholder='Tên field lưu (VD: region)' sx={{ flex: 1, minWidth: 120 }} />
       )} />
       <Controller name={`${prefix}.response.response_mapping.${index}.store` as any} control={control} render={({ field }) => (
-        <CustomTextField
-          {...field}
-          size='small'
-          select={!isCustomObj}
-          sx={{ minWidth: 180 }}
-          placeholder={isCustomObj ? 'Tên object...' : undefined}
-          helperText={isCustomObj ? `Lưu vào: ${store}.${'{field}'}` : undefined}
-        >
-          {!isCustomObj && [
-            <MenuItem key='root' value='root'>Cấp 1 (flat trên order_item)</MenuItem>,
-            <MenuItem key='proxy' value='proxy'>Trong object proxy</MenuItem>,
-            <MenuItem key='metadata' value='metadata'>Trong object metadata</MenuItem>,
-            <MenuItem key='_custom' value='_custom'>Object tự đặt tên...</MenuItem>,
-          ]}
-        </CustomTextField>
+        <>
+          <CustomTextField
+            size='small' select
+            value={isCustom ? '_custom' : (store || 'metadata')}
+            onChange={e => { const v = e.target.value; field.onChange(v === '_custom' ? '' : v) }}
+            sx={{ minWidth: 180 }}
+          >
+            <MenuItem value='root'>Cấp 1 (flat)</MenuItem>
+            <MenuItem value='proxy'>Trong proxy</MenuItem>
+            <MenuItem value='metadata'>Trong metadata</MenuItem>
+            <MenuItem value='_custom'>Object tự đặt tên...</MenuItem>
+          </CustomTextField>
+          {(isCustom || store === '') && (
+            <CustomTextField
+              size='small'
+              value={isCustom ? store : ''}
+              onChange={e => field.onChange(e.target.value || '')}
+              placeholder='Tên object (VD: extra_info)'
+              sx={{ minWidth: 140 }}
+            />
+          )}
+        </>
       )} />
-      {store === '_custom' && (
-        <Controller name={`${prefix}.response.response_mapping.${index}.store` as any} control={control} render={({ field }) => (
-          <CustomTextField {...field} size='small' placeholder='Tên object (VD: extra_info)' sx={{ minWidth: 140 }}
-            onChange={e => { const v = e.target.value; if (v && v !== '_custom') field.onChange(v) }}
-          />
-        )} />
-      )}
       <IconButton size='small' onClick={onRemove} color='error'><Trash2 size={14} /></IconButton>
     </Box>
   )

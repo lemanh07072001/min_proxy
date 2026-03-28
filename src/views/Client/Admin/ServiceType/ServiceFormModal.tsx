@@ -565,7 +565,7 @@ export default function ServiceFormModal({ open, onClose, serviceId, initialData
   const [formErrors, setFormErrors] = useState<string[]>([])
   const [formSuccess, setFormSuccess] = useState('')
 
-  const [responseMappingRows, setResponseMappingRows] = useState<{ from: string; to: string; store: 'proxy' | 'metadata' }[]>([])
+  const [responseMappingRows, setResponseMappingRows] = useState<{ from: string; to: string; store: string }[]>([])
   const [purchaseOptions, setPurchaseOptions] = useState<PurchaseOption[]>([])
   const [allowCustomAuth, setAllowCustomAuth] = useState(false)
   const [renewable, setRenewable] = useState(false)
