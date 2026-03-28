@@ -943,15 +943,32 @@ return {
                         </td>
                       </tr>
                     ) : (
-                      table.getRowModel().rows.map(row => (
-                        <tr className='table-row' key={row.id}>
-                          {row.getVisibleCells().map(cell => (
-                            <td className='table-cell' key={cell.id}>
-                              {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                            </td>
-                          ))}
-                        </tr>
-                      ))
+                      table.getRowModel().rows.map(row => {
+                        const isActive = selectedOrder?.order?.id === row.original.id && orderDetailOpen
+                        return (
+                          <tr
+                            className='table-row'
+                            key={row.id}
+                            onClick={(e) => {
+                              if ((e.target as HTMLElement).closest('button, a, input, .MuiIconButton-root')) return
+                              handleOpenDetail(row.original)
+                            }}
+                            style={{
+                              cursor: 'pointer',
+                              background: isActive ? '#eef2ff' : undefined,
+                              transition: 'background 0.15s',
+                            }}
+                            onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = '#f8fafc' }}
+                            onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = '' }}
+                          >
+                            {row.getVisibleCells().map(cell => (
+                              <td className='table-cell' key={cell.id}>
+                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                              </td>
+                            ))}
+                          </tr>
+                        )
+                      })
                     )}
                   </tbody>
                 </table>
