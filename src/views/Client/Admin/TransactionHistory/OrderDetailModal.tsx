@@ -774,11 +774,8 @@ function ItemDetailPanel({ item }: { item: any }) {
           </tr>
         </thead>
         <tbody>
-          {proxyRows.length > 0 && groupSep('Proxy', '#60a5fa')}
           {renderRows(proxyRows)}
-          {extraRows.length > 0 && groupSep('Thông tin thêm', '#a78bfa')}
           {renderRows(extraRows)}
-          {sysRows.length > 0 && groupSep('Hệ thống', '#4ade80')}
           {renderRows(sysRows)}
         </tbody>
       </table>
