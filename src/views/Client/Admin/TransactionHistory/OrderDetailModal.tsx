@@ -522,48 +522,61 @@ const fmtValue = (v: any): string => {
   return String(v)
 }
 
-/** Panel hiển thị toàn bộ data nội bộ của Order — expandable */
+/** Panel thông tin nội bộ đơn hàng — expandable, trực quan */
 function OrderRawDataPanel({ order }: { order: any }) {
   const [open, setOpen] = useState(false)
   if (!order) return null
 
-  // Nhóm fields theo category
-  const pricing = [
-    { label: 'Giá bán/đơn vị', value: order.price_per_unit, fmt: 'vnd' },
-    { label: 'Doanh thu', value: order.total_amount, fmt: 'vnd' },
-    { label: 'Doanh thu thực', value: order.final_amount, fmt: 'vnd' },
-    { label: 'Giá vốn/đơn vị', value: order.cost_price, fmt: 'vnd' },
-    { label: 'Tổng vốn (dự kiến)', value: order.total_cost, fmt: 'vnd' },
-    { label: 'Tổng vốn (thực tế)', value: order.total_cost_final, fmt: 'vnd' },
-    { label: 'Đã hoàn tiền', value: order.refunded_amount, fmt: 'vnd' },
-    { label: 'Hoa hồng affiliate', value: order.affiliate_commission, fmt: 'vnd' },
-  ]
+  const fmtVND = (v: any) => v != null && v !== 0 && v !== '0' ? new Intl.NumberFormat('vi-VN').format(Number(v)) + 'đ' : null
+  const statusLabel = ORDER_STATUS_LABELS_ADMIN[String(order.status)] || `Mã ${order.status}`
+  const statusColor = ORDER_STATUS_COLORS_ADMIN[String(order.status) as keyof typeof ORDER_STATUS_COLORS_ADMIN] || 'default'
 
-  const details = [
-    { label: 'Mã đơn nội bộ', value: order.id },
-    { label: 'Mã đơn hàng', value: order.order_code },
-    { label: 'Mã khách hàng', value: order.user_id },
-    { label: 'Mã dịch vụ', value: order.type_service_id },
-    { label: 'Số lượng đặt', value: order.quantity },
-    { label: 'Số lượng đã giao', value: order.delivered_quantity },
-    { label: 'Thời hạn (ngày)', value: order.time },
-    { label: 'Loại proxy', value: order.proxy_type },
-    { label: 'Trạng thái (mã)', value: order.status },
-    { label: 'Số lần thử lại', value: order.retry },
-    { label: 'Nguồn đơn', value: order.source },
-    { label: 'Loại đơn', value: order.order_type },
-    { label: 'Đơn gốc (site mẹ)', value: order.parent_order_id },
-    { label: 'Mã giao dịch', value: order.transaction_id },
+  // Card data — chỉ hiện field có giá trị
+  type CardItem = { label: string; value: string | React.ReactNode; mono?: boolean; highlight?: string }
+  const cards: { title: string; bg: string; color: string; items: CardItem[] }[] = [
+    {
+      title: 'Tài chính', bg: '#f0fdf4', color: '#166534',
+      items: [
+        { label: 'Giá bán', value: fmtVND(order.price_per_unit), mono: true },
+        { label: 'Doanh thu', value: fmtVND(order.total_amount), mono: true, highlight: '#16a34a' },
+        { label: 'Giá vốn', value: fmtVND(order.cost_price), mono: true },
+        { label: 'Tổng vốn', value: fmtVND(order.total_cost), mono: true },
+        ...(order.refunded_amount ? [{ label: 'Đã hoàn', value: fmtVND(order.refunded_amount)!, mono: true, highlight: '#dc2626' }] : []),
+        ...(order.affiliate_commission ? [{ label: 'Hoa hồng', value: fmtVND(order.affiliate_commission)!, mono: true }] : []),
+      ].filter(i => i.value) as CardItem[],
+    },
+    {
+      title: 'Thông tin đơn', bg: '#eff6ff', color: '#1e40af',
+      items: [
+        { label: 'Trạng thái', value: (<Chip label={statusLabel} size='small' color={statusColor as any} />) },
+        { label: 'Số lượng', value: order.delivered_quantity != null && order.delivered_quantity !== order.quantity
+            ? `${order.delivered_quantity}/${order.quantity}` : String(order.quantity || 0) },
+        { label: 'Thời hạn', value: order.time ? `${order.time} ngày` : null },
+        { label: 'Loại', value: order.proxy_type },
+        ...(order.retry ? [{ label: 'Thử lại', value: `${order.retry} lần` }] : []),
+        ...(order.source ? [{ label: 'Nguồn', value: String(order.source) }] : []),
+        ...(order.parent_order_id ? [{ label: 'Đơn gốc (site mẹ)', value: `#${order.parent_order_id}`, mono: true }] : []),
+      ].filter(i => i.value) as CardItem[],
+    },
+    {
+      title: 'Thời gian', bg: '#fefce8', color: '#854d0e',
+      items: [
+        { label: 'Kích hoạt', value: order.buy_at ? formatDateTimeLocal(order.buy_at) : null },
+        { label: 'Hết hạn', value: order.expired_at ? formatDateTimeLocal(order.expired_at) : null },
+        { label: 'Tạo lúc', value: order.created_at ? formatDateTimeLocal(order.created_at) : null },
+      ].filter(i => i.value) as CardItem[],
+    },
+    {
+      title: 'Mã nội bộ', bg: '#f8fafc', color: '#475569',
+      items: [
+        { label: 'Order ID', value: String(order.id), mono: true },
+        { label: 'Order code', value: order.order_code, mono: true },
+        { label: 'User ID', value: String(order.user_id), mono: true },
+        ...(order.type_service_id ? [{ label: 'Service ID', value: String(order.type_service_id), mono: true }] : []),
+        ...(order.transaction_id ? [{ label: 'Transaction', value: String(order.transaction_id), mono: true }] : []),
+      ].filter(i => i.value) as CardItem[],
+    },
   ]
-
-  const timestamps = [
-    { label: 'Mua lúc', value: order.buy_at },
-    { label: 'Hết hạn', value: order.expired_at },
-    { label: 'Tạo lúc', value: order.created_at },
-    { label: 'Cập nhật', value: order.updated_at },
-  ]
-
-  const fmtVND = (v: any) => v != null ? new Intl.NumberFormat('vi-VN').format(Number(v)) + 'đ' : '—'
 
   return (
     <div style={{ padding: '0 20px 8px' }}>
@@ -571,77 +584,46 @@ function OrderRawDataPanel({ order }: { order: any }) {
         onClick={() => setOpen(!open)}
         style={{
           display: 'flex', alignItems: 'center', gap: 6, width: '100%',
-          background: 'none', border: '1px solid #e2e8f0', borderRadius: 8,
-          padding: '6px 12px', cursor: 'pointer', fontSize: '12px', fontWeight: 600,
-          color: '#64748b', transition: 'all 0.15s',
+          background: open ? '#f8fafc' : 'none', border: '1px solid #e2e8f0', borderRadius: 8,
+          padding: '8px 14px', cursor: 'pointer', fontSize: '12px', fontWeight: 600,
+          color: '#475569',
         }}
       >
-        <Database size={14} />
-        Xem toàn bộ thông tin đơn hàng
+        <Eye size={14} />
+        Thông tin chi tiết đơn hàng
         <ChevronDown size={14} style={{ marginLeft: 'auto', transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
       </button>
       {open && (
-        <div style={{ marginTop: 8, border: '1px solid #e2e8f0', borderRadius: 8, overflow: 'hidden' }}>
-          {/* Pricing */}
-          <div style={{ background: '#f0fdf4', padding: '6px 12px', fontSize: '11px', fontWeight: 700, color: '#166534', borderBottom: '1px solid #e2e8f0' }}>
-            💰 Tài chính
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 0 }}>
-            {pricing.map(f => (
-              <DataField key={f.label} label={f.label} value={f.fmt === 'vnd' ? fmtVND(f.value) : f.value} />
-            ))}
-          </div>
-
-          {/* Details */}
-          <div style={{ background: '#eff6ff', padding: '6px 12px', fontSize: '11px', fontWeight: 700, color: '#1e40af', borderTop: '1px solid #e2e8f0', borderBottom: '1px solid #e2e8f0' }}>
-            📋 Chi tiết đơn hàng
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 0 }}>
-            {details.map(f => (
-              <DataField key={f.label} label={f.label} value={f.value} />
-            ))}
-          </div>
-
-          {/* Timestamps */}
-          <div style={{ background: '#fefce8', padding: '6px 12px', fontSize: '11px', fontWeight: 700, color: '#854d0e', borderTop: '1px solid #e2e8f0', borderBottom: '1px solid #e2e8f0' }}>
-            🕐 Thời gian
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 0 }}>
-            {timestamps.map(f => (
-              <DataField key={f.label} label={f.label} value={f.value ? formatDateTimeLocal(f.value) : '—'} />
-            ))}
-          </div>
-
-          {/* Note + Metadata */}
-          {(order.note || order.metadata) && (
-            <>
-              <div style={{ background: '#faf5ff', padding: '6px 12px', fontSize: '11px', fontWeight: 700, color: '#6b21a8', borderTop: '1px solid #e2e8f0', borderBottom: '1px solid #e2e8f0' }}>
-                Ghi chú & thông tin thêm
+        <div style={{ marginTop: 8, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+          {cards.map(card => (
+            <div key={card.title} style={{ border: '1px solid #e2e8f0', borderRadius: 8, overflow: 'hidden' }}>
+              <div style={{ background: card.bg, padding: '5px 12px', fontSize: '11px', fontWeight: 700, color: card.color, borderBottom: '1px solid #e2e8f0' }}>
+                {card.title}
               </div>
-              <div style={{ padding: '8px 12px', fontSize: '12px' }}>
-                {order.note && <div style={{ color: '#dc2626', marginBottom: 4 }}><strong>Ghi chú:</strong> {order.note}</div>}
-                {order.metadata && typeof order.metadata === 'object' && (
-                  <div style={{ fontFamily: 'monospace', fontSize: '11px', color: '#475569' }}>
-                    {Object.entries(order.metadata).map(([k, v]) => (
-                      <div key={k}><span style={{ color: '#94a3b8' }}>{k}:</span> {fmtValue(v)}</div>
-                    ))}
+              <div style={{ padding: '6px 0' }}>
+                {card.items.map((item, i) => (
+                  <div key={i} style={{ padding: '3px 12px', fontSize: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ color: '#94a3b8', fontSize: '11px' }}>{item.label}</span>
+                    <span style={{
+                      fontWeight: 600, color: item.highlight || '#1e293b',
+                      fontFamily: item.mono ? 'monospace' : 'inherit', fontSize: '12px',
+                    }}>
+                      {item.value}
+                    </span>
                   </div>
-                )}
+                ))}
               </div>
-            </>
+            </div>
+          ))}
+
+          {/* Ghi chú — full width */}
+          {order.note && (
+            <div style={{ gridColumn: '1 / -1', border: '1px solid #fecaca', borderRadius: 8, padding: '8px 12px', background: '#fef2f2', fontSize: '12px', color: '#991b1b' }}>
+              <strong>Ghi chú:</strong> {order.note}
+            </div>
           )}
         </div>
       )}
-    </div>
-  )
-}
-
-function DataField({ label, value }: { label: string; value: any }) {
-  const display = value != null && value !== '' ? fmtValue(value) : '—'
-  return (
-    <div style={{ padding: '5px 12px', borderBottom: '1px solid #f1f5f9', fontSize: '11.5px' }}>
-      <span style={{ color: '#94a3b8' }}>{label}: </span>
-      <span style={{ fontWeight: 500, color: display === '—' ? '#cbd5e1' : '#1e293b', fontFamily: typeof value === 'number' ? 'monospace' : 'inherit' }}>{display}</span>
     </div>
   )
 }
