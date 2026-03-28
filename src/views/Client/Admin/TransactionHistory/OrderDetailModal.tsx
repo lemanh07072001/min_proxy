@@ -705,68 +705,58 @@ function ItemDetailPanel({ item }: { item: any }) {
 
   const hasOrigins = Object.keys(origins).length > 0
 
-  type R = { label: string; db: string; val: any; from?: string }
+  type R = { db: string; val: any; from?: string }
 
   const rows: R[] = []
 
   // Proxy fields
   if (proxy && typeof proxy === 'object') {
-    const names: Record<string, string> = { ip: 'IP', port: 'Port', user: 'Username', pass: 'Password', loaiproxy: 'Giao thức' }
     for (const k of ['ip', 'port', 'user', 'pass', 'loaiproxy']) {
-      if (proxy[k]) rows.push({ label: names[k], db: `proxy.${k}`, val: proxy[k], from: origins[k] })
+      if (proxy[k]) rows.push({ db: `proxy.${k}`, val: proxy[k], from: origins[k] })
     }
     Object.keys(proxy).filter(k => !['http','socks5','HTTP','SOCK5','ip','port','user','pass','loaiproxy'].includes(k)).forEach(k => {
-      if (proxy[k]) rows.push({ label: k, db: `proxy.${k}`, val: proxy[k], from: origins[k] })
+      if (proxy[k]) rows.push({ db: `proxy.${k}`, val: proxy[k], from: origins[k] })
     })
   }
 
   // Metadata (bỏ _field_origins)
   if (item.metadata && typeof item.metadata === 'object') {
     Object.entries(item.metadata).forEach(([k, v]) => {
-      if (k !== '_field_origins') rows.push({ label: k, db: `metadata.${k}`, val: v, from: origins[k] })
+      if (k !== '_field_origins') rows.push({ db: `metadata.${k}`, val: v, from: origins[k] })
     })
   }
 
   // System + provider
-  if (item.key) rows.push({ label: 'Key', db: 'key', val: item.key })
-  if (item.type) rows.push({ label: 'Loại', db: 'type', val: item.type })
-  if (item.protocol) rows.push({ label: 'Protocol', db: 'protocol', val: item.protocol.toUpperCase() })
-  if (item.status != null) rows.push({ label: 'Trạng thái', db: 'status', val: sts })
-  if (item.buy_at) rows.push({ label: 'Kích hoạt', db: 'buy_at', val: formatDateTimeLocal(item.buy_at) })
-  if (item.expired_at) rows.push({ label: 'Hết hạn', db: 'expired_at', val: formatDateTimeLocal(item.expired_at) })
-  if (item.provider_key) rows.push({ label: 'Key NCC', db: 'provider_key', val: item.provider_key, from: origins['api_key'] })
-  if (item.provider_order_code) rows.push({ label: 'Mã đơn NCC', db: 'provider_order_code', val: item.provider_order_code })
-  if (item.provider_item_id) rows.push({ label: 'ID proxy NCC', db: 'provider_item_id', val: item.provider_item_id, from: origins['provider_item_id'] })
+  if (item.key) rows.push({ db: 'key', val: item.key })
+  if (item.type) rows.push({ db: 'type', val: item.type })
+  if (item.protocol) rows.push({ db: 'protocol', val: item.protocol.toUpperCase() })
+  if (item.status != null) rows.push({ db: 'status', val: sts })
+  if (item.buy_at) rows.push({ db: 'buy_at', val: formatDateTimeLocal(item.buy_at) })
+  if (item.expired_at) rows.push({ db: 'expired_at', val: formatDateTimeLocal(item.expired_at) })
+  if (item.provider_key) rows.push({ db: 'provider_key', val: item.provider_key, from: origins['api_key'] })
+  if (item.provider_order_code) rows.push({ db: 'provider_order_code', val: item.provider_order_code })
+  if (item.provider_item_id) rows.push({ db: 'provider_item_id', val: item.provider_item_id, from: origins['provider_item_id'] })
 
-  const renderRows = (rows: R[]) => rows.map((r, i) => (
-    <tr key={`${r.db}-${i}`} style={{ background: '#fff' }}>
-      <td style={{ padding: '4px 10px', fontSize: '11px', color: '#7a8599', whiteSpace: 'nowrap', width: '15%' }}>{r.label}</td>
-      <td style={{ padding: '4px 10px', fontSize: '13px', fontFamily: 'monospace', fontWeight: 600, color: '#1a202c', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '40%' }} title={fmtValue(r.val)}>{fmtValue(r.val)}</td>
-      <td style={{ padding: '4px 10px', fontSize: '10px', fontFamily: 'monospace', color: '#b0b9c6', width: '22%' }}>{r.db}</td>
-      <td style={{ padding: '4px 10px', fontSize: '10px', fontFamily: 'monospace', color: '#c9a87c', width: '23%' }}>
-        {r.from
-          ? r.from
-          : hasOrigins
-            ? <span style={{ color: '#dce1e8' }}>—</span>
-            : <span style={{ color: '#d0d5dd', fontStyle: 'italic', fontFamily: 'inherit' }}>chưa ghi nhận</span>
-        }
-      </td>
-    </tr>
-  ))
+  const th: React.CSSProperties = { padding: '5px 10px', fontSize: '9px', fontWeight: 600, textAlign: 'left', textTransform: 'uppercase', letterSpacing: '0.5px', borderBottom: '1px solid #edf0f4' }
 
   return (
     <div style={{ borderTop: '1px solid #edf0f4', background: '#fff', overflowX: 'auto' }}>
-      <table style={{ width: '100%', borderCollapse: 'collapse', borderSpacing: 0 }}>
+      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
         <thead>
           <tr style={{ background: '#f7f9fb' }}>
-            <th style={{ padding: '5px 10px', fontSize: '9px', fontWeight: 600, color: '#9ca3af', textAlign: 'left', textTransform: 'uppercase', letterSpacing: '0.5px', borderBottom: '1px solid #edf0f4' }}>Tên</th>
-            <th style={{ padding: '5px 10px', fontSize: '9px', fontWeight: 600, color: '#6b7280', textAlign: 'left', textTransform: 'uppercase', letterSpacing: '0.5px', borderBottom: '1px solid #edf0f4' }}>Giá trị</th>
-            <th style={{ padding: '5px 10px', fontSize: '9px', fontWeight: 600, color: '#b0b9c6', textAlign: 'left', textTransform: 'uppercase', letterSpacing: '0.5px', borderBottom: '1px solid #edf0f4' }}>Field DB</th>
-            <th style={{ padding: '5px 10px', fontSize: '9px', fontWeight: 600, color: '#c9a87c', textAlign: 'left', textTransform: 'uppercase', letterSpacing: '0.5px', borderBottom: '1px solid #edf0f4' }}>Đối tác trả về</th>
+            <th style={{ ...th, color: '#6b7280', width: '35%' }}>Field hệ thống</th>
+            <th style={{ ...th, color: '#6b7280', width: '40%' }}>Giá trị</th>
+            <th style={{ ...th, color: '#c9a87c', width: '25%' }}>Field đối tác</th>
           </tr>
         </thead>
         <tbody>
-          {renderRows(rows)}
+          {rows.map((r, i) => (
+            <tr key={`${r.db}-${i}`} style={{ background: i % 2 === 0 ? '#fff' : '#fafbfd' }}>
+              <td style={{ padding: '5px 10px', fontSize: '12px', fontFamily: 'monospace', color: '#4a5568' }}>{r.db}</td>
+              <td style={{ padding: '5px 10px', fontSize: '12px', fontFamily: 'monospace', fontWeight: 600, color: '#1a202c', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 280 }} title={fmtValue(r.val)}>{fmtValue(r.val)}</td>
+              <td style={{ padding: '5px 10px', fontSize: '12px', fontFamily: 'monospace', color: '#c9a87c' }}>{r.from || <span style={{ color: '#e2e5ea' }}>—</span>}</td>
+            </tr>
+          ))}
         </tbody>
       </table>
     </div>
