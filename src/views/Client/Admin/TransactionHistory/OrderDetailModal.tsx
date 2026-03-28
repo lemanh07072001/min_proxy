@@ -216,21 +216,46 @@ return p || '-'
         }
       },
       {
-        header: 'Thông tin thêm',
-        size: 140,
+        header: 'Dữ liệu lưu ← Đối tác',
+        size: 200,
         cell: ({ row }: { row: any }) => {
-          const meta = row.original.metadata
-          if (!meta || typeof meta !== 'object' || Object.keys(meta).length === 0) {
-            return <span style={{ color: '#cbd5e1', fontSize: '11px' }}>—</span>
+          const proxy = row.original.proxy || row.original.proxys
+          const origins: Record<string, string> = row.original.metadata?._field_origins || {}
+          const meta = row.original.metadata || {}
+          // Build compact mapping display
+          const mappings: { sys: string; val: string; src: string }[] = []
+
+          // Proxy fields
+          if (proxy && typeof proxy === 'object') {
+            const LABELS: Record<string, string> = { ip: 'IP', port: 'Port', user: 'User', pass: 'Pass', loaiproxy: 'Protocol' }
+            for (const k of ['ip', 'port', 'user', 'pass', 'loaiproxy']) {
+              if (proxy[k]) mappings.push({ sys: LABELS[k] || k, val: String(proxy[k]).substring(0, 20), src: origins[k] || k })
+            }
           }
+          // Provider key (rotating)
+          if (row.original.provider_key && origins['api_key']) {
+            mappings.push({ sys: 'API Key', val: '***', src: origins['api_key'] })
+          }
+          // Custom metadata fields (skip _field_origins)
+          Object.entries(meta).forEach(([k, v]) => {
+            if (k === '_field_origins') return
+            if (origins[k]) mappings.push({ sys: k, val: String(v).substring(0, 15), src: origins[k] })
+          })
+
+          if (mappings.length === 0) {
+            return <span style={{ color: '#cbd5e1', fontSize: '10px' }}>Click để xem</span>
+          }
+
           return (
-            <div style={{ fontSize: '10px', lineHeight: 1.5 }}>
-              {Object.entries(meta).map(([k, v]) => (
-                <div key={k} title={`${k}: ${typeof v === 'object' ? JSON.stringify(v) : v}`} style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  <span style={{ color: '#64748b' }}>{k}:</span>{' '}
-                  <span style={{ fontFamily: 'monospace', color: '#334155' }}>{typeof v === 'object' ? JSON.stringify(v) : String(v)}</span>
+            <div style={{ fontSize: '10px', lineHeight: 1.6 }}>
+              {mappings.slice(0, 3).map((m, i) => (
+                <div key={i} style={{ display: 'flex', gap: 3, overflow: 'hidden', whiteSpace: 'nowrap' }}>
+                  <span style={{ color: '#1e40af', fontWeight: 600 }}>{m.sys}</span>
+                  <span style={{ color: '#94a3b8' }}>←</span>
+                  <span style={{ color: '#b45309', fontFamily: 'monospace' }}>{m.src}</span>
                 </div>
               ))}
+              {mappings.length > 3 && <span style={{ color: '#94a3b8' }}>+{mappings.length - 3} field...</span>}
             </div>
           )
         }
