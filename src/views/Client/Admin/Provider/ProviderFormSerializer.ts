@@ -1,0 +1,423 @@
+import type {
+  FormValues, ApiConfigBuy, RenewParamRow, DurationMapRow, InheritParam,
+  ErrorCodeRule, HttpErrorRule, ResponseMappingRule,
+} from './ProviderFormTypes'
+import { defaultBuy, defaultFetchProxies, defaultValues, SYSTEM_VARS, VALUE_MAP } from './ProviderFormTypes'
+
+// ─── Helpers ────────────────────────────────────────
+
+export function deserializeParamsRows(params: Record<string, string>): RenewParamRow[] {
+  return Object.entries(params).map(([param_name, value]) => ({
+    param_name,
+    value_type: SYSTEM_VARS[value] || 'custom',
+    custom_value: SYSTEM_VARS[value] ? '' : String(value),
+  }))
+}
+
+// ─── Parse (DB → Form) ─────────────────────────────
+
+export function parseBuySection(buy: any): ApiConfigBuy {
+  if (!buy) return { ...defaultBuy }
+
+  const buyResp = buy.response || {}
+  const proxyFields = buyResp.proxy_fields || {}
+  const urlByDuration = buy.url_by_duration || {}
+  const durationMap = buy.duration_map || {}
+
+  return {
+    enabled: true,
+    method: buy.method || 'GET',
+    url: buy.url || '',
+    url_1: urlByDuration['1'] || '',
+    url_7: urlByDuration['7'] || '',
+    url_30: urlByDuration['30'] || '',
+    use_url_by_duration: !!buy.url_by_duration,
+    auth_type: buy.auth_type || 'query',
+    auth_param: buy.auth_param || 'key',
+    params_json: buy.params ? JSON.stringify(buy.params) : '',
+    quantity_param: buy.quantity_param || 'soluong',
+    double_ampersand: buy.double_ampersand || false,
+    duration_param: buy.duration_param || '',
+    duration_map_1: durationMap['1'] || '',
+    duration_map_7: durationMap['7'] || '',
+    duration_map_30: durationMap['30'] || '',
+    user_override_enabled: !!buy.user_override,
+    user_override_user_param: buy.user_override?.user_param || 'user',
+    user_override_pass_param: buy.user_override?.pass_param || 'password',
+    protocol_override_enabled: !!buy.protocol_override,
+    protocol_override_param: buy.protocol_override?.param || 'type',
+    protocol_override_http: buy.protocol_override?.map?.http || 'HTTP',
+    protocol_override_socks5: buy.protocol_override?.map?.socks5 || 'SOCKS5',
+    response_mode: buy.response_mode || 'immediate',
+    fetch_proxies: (() => {
+      const fp = buy.fetch_proxies
+      if (!fp) return { ...defaultFetchProxies }
+      const fpResp = fp.response || {}
+      const fpFields = fpResp.proxy_fields || {}
+      const pg = fp.pagination || null
+      return {
+        url: fp.url || '',
+        method: fp.method || 'GET',
+        auth_type: fp.auth_type ? fp.auth_type : 'inherit',
+        auth_param: fp.auth_param || '',
+        success_field: fpResp.success_field || '',
+        success_value: fpResp.success_value != null ? String(fpResp.success_value) : '',
+        proxies_path: fpResp.proxies_path || 'data.proxies',
+        proxy_format: fpResp.proxy_format || 'fields',
+        proxy_key_field: fpResp.proxy_key_field || fpResp.proxy_string_field || '',
+        proxy_fields_ip: fpFields.ip || 'ip',
+        proxy_fields_port: fpFields.port || 'port',
+        proxy_fields_user: fpFields.user || 'user',
+        proxy_fields_pass: fpFields.pass || 'pass',
+        proxy_fields_type: fpFields.type || '',
+        item_id_field: fpResp.item_id_field || '',
+        pagination_enabled: !!pg,
+        page_param: pg?.page_param || 'page',
+        per_page_param: pg?.per_page_param || 'per_page',
+        per_page: pg?.per_page ? String(pg.per_page) : '50',
+        last_page_path: pg?.last_page_path || 'data.last_page',
+      }
+    })(),
+    response: {
+      type: buyResp.type || 'array_last_status',
+      success_field: buyResp.success_field || 'statusCode',
+      success_value: buyResp.success_value ?? 200,
+      error_message_field: buyResp.error_message_field || '',
+      error_codes: (buyResp.error_codes || []).map((r: any) => ({
+        field: r.field || '',
+        value: r.value != null ? String(r.value) : '',
+        match: r.match || 'exact',
+        message: r.message || '',
+      })),
+      http_errors: (() => {
+        const he = buyResp.http_errors
+        if (!he || typeof he !== 'object') return []
+        return Object.entries(he).map(([status, message]) => ({ status, message: String(message) }))
+      })(),
+      fallback_message: buyResp.fallback_message || '',
+      proxies_path: (buy.response_mode === 'deferred' ? buyResp.order_id_field : buyResp.proxies_path) || 'data.proxies',
+      proxy_format: buyResp.proxy_format || 'key',
+      proxy_key_field: buyResp.proxy_key_field || buyResp.proxy_string_field || 'keyxoay',
+      proxy_fields_ip: proxyFields.ip || '',
+      proxy_fields_port: proxyFields.port || '',
+      proxy_fields_user: proxyFields.user || '',
+      proxy_fields_pass: proxyFields.pass || '',
+      proxy_fields_type: proxyFields.type || '',
+      item_id_field: buyResp.item_id_field || '',
+      response_mapping: Array.isArray(buyResp.response_mapping)
+        ? buyResp.response_mapping.map((r: any) => ({ from: r.from || '', to: r.to || '', store: r.store || 'metadata' }))
+        : [],
+    }
+  }
+}
+
+export function parseApiConfig(apiConfig: any): Partial<FormValues> {
+  if (!apiConfig) return {}
+
+  const rotate = apiConfig.rotate || {}
+  const ipCfg = apiConfig.ip_config || {}
+
+  const buyRotating = apiConfig.buy_rotating || apiConfig.buy || null
+  const buyStatic = apiConfig.buy_static || null
+
+  return {
+    buy_rotating: parseBuySection(buyRotating),
+    buy_static: parseBuySection(buyStatic),
+    rotate: {
+      enabled: !!apiConfig.rotate,
+      method: rotate.method || 'GET',
+      url: rotate.url || '',
+      auth_type: rotate.auth_type || 'query',
+      auth_param: rotate.auth_param || 'key',
+      key_source: rotate.key_source || 'key',
+      params_json: rotate.params ? JSON.stringify(rotate.params) : '',
+      response_http: rotate.response?.proxy_fields?.http || 'http',
+      response_socks5: rotate.response?.proxy_fields?.socks5 || 'socks5',
+      double_ampersand: rotate.double_ampersand || false,
+    },
+    ip_config: {
+      enabled: !!apiConfig.ip_config,
+      mode: ipCfg.mode || 'on_rotate',
+      max_ips: ipCfg.max_ips || 1,
+      param: ipCfg.param || 'ip',
+      param_format: ipCfg.param_format || 'single',
+    },
+    renew: (() => {
+      const r = apiConfig.renew
+      if (!r) return { ...defaultValues.renew }
+      const resp = r.response || {}
+      return {
+        enabled: true,
+        mode: r.mode || 'by_order',
+        url: r.url || '',
+        method: r.method || 'POST',
+        auth_type: r.auth_type || 'inherit',
+        auth_param: r.auth_param || '',
+        params_rows: r.params ? deserializeParamsRows(r.params) : [],
+        duration_param: r.duration_param || 'days',
+        duration_map_rows: r.duration_map ? Object.entries(r.duration_map).map(([days, v]) => ({ days, send_value: String(v) })) : [],
+        duration_map_enabled: !!r.duration_map && Object.keys(r.duration_map).length > 0,
+        response_mode: r.response_mode || 'immediate',
+        success_field: resp.success_field || '',
+        success_value: resp.success_value != null ? String(resp.success_value) : '',
+        new_expiry_field: resp.new_expiry_field || '',
+        batch_delay_ms: r.batch_delay_ms ? String(r.batch_delay_ms) : '0',
+        inherit_params: r.inherit_params || [],
+      }
+    })(),
+  }
+}
+
+// ─── Build (Form → DB) ─────────────────────────────
+
+export function buildBuySection(buy: ApiConfigBuy): object | null {
+  if (!buy.enabled) return null
+
+  const hasUrl = buy.url || buy.url_1
+  if (!hasUrl) return null
+
+  const result: any = {
+    method: buy.method,
+    auth_type: buy.auth_type,
+    auth_param: buy.auth_param,
+    quantity_param: buy.quantity_param,
+  }
+
+  if (buy.use_url_by_duration) {
+    result.url_by_duration = {} as any
+    if (buy.url_1) result.url_by_duration['1'] = buy.url_1
+    if (buy.url_7) result.url_by_duration['7'] = buy.url_7
+    if (buy.url_30) result.url_by_duration['30'] = buy.url_30
+  } else if (buy.url) {
+    result.url = buy.url
+  }
+
+  if (buy.params_json) {
+    try { result.params = JSON.parse(buy.params_json) } catch { /* skip */ }
+  }
+
+  if (buy.double_ampersand) result.double_ampersand = true
+
+  if (buy.duration_param) {
+    result.duration_param = buy.duration_param
+    const hasMap = buy.duration_map_1 || buy.duration_map_7 || buy.duration_map_30
+    if (hasMap) {
+      result.duration_map = {} as any
+      if (buy.duration_map_1) result.duration_map['1'] = buy.duration_map_1
+      if (buy.duration_map_7) result.duration_map['7'] = buy.duration_map_7
+      if (buy.duration_map_30) result.duration_map['30'] = buy.duration_map_30
+    }
+  }
+
+  if (buy.user_override_enabled) {
+    result.user_override = {
+      user_param: buy.user_override_user_param || 'user',
+      pass_param: buy.user_override_pass_param || 'password',
+    }
+  }
+
+  if (buy.protocol_override_enabled) {
+    result.protocol_override = {
+      param: buy.protocol_override_param || 'type',
+      map: {
+        http: buy.protocol_override_http || 'HTTP',
+        socks5: buy.protocol_override_socks5 || 'SOCKS5',
+      }
+    }
+  }
+
+  const resp: any = {
+    type: buy.response.type,
+    proxy_format: buy.response.proxy_format,
+  }
+
+  if (buy.response.success_field) resp.success_field = buy.response.success_field
+  if (buy.response.success_value !== '') resp.success_value = Number(buy.response.success_value)
+  if (buy.response.error_message_field) resp.error_message_field = buy.response.error_message_field
+  if (buy.response.fallback_message) resp.fallback_message = buy.response.fallback_message
+
+  const validErrorCodes = buy.response.error_codes.filter((r: ErrorCodeRule) => r.field && r.value && r.message)
+  if (validErrorCodes.length > 0) {
+    resp.error_codes = validErrorCodes.map((r: ErrorCodeRule) => ({
+      field: r.field,
+      value: r.match === 'contains' ? r.value : (isNaN(Number(r.value)) ? r.value : Number(r.value)),
+      match: r.match,
+      message: r.message,
+    }))
+  }
+
+  const validHttpErrors = buy.response.http_errors.filter((r: HttpErrorRule) => r.status && r.message)
+  if (validHttpErrors.length > 0) {
+    resp.http_errors = {} as any
+    validHttpErrors.forEach((r: HttpErrorRule) => { resp.http_errors[r.status] = r.message })
+  }
+
+  if (buy.response.type === 'object' && buy.response.proxies_path) resp.proxies_path = buy.response.proxies_path
+
+  if (buy.response.proxy_format === 'key' && buy.response.proxy_key_field) {
+    resp.proxy_key_field = buy.response.proxy_key_field
+  }
+
+  if (buy.response.proxy_format === 'string' && buy.response.proxy_key_field) {
+    resp.proxy_string_field = buy.response.proxy_key_field
+  }
+
+  if (buy.response.proxy_format === 'fields') {
+    resp.proxy_fields = {} as any
+    if (buy.response.proxy_fields_ip) resp.proxy_fields.ip = buy.response.proxy_fields_ip
+    if (buy.response.proxy_fields_port) resp.proxy_fields.port = buy.response.proxy_fields_port
+    if (buy.response.proxy_fields_user) resp.proxy_fields.user = buy.response.proxy_fields_user
+    if (buy.response.proxy_fields_pass) resp.proxy_fields.pass = buy.response.proxy_fields_pass
+    if (buy.response.proxy_fields_type) resp.proxy_fields.type = buy.response.proxy_fields_type
+  }
+
+  if (buy.response.item_id_field) resp.item_id_field = buy.response.item_id_field
+
+  const validMapping = buy.response.response_mapping.filter((r: ResponseMappingRule) => r.from && r.to)
+  if (validMapping.length > 0) {
+    resp.response_mapping = validMapping.map((r: ResponseMappingRule) => ({ from: r.from, to: r.to, store: r.store || 'metadata' }))
+  }
+
+  if (buy.response_mode === 'deferred') {
+    result.response_mode = 'deferred'
+    resp.order_id_field = buy.response.proxies_path || 'data.id'
+    delete resp.proxies_path
+
+    const fp = buy.fetch_proxies
+    if (fp.url) {
+      const fetchResult: any = {
+        url: fp.url,
+        method: fp.method || 'GET',
+      }
+
+      if (fp.auth_type !== 'inherit') {
+        fetchResult.auth_type = fp.auth_type
+        if (fp.auth_param) fetchResult.auth_param = fp.auth_param
+      }
+
+      const fpResp: any = {}
+      if (fp.success_field) fpResp.success_field = fp.success_field
+      if (fp.success_value !== '') {
+        const numVal = Number(fp.success_value)
+        fpResp.success_value = isNaN(numVal) ? fp.success_value : numVal
+      }
+      if (fp.proxies_path) fpResp.proxies_path = fp.proxies_path
+      fpResp.proxy_format = fp.proxy_format || 'fields'
+
+      if (fp.proxy_format === 'key' && fp.proxy_key_field) {
+        fpResp.proxy_key_field = fp.proxy_key_field
+      }
+      if (fp.proxy_format === 'string' && fp.proxy_key_field) {
+        fpResp.proxy_string_field = fp.proxy_key_field
+      }
+      if (fp.proxy_format === 'fields') {
+        fpResp.proxy_fields = {} as any
+        if (fp.proxy_fields_ip) fpResp.proxy_fields.ip = fp.proxy_fields_ip
+        if (fp.proxy_fields_port) fpResp.proxy_fields.port = fp.proxy_fields_port
+        if (fp.proxy_fields_user) fpResp.proxy_fields.user = fp.proxy_fields_user
+        if (fp.proxy_fields_pass) fpResp.proxy_fields.pass = fp.proxy_fields_pass
+        if (fp.proxy_fields_type) fpResp.proxy_fields.type = fp.proxy_fields_type
+      }
+      if (fp.item_id_field) fpResp.item_id_field = fp.item_id_field
+
+      fetchResult.response = fpResp
+
+      if (fp.pagination_enabled) {
+        fetchResult.pagination = {
+          page_param: fp.page_param || 'page',
+          per_page_param: fp.per_page_param || 'per_page',
+          per_page: parseInt(fp.per_page) || 50,
+          last_page_path: fp.last_page_path || 'data.last_page',
+        }
+      }
+
+      result.fetch_proxies = fetchResult
+    }
+  }
+
+  result.response = resp
+
+  return result
+}
+
+export function buildApiConfig(form: FormValues): object | null {
+  const config: any = {}
+
+  const buyRotating = buildBuySection(form.buy_rotating)
+  const buyStatic = buildBuySection(form.buy_static)
+
+  if (buyRotating) config.buy_rotating = buyRotating
+  if (buyStatic) config.buy_static = buyStatic
+
+  if (form.rotate.enabled) {
+    config.rotate = {
+      method: form.rotate.method,
+      url: form.rotate.url,
+      auth_type: form.rotate.auth_type,
+      auth_param: form.rotate.auth_param,
+      key_source: form.rotate.key_source,
+      ...(form.rotate.params_json ? { params: (() => { try { return JSON.parse(form.rotate.params_json) } catch { return undefined } })() } : {}),
+      double_ampersand: form.rotate.double_ampersand || undefined,
+      response: {
+        proxy_fields: {
+          http: form.rotate.response_http || 'http',
+          socks5: form.rotate.response_socks5 || 'socks5',
+        }
+      }
+    }
+  }
+
+  if (form.ip_config.enabled) {
+    config.ip_config = {
+      mode: form.ip_config.mode,
+      max_ips: Number(form.ip_config.max_ips) || 1,
+      param: form.ip_config.param,
+      param_format: form.ip_config.param_format,
+    }
+  }
+
+  if (form.renew.enabled && form.renew.url) {
+    const r: any = {
+      mode: form.renew.mode,
+      url: form.renew.url,
+      method: form.renew.method,
+    }
+    if (form.renew.auth_type !== 'inherit') {
+      r.auth_type = form.renew.auth_type
+      if (form.renew.auth_param) r.auth_param = form.renew.auth_param
+    }
+    const validParams = (form.renew.params_rows || []).filter((p: RenewParamRow) => p.param_name)
+    if (validParams.length > 0) {
+      r.params = Object.fromEntries(
+        validParams.map((p: RenewParamRow) => [p.param_name, VALUE_MAP[p.value_type] || p.custom_value])
+      )
+    }
+    if (form.renew.duration_param) r.duration_param = form.renew.duration_param
+    if (form.renew.duration_map_enabled) {
+      const validMap = (form.renew.duration_map_rows || []).filter((d: DurationMapRow) => d.days)
+      if (validMap.length > 0) {
+        r.duration_map = Object.fromEntries(validMap.map((d: DurationMapRow) => [d.days, d.send_value]))
+      }
+    }
+    if (form.renew.response_mode === 'deferred') r.response_mode = 'deferred'
+    if (parseInt(form.renew.batch_delay_ms) > 0) r.batch_delay_ms = parseInt(form.renew.batch_delay_ms)
+
+    const resp: any = {}
+    if (form.renew.success_field) resp.success_field = form.renew.success_field
+    if (form.renew.success_value !== '') {
+      const numVal = Number(form.renew.success_value)
+      resp.success_value = isNaN(numVal) ? form.renew.success_value : numVal
+    }
+    if (form.renew.new_expiry_field) resp.new_expiry_field = form.renew.new_expiry_field
+    if (Object.keys(resp).length > 0) r.response = resp
+
+    const validInherit = (form.renew.inherit_params || []).filter(
+      (p: InheritParam) => p.field && p.param && ['order', 'order_item'].includes(p.source)
+    )
+    if (validInherit.length > 0) r.inherit_params = validInherit
+
+    config.renew = r
+  }
+
+  return Object.keys(config).length > 0 ? config : null
+}

@@ -738,6 +738,15 @@ function ItemDetailPanel({ item }: { item: any }) {
   if (item.provider_order_code) rows.push({ db: 'provider_order_code', val: item.provider_order_code })
   if (item.provider_item_id) rows.push({ db: 'provider_item_id', val: item.provider_item_id, from: origins['provider_item_id'] })
 
+  // Root fields custom (từ response_mapping store=root) — hiện field có trong _field_origins nhưng chưa liệt kê ở trên
+  const knownFields = new Set(rows.map(r => r.db))
+  knownFields.add('_id').add('order_id').add('created_at').add('updated_at')
+  Object.entries(origins).forEach(([sysField, nccField]) => {
+    if (!knownFields.has(sysField) && item[sysField] != null) {
+      rows.push({ db: sysField, val: item[sysField], from: nccField })
+    }
+  })
+
   const th: React.CSSProperties = { padding: '5px 10px', fontSize: '9px', fontWeight: 600, textAlign: 'left', textTransform: 'uppercase', letterSpacing: '0.5px', borderBottom: '1px solid #edf0f4' }
 
   return (
