@@ -27,7 +27,11 @@ export const useApiKeys = (order_id?: string | number, enabled: boolean = true) 
       const res = await axiosAuth.get(`/get-key-proxy/${order_id}`)
 
       // MongoDB order_items trước, fallback MySQL api_keys
-      return res?.data?.data_mongo ?? res?.data?.data ?? []
+      const items = res?.data?.data_mongo ?? res?.data?.data ?? []
+      // _data_field: tên field chứa dữ liệu sản phẩm chính (default "proxy")
+      // Gắn vào array để backward compat (consumer cũ dùng như array bình thường)
+      ;(items as any)._dataField = res?.data?._data_field || 'proxy'
+      return items
     },
     enabled: !!order_id && enabled,
     refetchOnWindowFocus: false,

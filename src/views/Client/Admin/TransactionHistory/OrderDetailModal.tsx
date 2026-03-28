@@ -74,6 +74,7 @@ export default function OrderDetailModal({ isOpen, onClose, orderData, isLoading
 
   const orderId = orderData?.order?.id
   const { data: dataApiKeys, isLoading: loadingApiKeys } = useApiKeys(orderId, isOpen)
+  const dataField = (dataApiKeys as any)?._dataField || 'proxy'
   const { data: orderLogs = [], isLoading: loadingLogs } = useOrderLogs(orderId, isOpen)
   const { data: histories = [], isLoading: loadingHistories } = useOrderHistories(orderId, isOpen)
 
