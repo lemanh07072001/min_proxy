@@ -727,32 +727,32 @@ function ItemDetailPanel({ item }: { item: any }) {
   if (item.provider_order_code) rows.push({ label: 'Mã đơn NCC', db: 'provider_order_code', val: item.provider_order_code })
   if (item.provider_item_id) rows.push({ label: 'ID proxy NCC', db: 'provider_item_id', val: item.provider_item_id, from: origins['provider_item_id'] })
 
+  const hasSrc = rows.some(r => r.from)
+  const hd: React.CSSProperties = { padding: '5px 8px', fontSize: '10px', fontWeight: 700, color: '#64748b', textAlign: 'left', background: '#f1f5f9', borderBottom: '1px solid #e2e8f0', whiteSpace: 'nowrap' }
+  const td: React.CSSProperties = { padding: '4px 8px', fontSize: '12px', borderBottom: '1px solid #f1f5f9' }
+
   return (
-    <div style={{ borderTop: '1px solid #e2e8f0', padding: '8px 10px', background: '#fafbfc' }}>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '1px 16px' }}>
-        {rows.map((r, i) => (
-          <div key={i} style={{ padding: '5px 0', borderBottom: '1px solid #f1f5f9' }}>
-            {/* Dòng 1: Label + Giá trị — nổi bật */}
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
-              <span style={{ fontSize: '11px', color: '#64748b', minWidth: 80, flexShrink: 0 }}>{r.label}</span>
-              <span style={{ fontSize: '13px', fontFamily: 'monospace', fontWeight: 600, color: '#0f172a', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }} title={fmtValue(r.val)}>
-                {fmtValue(r.val)}
-              </span>
-            </div>
-            {/* Dòng 2: field DB + nguồn đối tác — nhỏ mờ bên dưới */}
-            <div style={{ display: 'flex', gap: 3, marginTop: 1, paddingLeft: 88, alignItems: 'center' }}>
-              <span style={{ fontSize: '9px', color: '#cbd5e1' }}>db:</span>
-              <span style={{ fontSize: '9px', color: '#94a3b8', fontFamily: 'monospace' }}>{r.db}</span>
-              {r.from && (
-                <>
-                  <span style={{ fontSize: '9px', color: '#cbd5e1', marginLeft: 4 }}>đối tác:</span>
-                  <span style={{ fontSize: '9px', color: '#d97706', fontFamily: 'monospace' }}>{r.from}</span>
-                </>
-              )}
-            </div>
-          </div>
-        ))}
-      </div>
+    <div style={{ borderTop: '1px solid #e2e8f0', background: '#fafbfc', overflowX: 'auto' }}>
+      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+        <thead>
+          <tr>
+            <th style={hd}>Tên</th>
+            <th style={hd}>Giá trị</th>
+            <th style={{ ...hd, color: '#94a3b8' }}>Field hệ thống</th>
+            {hasSrc && <th style={{ ...hd, color: '#b45309' }}>Field đối tác</th>}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((r, i) => (
+            <tr key={i} style={{ background: i % 2 === 0 ? '#fff' : '#fafbfc' }}>
+              <td style={{ ...td, color: '#475569', fontWeight: 500, whiteSpace: 'nowrap' }}>{r.label}</td>
+              <td style={{ ...td, fontFamily: 'monospace', fontWeight: 600, color: '#0f172a', maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={fmtValue(r.val)}>{fmtValue(r.val)}</td>
+              <td style={{ ...td, fontFamily: 'monospace', fontSize: '11px', color: '#94a3b8' }}>{r.db}</td>
+              {hasSrc && <td style={{ ...td, fontFamily: 'monospace', fontSize: '11px', color: '#b45309' }}>{r.from || ''}</td>}
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   )
 }
