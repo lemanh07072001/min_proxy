@@ -688,48 +688,63 @@ function ExpandableItemRow({ row }: { row: any }) {
   )
 }
 
-/** Panel chi tiết OrderItem — compact, giá trị là trung tâm */
+/** Panel chi tiết OrderItem — bảng có nhóm, luôn hiện cột đối tác */
 function ItemDetailPanel({ item }: { item: any }) {
   const origins: Record<string, string> = item.metadata?._field_origins || {}
   const proxy = item.proxy || item.proxys
   const sts = item.status === 0 ? 'Hoạt động' : item.status === 1 ? 'Đã tắt' : 'Hết hạn'
 
-  type R = { label: string; db: string; val: any; from?: string }
-  const rows: R[] = []
+  // Fallback: đơn cũ không có _field_origins → dùng tên field chuẩn làm nguồn đối tác
+  const FALLBACK_SRC: Record<string, string> = { ip: 'ip', port: 'port', user: 'username', pass: 'password', loaiproxy: 'protocol' }
 
-  // Proxy
+  type R = { label: string; db: string; val: any; from?: string; group: 'proxy' | 'extra' | 'system' }
+
+  const proxyRows: R[] = []
+  const extraRows: R[] = []
+  const sysRows: R[] = []
+
+  // Proxy fields
   if (proxy && typeof proxy === 'object') {
     const names: Record<string, string> = { ip: 'IP', port: 'Port', user: 'Username', pass: 'Password', loaiproxy: 'Giao thức' }
     for (const k of ['ip', 'port', 'user', 'pass', 'loaiproxy']) {
-      if (proxy[k]) rows.push({ label: names[k] || k, db: `proxy.${k}`, val: proxy[k], from: origins[k] })
+      if (proxy[k]) proxyRows.push({ label: names[k], db: `proxy.${k}`, val: proxy[k], from: origins[k] || FALLBACK_SRC[k], group: 'proxy' })
     }
-    // custom proxy fields (không phải chuẩn)
     Object.keys(proxy).filter(k => !['http','socks5','HTTP','SOCK5','ip','port','user','pass','loaiproxy'].includes(k)).forEach(k => {
-      if (proxy[k]) rows.push({ label: k, db: `proxy.${k}`, val: proxy[k], from: origins[k] })
+      if (proxy[k]) proxyRows.push({ label: k, db: `proxy.${k}`, val: proxy[k], from: origins[k], group: 'proxy' })
     })
   }
 
-  // Metadata
+  // Metadata (bỏ _field_origins)
   if (item.metadata && typeof item.metadata === 'object') {
     Object.entries(item.metadata).forEach(([k, v]) => {
-      if (k !== '_field_origins') rows.push({ label: k, db: `metadata.${k}`, val: v, from: origins[k] })
+      if (k !== '_field_origins') extraRows.push({ label: k, db: `metadata.${k}`, val: v, from: origins[k], group: 'extra' })
     })
   }
 
-  // System
-  if (item.key) rows.push({ label: 'Key', db: 'key', val: item.key })
-  if (item.type) rows.push({ label: 'Loại', db: 'type', val: item.type })
-  if (item.protocol) rows.push({ label: 'Protocol', db: 'protocol', val: item.protocol.toUpperCase() })
-  if (item.status != null) rows.push({ label: 'Trạng thái', db: 'status', val: sts })
-  if (item.buy_at) rows.push({ label: 'Kích hoạt', db: 'buy_at', val: formatDateTimeLocal(item.buy_at) })
-  if (item.expired_at) rows.push({ label: 'Hết hạn', db: 'expired_at', val: formatDateTimeLocal(item.expired_at) })
-  if (item.provider_key) rows.push({ label: 'Key NCC', db: 'provider_key', val: item.provider_key, from: origins['api_key'] })
-  if (item.provider_order_code) rows.push({ label: 'Mã đơn NCC', db: 'provider_order_code', val: item.provider_order_code })
-  if (item.provider_item_id) rows.push({ label: 'ID proxy NCC', db: 'provider_item_id', val: item.provider_item_id, from: origins['provider_item_id'] })
+  // System + provider
+  if (item.key) sysRows.push({ label: 'Key', db: 'key', val: item.key, group: 'system' })
+  if (item.type) sysRows.push({ label: 'Loại', db: 'type', val: item.type, group: 'system' })
+  if (item.protocol) sysRows.push({ label: 'Protocol', db: 'protocol', val: item.protocol.toUpperCase(), group: 'system' })
+  if (item.status != null) sysRows.push({ label: 'Trạng thái', db: 'status', val: sts, group: 'system' })
+  if (item.buy_at) sysRows.push({ label: 'Kích hoạt', db: 'buy_at', val: formatDateTimeLocal(item.buy_at), group: 'system' })
+  if (item.expired_at) sysRows.push({ label: 'Hết hạn', db: 'expired_at', val: formatDateTimeLocal(item.expired_at), group: 'system' })
+  if (item.provider_key) sysRows.push({ label: 'Key NCC', db: 'provider_key', val: item.provider_key, from: origins['api_key'] || 'api_key', group: 'system' })
+  if (item.provider_order_code) sysRows.push({ label: 'Mã đơn NCC', db: 'provider_order_code', val: item.provider_order_code, group: 'system' })
+  if (item.provider_item_id) sysRows.push({ label: 'ID proxy NCC', db: 'provider_item_id', val: item.provider_item_id, from: origins['provider_item_id'] || 'id', group: 'system' })
 
-  const hasSrc = rows.some(r => r.from)
   const hd: React.CSSProperties = { padding: '6px 10px', fontSize: '10px', fontWeight: 600, color: '#78859b', textAlign: 'left', background: '#f8fafc', borderBottom: '1px solid #eef2f6', whiteSpace: 'nowrap', letterSpacing: '0.3px', textTransform: 'uppercase' }
   const td: React.CSSProperties = { padding: '5px 10px', fontSize: '12px', borderBottom: '1px solid #f3f5f8' }
+  const groupHd = (label: string, bg: string, color: string) => (
+    <tr><td colSpan={4} style={{ padding: '4px 10px', fontSize: '10px', fontWeight: 700, color, background: bg, borderBottom: '1px solid #eef2f6', letterSpacing: '0.2px' }}>{label}</td></tr>
+  )
+  const renderRows = (rows: R[]) => rows.map((r, i) => (
+    <tr key={`${r.db}-${i}`} style={{ background: i % 2 === 0 ? '#fff' : '#fafbfd' }}>
+      <td style={{ ...td, color: '#4a5568', fontWeight: 500, whiteSpace: 'nowrap' }}>{r.label}</td>
+      <td style={{ ...td, fontFamily: 'monospace', fontWeight: 600, color: '#2d3748', maxWidth: 240, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={fmtValue(r.val)}>{fmtValue(r.val)}</td>
+      <td style={{ ...td, fontFamily: 'monospace', fontSize: '11px', color: '#a0aec0' }}>{r.db}</td>
+      <td style={{ ...td, fontFamily: 'monospace', fontSize: '11px', color: '#c4956a' }}>{r.from || ''}</td>
+    </tr>
+  ))
 
   return (
     <div style={{ borderTop: '1px solid #eef2f6', background: '#fdfdfe', overflowX: 'auto' }}>
@@ -739,18 +754,16 @@ function ItemDetailPanel({ item }: { item: any }) {
             <th style={hd}>Tên</th>
             <th style={hd}>Giá trị</th>
             <th style={{ ...hd, color: '#a0aec0' }}>Field hệ thống</th>
-            {hasSrc && <th style={{ ...hd, color: '#c4956a' }}>Field đối tác</th>}
+            <th style={{ ...hd, color: '#c4956a' }}>Field đối tác</th>
           </tr>
         </thead>
         <tbody>
-          {rows.map((r, i) => (
-            <tr key={i} style={{ background: i % 2 === 0 ? '#fff' : '#fafbfd' }}>
-              <td style={{ ...td, color: '#4a5568', fontWeight: 500, whiteSpace: 'nowrap' }}>{r.label}</td>
-              <td style={{ ...td, fontFamily: 'monospace', fontWeight: 600, color: '#2d3748', maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={fmtValue(r.val)}>{fmtValue(r.val)}</td>
-              <td style={{ ...td, fontFamily: 'monospace', fontSize: '11px', color: '#a0aec0' }}>{r.db}</td>
-              {hasSrc && <td style={{ ...td, fontFamily: 'monospace', fontSize: '11px', color: '#c4956a' }}>{r.from || ''}</td>}
-            </tr>
-          ))}
+          {proxyRows.length > 0 && groupHd('Proxy', '#eff6ff', '#3b82f6')}
+          {renderRows(proxyRows)}
+          {extraRows.length > 0 && groupHd('Thông tin thêm', '#faf5ff', '#8b5cf6')}
+          {renderRows(extraRows)}
+          {sysRows.length > 0 && groupHd('Hệ thống', '#f0fdf4', '#22c55e')}
+          {renderRows(sysRows)}
         </tbody>
       </table>
     </div>
