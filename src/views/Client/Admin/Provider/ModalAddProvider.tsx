@@ -1444,7 +1444,11 @@ const ITEM_FIELDS = [
   { value: 'proxy.port', label: 'Port' },
   { value: 'proxy.username', label: 'Username' },
   { value: 'proxy.password', label: 'Password' },
+  { value: 'proxy.loaiproxy', label: 'Loại proxy (loaiproxy)' },
+  { value: 'proxy.http', label: 'Proxy HTTP string' },
+  { value: 'proxy.socks5', label: 'Proxy SOCKS5 string' },
   { value: 'key', label: 'Key hệ thống' },
+  { value: 'protocol', label: 'Giao thức (HTTP/SOCKS5)' },
 ]
 
 /** Tham số gửi NCC — bảng trực quan thay JSON */
