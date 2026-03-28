@@ -712,17 +712,17 @@ function ItemDetailPanel({ item }: { item: any }) {
   // Proxy fields
   if (proxy && typeof proxy === 'object') {
     for (const k of ['ip', 'port', 'user', 'pass', 'loaiproxy']) {
-      if (proxy[k]) rows.push({ db: `proxy.${k}`, val: proxy[k], from: origins[k] })
+      if (proxy[k]) rows.push({ db: k, val: proxy[k], from: origins[k] })
     }
     Object.keys(proxy).filter(k => !['http','socks5','HTTP','SOCK5','ip','port','user','pass','loaiproxy'].includes(k)).forEach(k => {
-      if (proxy[k]) rows.push({ db: `proxy.${k}`, val: proxy[k], from: origins[k] })
+      if (proxy[k]) rows.push({ db: k, val: proxy[k], from: origins[k] })
     })
   }
 
   // Metadata (bỏ _field_origins)
   if (item.metadata && typeof item.metadata === 'object') {
     Object.entries(item.metadata).forEach(([k, v]) => {
-      if (k !== '_field_origins') rows.push({ db: `metadata.${k}`, val: v, from: origins[k] })
+      if (k !== '_field_origins') rows.push({ db: k, val: v, from: origins[k] })
     })
   }
 
