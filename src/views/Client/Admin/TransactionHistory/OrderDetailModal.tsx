@@ -688,7 +688,7 @@ function ExpandableItemRow({ row }: { row: any }) {
   )
 }
 
-/** Panel chi tiết OrderItem — list key:value rõ ràng */
+/** Panel chi tiết OrderItem — 4 cột: Tên / Field DB / Giá trị / Đối tác */
 function ItemDetailPanel({ item }: { item: any }) {
   const PROXY_LABELS: Record<string, string> = {
     ip: 'IP', port: 'Port', user: 'Username', pass: 'Password',
@@ -699,34 +699,37 @@ function ItemDetailPanel({ item }: { item: any }) {
   const proxy = item.proxy || item.proxys
   const statusText = item.status === 0 ? 'Hoạt động' : item.status === 1 ? 'Đã tắt' : item.status === 2 ? 'Hết hạn' : `Mã ${item.status}`
 
-  type Row = { label: string; value: any; src?: string }
+  // Row: tên hiển thị, field trong DB, giá trị, trường đối tác
+  type Row = { label: string; field: string; value: any; src?: string }
 
-  // Proxy fields — bỏ chuỗi dài (http/socks5), giữ field rõ ràng
+  // Proxy fields
   const proxyRows: Row[] = proxy && typeof proxy === 'object'
     ? Object.entries(proxy)
         .filter(([k]) => !['http', 'socks5', 'HTTP', 'SOCK5'].includes(k))
-        .map(([k, v]) => ({ label: PROXY_LABELS[k] || k, value: v, src: origins[k] }))
+        .map(([k, v]) => ({ label: PROXY_LABELS[k] || k, field: `proxy.${k}`, value: v, src: origins[k] }))
     : []
 
   // Metadata (bỏ _field_origins)
   const metaRows: Row[] = item.metadata && typeof item.metadata === 'object'
     ? Object.entries(item.metadata)
         .filter(([k]) => k !== '_field_origins')
-        .map(([k, v]) => ({ label: k, value: v, src: origins[k] }))
+        .map(([k, v]) => ({ label: k, field: `metadata.${k}`, value: v, src: origins[k] }))
     : []
 
   // System + provider
   const sysRows: Row[] = [
-    { label: 'Key hệ thống', value: item.key },
-    { label: 'Loại', value: item.type === 'ROTATING' ? 'Xoay (Rotating)' : item.type === 'STATIC' ? 'Tĩnh (Static)' : item.type },
-    { label: 'Giao thức', value: item.protocol?.toUpperCase() },
-    { label: 'Trạng thái', value: item.status != null ? statusText : null },
-    { label: 'Ngày kích hoạt', value: item.buy_at ? formatDateTimeLocal(item.buy_at) : null },
-    { label: 'Hết hạn', value: item.expired_at ? formatDateTimeLocal(item.expired_at) : null },
-    { label: 'API Key (NCC)', value: item.provider_key, src: origins['api_key'] },
-    { label: 'Mã đơn (NCC)', value: item.provider_order_code },
-    { label: 'ID proxy (NCC)', value: item.provider_item_id, src: origins['provider_item_id'] },
+    { label: 'Key hệ thống', field: 'key', value: item.key },
+    { label: 'Loại', field: 'type', value: item.type === 'ROTATING' ? 'Xoay (Rotating)' : item.type === 'STATIC' ? 'Tĩnh (Static)' : item.type },
+    { label: 'Giao thức', field: 'protocol', value: item.protocol?.toUpperCase() },
+    { label: 'Trạng thái', field: 'status', value: item.status != null ? statusText : null },
+    { label: 'Ngày kích hoạt', field: 'buy_at', value: item.buy_at ? formatDateTimeLocal(item.buy_at) : null },
+    { label: 'Hết hạn', field: 'expired_at', value: item.expired_at ? formatDateTimeLocal(item.expired_at) : null },
+    { label: 'API Key (NCC)', field: 'provider_key', value: item.provider_key, src: origins['api_key'] },
+    { label: 'Mã đơn (NCC)', field: 'provider_order_code', value: item.provider_order_code },
+    { label: 'ID proxy (NCC)', field: 'provider_item_id', value: item.provider_item_id, src: origins['provider_item_id'] },
   ].filter(r => r.value != null && r.value !== '')
+
+  const hasSrc = [...proxyRows, ...metaRows, ...sysRows].some(r => r.src)
 
   const renderGroup = (title: string, bg: string, color: string, rows: Row[]) => {
     if (!rows.length) return null
@@ -735,13 +738,18 @@ function ItemDetailPanel({ item }: { item: any }) {
         <div style={{ background: bg, padding: '3px 10px', fontSize: '10px', fontWeight: 700, color, borderRadius: '4px 4px 0 0' }}>{title}</div>
         {rows.map((r, i) => (
           <div key={i} style={{
-            display: 'flex', alignItems: 'baseline', gap: 8,
+            display: 'flex', alignItems: 'baseline', gap: 6,
             padding: '3px 10px', fontSize: '12px', background: i % 2 === 0 ? '#fff' : '#fafbfc',
             borderBottom: '1px solid #f1f5f9',
           }}>
-            <span style={{ color: '#64748b', minWidth: 110, fontSize: '11px', flexShrink: 0 }}>{r.label}</span>
+            <span style={{ color: '#64748b', minWidth: 100, fontSize: '11px', flexShrink: 0 }}>{r.label}</span>
+            <span style={{ color: '#94a3b8', fontSize: '10px', fontFamily: 'monospace', minWidth: 120, flexShrink: 0 }}>{r.field}</span>
             <span style={{ fontFamily: 'monospace', fontWeight: 500, color: '#1e293b', wordBreak: 'break-all', flex: 1 }}>{fmtValue(r.value)}</span>
-            {r.src && <span style={{ color: '#b45309', fontSize: '10px', fontFamily: 'monospace', flexShrink: 0 }}>← {r.src}</span>}
+            {hasSrc && (
+              <span style={{ color: '#b45309', fontSize: '10px', fontFamily: 'monospace', minWidth: 80, flexShrink: 0, textAlign: 'right' }}>
+                {r.src ? `← ${r.src}` : ''}
+              </span>
+            )}
           </div>
         ))}
       </div>
