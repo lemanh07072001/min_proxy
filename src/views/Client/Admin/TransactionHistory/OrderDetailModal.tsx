@@ -705,47 +705,39 @@ function ItemDetailPanel({ item }: { item: any }) {
 
   const hasOrigins = Object.keys(origins).length > 0
 
-  type R = { label: string; db: string; val: any; from?: string; group: 'proxy' | 'extra' | 'system' }
+  type R = { label: string; db: string; val: any; from?: string }
 
-  const proxyRows: R[] = []
-  const extraRows: R[] = []
-  const sysRows: R[] = []
+  const rows: R[] = []
 
-  // Proxy fields — chỉ hiện from khi có _field_origins thực tế, không đoán
+  // Proxy fields
   if (proxy && typeof proxy === 'object') {
     const names: Record<string, string> = { ip: 'IP', port: 'Port', user: 'Username', pass: 'Password', loaiproxy: 'Giao thức' }
     for (const k of ['ip', 'port', 'user', 'pass', 'loaiproxy']) {
-      if (proxy[k]) proxyRows.push({ label: names[k], db: `proxy.${k}`, val: proxy[k], from: origins[k], group: 'proxy' })
+      if (proxy[k]) rows.push({ label: names[k], db: `proxy.${k}`, val: proxy[k], from: origins[k] })
     }
     Object.keys(proxy).filter(k => !['http','socks5','HTTP','SOCK5','ip','port','user','pass','loaiproxy'].includes(k)).forEach(k => {
-      if (proxy[k]) proxyRows.push({ label: k, db: `proxy.${k}`, val: proxy[k], from: origins[k], group: 'proxy' })
+      if (proxy[k]) rows.push({ label: k, db: `proxy.${k}`, val: proxy[k], from: origins[k] })
     })
   }
 
   // Metadata (bỏ _field_origins)
   if (item.metadata && typeof item.metadata === 'object') {
     Object.entries(item.metadata).forEach(([k, v]) => {
-      if (k !== '_field_origins') extraRows.push({ label: k, db: `metadata.${k}`, val: v, from: origins[k], group: 'extra' })
+      if (k !== '_field_origins') rows.push({ label: k, db: `metadata.${k}`, val: v, from: origins[k] })
     })
   }
 
   // System + provider
-  if (item.key) sysRows.push({ label: 'Key', db: 'key', val: item.key, group: 'system' })
-  if (item.type) sysRows.push({ label: 'Loại', db: 'type', val: item.type, group: 'system' })
-  if (item.protocol) sysRows.push({ label: 'Protocol', db: 'protocol', val: item.protocol.toUpperCase(), group: 'system' })
-  if (item.status != null) sysRows.push({ label: 'Trạng thái', db: 'status', val: sts, group: 'system' })
-  if (item.buy_at) sysRows.push({ label: 'Kích hoạt', db: 'buy_at', val: formatDateTimeLocal(item.buy_at), group: 'system' })
-  if (item.expired_at) sysRows.push({ label: 'Hết hạn', db: 'expired_at', val: formatDateTimeLocal(item.expired_at), group: 'system' })
-  if (item.provider_key) sysRows.push({ label: 'Key NCC', db: 'provider_key', val: item.provider_key, from: origins['api_key'], group: 'system' })
-  if (item.provider_order_code) sysRows.push({ label: 'Mã đơn NCC', db: 'provider_order_code', val: item.provider_order_code, group: 'system' })
-  if (item.provider_item_id) sysRows.push({ label: 'ID proxy NCC', db: 'provider_item_id', val: item.provider_item_id, from: origins['provider_item_id'], group: 'system' })
+  if (item.key) rows.push({ label: 'Key', db: 'key', val: item.key })
+  if (item.type) rows.push({ label: 'Loại', db: 'type', val: item.type })
+  if (item.protocol) rows.push({ label: 'Protocol', db: 'protocol', val: item.protocol.toUpperCase() })
+  if (item.status != null) rows.push({ label: 'Trạng thái', db: 'status', val: sts })
+  if (item.buy_at) rows.push({ label: 'Kích hoạt', db: 'buy_at', val: formatDateTimeLocal(item.buy_at) })
+  if (item.expired_at) rows.push({ label: 'Hết hạn', db: 'expired_at', val: formatDateTimeLocal(item.expired_at) })
+  if (item.provider_key) rows.push({ label: 'Key NCC', db: 'provider_key', val: item.provider_key, from: origins['api_key'] })
+  if (item.provider_order_code) rows.push({ label: 'Mã đơn NCC', db: 'provider_order_code', val: item.provider_order_code })
+  if (item.provider_item_id) rows.push({ label: 'ID proxy NCC', db: 'provider_item_id', val: item.provider_item_id, from: origins['provider_item_id'] })
 
-  const groupSep = (label: string, dotColor: string) => (
-    <tr><td colSpan={4} style={{ padding: '6px 10px 3px', fontSize: '10px', fontWeight: 600, color: '#8895a7', borderBottom: 'none', background: '#fff' }}>
-      <span style={{ display: 'inline-block', width: 6, height: 6, borderRadius: '50%', background: dotColor, marginRight: 6, verticalAlign: 'middle' }} />
-      {label}
-    </td></tr>
-  )
   const renderRows = (rows: R[]) => rows.map((r, i) => (
     <tr key={`${r.db}-${i}`} style={{ background: '#fff' }}>
       <td style={{ padding: '4px 10px', fontSize: '11px', color: '#7a8599', whiteSpace: 'nowrap', width: '15%' }}>{r.label}</td>
@@ -774,12 +766,7 @@ function ItemDetailPanel({ item }: { item: any }) {
           </tr>
         </thead>
         <tbody>
-          {proxyRows.length > 0 && groupSep('Dữ liệu lấy từ đối tác', '#60a5fa')}
-          {renderRows(proxyRows)}
-          {extraRows.length > 0 && groupSep('Dữ liệu bổ sung từ đối tác', '#a78bfa')}
-          {renderRows(extraRows)}
-          {sysRows.length > 0 && groupSep('Hệ thống tự sinh', '#4ade80')}
-          {renderRows(sysRows)}
+          {renderRows(rows)}
         </tbody>
       </table>
     </div>
