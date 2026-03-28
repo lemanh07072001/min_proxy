@@ -680,108 +680,88 @@ const fmtValue = (v: any): string => {
   return String(v)
 }
 
-/** Panel chi tiết OrderItem — hiện toàn bộ data dạng dễ đọc */
+/** Panel chi tiết OrderItem — bảng 3 cột: Field / Giá trị / Nguồn NCC */
 function ItemDetailPanel({ item }: { item: any }) {
-  // Proxy object — label tiếng Việt
   const PROXY_LABELS: Record<string, string> = {
     http: 'HTTP proxy', socks5: 'SOCKS5 proxy', ip: 'IP', port: 'Port',
     user: 'Username', pass: 'Password', loaiproxy: 'Giao thức',
     HTTP: 'HTTP proxy', SOCK5: 'SOCKS5 proxy',
   }
+
+  // _field_origins lưu bởi BE: { ip: "ip", port: "port", region: "data.region", ... }
+  const origins: Record<string, string> = item.metadata?._field_origins || {}
+
+  // Proxy fields
   const proxy = item.proxy || item.proxys
-  const proxyFields = proxy && typeof proxy === 'object'
-    ? Object.entries(proxy).map(([k, v]) => ({ label: PROXY_LABELS[k] || k, rawKey: k, value: v }))
+  const proxyRows = proxy && typeof proxy === 'object'
+    ? Object.entries(proxy)
+        .filter(([k]) => k !== 'http' && k !== 'socks5' && k !== 'HTTP' && k !== 'SOCK5') // bỏ chuỗi proxy dài, giữ fields rõ ràng
+        .map(([k, v]) => ({ label: PROXY_LABELS[k] || k, value: v, origin: origins[k] }))
     : []
 
-  // Metadata — giữ key gốc vì admin tự đặt tên
-  const meta = item.metadata && typeof item.metadata === 'object'
-    ? Object.entries(item.metadata).map(([k, v]) => ({ label: k, value: v }))
+  // Metadata (bỏ _field_origins ra khỏi display)
+  const metaRows = item.metadata && typeof item.metadata === 'object'
+    ? Object.entries(item.metadata)
+        .filter(([k]) => k !== '_field_origins')
+        .map(([k, v]) => ({ label: k, value: v, origin: origins[k] }))
     : []
 
-  // Provider fields
-  const providerFields = [
-    { label: 'API Key (NCC)', value: item.provider_key },
-    { label: 'Mã đơn (NCC)', value: item.provider_order_code },
-    { label: 'ID proxy (NCC)', value: item.provider_item_id },
-    { label: 'Đã gọi API', value: item.provider_called != null ? (item.provider_called ? 'Đã gọi' : 'Chưa gọi') : null },
-    { label: 'Gọi lúc', value: item.called_at },
-  ].filter(f => f.value != null && f.value !== '')
-
-  // General fields — tiếng Việt
+  // Provider + system fields
   const statusText = item.status === 0 ? 'Hoạt động' : item.status === 1 ? 'Đã tắt' : item.status === 2 ? 'Hết hạn' : `Mã ${item.status}`
-  const general = [
+  const systemRows = [
     { label: 'Key hệ thống', value: item.key },
     { label: 'Loại', value: item.type === 'ROTATING' ? 'Xoay (Rotating)' : item.type === 'STATIC' ? 'Tĩnh (Static)' : item.type },
     { label: 'Giao thức', value: item.protocol?.toUpperCase() },
     { label: 'IP version', value: item.ip_version?.toUpperCase() },
-    { label: 'Private', value: item.is_private != null ? (item.is_private ? 'Private' : 'Shared') : null },
     { label: 'Trạng thái', value: item.status != null ? statusText : null },
-    { label: 'Tên proxy', value: item.name },
-    { label: 'Đơn hàng #', value: item.order_id },
-    { label: 'User #', value: item.user_id },
-    { label: 'Dịch vụ #', value: item.service_type_id },
-    { label: 'Lịch sử gia hạn #', value: item.renewal_history_id },
     { label: 'Ngày kích hoạt', value: item.buy_at },
     { label: 'Hết hạn', value: item.expired_at },
-  ].filter(f => f.value != null && f.value !== '')
+    { label: 'API Key (NCC)', value: item.provider_key, origin: origins['api_key'] },
+    { label: 'Mã đơn (NCC)', value: item.provider_order_code },
+    { label: 'ID proxy (NCC)', value: item.provider_item_id, origin: origins['provider_item_id'] },
+  ].filter(f => f.value != null && f.value !== '') as { label: string; value: any; origin?: string }[]
 
-  const sectionStyle = (bg: string, color: string) => ({
-    background: bg, padding: '4px 12px', fontSize: '10px', fontWeight: 700 as const, color, borderBottom: '1px solid #e2e8f0',
-  })
+  const hasOrigins = Object.keys(origins).length > 0
 
-  const fieldStyle = { padding: '3px 12px', fontSize: '11px', borderBottom: '1px solid #f8fafc' as const }
+  const th = { padding: '5px 10px', fontSize: '11px', fontWeight: 700 as const, color: '#475569', textAlign: 'left' as const, borderBottom: '1px solid #e2e8f0' }
+  const td = { padding: '4px 10px', fontSize: '11.5px', borderBottom: '1px solid #f1f5f9' }
+
+  const renderSection = (title: string, bg: string, color: string, rows: { label: string; value: any; origin?: string }[]) => {
+    if (rows.length === 0) return null
+    return (
+      <>
+        <tr><td colSpan={hasOrigins ? 3 : 2} style={{ background: bg, padding: '4px 10px', fontSize: '10px', fontWeight: 700, color, borderBottom: '1px solid #e2e8f0' }}>{title}</td></tr>
+        {rows.map((r, i) => (
+          <tr key={`${title}-${i}`} style={{ background: i % 2 === 0 ? '#fff' : '#fafbfc' }}>
+            <td style={{ ...td, color: '#64748b', width: '30%' }}>{r.label}</td>
+            <td style={{ ...td, fontFamily: 'monospace', fontWeight: 500, color: '#1e293b' }}>{fmtValue(r.value)}</td>
+            {hasOrigins && (
+              <td style={{ ...td, fontSize: '10px', color: '#b45309', fontFamily: 'monospace' }}>
+                {r.origin ? `← "${r.origin}"` : ''}
+              </td>
+            )}
+          </tr>
+        ))}
+      </>
+    )
+  }
 
   return (
     <div style={{ background: '#fafbfc', borderTop: '1px solid #e2e8f0' }}>
-      <div style={{ display: 'grid', gridTemplateColumns: proxyFields.length > 0 ? '1fr 1fr' : '1fr', gap: 0 }}>
-        {/* Left: Proxy + Metadata */}
-        <div>
-          {proxyFields.length > 0 && (
-            <>
-              <div style={sectionStyle('#eff6ff', '#1e40af')}>Chi tiết proxy</div>
-              {proxyFields.map(f => (
-                <div key={f.rawKey} style={fieldStyle}>
-                  <span style={{ color: '#94a3b8' }}>{f.label}: </span>
-                  <span style={{ fontFamily: 'monospace', fontWeight: 500, color: '#1e293b' }}>{fmtValue(f.value)}</span>
-                </div>
-              ))}
-            </>
-          )}
-          {meta.length > 0 && (
-            <>
-              <div style={sectionStyle('#faf5ff', '#6b21a8')}>Thông tin thêm từ nhà cung cấp</div>
-              {meta.map(f => (
-                <div key={f.label} style={fieldStyle}>
-                  <span style={{ color: '#94a3b8' }}>{f.label}: </span>
-                  <span style={{ fontFamily: 'monospace', fontWeight: 500, color: '#1e293b' }}>{fmtValue(f.value)}</span>
-                </div>
-              ))}
-            </>
-          )}
-        </div>
-
-        {/* Right: Provider + General */}
-        <div style={{ borderLeft: proxyFields.length > 0 ? '1px solid #e2e8f0' : 'none' }}>
-          {providerFields.length > 0 && (
-            <>
-              <div style={sectionStyle('#fef3c7', '#92400e')}>Liên kết nhà cung cấp</div>
-              {providerFields.map(f => (
-                <div key={f.label} style={fieldStyle}>
-                  <span style={{ color: '#94a3b8' }}>{f.label}: </span>
-                  <span style={{ fontFamily: 'monospace', fontWeight: 500, color: '#1e293b' }}>{fmtValue(f.value)}</span>
-                </div>
-              ))}
-            </>
-          )}
-          <div style={sectionStyle('#f0fdf4', '#166534')}>Thông tin chung</div>
-          {general.map(f => (
-            <div key={f.label} style={fieldStyle}>
-              <span style={{ color: '#94a3b8' }}>{f.label}: </span>
-              <span style={{ fontFamily: 'monospace', fontWeight: 500, color: '#1e293b' }}>{fmtValue(f.value)}</span>
-            </div>
-          ))}
-        </div>
-      </div>
+      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+        <thead>
+          <tr style={{ background: '#f8fafc' }}>
+            <th style={{ ...th, width: '30%' }}>Tên</th>
+            <th style={th}>Giá trị</th>
+            {hasOrigins && <th style={{ ...th, width: '22%' }}>Trường NCC</th>}
+          </tr>
+        </thead>
+        <tbody>
+          {renderSection('Chi tiết proxy', '#eff6ff', '#1e40af', proxyRows)}
+          {renderSection('Thông tin thêm từ NCC', '#faf5ff', '#6b21a8', metaRows)}
+          {renderSection('Hệ thống & nhà cung cấp', '#f0fdf4', '#166534', systemRows)}
+        </tbody>
+      </table>
     </div>
   )
 }
