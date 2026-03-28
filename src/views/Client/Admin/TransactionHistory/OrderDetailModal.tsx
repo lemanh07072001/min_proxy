@@ -728,27 +728,27 @@ function ItemDetailPanel({ item }: { item: any }) {
   if (item.provider_item_id) rows.push({ label: 'ID proxy NCC', db: 'provider_item_id', val: item.provider_item_id, from: origins['provider_item_id'] })
 
   const hasSrc = rows.some(r => r.from)
-  const hd: React.CSSProperties = { padding: '5px 8px', fontSize: '10px', fontWeight: 700, color: '#64748b', textAlign: 'left', background: '#f1f5f9', borderBottom: '1px solid #e2e8f0', whiteSpace: 'nowrap' }
-  const td: React.CSSProperties = { padding: '4px 8px', fontSize: '12px', borderBottom: '1px solid #f1f5f9' }
+  const hd: React.CSSProperties = { padding: '6px 10px', fontSize: '10px', fontWeight: 600, color: '#78859b', textAlign: 'left', background: '#f8fafc', borderBottom: '1px solid #eef2f6', whiteSpace: 'nowrap', letterSpacing: '0.3px', textTransform: 'uppercase' }
+  const td: React.CSSProperties = { padding: '5px 10px', fontSize: '12px', borderBottom: '1px solid #f3f5f8' }
 
   return (
-    <div style={{ borderTop: '1px solid #e2e8f0', background: '#fafbfc', overflowX: 'auto' }}>
+    <div style={{ borderTop: '1px solid #eef2f6', background: '#fdfdfe', overflowX: 'auto' }}>
       <table style={{ width: '100%', borderCollapse: 'collapse' }}>
         <thead>
           <tr>
             <th style={hd}>Tên</th>
             <th style={hd}>Giá trị</th>
-            <th style={{ ...hd, color: '#94a3b8' }}>Field hệ thống</th>
-            {hasSrc && <th style={{ ...hd, color: '#b45309' }}>Field đối tác</th>}
+            <th style={{ ...hd, color: '#a0aec0' }}>Field hệ thống</th>
+            {hasSrc && <th style={{ ...hd, color: '#c4956a' }}>Field đối tác</th>}
           </tr>
         </thead>
         <tbody>
           {rows.map((r, i) => (
-            <tr key={i} style={{ background: i % 2 === 0 ? '#fff' : '#fafbfc' }}>
-              <td style={{ ...td, color: '#475569', fontWeight: 500, whiteSpace: 'nowrap' }}>{r.label}</td>
-              <td style={{ ...td, fontFamily: 'monospace', fontWeight: 600, color: '#0f172a', maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={fmtValue(r.val)}>{fmtValue(r.val)}</td>
-              <td style={{ ...td, fontFamily: 'monospace', fontSize: '11px', color: '#94a3b8' }}>{r.db}</td>
-              {hasSrc && <td style={{ ...td, fontFamily: 'monospace', fontSize: '11px', color: '#b45309' }}>{r.from || ''}</td>}
+            <tr key={i} style={{ background: i % 2 === 0 ? '#fff' : '#fafbfd' }}>
+              <td style={{ ...td, color: '#4a5568', fontWeight: 500, whiteSpace: 'nowrap' }}>{r.label}</td>
+              <td style={{ ...td, fontFamily: 'monospace', fontWeight: 600, color: '#2d3748', maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={fmtValue(r.val)}>{fmtValue(r.val)}</td>
+              <td style={{ ...td, fontFamily: 'monospace', fontSize: '11px', color: '#a0aec0' }}>{r.db}</td>
+              {hasSrc && <td style={{ ...td, fontFamily: 'monospace', fontSize: '11px', color: '#c4956a' }}>{r.from || ''}</td>}
             </tr>
           ))}
         </tbody>
