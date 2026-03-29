@@ -1,11 +1,98 @@
 import type {
   FormValues, ApiConfigBuy, RenewParamRow, DurationMapRow, InheritParam,
+  RenewParamConfig,
   ErrorCodeRule, HttpErrorRule, ResponseMappingRule,
 } from './ProviderFormTypes'
 import { defaultBuy, defaultFetchProxies, defaultValues, SYSTEM_VARS, VALUE_MAP } from './ProviderFormTypes'
 
 // ─── Helpers ────────────────────────────────────────
 
+/** Deserialize config cũ (params + duration_param + inherit_params) → renew_params thống nhất */
+export function deserializeRenewParams(renew: any): RenewParamConfig[] {
+  const result: RenewParamConfig[] = []
+
+  // 1. params{} → source=default hoặc source=order_items (provider_order_code/provider_item_id)
+  if (renew.params && typeof renew.params === 'object') {
+    Object.entries(renew.params).forEach(([param, value]) => {
+      const strVal = String(value)
+      if (strVal === '{provider_order_code}') {
+        result.push({ param, source: 'order_items', field: 'provider_order_code', field_label: 'Mã đơn NCC' })
+      } else if (strVal === '{provider_item_id}') {
+        result.push({ param, source: 'order_items', field: 'provider_item_id', field_label: 'ID item NCC' })
+      } else if (strVal === '{duration}') {
+        result.push({ param, source: 'user_input', input_type: 'number', input_label: 'Số ngày gia hạn', is_duration: true })
+      } else {
+        result.push({ param, source: 'default', value: strVal })
+      }
+    })
+  }
+
+  // 2. duration_param → nếu chưa có trong params, thêm vào
+  if (renew.duration_param) {
+    const hasDuration = result.some(r => r.is_duration || r.param === renew.duration_param)
+    if (!hasDuration) {
+      result.push({ param: renew.duration_param, source: 'user_input', input_type: 'number', input_label: 'Số ngày gia hạn', is_duration: true })
+    }
+  }
+
+  // 3. inherit_params[] → source=orders hoặc source=order_items
+  if (Array.isArray(renew.inherit_params)) {
+    renew.inherit_params.forEach((ip: any) => {
+      result.push({
+        param: ip.param || ip.field,
+        source: ip.source === 'order' ? 'orders' : 'order_items',
+        field: ip.field,
+        field_label: ip.field,
+      })
+    })
+  }
+
+  return result
+}
+
+/** Serialize renew_params thống nhất → format cũ (backward compatible cho BE) */
+export function serializeRenewParams(params: RenewParamConfig[]): {
+  params: Record<string, string>
+  duration_param: string
+  inherit_params: InheritParam[]
+} {
+  const resultParams: Record<string, string> = {}
+  let durationParam = ''
+  const inheritParams: InheritParam[] = []
+
+  params.filter(p => p.param).forEach(p => {
+    switch (p.source) {
+      case 'order_items':
+        if (p.field === 'provider_order_code') {
+          resultParams[p.param] = '{provider_order_code}'
+        } else if (p.field === 'provider_item_id') {
+          resultParams[p.param] = '{provider_item_id}'
+        } else {
+          // Custom field từ order_items → inherit_params
+          inheritParams.push({ source: 'order_item', field: p.field || '', param: p.param })
+        }
+        break
+      case 'orders':
+        inheritParams.push({ source: 'order', field: p.field || '', param: p.param })
+        break
+      case 'user_input':
+        if (p.is_duration) {
+          durationParam = p.param
+        } else {
+          // User input khác → tạm lưu như custom (BE chưa hỗ trợ user_input khác duration)
+          resultParams[p.param] = `{${p.param}}`
+        }
+        break
+      case 'default':
+        resultParams[p.param] = p.value || ''
+        break
+    }
+  })
+
+  return { params: resultParams, duration_param: durationParam, inherit_params: inheritParams }
+}
+
+// Legacy helper — giữ cho code cũ nếu cần
 export function deserializeParamsRows(params: Record<string, string>): RenewParamRow[] {
   return Object.entries(params).map(([param_name, value]) => ({
     param_name,
@@ -153,16 +240,14 @@ export function parseApiConfig(apiConfig: any): Partial<FormValues> {
         method: r.method || 'POST',
         auth_type: r.auth_type || 'inherit',
         auth_param: r.auth_param || '',
-        params_rows: r.params ? deserializeParamsRows(r.params) : [],
-        duration_param: r.duration_param || 'days',
+        renew_params: deserializeRenewParams(r),
+        duration_map_override: !!r.duration_map && Object.keys(r.duration_map).length > 0,
         duration_map_rows: r.duration_map ? Object.entries(r.duration_map).map(([days, v]) => ({ days, send_value: String(v) })) : [],
-        duration_map_enabled: !!r.duration_map && Object.keys(r.duration_map).length > 0,
         response_mode: r.response_mode || 'immediate',
         success_field: resp.success_field || '',
         success_value: resp.success_value != null ? String(resp.success_value) : '',
         new_expiry_field: resp.new_expiry_field || '',
         batch_delay_ms: r.batch_delay_ms ? String(r.batch_delay_ms) : '0',
-        inherit_params: r.inherit_params || [],
       }
     })(),
   }
@@ -386,19 +471,21 @@ export function buildApiConfig(form: FormValues): object | null {
       r.auth_type = form.renew.auth_type
       if (form.renew.auth_param) r.auth_param = form.renew.auth_param
     }
-    const validParams = (form.renew.params_rows || []).filter((p: RenewParamRow) => p.param_name)
-    if (validParams.length > 0) {
-      r.params = Object.fromEntries(
-        validParams.map((p: RenewParamRow) => [p.param_name, VALUE_MAP[p.value_type] || p.custom_value])
-      )
-    }
-    if (form.renew.duration_param) r.duration_param = form.renew.duration_param
-    if (form.renew.duration_map_enabled) {
+
+    // Serialize renew_params → format cũ (backward compatible)
+    const serialized = serializeRenewParams(form.renew.renew_params || [])
+    if (Object.keys(serialized.params).length > 0) r.params = serialized.params
+    if (serialized.duration_param) r.duration_param = serialized.duration_param
+    if (serialized.inherit_params.length > 0) r.inherit_params = serialized.inherit_params
+
+    // Duration map
+    if (form.renew.duration_map_override) {
       const validMap = (form.renew.duration_map_rows || []).filter((d: DurationMapRow) => d.days)
       if (validMap.length > 0) {
         r.duration_map = Object.fromEntries(validMap.map((d: DurationMapRow) => [d.days, d.send_value]))
       }
     }
+
     if (form.renew.response_mode === 'deferred') r.response_mode = 'deferred'
     if (parseInt(form.renew.batch_delay_ms) > 0) r.batch_delay_ms = parseInt(form.renew.batch_delay_ms)
 
@@ -410,11 +497,6 @@ export function buildApiConfig(form: FormValues): object | null {
     }
     if (form.renew.new_expiry_field) resp.new_expiry_field = form.renew.new_expiry_field
     if (Object.keys(resp).length > 0) r.response = resp
-
-    const validInherit = (form.renew.inherit_params || []).filter(
-      (p: InheritParam) => p.field && p.param && ['order', 'order_item'].includes(p.source)
-    )
-    if (validInherit.length > 0) r.inherit_params = validInherit
 
     config.renew = r
   }

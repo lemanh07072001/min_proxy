@@ -113,6 +113,8 @@ export interface IpConfig {
   param_format: string
 }
 
+// ─── Legacy types (dùng cho deserialize config cũ) ──
+
 export interface InheritParam {
   source: 'order' | 'order_item'
   field: string
@@ -130,6 +132,27 @@ export interface DurationMapRow {
   send_value: string
 }
 
+// ─── New unified renew param ────────────────────────
+
+export interface RenewParamSelectOption {
+  value: string
+  label: string
+}
+
+export interface RenewParamConfig {
+  param: string                                              // Tên param gửi NCC
+  source: 'orders' | 'order_items' | 'user_input' | 'default' // Nguồn giá trị
+  field?: string                                              // Field trong DB (khi source=orders|order_items)
+  field_label?: string                                        // Label hiện cho admin (VD: "Mã proxy NCC")
+  value?: string                                              // Giá trị cố định (khi source=default)
+  input_type?: 'number' | 'string' | 'select'                // Kiểu input (khi source=user_input)
+  input_label?: string                                        // Label hiện cho user (khi source=user_input)
+  min?: number                                                // Validate min (khi input_type=number)
+  max?: number                                                // Validate max (khi input_type=number)
+  options?: RenewParamSelectOption[]                           // Danh sách chọn (khi input_type=select)
+  is_duration?: boolean                                       // Đánh dấu param này là "số ngày gia hạn"
+}
+
 export interface RenewConfig {
   enabled: boolean
   mode: string
@@ -137,16 +160,14 @@ export interface RenewConfig {
   method: string
   auth_type: string
   auth_param: string
-  params_rows: RenewParamRow[]
-  duration_param: string
-  duration_map_rows: DurationMapRow[]
-  duration_map_enabled: boolean
+  renew_params: RenewParamConfig[]                             // 1 bảng thống nhất
+  duration_map_override: boolean                               // true = dùng riêng, false = dùng chung từ tab Mua
+  duration_map_rows: DurationMapRow[]                          // Bảng quy đổi (khi override=true)
   response_mode: string
   success_field: string
   success_value: string
   new_expiry_field: string
   batch_delay_ms: string
-  inherit_params: InheritParam[]
 }
 
 export interface FormValues {
@@ -325,15 +346,13 @@ export const defaultValues: FormValues = {
     method: 'POST',
     auth_type: 'inherit',
     auth_param: '',
-    params_rows: [],
-    duration_param: 'days',
+    renew_params: [],
+    duration_map_override: false,
     duration_map_rows: [],
-    duration_map_enabled: false,
     response_mode: 'immediate',
     success_field: '',
     success_value: '',
     new_expiry_field: '',
-    inherit_params: [],
     batch_delay_ms: '0',
   }
 }
