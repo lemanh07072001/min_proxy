@@ -1,5 +1,7 @@
 import { Controller, useWatch } from 'react-hook-form'
 import Grid2 from '@mui/material/Grid2'
+import Box from '@mui/material/Box'
+import Typography from '@mui/material/Typography'
 import MenuItem from '@mui/material/MenuItem'
 
 import CustomTextField from '@core/components/mui/TextField'
@@ -10,94 +12,150 @@ export default function RotateSection({ control }: SectionProps) {
   const enabled = useWatch({ control, name: 'rotate.enabled' })
 
   return (
-    <Grid2 container spacing={2}>
-      <Grid2 size={{ xs: 12 }}>
-        <Controller
-          name='rotate.enabled'
-          control={control}
-          render={({ field: { value, onChange, ...field } }) => (
-            <CustomTextField
-              {...field}
-              value={value ? 'true' : 'false'}
-              onChange={(e) => onChange(e.target.value === 'true')}
-              fullWidth select label='Bật cấu hình xoay'
-            >
-              <MenuItem value='false'>Tắt</MenuItem>
-              <MenuItem value='true'>Bật</MenuItem>
-            </CustomTextField>
-          )}
-        />
-      </Grid2>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+      {/* Giải thích tổng quan */}
+      <Box sx={{ p: 1.5, background: '#ecfeff', border: '1px solid #a5f3fc', borderRadius: 1.5 }}>
+        <Typography sx={{ fontSize: 13, fontWeight: 700, color: '#0e7490', mb: 0.5 }}>
+          API Xoay proxy — lấy proxy mới (rotation)
+        </Typography>
+        <Typography sx={{ fontSize: 12, color: '#475569', lineHeight: 1.7 }}>
+          Khi khách bấm <strong>"Xoay IP"</strong> → hệ thống gọi API này → NCC trả proxy mới (ip:port:user:pass) → hệ thống cập nhật cho khách.
+          <br />
+          <strong>Chỉ dùng cho proxy xoay (rotating).</strong> Proxy tĩnh không cần section này.
+        </Typography>
+      </Box>
+
+      <Controller
+        name='rotate.enabled'
+        control={control}
+        render={({ field: { value, onChange, ...field } }) => (
+          <CustomTextField
+            {...field}
+            value={value ? 'true' : 'false'}
+            onChange={(e) => onChange(e.target.value === 'true')}
+            fullWidth select label='Bật cấu hình xoay'
+          >
+            <MenuItem value='false'>Tắt</MenuItem>
+            <MenuItem value='true'>Bật</MenuItem>
+          </CustomTextField>
+        )}
+      />
 
       {enabled && (
         <>
-          <Grid2 size={{ xs: 6, sm: 3 }}>
-            <Controller name='rotate.method' control={control} render={({ field }) => (
-              <CustomTextField {...field} fullWidth select label='Method'>
-                <MenuItem value='GET'>GET</MenuItem>
-                <MenuItem value='POST'>POST</MenuItem>
-              </CustomTextField>
-            )} />
-          </Grid2>
-          <Grid2 size={{ xs: 12, sm: 9 }}>
-            <Controller name='rotate.url' control={control} render={({ field }) => (
-              <CustomTextField {...field} fullWidth label='URL xoay proxy' placeholder='https://api.provider.com/get' />
-            )} />
-          </Grid2>
-          <Grid2 size={{ xs: 6, sm: 3 }}>
-            <Controller name='rotate.auth_type' control={control} render={({ field }) => (
-              <CustomTextField {...field} fullWidth select label={<>Kiểu xác thực <FieldHint text='none: không gửi token, chỉ gửi key proxy. query/header/bearer: gửi token provider.' /></>}>
-                <MenuItem value='none'>Không (chỉ gửi key proxy)</MenuItem>
-                <MenuItem value='query'>Query param</MenuItem>
-                <MenuItem value='header'>Header</MenuItem>
-                <MenuItem value='bearer'>Bearer token</MenuItem>
-              </CustomTextField>
-            )} />
-          </Grid2>
-          <Grid2 size={{ xs: 6, sm: 3 }}>
-            <Controller name='rotate.auth_param' control={control} render={({ field }) => (
-              <CustomTextField {...field} fullWidth label='Param auth' placeholder='key' />
-            )} />
-          </Grid2>
-          <Grid2 size={{ xs: 6, sm: 3 }}>
-            <Controller name='rotate.key_source' control={control} render={({ field }) => (
-              <CustomTextField {...field} fullWidth select label={<>Key source <FieldHint text='Field nào trong OrderItem làm key xoay' /></>}>
-                <MenuItem value='key'>key</MenuItem>
-                <MenuItem value='provider_key'>provider_key</MenuItem>
-              </CustomTextField>
-            )} />
-          </Grid2>
-          <Grid2 size={{ xs: 12, sm: 6 }}>
-            <Controller name='rotate.params_json' control={control} render={({ field }) => (
-              <CustomTextField {...field} fullWidth label={<>Params mặc định <FieldHint text='Params cố định gửi kèm mỗi lần xoay. VD: {"tinh": "hcm", "nhamang": "viettel"}' /></>} placeholder='{"tinh": "hcm"}' />
-            )} />
-          </Grid2>
-          <Grid2 size={{ xs: 6, sm: 3 }}>
-            <Controller name='rotate.response_http' control={control} render={({ field }) => (
-              <CustomTextField {...field} fullWidth label='Field HTTP' placeholder='http' />
-            )} />
-          </Grid2>
-          <Grid2 size={{ xs: 6, sm: 3 }}>
-            <Controller name='rotate.response_socks5' control={control} render={({ field }) => (
-              <CustomTextField {...field} fullWidth label='Field SOCKS5' placeholder='socks5' />
-            )} />
-          </Grid2>
-          <Grid2 size={{ xs: 6, sm: 3 }}>
-            <Controller name='rotate.double_ampersand' control={control} render={({ field: { value, onChange, ...field } }) => (
-              <CustomTextField
-                {...field}
-                value={value ? 'true' : 'false'}
-                onChange={(e) => onChange(e.target.value === 'true')}
-                fullWidth select
-                label={<>Double ampersand <FieldHint text='Dùng && thay vì & nối params' /></>}
-              >
-                <MenuItem value='false'>Không (&)</MenuItem>
-                <MenuItem value='true'>Có (&&)</MenuItem>
-              </CustomTextField>
-            )} />
-          </Grid2>
+          {/* Bước 1: Gọi API xoay */}
+          <Box sx={{ border: '1px solid #67e8f9', borderTop: '3px solid #06b6d4', borderRadius: 2, overflow: 'hidden' }}>
+            <Box sx={{ background: '#ecfeff', borderBottom: '1px solid #67e8f9', px: 2, py: 1.25 }}>
+              <Typography sx={{ fontSize: 14, fontWeight: 700, color: '#06b6d4' }}>
+                Cấu hình gọi API xoay
+              </Typography>
+              <Typography sx={{ fontSize: 12, color: '#475569', mt: 0.25 }}>
+                Hệ thống BUILD URL từ config → gửi key proxy + token xác thực → NCC trả proxy mới.
+              </Typography>
+            </Box>
+            <Box sx={{ p: 2 }}>
+              <Grid2 container spacing={2}>
+                <Grid2 size={{ xs: 6, sm: 3 }}>
+                  <Controller name='rotate.method' control={control} render={({ field }) => (
+                    <CustomTextField {...field} fullWidth select label='Method'>
+                      <MenuItem value='GET'>GET</MenuItem>
+                      <MenuItem value='POST'>POST</MenuItem>
+                    </CustomTextField>
+                  )} />
+                </Grid2>
+                <Grid2 size={{ xs: 12, sm: 9 }}>
+                  <Controller name='rotate.url' control={control} render={({ field }) => (
+                    <CustomTextField {...field} fullWidth label='URL xoay proxy' placeholder='https://api.provider.com/get' helperText='URL NCC dùng để lấy proxy mới' />
+                  )} />
+                </Grid2>
+                <Grid2 size={{ xs: 6, sm: 3 }}>
+                  <Controller name='rotate.auth_type' control={control} render={({ field }) => (
+                    <CustomTextField {...field} fullWidth select label='Xác thực'>
+                      <MenuItem value='none'>Không gửi token (chỉ gửi key proxy)</MenuItem>
+                      <MenuItem value='query'>Token trong URL (?key=xxx)</MenuItem>
+                      <MenuItem value='header'>Token trong header</MenuItem>
+                      <MenuItem value='bearer'>Bearer token</MenuItem>
+                    </CustomTextField>
+                  )} />
+                </Grid2>
+                <Grid2 size={{ xs: 6, sm: 3 }}>
+                  <Controller name='rotate.auth_param' control={control} render={({ field }) => (
+                    <CustomTextField {...field} fullWidth label='Tên param token' placeholder='key' helperText='NCC gọi token là gì? VD: key, api_key' />
+                  )} />
+                </Grid2>
+                <Grid2 size={{ xs: 6, sm: 3 }}>
+                  <Controller name='rotate.key_source' control={control} render={({ field }) => (
+                    <CustomTextField {...field} fullWidth select label='Key proxy lấy từ đâu?'>
+                      <MenuItem value='key'>key (hệ thống)</MenuItem>
+                      <MenuItem value='provider_key'>provider_key (key NCC trả)</MenuItem>
+                    </CustomTextField>
+                  )} />
+                </Grid2>
+                <Grid2 size={{ xs: 12, sm: 6 }}>
+                  <Controller name='rotate.params_json' control={control} render={({ field }) => (
+                    <CustomTextField {...field} fullWidth label='Params cố định gửi kèm' placeholder='{"tinh": "hcm", "nhamang": "viettel"}' helperText='Bỏ trống nếu chỉ cần gửi key proxy + token' />
+                  )} />
+                </Grid2>
+              </Grid2>
+            </Box>
+          </Box>
+
+          {/* Bước 2: Đọc proxy mới từ response */}
+          <Box sx={{ border: '1px solid #6ee7b7', borderTop: '3px solid #10b981', borderRadius: 2, overflow: 'hidden' }}>
+            <Box sx={{ background: '#ecfdf5', borderBottom: '1px solid #6ee7b7', px: 2, py: 1.25 }}>
+              <Typography sx={{ fontSize: 14, fontWeight: 700, color: '#10b981' }}>
+                Đọc proxy mới từ response NCC
+              </Typography>
+              <Typography sx={{ fontSize: 12, color: '#475569', mt: 0.25 }}>
+                NCC trả JSON chứa proxy mới → hệ thống đọc field HTTP và SOCKS5 → cập nhật cho khách.
+              </Typography>
+            </Box>
+            <Box sx={{ p: 2 }}>
+              <Grid2 container spacing={2}>
+                <Grid2 size={{ xs: 6, sm: 4 }}>
+                  <Controller name='rotate.response_http' control={control} render={({ field }) => (
+                    <CustomTextField {...field} fullWidth label='Field chứa proxy HTTP' placeholder='http' helperText='VD: NCC trả {"http": "1.2.3.4:8080:user:pass"}' />
+                  )} />
+                </Grid2>
+                <Grid2 size={{ xs: 6, sm: 4 }}>
+                  <Controller name='rotate.response_socks5' control={control} render={({ field }) => (
+                    <CustomTextField {...field} fullWidth label='Field chứa proxy SOCKS5' placeholder='socks5' helperText='VD: NCC trả {"socks5": "1.2.3.4:1080:user:pass"}' />
+                  )} />
+                </Grid2>
+                <Grid2 size={{ xs: 6, sm: 4 }}>
+                  <Controller name='rotate.double_ampersand' control={control} render={({ field: { value, onChange, ...field } }) => (
+                    <CustomTextField
+                      {...field}
+                      value={value ? 'true' : 'false'}
+                      onChange={(e) => onChange(e.target.value === 'true')}
+                      fullWidth select
+                      label='Dấu nối params'
+                      helperText='Hầu hết NCC dùng &. Chỉ đổi nếu NCC dùng &&'
+                    >
+                      <MenuItem value='false'>Bình thường (&)</MenuItem>
+                      <MenuItem value='true'>Double (&&)</MenuItem>
+                    </CustomTextField>
+                  )} />
+                </Grid2>
+              </Grid2>
+            </Box>
+          </Box>
+
+          {/* Minh hoạ flow */}
+          <Box sx={{ p: 1.5, background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 1.5 }}>
+            <Typography sx={{ fontSize: 12, fontWeight: 600, color: '#334155', mb: 0.5 }}>
+              Flow xoay proxy:
+            </Typography>
+            <Typography sx={{ fontSize: 11.5, color: '#475569', fontFamily: 'monospace', lineHeight: 2 }}>
+              Khách bấm "Xoay IP" → hệ thống gọi: <code style={{ background: '#e2e8f0', padding: '1px 4px', borderRadius: 3 }}>GET url?key=abc123&token=xxx</code>
+              <br />
+              → NCC trả: <code style={{ background: '#e2e8f0', padding: '1px 4px', borderRadius: 3 }}>{`{"http":"5.6.7.8:3128:u:p","socks5":"5.6.7.8:1080:u:p"}`}</code>
+              <br />
+              → Hệ thống cập nhật proxy mới → khách thấy IP mới ngay
+            </Typography>
+          </Box>
         </>
       )}
-    </Grid2>
+    </Box>
   )
 }

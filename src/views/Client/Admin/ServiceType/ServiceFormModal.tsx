@@ -408,14 +408,36 @@ const PurchaseOptionsSection = memo(function PurchaseOptionsSection({
       <div style={{ border: '1px solid #e2e8f0', borderRadius: 8, padding: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
           <ShoppingCart size={16} color='#7c3aed' />
-          <span style={{ fontWeight: 700, fontSize: 14, color: '#5b21b6' }}>Params gửi khi mua hàng</span>
-        </div>
-        <div style={{ fontSize: 11.5, color: '#64748b', marginBottom: 12, background: '#f8fafc', borderRadius: 6, padding: '6px 10px' }}>
-          Ưu tiên ghi đè: Provider → Mặc định sản phẩm → Khách chọn. Trùng key thì giá trị lớp sau được gửi đi cho Provider.
+          <span style={{ fontWeight: 700, fontSize: 14, color: '#5b21b6' }}>Params gửi NCC khi mua hàng</span>
         </div>
 
-        <div style={{ marginBottom: 16 }}>
-          <div style={{ fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 6 }}>Mặc định sản phẩm — tự động gửi kèm, khách không thấy</div>
+        {/* Giải thích 3 lớp params */}
+        <div style={{ fontSize: 12, color: '#475569', marginBottom: 14, background: '#f5f3ff', borderRadius: 8, padding: '10px 12px', border: '1px solid #e9d5ff', lineHeight: 1.8 }}>
+          <div style={{ fontWeight: 600, color: '#7c3aed', marginBottom: 4 }}>Khi khách mua sản phẩm → hệ thống gửi params cho NCC theo 3 lớp:</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
+            <span style={{ background: '#e2e8f0', padding: '1px 6px', borderRadius: 4, fontSize: 11, fontWeight: 600 }}>Lớp 1</span>
+            <span><strong>Provider config</strong> — params cố định trong cấu hình NCC (URL, auth, quantity...)</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
+            <span style={{ background: '#ddd6fe', padding: '1px 6px', borderRadius: 4, fontSize: 11, fontWeight: 600, color: '#5b21b6' }}>Lớp 2</span>
+            <span><strong>Mặc định sản phẩm</strong> (bên dưới) — params riêng cho SP này, khách không thấy</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span style={{ background: '#c4b5fd', padding: '1px 6px', borderRadius: 4, fontSize: 11, fontWeight: 600, color: '#fff' }}>Lớp 3</span>
+            <span><strong>Khách chọn</strong> — hiện trên form checkout, khách tự chọn giá trị</span>
+          </div>
+          <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 6 }}>Trùng key → lớp sau ghi đè lớp trước. VD: SP đặt loaiproxy=Viettel, nhưng khách chọn loaiproxy=VNPT → gửi VNPT.</div>
+        </div>
+
+        {/* Lớp 2: Mặc định sản phẩm */}
+        <div style={{ marginBottom: 16, padding: '10px 12px', background: '#fafbfc', border: '1px solid #e2e8f0', borderRadius: 8 }}>
+          <div style={{ fontSize: 12, fontWeight: 600, color: '#5b21b6', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 4 }}>
+            <span style={{ background: '#ddd6fe', padding: '1px 6px', borderRadius: 4, fontSize: 10, fontWeight: 700, color: '#5b21b6' }}>Lớp 2</span>
+            Mặc định sản phẩm — tự gửi kèm, khách không thấy
+          </div>
+          <div style={{ fontSize: 11, color: '#64748b', marginBottom: 8 }}>
+            JSON object chứa params cố định cho SP này. VD: loại proxy, quốc gia, giao thức... Hệ thống gửi NCC cùng mỗi request mua.
+          </div>
           <Controller name='body_api' control={control} render={({ field }) => (
             <CustomTextField {...field} rows={2} fullWidth multiline size='small'
               placeholder='VD: {"loaiproxy":"Viettel","type":"HTTP"}'
@@ -423,8 +445,12 @@ const PurchaseOptionsSection = memo(function PurchaseOptionsSection({
           )} />
         </div>
 
+        {/* Lớp 3: Khách chọn */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-          <div style={{ fontSize: 12, fontWeight: 600, color: '#475569' }}>Khách chọn khi mua — hiện trên form thanh toán, ghi đè mặc định sản phẩm nếu trùng key</div>
+          <div style={{ fontSize: 12, fontWeight: 600, color: '#5b21b6', display: 'flex', alignItems: 'center', gap: 4 }}>
+            <span style={{ background: '#c4b5fd', padding: '1px 6px', borderRadius: 4, fontSize: 10, fontWeight: 700, color: '#fff' }}>Lớp 3</span>
+            Khách chọn khi mua — hiện trên form checkout
+          </div>
           <Button size='small' variant='outlined'
             onClick={() => onChange([...options, { key: '', param_name: '', label: '', type: 'select', required: true, default: '', options: [{ value: '', label: '' }] }])}>
             + Thêm tuỳ chọn
@@ -1616,14 +1642,16 @@ return <Chip key={val} label={p?.label || val} size='small' />
 
                 {/* Lưu thêm dữ liệu từ nhà cung cấp — per sản phẩm */}
                 <Grid2 size={{ xs: 12 }}>
-                  <Box sx={{ mt: 1, p: 1.5, background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 1.5 }}>
+                  <Box sx={{ mt: 1, p: 1.5, background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 1.5 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
                       <Box>
-                        <Typography variant='body2' fontWeight={600} sx={{ fontSize: 13 }}>
-                          Lưu thêm dữ liệu từ nhà cung cấp
+                        <Typography variant='body2' fontWeight={600} sx={{ fontSize: 13, color: '#0c4a6e' }}>
+                          Ánh xạ dữ liệu — ghi đè cho riêng sản phẩm này
                         </Typography>
-                        <Typography variant='caption' color='text.secondary'>
-                          Khi mua sản phẩm này, hệ thống sẽ lấy thêm thông tin từ kết quả nhà cung cấp trả về. Để trống = dùng cấu hình mặc định của nhà cung cấp.
+                        <Typography sx={{ fontSize: 11.5, color: '#475569', mt: 0.5, lineHeight: 1.6 }}>
+                          Khi mua SP này, hệ thống đọc thêm field từ response NCC → lưu vào DB. <strong>Ghi đè</strong> cấu hình mặc định NCC nếu trùng.
+                          <br />
+                          Để trống = dùng cấu hình mặc định trong trang NCC (tab Mua proxy → bước 4).
                         </Typography>
                       </Box>
                       <Button size='small' startIcon={<Plus size={14} />} onClick={() => setResponseMappingRows(prev => [...prev, { from: '', to: '', store: 'metadata' }])}>

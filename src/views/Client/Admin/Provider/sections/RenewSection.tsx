@@ -203,133 +203,179 @@ export default function RenewSection({ control }: SectionProps) {
   const renewAuthType = useWatch({ control, name: 'renew.auth_type' })
 
   return (
-    <Grid2 container spacing={2}>
-      <Grid2 size={{ xs: 12 }}>
-        <Controller
-          name='renew.enabled'
-          control={control}
-          render={({ field: { value, onChange, ...field } }) => (
-            <CustomTextField
-              {...field}
-              value={value ? 'true' : 'false'}
-              onChange={(e) => onChange(e.target.value === 'true')}
-              fullWidth select label='Hỗ trợ gia hạn'
-            >
-              <MenuItem value='false'>Tắt</MenuItem>
-              <MenuItem value='true'>Bật</MenuItem>
-            </CustomTextField>
-          )}
-        />
-      </Grid2>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+      {/* Giải thích tổng quan */}
+      <Box sx={{ p: 1.5, background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 1.5 }}>
+        <Typography sx={{ fontSize: 13, fontWeight: 700, color: '#92400e', mb: 0.5 }}>
+          Gia hạn proxy — kéo dài thời hạn sử dụng
+        </Typography>
+        <Typography sx={{ fontSize: 12, color: '#475569', lineHeight: 1.7 }}>
+          Khi proxy sắp hết hạn, khách bấm <strong>"Gia hạn"</strong> → hệ thống gọi API NCC → NCC gia hạn → hệ thống cập nhật ngày hết hạn mới.
+          <br />
+          <strong>2 chế độ:</strong> Gọi 1 lệnh cho cả đơn (by_order) hoặc gọi riêng từng proxy (by_item).
+        </Typography>
+      </Box>
+
+      <Controller
+        name='renew.enabled'
+        control={control}
+        render={({ field: { value, onChange, ...field } }) => (
+          <CustomTextField
+            {...field}
+            value={value ? 'true' : 'false'}
+            onChange={(e) => onChange(e.target.value === 'true')}
+            fullWidth select label='NCC hỗ trợ gia hạn?'
+          >
+            <MenuItem value='false'>Không — bỏ qua</MenuItem>
+            <MenuItem value='true'>Có — cấu hình bên dưới</MenuItem>
+          </CustomTextField>
+        )}
+      />
 
       {enabled && (
         <>
-          <Grid2 size={{ xs: 12, sm: 4 }}>
-            <Controller name='renew.mode' control={control} render={({ field }) => (
-              <CustomTextField {...field} fullWidth select label='Cách gia hạn'>
-                <MenuItem value='by_order'>1 lệnh cho cả đơn</MenuItem>
-                <MenuItem value='by_item'>Gọi riêng từng proxy</MenuItem>
-              </CustomTextField>
-            )} />
-          </Grid2>
-          <Grid2 size={{ xs: 12, sm: 4 }}>
-            <Controller name='renew.method' control={control} render={({ field }) => (
-              <CustomTextField {...field} fullWidth select label='Method'>
-                <MenuItem value='GET'>GET</MenuItem>
-                <MenuItem value='POST'>POST</MenuItem>
-              </CustomTextField>
-            )} />
-          </Grid2>
-          <Grid2 size={{ xs: 12, sm: 4 }}>
-            <Controller name='renew.auth_type' control={control} render={({ field }) => (
-              <CustomTextField {...field} fullWidth select label='Xác thực NCC'>
-                <MenuItem value='inherit'>Giống lúc mua</MenuItem>
-                <MenuItem value='query'>Key trong URL (?key=xxx)</MenuItem>
-                <MenuItem value='header'>Key trong header</MenuItem>
-                <MenuItem value='bearer'>Bearer token</MenuItem>
-              </CustomTextField>
-            )} />
-          </Grid2>
+          {/* ═══ Nhóm 1: Gọi API gia hạn ═══ */}
+          <Box sx={{ border: '1px solid #fcd34d', borderTop: '3px solid #f59e0b', borderRadius: 2, overflow: 'hidden' }}>
+            <Box sx={{ background: '#fffbeb', borderBottom: '1px solid #fde68a', px: 2, py: 1.25 }}>
+              <Typography sx={{ fontSize: 14, fontWeight: 700, color: '#d97706' }}>
+                Gọi API gia hạn
+              </Typography>
+              <Typography sx={{ fontSize: 12, color: '#475569', mt: 0.25 }}>
+                Hệ thống BUILD request từ URL + params bên dưới → gửi NCC. Biến trong URL (như {'{provider_order_code}'}) sẽ tự thay bằng giá trị thật.
+              </Typography>
+            </Box>
+            <Box sx={{ p: 2 }}>
+              <Grid2 container spacing={2}>
+                <Grid2 size={{ xs: 12, sm: 4 }}>
+                  <Controller name='renew.mode' control={control} render={({ field }) => (
+                    <CustomTextField {...field} fullWidth select label='Cách gia hạn' helperText='by_order: 1 request cho toàn bộ. by_item: loop từng proxy.'>
+                      <MenuItem value='by_order'>1 lệnh cho cả đơn</MenuItem>
+                      <MenuItem value='by_item'>Gọi riêng từng proxy</MenuItem>
+                    </CustomTextField>
+                  )} />
+                </Grid2>
+                <Grid2 size={{ xs: 12, sm: 4 }}>
+                  <Controller name='renew.method' control={control} render={({ field }) => (
+                    <CustomTextField {...field} fullWidth select label='Method'>
+                      <MenuItem value='GET'>GET</MenuItem>
+                      <MenuItem value='POST'>POST</MenuItem>
+                    </CustomTextField>
+                  )} />
+                </Grid2>
+                <Grid2 size={{ xs: 12, sm: 4 }}>
+                  <Controller name='renew.auth_type' control={control} render={({ field }) => (
+                    <CustomTextField {...field} fullWidth select label='Xác thực NCC'>
+                      <MenuItem value='inherit'>Giống lúc mua (dùng cùng token)</MenuItem>
+                      <MenuItem value='query'>Key trong URL (?key=xxx)</MenuItem>
+                      <MenuItem value='header'>Key trong header</MenuItem>
+                      <MenuItem value='bearer'>Bearer token</MenuItem>
+                    </CustomTextField>
+                  )} />
+                </Grid2>
 
-          {renewAuthType && renewAuthType !== 'inherit' && renewAuthType !== 'bearer' && (
-            <Grid2 size={{ xs: 12, sm: 4 }}>
-              <Controller name='renew.auth_param' control={control} render={({ field }) => (
-                <CustomTextField {...field} fullWidth
-                  label='NCC gọi tên key là gì?'
-                  placeholder={renewAuthType === 'header' ? 'apikey' : 'key'}
-                />
-              )} />
-            </Grid2>
-          )}
+                {renewAuthType && renewAuthType !== 'inherit' && renewAuthType !== 'bearer' && (
+                  <Grid2 size={{ xs: 12, sm: 4 }}>
+                    <Controller name='renew.auth_param' control={control} render={({ field }) => (
+                      <CustomTextField {...field} fullWidth label='Tên param token' placeholder={renewAuthType === 'header' ? 'apikey' : 'key'} />
+                    )} />
+                  </Grid2>
+                )}
 
-          <Grid2 size={{ xs: 12 }}>
-            <Controller name='renew.url' control={control} render={({ field }) => (
-              <CustomTextField {...field} fullWidth
-                label='URL gia hạn'
-                placeholder='https://api.ncc.com/renew/{provider_order_code}'
-                helperText={
-                  field.value?.includes('{')
-                    ? '↳ ' + field.value
-                        .replace(/\{provider_order_code\}/g, 'TXN-12345')
-                        .replace(/\{provider_item_id\}/g, 'PROXY-001')
-                        .replace(/\{duration\}/g, '30')
-                    : 'Dùng {provider_order_code} = mã đơn NCC, {provider_item_id} = mã proxy, {duration} = số ngày'
-                }
-              />
-            )} />
-          </Grid2>
+                <Grid2 size={{ xs: 12 }}>
+                  <Controller name='renew.url' control={control} render={({ field }) => (
+                    <CustomTextField {...field} fullWidth
+                      label='URL gia hạn'
+                      placeholder='https://api.ncc.com/renew/{provider_order_code}'
+                      helperText={
+                        field.value?.includes('{')
+                          ? '↳ Preview: ' + field.value
+                              .replace(/\{provider_order_code\}/g, 'TXN-12345')
+                              .replace(/\{provider_item_id\}/g, 'PROXY-001')
+                              .replace(/\{duration\}/g, '30')
+                          : 'Dùng {provider_order_code} = mã đơn NCC, {provider_item_id} = mã proxy, {duration} = số ngày'
+                      }
+                    />
+                  )} />
+                </Grid2>
+              </Grid2>
+            </Box>
+          </Box>
 
-          <RenewParamsTable control={control} />
+          {/* ═══ Nhóm 2: Tham số gửi kèm ═══ */}
+          <Box sx={{ border: '1px solid #c4b5fd', borderTop: '3px solid #8b5cf6', borderRadius: 2, overflow: 'hidden' }}>
+            <Box sx={{ background: '#f5f3ff', borderBottom: '1px solid #c4b5fd', px: 2, py: 1.25 }}>
+              <Typography sx={{ fontSize: 14, fontWeight: 700, color: '#7c3aed' }}>
+                Tham số gửi kèm request
+              </Typography>
+              <Typography sx={{ fontSize: 12, color: '#475569', mt: 0.25 }}>
+                Ngoài URL, NCC có thể cần thêm params (loại proxy, số ngày, mã proxy...). Cấu hình ở đây.
+              </Typography>
+            </Box>
+            <Box sx={{ p: 2 }}>
+              <Grid2 container spacing={2}>
+                <RenewParamsTable control={control} />
 
-          <Grid2 size={{ xs: 12, sm: 4 }}>
-            <Controller name='renew.duration_param' control={control} render={({ field }) => (
-              <CustomTextField {...field} fullWidth label='NCC gọi "số ngày" là gì?' placeholder='days' helperText='Tên tham số gửi số ngày. VD: days, duration, period' />
-            )} />
-          </Grid2>
+                <Grid2 size={{ xs: 12, sm: 4 }}>
+                  <Controller name='renew.duration_param' control={control} render={({ field }) => (
+                    <CustomTextField {...field} fullWidth label='NCC gọi "số ngày" là gì?' placeholder='days' helperText='Tên param gửi số ngày. VD: days, duration, ngay' />
+                  )} />
+                </Grid2>
 
-          <DurationMapSection control={control} />
+                <DurationMapSection control={control} />
 
-          {mode === 'by_item' && (
-            <Grid2 size={{ xs: 6, sm: 4 }}>
-              <Controller name='renew.batch_delay_ms' control={control} render={({ field }) => (
-                <CustomTextField {...field} fullWidth type='number' label='Nghỉ giữa mỗi proxy (ms)' placeholder='0' helperText='Nếu NCC giới hạn tốc độ gọi. 0 = không nghỉ' />
-              )} />
-            </Grid2>
-          )}
+                {mode === 'by_item' && (
+                  <Grid2 size={{ xs: 6, sm: 4 }}>
+                    <Controller name='renew.batch_delay_ms' control={control} render={({ field }) => (
+                      <CustomTextField {...field} fullWidth type='number' label='Nghỉ giữa mỗi proxy (ms)' placeholder='0' helperText='Nếu NCC giới hạn tốc độ gọi. 0 = không nghỉ' />
+                    )} />
+                  </Grid2>
+                )}
 
-          <InheritParamsTable control={control} />
+                <InheritParamsTable control={control} />
+              </Grid2>
+            </Box>
+          </Box>
 
-          <Grid2 size={{ xs: 12 }}>
-            <Divider sx={{ my: 1 }} />
-            <Typography variant='body2' fontWeight={600} sx={{ mb: 1 }}>
-              NCC trả về thế nào khi thành công?
-            </Typography>
-          </Grid2>
-          <Grid2 size={{ xs: 6, sm: 3 }}>
-            <Controller name='renew.success_field' control={control} render={({ field }) => (
-              <CustomTextField {...field} fullWidth label='Field báo OK' placeholder='status' />
-            )} />
-          </Grid2>
-          <Grid2 size={{ xs: 6, sm: 3 }}>
-            <Controller name='renew.success_value' control={control} render={({ field }) => (
-              <CustomTextField {...field} fullWidth label='Giá trị OK' placeholder='success' />
-            )} />
-          </Grid2>
-          <Grid2 size={{ xs: 12, sm: 6 }}>
-            <Controller name='renew.new_expiry_field' control={control} render={({ field }) => (
-              <CustomTextField {...field} fullWidth label='Field ngày hết hạn mới' placeholder='data.expired_at' helperText='Bỏ trống = tự tính từ hạn cũ + số ngày' />
-            )} />
-          </Grid2>
-          <Grid2 size={{ xs: 12, sm: 4 }}>
-            <Controller name='renew.response_mode' control={control} render={({ field }) => (
-              <CustomTextField {...field} fullWidth select label='NCC xác nhận thế nào?'>
-                <MenuItem value='immediate'>Trả kết quả ngay</MenuItem>
-                <MenuItem value='deferred'>Cần gọi lại sau để kiểm tra</MenuItem>
-              </CustomTextField>
-            )} />
-          </Grid2>
+          {/* ═══ Nhóm 3: Kiểm tra kết quả ═══ */}
+          <Box sx={{ border: '1px solid #6ee7b7', borderTop: '3px solid #10b981', borderRadius: 2, overflow: 'hidden' }}>
+            <Box sx={{ background: '#ecfdf5', borderBottom: '1px solid #6ee7b7', px: 2, py: 1.25 }}>
+              <Typography sx={{ fontSize: 14, fontWeight: 700, color: '#059669' }}>
+                Kiểm tra kết quả gia hạn
+              </Typography>
+              <Typography sx={{ fontSize: 12, color: '#475569', mt: 0.25 }}>
+                Sau khi gọi API → hệ thống đọc response NCC để biết gia hạn OK hay lỗi → cập nhật ngày hết hạn mới.
+              </Typography>
+            </Box>
+            <Box sx={{ p: 2 }}>
+              <Grid2 container spacing={2}>
+                <Grid2 size={{ xs: 6, sm: 3 }}>
+                  <Controller name='renew.success_field' control={control} render={({ field }) => (
+                    <CustomTextField {...field} fullWidth label='Field báo thành công' placeholder='status' helperText='VD: NCC trả {"status":"success"}' />
+                  )} />
+                </Grid2>
+                <Grid2 size={{ xs: 6, sm: 3 }}>
+                  <Controller name='renew.success_value' control={control} render={({ field }) => (
+                    <CustomTextField {...field} fullWidth label='Giá trị = thành công' placeholder='success' helperText='Giá trị cần khớp để biết OK' />
+                  )} />
+                </Grid2>
+                <Grid2 size={{ xs: 12, sm: 6 }}>
+                  <Controller name='renew.new_expiry_field' control={control} render={({ field }) => (
+                    <CustomTextField {...field} fullWidth label='Field ngày hết hạn mới' placeholder='data.expired_at' helperText='Bỏ trống = hệ thống tự tính: hạn cũ + số ngày gia hạn' />
+                  )} />
+                </Grid2>
+                <Grid2 size={{ xs: 12, sm: 4 }}>
+                  <Controller name='renew.response_mode' control={control} render={({ field }) => (
+                    <CustomTextField {...field} fullWidth select label='NCC xác nhận thế nào?'>
+                      <MenuItem value='immediate'>Trả kết quả ngay trong response</MenuItem>
+                      <MenuItem value='deferred'>Cần gọi lại API khác để kiểm tra</MenuItem>
+                    </CustomTextField>
+                  )} />
+                </Grid2>
+              </Grid2>
+            </Box>
+          </Box>
         </>
       )}
-    </Grid2>
+    </Box>
   )
 }
