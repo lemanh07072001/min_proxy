@@ -9,9 +9,30 @@ export interface Partner {
   description: string[] | null
   logo: string | null
   logo_url: string | null
+  logo_landing: string | null
+  logo_landing_url: string | null
   link: string | null
   status: string
   order: number
+}
+
+/**
+ * Lấy danh sách đối tác active (public, không cần auth) — dùng cho banner
+ */
+export const usePublicPartners = () => {
+  return useQuery({
+    queryKey: ['partners-public'],
+    queryFn: async () => {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.mktproxy.com/api'
+      const res = await fetch(`${apiUrl}/get-partners`)
+      const json = await res.json()
+
+      return (json?.data ?? []) as Partner[]
+    },
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    staleTime: 10 * 60 * 1000
+  })
 }
 
 /**
