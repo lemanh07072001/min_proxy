@@ -36,9 +36,9 @@ function RenewParamRow({ index, control, onRemove }: { index: number; control: S
         <Typography sx={{ fontSize: 12, color: '#94a3b8', flexShrink: 0 }}>=</Typography>
         <Controller name={`renew.params_rows.${index}.value_type` as any} control={control} render={({ field }) => (
           <CustomTextField {...field} size='small' select sx={{ minWidth: 200 }} label={index === 0 ? 'Giá trị lấy từ đâu?' : undefined}>
-            <MenuItem value='provider_order_code'>Mã đơn NCC — chung cho cả đơn (gia hạn 1 lệnh)</MenuItem>
-            <MenuItem value='provider_item_id'>ID proxy NCC — riêng từng proxy (gia hạn từng cái)</MenuItem>
-            <MenuItem value='duration'>Số ngày gia hạn — khách chọn</MenuItem>
+            <MenuItem value='provider_order_code'>Mã đơn NCC (VD: 46de8719...) — chung cả đơn</MenuItem>
+            <MenuItem value='provider_item_id'>ID proxy NCC (VD: 566171) — riêng từng proxy</MenuItem>
+            <MenuItem value='duration'>Số ngày gia hạn (VD: 30) — khách chọn</MenuItem>
             <MenuItem value='custom'>Giá trị cố định — nhập tay, không đổi</MenuItem>
           </CustomTextField>
         )} />
