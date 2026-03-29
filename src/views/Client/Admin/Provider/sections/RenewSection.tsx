@@ -148,8 +148,8 @@ function InheritParamRow({ control, index, onRemove }: { control: SectionProps['
     <Box sx={{ display: 'flex', gap: 1, mb: 1, alignItems: 'center' }}>
       <Controller name={`renew.inherit_params.${index}.source` as any} control={control} render={({ field }) => (
         <CustomTextField {...field} select size='small' sx={{ minWidth: 130 }} label='Lấy từ'>
-          <MenuItem value='order'>Đơn hàng</MenuItem>
-          <MenuItem value='order_item'>Proxy</MenuItem>
+          <MenuItem value='order'>Đơn hàng (orders)</MenuItem>
+          <MenuItem value='order_item'>Chi tiết đơn (order_items)</MenuItem>
         </CustomTextField>
       )} />
       <Controller name={`renew.inherit_params.${index}.field` as any} control={control} render={({ field }) => (
