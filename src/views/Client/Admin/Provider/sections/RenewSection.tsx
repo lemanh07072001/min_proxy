@@ -20,6 +20,42 @@ import { ORDER_FIELDS, ITEM_FIELDS } from '../ProviderFormTypes'
 
 // ─── Param Row ──────────────────────────────────────
 
+/** Build dynamic item fields từ cấu hình tab Mua (response_mapping + proxy_fields) */
+function useDynamicItemFields(control: SectionProps['control']) {
+  const buyRotMapping: any[] = useWatch({ control, name: 'buy_rotating.response.response_mapping' }) || []
+  const buyStatMapping: any[] = useWatch({ control, name: 'buy_static.response.response_mapping' }) || []
+  const buyRotItemId = useWatch({ control, name: 'buy_rotating.response.item_id_field' })
+  const buyStatItemId = useWatch({ control, name: 'buy_static.response.item_id_field' })
+
+  const extra: { value: string; label: string }[] = []
+
+  const seen = new Set(ITEM_FIELDS.map(f => f.value))
+
+  const allMappings = [...buyRotMapping, ...buyStatMapping]
+
+  allMappings.forEach((m: any) => {
+    if (!m?.to || seen.has(m.to)) return
+
+    const store = m.store || 'metadata'
+
+    const fieldPath = store === 'root' ? m.to
+      : store === 'proxy' ? `proxy.${m.to}`
+      : store === 'metadata' ? `metadata.${m.to}`
+      : `${store}.${m.to}`
+
+    extra.push({ value: fieldPath, label: `${m.to} (${fieldPath}) — từ NCC: ${m.from}` })
+    seen.add(m.to)
+  })
+
+  const itemId = buyRotItemId || buyStatItemId
+
+  if (itemId && !seen.has('provider_item_id')) {
+    extra.push({ value: 'provider_item_id', label: `ID item NCC (provider_item_id) — từ NCC: ${itemId}` })
+  }
+
+  return extra
+}
+
 function RenewParamRow({
   index, control, onRemove
 }: {
@@ -30,7 +66,8 @@ function RenewParamRow({
   const source = useWatch({ control, name: `renew.renew_params.${index}.source` as any })
   const inputType = useWatch({ control, name: `renew.renew_params.${index}.input_type` as any })
   const fieldValue = useWatch({ control, name: `renew.renew_params.${index}.field` as any })
-  const fieldOptions = source === 'orders' ? ORDER_FIELDS : ITEM_FIELDS
+  const dynamicFields = useDynamicItemFields(control)
+  const fieldOptions = source === 'orders' ? ORDER_FIELDS : [...ITEM_FIELDS, ...dynamicFields]
 
   return (
     <Box sx={{ mb: 1.5, p: 1.5, background: '#fafbfc', border: '1px solid #e2e8f0', borderRadius: 1.5, position: 'relative' }}>
