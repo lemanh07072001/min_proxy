@@ -18,15 +18,14 @@ import { VALUE_LABELS, ORDER_FIELDS, ITEM_FIELDS } from '../ProviderFormTypes'
 // ─── Sub-components ─────────────────────────────────
 
 const VALUE_HINTS: Record<string, string> = {
-  provider_order_code: 'Order ID do NCC gán khi mua. Lưu tại order_items. Các items cùng đơn → cùng mã. Dùng khi NCC gia hạn cả đơn 1 lệnh.',
-  provider_item_id: 'Item ID do NCC gán cho từng item khi mua. Lưu tại order_items. Mỗi item có ID riêng. Dùng khi NCC gia hạn từng item.',
-  duration: 'Số ngày khách chọn gia hạn (VD: 7, 30). Hệ thống tự truyền.',
-  custom: 'Giá trị cố định — luôn gửi giống nhau mỗi lần gia hạn.',
+  provider_order_code: 'Đọc field "provider_order_code" từ bảng order_items. Các items cùng đơn có chung mã này.',
+  provider_item_id: 'Đọc field "provider_item_id" từ bảng order_items. Mỗi item có ID riêng.',
+  duration: 'Số ngày gia hạn — lấy từ cấu hình SP hoặc thời hạn đơn gốc (VD: đơn mua 30 ngày → gia hạn 30 ngày).',
+  custom: 'Luôn gửi đúng giá trị này mỗi lần gia hạn. VD: loại proxy cố định cho SP này.',
 }
 
 function RenewParamRow({ index, control, onRemove }: { index: number; control: SectionProps['control']; onRemove: () => void }) {
   const valueType = useWatch({ control, name: `renew.params_rows.${index}.value_type` as any })
-  const isFirst = index === 0
 
   return (
     <Box sx={{ mb: 1.5, p: 1.5, background: '#fafbfc', border: '1px solid #e2e8f0', borderRadius: 1.5, position: 'relative' }}>
@@ -34,16 +33,16 @@ function RenewParamRow({ index, control, onRemove }: { index: number; control: S
       <Grid2 container spacing={1.5}>
         <Grid2 size={{ xs: 12, sm: 4 }}>
           <Controller name={`renew.params_rows.${index}.param_name` as any} control={control} render={({ field }) => (
-            <CustomTextField {...field} size='small' fullWidth label='Tên param gửi đi' placeholder='VD: loaiproxy, order_id' helperText='Tên biến khi call API sang NCC' />
+            <CustomTextField {...field} size='small' fullWidth label='Tên param gửi đi' placeholder='VD: idproxy, order_id' helperText='Tên biến khi call API sang NCC' />
           )} />
         </Grid2>
         <Grid2 size={{ xs: 12, sm: valueType === 'custom' ? 4 : 8 }}>
           <Controller name={`renew.params_rows.${index}.value_type` as any} control={control} render={({ field }) => (
-            <CustomTextField {...field} size='small' select fullWidth label='Giá trị lấy từ đâu?'>
-              <MenuItem value='provider_order_code'>Order ID NCC — chung cả đơn</MenuItem>
-              <MenuItem value='provider_item_id'>Item ID NCC — riêng từng item</MenuItem>
-              <MenuItem value='duration'>Số ngày gia hạn — khách chọn</MenuItem>
-              <MenuItem value='custom'>Giá trị cố định — nhập tay</MenuItem>
+            <CustomTextField {...field} size='small' select fullWidth label='Đọc giá trị từ field nào?'>
+              <MenuItem value='provider_order_code'>order_items.provider_order_code</MenuItem>
+              <MenuItem value='provider_item_id'>order_items.provider_item_id</MenuItem>
+              <MenuItem value='duration'>Số ngày gia hạn (từ cấu hình SP)</MenuItem>
+              <MenuItem value='custom'>Giá trị cố định (nhập bên phải)</MenuItem>
             </CustomTextField>
           )} />
         </Grid2>
@@ -55,11 +54,9 @@ function RenewParamRow({ index, control, onRemove }: { index: number; control: S
           </Grid2>
         )}
       </Grid2>
-      {valueType && (
-        <Typography sx={{ fontSize: 11, color: '#94a3b8', mt: 0.75 }}>
-          → {VALUE_HINTS[valueType] || ''}
-        </Typography>
-      )}
+      <Typography sx={{ fontSize: 11, color: '#94a3b8', mt: 0.75 }}>
+        → {VALUE_HINTS[valueType] || 'Chọn nguồn giá trị'}
+      </Typography>
     </Box>
   )
 }
@@ -70,34 +67,38 @@ function RenewParamsTable({ control }: SectionProps) {
   return (
     <Grid2 size={{ xs: 12 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.5 }}>
-        <Typography variant='body2' fontWeight={600}>Tham số gửi NCC khi gia hạn</Typography>
+        <Typography variant='body2' fontWeight={600}>Map param gửi đi khi call API gia hạn</Typography>
         <Button size='small' startIcon={<Plus size={14} />}
           onClick={() => append({ param_name: '', value_type: 'custom', custom_value: '' })}>
           Thêm
         </Button>
       </Box>
-      <Box sx={{ mb: 1.5, p: 1.5, background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 1.5, fontSize: 12, color: '#475569', lineHeight: 1.8 }}>
-        Khi gia hạn, hệ thống gọi API NCC kèm các tham số bên dưới. Mỗi dòng = <strong>1 param</strong> gửi trong request.
+      <Box sx={{ mb: 1.5, p: 1.5, background: '#f5f3ff', border: '1px solid #e9d5ff', borderRadius: 1.5, fontSize: 12, color: '#475569', lineHeight: 1.8 }}>
+        Mỗi dòng = map <strong>tên param NCC yêu cầu</strong> với <strong>field trong DB</strong> của hệ thống.
         <br />
-        <strong>Cột trái:</strong> tên param (NCC gọi là gì — xem trong URL hoặc tài liệu API)
-        <br />
-        <strong>Cột phải:</strong> giá trị lấy từ đâu — hệ thống tự thay thế khi gửi
-        <Box sx={{ mt: 1, p: 1, background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 1 }}>
-          <Typography sx={{ fontSize: 11.5, color: '#0c4a6e', fontWeight: 600, mb: 0.5 }}>Ví dụ:</Typography>
-          <Typography sx={{ fontSize: 11.5, color: '#334155', fontFamily: 'monospace', lineHeight: 2 }}>
-            <span style={{ background: '#e2e8f0', padding: '1px 4px', borderRadius: 3 }}>loaiproxy</span> = <span style={{ color: '#16a34a' }}>Cố định</span> → <code>loaiproxy=4Gvinaphone</code> (luôn gửi giá trị này)
-            <br />
-            <span style={{ background: '#e2e8f0', padding: '1px 4px', borderRadius: 3 }}>idproxy</span> = <span style={{ color: '#3b82f6' }}>ID proxy NCC</span> → <code>idproxy=566171</code> (lưu trong mỗi proxy khi mua)
-            <br />
-            <span style={{ background: '#e2e8f0', padding: '1px 4px', borderRadius: 3 }}>order_id</span> = <span style={{ color: '#f59e0b' }}>Mã đơn NCC</span> → <code>order_id=46de87...</code> (chung cho cả đơn, lưu trong proxy)
-            <br />
-            <span style={{ background: '#e2e8f0', padding: '1px 4px', borderRadius: 3 }}>ngay</span> = <span style={{ color: '#8b5cf6' }}>Số ngày</span> → <code>ngay=30</code> (khách chọn khi gia hạn)
-          </Typography>
+        Khi gia hạn → hệ thống đọc giá trị từ DB → gán vào param → gửi NCC.
+        <Box sx={{ mt: 1, p: 1, background: '#fff', border: '1px solid #e2e8f0', borderRadius: 1 }}>
+          <Typography sx={{ fontSize: 11.5, fontWeight: 600, color: '#7c3aed', mb: 0.5 }}>Ví dụ config:</Typography>
+          <table style={{ fontSize: 12, width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr style={{ borderBottom: '1px solid #e2e8f0', fontSize: 11, color: '#94a3b8' }}>
+                <td style={{ padding: '3px 6px' }}>Param gửi NCC</td>
+                <td style={{ padding: '3px 6px' }}>Đọc từ</td>
+                <td style={{ padding: '3px 6px' }}>Request thực tế</td>
+              </tr>
+            </thead>
+            <tbody style={{ fontFamily: 'monospace', color: '#334155' }}>
+              <tr><td style={{ padding: '3px 6px' }}>idproxy</td><td style={{ padding: '3px 6px', color: '#3b82f6' }}>order_items.provider_item_id</td><td style={{ padding: '3px 6px' }}>idproxy=566171</td></tr>
+              <tr style={{ background: '#fafbfc' }}><td style={{ padding: '3px 6px' }}>order_id</td><td style={{ padding: '3px 6px', color: '#3b82f6' }}>order_items.provider_order_code</td><td style={{ padding: '3px 6px' }}>order_id=46de87...</td></tr>
+              <tr><td style={{ padding: '3px 6px' }}>ngay</td><td style={{ padding: '3px 6px', color: '#8b5cf6' }}>Số ngày gia hạn</td><td style={{ padding: '3px 6px' }}>ngay=30</td></tr>
+              <tr style={{ background: '#fafbfc' }}><td style={{ padding: '3px 6px' }}>loaiproxy</td><td style={{ padding: '3px 6px', color: '#16a34a' }}>Cố định: 4Gvinaphone</td><td style={{ padding: '3px 6px' }}>loaiproxy=4Gvinaphone</td></tr>
+            </tbody>
+          </table>
         </Box>
       </Box>
       {fields.length === 0 && (
         <Typography variant='caption' color='text.secondary' sx={{ fontStyle: 'italic' }}>
-          Chưa có tham số. Bấm "Thêm" nếu NCC cần gửi kèm dữ liệu khi gia hạn.
+          Chưa có. Bấm "Thêm" để cấu hình param gửi NCC khi gia hạn.
         </Typography>
       )}
       {fields.map((f, i) => (
@@ -323,9 +324,18 @@ export default function RenewSection({ control }: SectionProps) {
               <Grid2 container spacing={2}>
                 <RenewParamsTable control={control} />
 
+                <Grid2 size={{ xs: 12 }}>
+                  <Divider sx={{ my: 0.5 }} />
+                  <Typography variant='body2' fontWeight={600} sx={{ mt: 1, mb: 0.5, color: '#7c3aed' }}>
+                    Param số ngày gia hạn
+                  </Typography>
+                  <Typography sx={{ fontSize: 11.5, color: '#64748b', mb: 1 }}>
+                    Hệ thống tự gửi thêm param "số ngày" ngoài bảng map ở trên. Chỉ cần điền tên param mà NCC yêu cầu.
+                  </Typography>
+                </Grid2>
                 <Grid2 size={{ xs: 12, sm: 4 }}>
                   <Controller name='renew.duration_param' control={control} render={({ field }) => (
-                    <CustomTextField {...field} fullWidth label='NCC gọi "số ngày" là gì?' placeholder='days' helperText='Tên param gửi số ngày. VD: days, duration, ngay' />
+                    <CustomTextField {...field} fullWidth label='Tên param số ngày gửi NCC' placeholder='days' helperText='VD: NCC gọi là "ngay" → gửi ngay=30' />
                   )} />
                 </Grid2>
 
