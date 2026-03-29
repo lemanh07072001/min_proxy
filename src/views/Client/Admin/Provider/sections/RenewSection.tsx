@@ -64,14 +64,17 @@ function RenewParamRow({
   onRemove: () => void
 }) {
   const source = useWatch({ control, name: `renew.renew_params.${index}.source` as any })
-  const inputType = useWatch({ control, name: `renew.renew_params.${index}.input_type` as any })
+  const rawInputType = useWatch({ control, name: `renew.renew_params.${index}.input_type` as any })
+  const inputType = rawInputType || 'string'
   const fieldValue = useWatch({ control, name: `renew.renew_params.${index}.field` as any })
   const dynamicFields = useDynamicItemFields(control)
   const fieldOptions = source === 'orders' ? ORDER_FIELDS : [...ITEM_FIELDS, ...dynamicFields]
 
   return (
-    <Box sx={{ mb: 1.5, p: 1.5, background: '#fafbfc', border: '1px solid #e2e8f0', borderRadius: 1.5, position: 'relative' }}>
-      <IconButton size='small' onClick={onRemove} color='error' sx={{ position: 'absolute', top: 6, right: 6 }}><Trash2 size={14} /></IconButton>
+    <Box sx={{ mb: 1.5, p: 1.5, background: '#fafbfc', border: '1px solid #e2e8f0', borderRadius: 1.5 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 0.5 }}>
+        <IconButton size='small' onClick={onRemove} color='error'><Trash2 size={14} /></IconButton>
+      </Box>
 
       <Grid2 container spacing={1.5}>
         {/* Param name */}
@@ -129,7 +132,7 @@ function RenewParamRow({
             </Grid2>
             <Grid2 size={{ xs: 12, sm: 3 }}>
               <Controller name={`renew.renew_params.${index}.input_type` as any} control={control} render={({ field }) => (
-                <CustomTextField {...field} size='small' select fullWidth label='Loại input'>
+                <CustomTextField {...field} value={field.value || 'string'} size='small' select fullWidth label='Loại input'>
                   <MenuItem value='number'>Số (number)</MenuItem>
                   <MenuItem value='string'>Chữ (text)</MenuItem>
                   <MenuItem value='select'>Chọn từ danh sách</MenuItem>
