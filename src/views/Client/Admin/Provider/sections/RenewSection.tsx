@@ -18,39 +18,45 @@ import { VALUE_LABELS, ORDER_FIELDS, ITEM_FIELDS } from '../ProviderFormTypes'
 // ─── Sub-components ─────────────────────────────────
 
 const VALUE_HINTS: Record<string, string> = {
-  provider_order_code: 'Mã đơn hàng NCC gán khi mua. Lưu tại mỗi proxy (order_items). Các proxy cùng đơn → cùng mã. Thường dùng khi NCC gia hạn cả đơn 1 lệnh.',
-  provider_item_id: 'Mã riêng từng proxy NCC gán khi mua. Lưu tại mỗi proxy (order_items). Mỗi proxy có ID khác nhau. Dùng khi NCC gia hạn từng proxy riêng.',
+  provider_order_code: 'Order ID do NCC gán khi mua. Lưu tại order_items. Các items cùng đơn → cùng mã. Dùng khi NCC gia hạn cả đơn 1 lệnh.',
+  provider_item_id: 'Item ID do NCC gán cho từng item khi mua. Lưu tại order_items. Mỗi item có ID riêng. Dùng khi NCC gia hạn từng item.',
   duration: 'Số ngày khách chọn gia hạn (VD: 7, 30). Hệ thống tự truyền.',
   custom: 'Giá trị cố định — luôn gửi giống nhau mỗi lần gia hạn.',
 }
 
 function RenewParamRow({ index, control, onRemove }: { index: number; control: SectionProps['control']; onRemove: () => void }) {
   const valueType = useWatch({ control, name: `renew.params_rows.${index}.value_type` as any })
+  const isFirst = index === 0
 
   return (
-    <Box sx={{ mb: 1 }}>
-      <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-        <Controller name={`renew.params_rows.${index}.param_name` as any} control={control} render={({ field }) => (
-          <CustomTextField {...field} size='small' label={index === 0 ? 'Tên param gửi đi' : undefined} placeholder='VD: loaiproxy, order_id' sx={{ flex: 1 }} helperText={index === 0 ? 'Tên biến gửi khi call API sang NCC' : undefined} />
-        )} />
-        <Typography sx={{ fontSize: 12, color: '#94a3b8', flexShrink: 0 }}>=</Typography>
-        <Controller name={`renew.params_rows.${index}.value_type` as any} control={control} render={({ field }) => (
-          <CustomTextField {...field} size='small' select sx={{ minWidth: 200 }} label={index === 0 ? 'Giá trị lấy từ đâu?' : undefined}>
-            <MenuItem value='provider_order_code'>Mã đơn NCC (VD: 46de8719...) — chung cả đơn</MenuItem>
-            <MenuItem value='provider_item_id'>ID proxy NCC (VD: 566171) — riêng từng proxy</MenuItem>
-            <MenuItem value='duration'>Số ngày gia hạn (VD: 30) — khách chọn</MenuItem>
-            <MenuItem value='custom'>Giá trị cố định — nhập tay, không đổi</MenuItem>
-          </CustomTextField>
-        )} />
-        {valueType === 'custom' && (
-          <Controller name={`renew.params_rows.${index}.custom_value` as any} control={control} render={({ field }) => (
-            <CustomTextField {...field} size='small' placeholder='VD: 4Gvinaphone' sx={{ flex: 1 }} label={index === 0 ? 'Giá trị cố định' : undefined} />
+    <Box sx={{ mb: 1.5, p: 1.5, background: '#fafbfc', border: '1px solid #e2e8f0', borderRadius: 1.5, position: 'relative' }}>
+      <IconButton size='small' onClick={onRemove} color='error' sx={{ position: 'absolute', top: 6, right: 6 }}><Trash2 size={14} /></IconButton>
+      <Grid2 container spacing={1.5}>
+        <Grid2 size={{ xs: 12, sm: 4 }}>
+          <Controller name={`renew.params_rows.${index}.param_name` as any} control={control} render={({ field }) => (
+            <CustomTextField {...field} size='small' fullWidth label='Tên param gửi đi' placeholder='VD: loaiproxy, order_id' helperText='Tên biến khi call API sang NCC' />
           )} />
+        </Grid2>
+        <Grid2 size={{ xs: 12, sm: valueType === 'custom' ? 4 : 8 }}>
+          <Controller name={`renew.params_rows.${index}.value_type` as any} control={control} render={({ field }) => (
+            <CustomTextField {...field} size='small' select fullWidth label='Giá trị lấy từ đâu?'>
+              <MenuItem value='provider_order_code'>Order ID NCC — chung cả đơn</MenuItem>
+              <MenuItem value='provider_item_id'>Item ID NCC — riêng từng item</MenuItem>
+              <MenuItem value='duration'>Số ngày gia hạn — khách chọn</MenuItem>
+              <MenuItem value='custom'>Giá trị cố định — nhập tay</MenuItem>
+            </CustomTextField>
+          )} />
+        </Grid2>
+        {valueType === 'custom' && (
+          <Grid2 size={{ xs: 12, sm: 4 }}>
+            <Controller name={`renew.params_rows.${index}.custom_value` as any} control={control} render={({ field }) => (
+              <CustomTextField {...field} size='small' fullWidth label='Giá trị cố định' placeholder='VD: 4Gvinaphone' />
+            )} />
+          </Grid2>
         )}
-        <IconButton size='small' onClick={onRemove} color='error' sx={{ mt: index === 0 ? 2.5 : 0 }}><Trash2 size={14} /></IconButton>
-      </Box>
+      </Grid2>
       {valueType && (
-        <Typography sx={{ fontSize: 11, color: '#94a3b8', ml: 0.5, mt: 0.25 }}>
+        <Typography sx={{ fontSize: 11, color: '#94a3b8', mt: 0.75 }}>
           → {VALUE_HINTS[valueType] || ''}
         </Typography>
       )}
