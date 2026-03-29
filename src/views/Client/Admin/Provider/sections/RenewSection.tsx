@@ -18,10 +18,10 @@ import { VALUE_LABELS, ORDER_FIELDS, ITEM_FIELDS } from '../ProviderFormTypes'
 // ─── Sub-components ─────────────────────────────────
 
 const VALUE_HINTS: Record<string, string> = {
-  provider_order_code: 'Lấy từ order_items.provider_order_code — VD: 46de8719... Dùng cho mode "1 lệnh cả đơn" (lấy từ item đầu tiên có mã)',
-  provider_item_id: 'Lấy từ order_items.provider_item_id — VD: 566171. Dùng cho mode "gọi riêng từng proxy" (mỗi item có ID riêng)',
-  duration: 'Số ngày khách chọn gia hạn — VD: 30. Hệ thống tự truyền',
-  custom: 'Giá trị cố định — luôn gửi giống nhau mỗi lần gia hạn',
+  provider_order_code: 'Mã đơn hàng NCC gán khi mua. Lưu tại mỗi proxy (order_items). Các proxy cùng đơn → cùng mã. Thường dùng khi NCC gia hạn cả đơn 1 lệnh.',
+  provider_item_id: 'Mã riêng từng proxy NCC gán khi mua. Lưu tại mỗi proxy (order_items). Mỗi proxy có ID khác nhau. Dùng khi NCC gia hạn từng proxy riêng.',
+  duration: 'Số ngày khách chọn gia hạn (VD: 7, 30). Hệ thống tự truyền.',
+  custom: 'Giá trị cố định — luôn gửi giống nhau mỗi lần gia hạn.',
 }
 
 function RenewParamRow({ index, control, onRemove }: { index: number; control: SectionProps['control']; onRemove: () => void }) {
@@ -36,9 +36,9 @@ function RenewParamRow({ index, control, onRemove }: { index: number; control: S
         <Typography sx={{ fontSize: 12, color: '#94a3b8', flexShrink: 0 }}>=</Typography>
         <Controller name={`renew.params_rows.${index}.value_type` as any} control={control} render={({ field }) => (
           <CustomTextField {...field} size='small' select sx={{ minWidth: 200 }} label={index === 0 ? 'Giá trị lấy từ đâu?' : undefined}>
-            <MenuItem value='provider_order_code'>Mã đơn NCC — từ order_items (cả đơn dùng chung)</MenuItem>
-            <MenuItem value='provider_item_id'>ID proxy NCC — từ order_items (mỗi proxy riêng)</MenuItem>
-            <MenuItem value='duration'>Số ngày gia hạn — khách chọn lúc gia hạn</MenuItem>
+            <MenuItem value='provider_order_code'>Mã đơn NCC — chung cho cả đơn (gia hạn 1 lệnh)</MenuItem>
+            <MenuItem value='provider_item_id'>ID proxy NCC — riêng từng proxy (gia hạn từng cái)</MenuItem>
+            <MenuItem value='duration'>Số ngày gia hạn — khách chọn</MenuItem>
             <MenuItem value='custom'>Giá trị cố định — nhập tay, không đổi</MenuItem>
           </CustomTextField>
         )} />
@@ -79,11 +79,13 @@ function RenewParamsTable({ control }: SectionProps) {
         <Box sx={{ mt: 1, p: 1, background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 1 }}>
           <Typography sx={{ fontSize: 11.5, color: '#0c4a6e', fontWeight: 600, mb: 0.5 }}>Ví dụ:</Typography>
           <Typography sx={{ fontSize: 11.5, color: '#334155', fontFamily: 'monospace', lineHeight: 2 }}>
-            <span style={{ background: '#e2e8f0', padding: '1px 4px', borderRadius: 3 }}>loaiproxy</span> = <span style={{ color: '#16a34a' }}>Giá trị cố định</span> → <code>loaiproxy=4Gvinaphone</code>
+            <span style={{ background: '#e2e8f0', padding: '1px 4px', borderRadius: 3 }}>loaiproxy</span> = <span style={{ color: '#16a34a' }}>Cố định</span> → <code>loaiproxy=4Gvinaphone</code> (luôn gửi giá trị này)
             <br />
-            <span style={{ background: '#e2e8f0', padding: '1px 4px', borderRadius: 3 }}>idproxy</span> = <span style={{ color: '#3b82f6' }}>ID proxy NCC</span> → <code>idproxy=566171</code> (hệ thống tự lấy)
+            <span style={{ background: '#e2e8f0', padding: '1px 4px', borderRadius: 3 }}>idproxy</span> = <span style={{ color: '#3b82f6' }}>ID proxy NCC</span> → <code>idproxy=566171</code> (lưu trong mỗi proxy khi mua)
             <br />
-            <span style={{ background: '#e2e8f0', padding: '1px 4px', borderRadius: 3 }}>ngay</span> = <span style={{ color: '#8b5cf6' }}>Số ngày gia hạn</span> → <code>ngay=30</code> (khách chọn)
+            <span style={{ background: '#e2e8f0', padding: '1px 4px', borderRadius: 3 }}>order_id</span> = <span style={{ color: '#f59e0b' }}>Mã đơn NCC</span> → <code>order_id=46de87...</code> (chung cho cả đơn, lưu trong proxy)
+            <br />
+            <span style={{ background: '#e2e8f0', padding: '1px 4px', borderRadius: 3 }}>ngay</span> = <span style={{ color: '#8b5cf6' }}>Số ngày</span> → <code>ngay=30</code> (khách chọn khi gia hạn)
           </Typography>
         </Box>
       </Box>
