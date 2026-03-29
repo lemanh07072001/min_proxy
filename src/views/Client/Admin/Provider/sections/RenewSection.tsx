@@ -152,28 +152,38 @@ function InheritParamRow({ control, index, onRemove }: { control: SectionProps['
   const fieldOptions = source === 'order_item' ? ITEM_FIELDS : ORDER_FIELDS
 
   return (
-    <Box sx={{ display: 'flex', gap: 1, mb: 1, alignItems: 'center' }}>
-      <Controller name={`renew.inherit_params.${index}.source` as any} control={control} render={({ field }) => (
-        <CustomTextField {...field} select size='small' sx={{ minWidth: 130 }} label='Lấy từ'>
-          <MenuItem value='order'>Đơn hàng (orders)</MenuItem>
-          <MenuItem value='order_item'>Chi tiết đơn (order_items)</MenuItem>
-        </CustomTextField>
-      )} />
-      <Controller name={`renew.inherit_params.${index}.field` as any} control={control} render={({ field }) => (
-        <CustomTextField {...field} select size='small' sx={{ minWidth: 160 }} label='Thông tin cần lấy'>
-          {fieldOptions.map(o => <MenuItem key={o.value} value={o.value}>{o.label}</MenuItem>)}
-          <MenuItem value='__custom'>Tự nhập...</MenuItem>
-        </CustomTextField>
-      )} />
-      {useWatch({ control, name: `renew.inherit_params.${index}.field` as any }) === '__custom' && (
-        <Controller name={`renew.inherit_params.${index}.field` as any} control={control} render={({ field }) => (
-          <CustomTextField {...field} size='small' sx={{ minWidth: 120 }} label='Field' placeholder='metadata.xxx' />
-        )} />
-      )}
-      <Controller name={`renew.inherit_params.${index}.param` as any} control={control} render={({ field }) => (
-        <CustomTextField {...field} size='small' sx={{ minWidth: 130 }} label='NCC gọi là gì?' placeholder='country_code' />
-      )} />
-      <IconButton size='small' onClick={onRemove} color='error'><i className='tabler-trash' /></IconButton>
+    <Box sx={{ mb: 1.5, p: 1.5, background: '#fafbfc', border: '1px solid #e2e8f0', borderRadius: 1.5, position: 'relative' }}>
+      <IconButton size='small' onClick={onRemove} color='error' sx={{ position: 'absolute', top: 6, right: 6 }}><i className='tabler-trash' /></IconButton>
+      <Grid2 container spacing={1.5}>
+        <Grid2 size={{ xs: 12, sm: 3 }}>
+          <Controller name={`renew.inherit_params.${index}.source` as any} control={control} render={({ field }) => (
+            <CustomTextField {...field} select size='small' fullWidth label='Đọc từ bảng'>
+              <MenuItem value='order'>orders</MenuItem>
+              <MenuItem value='order_item'>order_items</MenuItem>
+            </CustomTextField>
+          )} />
+        </Grid2>
+        <Grid2 size={{ xs: 12, sm: 4 }}>
+          <Controller name={`renew.inherit_params.${index}.field` as any} control={control} render={({ field }) => (
+            <CustomTextField {...field} select size='small' fullWidth label='Field trong DB' helperText='Hỗ trợ dot notation: proxy.ip, metadata.xxx'>
+              {fieldOptions.map(o => <MenuItem key={o.value} value={o.value}>{o.label} ({o.value})</MenuItem>)}
+              <MenuItem value='__custom'>Tự nhập field...</MenuItem>
+            </CustomTextField>
+          )} />
+        </Grid2>
+        {useWatch({ control, name: `renew.inherit_params.${index}.field` as any }) === '__custom' && (
+          <Grid2 size={{ xs: 12, sm: 2 }}>
+            <Controller name={`renew.inherit_params.${index}.field` as any} control={control} render={({ field }) => (
+              <CustomTextField {...field} size='small' fullWidth label='Field' placeholder='proxy.loaiproxy' />
+            )} />
+          </Grid2>
+        )}
+        <Grid2 size={{ xs: 12, sm: 3 }}>
+          <Controller name={`renew.inherit_params.${index}.param` as any} control={control} render={({ field }) => (
+            <CustomTextField {...field} size='small' fullWidth label='Tên param gửi NCC' placeholder='country_code' />
+          )} />
+        </Grid2>
+      </Grid2>
     </Box>
   )
 }
@@ -184,20 +194,23 @@ function InheritParamsTable({ control }: SectionProps) {
   return (
     <Grid2 size={{ xs: 12 }}>
       <Divider sx={{ my: 1 }} />
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
-        <Typography variant='body2' fontWeight={600}>
-          Lấy thông tin từ đơn hàng gốc
-        </Typography>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.5 }}>
+        <Typography variant='body2' fontWeight={600}>Map thêm param từ dữ liệu đơn hàng</Typography>
         <Button size='small' onClick={() => append({ source: 'order', field: '', param: '' })}>
           + Thêm
         </Button>
       </Box>
+      <Typography sx={{ fontSize: 11.5, color: '#64748b', mb: 1.5, lineHeight: 1.6 }}>
+        Ngoài 3 biến cố định ở trên (order_id NCC, item_id NCC, số ngày), nếu NCC cần thêm thông tin
+        → map field bất kỳ trong bảng <code style={{ background: '#e2e8f0', padding: '1px 4px', borderRadius: 3 }}>orders</code> hoặc <code style={{ background: '#e2e8f0', padding: '1px 4px', borderRadius: 3 }}>order_items</code> sang param gửi đi.
+        Hỗ trợ dot notation (VD: <code style={{ background: '#e2e8f0', padding: '1px 4px', borderRadius: 3 }}>proxy.loaiproxy</code> → đọc loại proxy từ object proxy trong order_items).
+      </Typography>
       {fields.map((f, i) => (
         <InheritParamRow key={f.id} control={control} index={i} onRemove={() => remove(i)} />
       ))}
       {fields.length === 0 && (
         <Typography variant='body2' color='text.secondary' sx={{ mb: 1, fontStyle: 'italic' }}>
-          NCC chỉ cần mã đơn/mã proxy/số ngày — không cần thêm thông tin khác.
+          Không cần thêm — NCC chỉ dùng 3 biến cố định ở trên là đủ.
         </Typography>
       )}
     </Grid2>
