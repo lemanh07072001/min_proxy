@@ -31,7 +31,7 @@ function RenewParamRow({ index, control, onRemove }: { index: number; control: S
     <Box sx={{ mb: 1 }}>
       <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
         <Controller name={`renew.params_rows.${index}.param_name` as any} control={control} render={({ field }) => (
-          <CustomTextField {...field} size='small' label={index === 0 ? 'Tên param gửi NCC' : undefined} placeholder='VD: loaiproxy, order_id' sx={{ flex: 1 }} />
+          <CustomTextField {...field} size='small' label={index === 0 ? 'Tên param gửi đi' : undefined} placeholder='VD: loaiproxy, order_id' sx={{ flex: 1 }} helperText={index === 0 ? 'Tên biến gửi khi call API sang NCC' : undefined} />
         )} />
         <Typography sx={{ fontSize: 12, color: '#94a3b8', flexShrink: 0 }}>=</Typography>
         <Controller name={`renew.params_rows.${index}.value_type` as any} control={control} render={({ field }) => (
