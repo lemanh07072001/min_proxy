@@ -7,8 +7,16 @@ import { defaultBuy, defaultFetchProxies, defaultValues, SYSTEM_VARS, VALUE_MAP 
 
 // ─── Helpers ────────────────────────────────────────
 
-/** Deserialize config cũ (params + duration_param + inherit_params) → renew_params thống nhất */
+/** Deserialize renew config → renew_params thống nhất
+ *  Ưu tiên: renew_params (format mới) > fallback từ params/duration_param/inherit_params (format cũ)
+ */
 export function deserializeRenewParams(renew: any): RenewParamConfig[] {
+  // Format mới — đã lưu renew_params đầy đủ (có validate config)
+  if (Array.isArray(renew.renew_params) && renew.renew_params.length > 0) {
+    return renew.renew_params
+  }
+
+  // Fallback — deserialize từ format cũ
   const result: RenewParamConfig[] = []
 
   // 1. params{} → source=default hoặc source=order_items (provider_order_code/provider_item_id)
@@ -50,11 +58,15 @@ export function deserializeRenewParams(renew: any): RenewParamConfig[] {
   return result
 }
 
-/** Serialize renew_params thống nhất → format cũ (backward compatible cho BE) */
+/** Serialize renew_params thống nhất → format cũ (BE) + format mới (FE config)
+ *  - params/duration_param/inherit_params: BE đọc → logic gia hạn
+ *  - renew_params: FE đọc khi load edit → giữ validate config (min/max/options)
+ */
 export function serializeRenewParams(params: RenewParamConfig[]): {
   params: Record<string, string>
   duration_param: string
   inherit_params: InheritParam[]
+  renew_params: RenewParamConfig[]
 } {
   const resultParams: Record<string, string> = {}
   let durationParam = ''
@@ -89,7 +101,12 @@ export function serializeRenewParams(params: RenewParamConfig[]): {
     }
   })
 
-  return { params: resultParams, duration_param: durationParam, inherit_params: inheritParams }
+  return {
+    params: resultParams,
+    duration_param: durationParam,
+    inherit_params: inheritParams,
+    renew_params: params.filter(p => p.param),  // Format mới — giữ đầy đủ validate config
+  }
 }
 
 // Legacy helper — giữ cho code cũ nếu cần
@@ -474,9 +491,13 @@ export function buildApiConfig(form: FormValues): object | null {
 
     // Serialize renew_params → format cũ (backward compatible)
     const serialized = serializeRenewParams(form.renew.renew_params || [])
+    // Format cũ — BE đọc
     if (Object.keys(serialized.params).length > 0) r.params = serialized.params
     if (serialized.duration_param) r.duration_param = serialized.duration_param
     if (serialized.inherit_params.length > 0) r.inherit_params = serialized.inherit_params
+
+    // Format mới — FE đọc khi load edit (giữ validate config: min/max/options/input_type)
+    if (serialized.renew_params.length > 0) r.renew_params = serialized.renew_params
 
     // Duration map
     if (form.renew.duration_map_override) {
