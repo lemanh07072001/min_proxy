@@ -19,7 +19,8 @@ import {
   Box,
   Alert,
   Collapse,
-  IconButton
+  IconButton,
+  Checkbox
 } from '@mui/material'
 
 import { toast } from 'react-toastify'
@@ -597,6 +598,13 @@ export default function ServiceFormModal({ open, onClose, serviceId, initialData
   const [renewable, setRenewable] = useState(false)
   const [renewalDuration, setRenewalDuration] = useState('')
   const [allowExpiredRenew, setAllowExpiredRenew] = useState('')
+  const [renewOverrideEnabled, setRenewOverrideEnabled] = useState(false)
+  const [renewOverrideParams, setRenewOverrideParams] = useState<Array<{
+    param: string; source: string; field?: string; value?: string
+    input_type?: string; input_label?: string; min?: number; max?: number
+    options?: Array<{ value: string; label: string }>; is_duration?: boolean
+  }>>([])
+
   const [discountTiers, setDiscountTiers] = useState<DiscountTier[]>([])
   const [costDiscountTiers, setCostDiscountTiers] = useState<DiscountTier[]>([])
 
@@ -618,7 +626,8 @@ export default function ServiceFormModal({ open, onClose, serviceId, initialData
     formState: { errors },
     reset,
     setError,
-    setValue
+    setValue,
+    watch
   } = useForm({
     resolver: async (data, context, options) => {
       try {
@@ -767,6 +776,8 @@ return { values: {}, errors: formattedErrors }
       setRenewable(!!meta.renewable)
       setRenewalDuration(meta.renewal_duration || '')
       setAllowExpiredRenew(meta.allow_expired_renew != null ? String(meta.allow_expired_renew) : '')
+      setRenewOverrideEnabled(Array.isArray(meta.renew_override_params) && meta.renew_override_params.length > 0)
+      setRenewOverrideParams(meta.renew_override_params || [])
       setDiscountTiers(meta.discount_tiers || [])
       setCostDiscountTiers(meta.cost_discount_tiers || [])
       setQuantityTiers(meta.quantity_tiers || [])
@@ -830,6 +841,8 @@ return { values: {}, errors: formattedErrors }
       setRenewable(false)
       setRenewalDuration('')
       setAllowExpiredRenew('')
+      setRenewOverrideEnabled(false)
+      setRenewOverrideParams([])
       setDiscountTiers([])
       setQuantityTiers([])
       setPricingMode('fixed')
@@ -898,6 +911,8 @@ return { values: {}, errors: formattedErrors }
       renewable: renewable || undefined,
       renewal_duration: renewalDuration || undefined,
       allow_expired_renew: allowExpiredRenew === 'true' ? true : (allowExpiredRenew === 'false' ? false : undefined),
+      renew_override_params: renewOverrideEnabled && renewOverrideParams.filter(p => p.param).length > 0
+        ? renewOverrideParams.filter(p => p.param) : undefined,
       discount_tiers: pricingMode === 'per_unit' ? discountTiers.filter(t => t.min && t.discount) : undefined,
       cost_discount_tiers: pricingMode === 'per_unit' ? costDiscountTiers.filter(t => t.min && t.discount) : undefined,
       quantity_tiers: pricingMode === 'per_unit' && quantityTiers.length > 0
@@ -1504,46 +1519,208 @@ return <Chip key={val} label={p?.label || val} size='small' />
                   </Grid2>
                 )}
 
-                {/* Gia hạn settings */}
-                <Grid2 size={{ xs: 6, sm: 2 }}>
-                  <CustomTextField
-                    fullWidth select
-                    label='Cho phép gia hạn'
-                    value={renewable ? 'true' : 'false'}
-                    onChange={e => setRenewable(e.target.value === 'true')}
-                  >
-                    <MenuItem value='false'>Không</MenuItem>
-                    <MenuItem value='true'>Có</MenuItem>
-                  </CustomTextField>
+                {/* ═══ Gia hạn settings ═══ */}
+                <Grid2 size={{ xs: 12 }}>
+                  <Box sx={{ border: '1px solid #fcd34d', borderTop: '3px solid #f59e0b', borderRadius: 2, overflow: 'hidden' }}>
+                    <Box sx={{ background: '#fffbeb', borderBottom: '1px solid #fde68a', px: 2, py: 1.25 }}>
+                      <Typography sx={{ fontSize: 14, fontWeight: 700, color: '#d97706' }}>
+                        Gia hạn
+                      </Typography>
+                      <Typography sx={{ fontSize: 12, color: '#475569', mt: 0.25 }}>
+                        Bật gia hạn cho SP này. Config gia hạn lấy từ NCC — có thể ghi đè / thêm params riêng cho SP.
+                      </Typography>
+                    </Box>
+                    <Box sx={{ p: 2 }}>
+                      <Grid2 container spacing={2}>
+                        <Grid2 size={{ xs: 6, sm: 3 }}>
+                          <CustomTextField
+                            fullWidth select
+                            label='Cho phép gia hạn'
+                            value={renewable ? 'true' : 'false'}
+                            onChange={e => setRenewable(e.target.value === 'true')}
+                          >
+                            <MenuItem value='false'>Không</MenuItem>
+                            <MenuItem value='true'>Có</MenuItem>
+                          </CustomTextField>
+                        </Grid2>
+                        {renewable && (
+                          <>
+                            <Grid2 size={{ xs: 6, sm: 3 }}>
+                              <CustomTextField
+                                fullWidth select
+                                label='Thời hạn gia hạn'
+                                value={renewalDuration}
+                                onChange={e => setRenewalDuration(e.target.value)}
+                              >
+                                <MenuItem value=''>Theo NCC (mặc định)</MenuItem>
+                                <MenuItem value='custom'>Khách tự chọn</MenuItem>
+                                <MenuItem value='original'>Như lần mua đầu</MenuItem>
+                              </CustomTextField>
+                            </Grid2>
+                            <Grid2 size={{ xs: 6, sm: 3 }}>
+                              <CustomTextField
+                                fullWidth select
+                                label='Gia hạn khi hết hạn'
+                                value={allowExpiredRenew}
+                                onChange={e => setAllowExpiredRenew(e.target.value)}
+                              >
+                                <MenuItem value=''>Theo NCC (mặc định)</MenuItem>
+                                <MenuItem value='true'>Cho phép</MenuItem>
+                                <MenuItem value='false'>Không cho phép</MenuItem>
+                              </CustomTextField>
+                            </Grid2>
+
+                            {/* Preview NCC renew params */}
+                            {(() => {
+                              const watchedProviderId = watch('provider_id')
+                              const selectedProvider = providers?.find((p: any) => String(p.id) === String(watchedProviderId))
+                              const nccRenew = selectedProvider?.api_config?.renew
+                              const nccParams = nccRenew?.params || {}
+                              const nccInherit = nccRenew?.inherit_params || []
+                              const nccDuration = nccRenew?.duration_param
+
+                              const hasNccConfig = nccRenew && (Object.keys(nccParams).length > 0 || nccInherit.length > 0 || nccDuration)
+
+                              if (!hasNccConfig) return (
+                                <Grid2 size={{ xs: 12 }}>
+                                  <Box sx={{ p: 1.5, background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 1.5 }}>
+                                    <Typography sx={{ fontSize: 12, color: '#991b1b' }}>
+                                      NCC chưa cấu hình gia hạn. Vào trang NCC → tab Gia hạn để cấu hình trước.
+                                    </Typography>
+                                  </Box>
+                                </Grid2>
+                              )
+
+                              return (
+                                <>
+                                  <Grid2 size={{ xs: 12 }}>
+                                    <Box sx={{ p: 1.5, background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 1.5 }}>
+                                      <Typography sx={{ fontSize: 12, fontWeight: 600, color: '#0c4a6e', mb: 0.5 }}>
+                                        Params gia hạn từ NCC ({selectedProvider?.provider_code || selectedProvider?.title})
+                                      </Typography>
+                                      <Box sx={{ fontSize: 12, fontFamily: 'monospace', color: '#334155', lineHeight: 2 }}>
+                                        {Object.entries(nccParams).map(([k, v]) => (
+                                          <div key={k}><strong>{k}</strong> = {String(v)}</div>
+                                        ))}
+                                        {nccDuration && <div><strong>{nccDuration}</strong> = số ngày gia hạn</div>}
+                                        {nccInherit.map((ip: any, i: number) => (
+                                          <div key={i}><strong>{ip.param}</strong> = {ip.source}.{ip.field}</div>
+                                        ))}
+                                      </Box>
+                                      <Typography sx={{ fontSize: 11, color: '#64748b', mt: 0.5, fontStyle: 'italic' }}>
+                                        Không thể bỏ — NCC yêu cầu. Sửa tại trang NCC.
+                                      </Typography>
+                                    </Box>
+                                  </Grid2>
+
+                                  {/* Override toggle */}
+                                  <Grid2 size={{ xs: 12 }}>
+                                    <FormControlLabel
+                                      control={<Checkbox checked={renewOverrideEnabled} onChange={e => setRenewOverrideEnabled(e.target.checked)} size='small' />}
+                                      label={<Typography variant='body2' sx={{ fontSize: 12 }}>Custom thêm / ghi đè params cho SP này</Typography>}
+                                    />
+                                  </Grid2>
+
+                                  {/* Override params table */}
+                                  {renewOverrideEnabled && (
+                                    <Grid2 size={{ xs: 12 }}>
+                                      <Box sx={{ p: 1.5, background: '#f5f3ff', border: '1px solid #c4b5fd', borderRadius: 1.5 }}>
+                                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+                                          <Typography sx={{ fontSize: 12, fontWeight: 600, color: '#7c3aed' }}>
+                                            Params ghi đè / thêm mới cho SP này
+                                          </Typography>
+                                          <Button size='small' startIcon={<Plus size={14} />}
+                                            onClick={() => setRenewOverrideParams(prev => [...prev, { param: '', source: 'default', value: '' }])}>
+                                            Thêm
+                                          </Button>
+                                        </Box>
+                                        <Typography sx={{ fontSize: 11, color: '#64748b', mb: 1 }}>
+                                          Trùng tên param với NCC → SP ghi đè. Tên mới → thêm vào request.
+                                        </Typography>
+
+                                        {renewOverrideParams.length === 0 && (
+                                          <Typography sx={{ fontSize: 12, color: '#94a3b8', fontStyle: 'italic' }}>
+                                            Chưa có. Bấm Thêm để ghi đè hoặc thêm params.
+                                          </Typography>
+                                        )}
+
+                                        {renewOverrideParams.map((row, i) => (
+                                          <Box key={i} sx={{ mb: 1, p: 1, background: '#fff', border: '1px solid #e2e8f0', borderRadius: 1 }}>
+                                            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 0.5 }}>
+                                              <IconButton size='small' color='error'
+                                                onClick={() => setRenewOverrideParams(prev => prev.filter((_, idx) => idx !== i))}>
+                                                <Trash2 size={14} />
+                                              </IconButton>
+                                            </Box>
+                                            <Grid2 container spacing={1}>
+                                              <Grid2 size={{ xs: 12, sm: 3 }}>
+                                                <CustomTextField size='small' fullWidth label='Param gửi đi' placeholder='VD: loaiproxy'
+                                                  value={row.param} onChange={e => {
+                                                    const next = [...renewOverrideParams]; next[i] = { ...next[i], param: e.target.value }; setRenewOverrideParams(next)
+                                                  }} />
+                                              </Grid2>
+                                              <Grid2 size={{ xs: 12, sm: 3 }}>
+                                                <CustomTextField size='small' select fullWidth label='Nguồn giá trị'
+                                                  value={row.source} onChange={e => {
+                                                    const next = [...renewOverrideParams]; next[i] = { ...next[i], source: e.target.value }; setRenewOverrideParams(next)
+                                                  }}>
+                                                  <MenuItem value='order_items'>order_items</MenuItem>
+                                                  <MenuItem value='orders'>orders</MenuItem>
+                                                  <MenuItem value='user_input'>User nhập</MenuItem>
+                                                  <MenuItem value='default'>Mặc định (cố định)</MenuItem>
+                                                </CustomTextField>
+                                              </Grid2>
+                                              {(row.source === 'orders' || row.source === 'order_items') && (
+                                                <Grid2 size={{ xs: 12, sm: 6 }}>
+                                                  <CustomTextField size='small' fullWidth label='Field trong DB' placeholder='provider_item_id, proxy.loaiproxy'
+                                                    value={row.field || ''} onChange={e => {
+                                                      const next = [...renewOverrideParams]; next[i] = { ...next[i], field: e.target.value }; setRenewOverrideParams(next)
+                                                    }} />
+                                                </Grid2>
+                                              )}
+                                              {row.source === 'default' && (
+                                                <Grid2 size={{ xs: 12, sm: 6 }}>
+                                                  <CustomTextField size='small' fullWidth label='Giá trị cố định' placeholder='VD: 4Gvinaphone'
+                                                    value={row.value || ''} onChange={e => {
+                                                      const next = [...renewOverrideParams]; next[i] = { ...next[i], value: e.target.value }; setRenewOverrideParams(next)
+                                                    }} />
+                                                </Grid2>
+                                              )}
+                                              {row.source === 'user_input' && (
+                                                <>
+                                                  <Grid2 size={{ xs: 6, sm: 3 }}>
+                                                    <CustomTextField size='small' fullWidth label='Label hiện user' placeholder='Số ngày'
+                                                      value={row.input_label || ''} onChange={e => {
+                                                        const next = [...renewOverrideParams]; next[i] = { ...next[i], input_label: e.target.value }; setRenewOverrideParams(next)
+                                                      }} />
+                                                  </Grid2>
+                                                  <Grid2 size={{ xs: 6, sm: 3 }}>
+                                                    <CustomTextField size='small' select fullWidth label='Loại input'
+                                                      value={row.input_type || 'string'} onChange={e => {
+                                                        const next = [...renewOverrideParams]; next[i] = { ...next[i], input_type: e.target.value }; setRenewOverrideParams(next)
+                                                      }}>
+                                                      <MenuItem value='number'>Số</MenuItem>
+                                                      <MenuItem value='string'>Chữ</MenuItem>
+                                                      <MenuItem value='select'>Chọn từ danh sách</MenuItem>
+                                                    </CustomTextField>
+                                                  </Grid2>
+                                                </>
+                                              )}
+                                            </Grid2>
+                                          </Box>
+                                        ))}
+                                      </Box>
+                                    </Grid2>
+                                  )}
+                                </>
+                              )
+                            })()}
+                          </>
+                        )}
+                      </Grid2>
+                    </Box>
+                  </Box>
                 </Grid2>
-                {renewable && (
-                  <>
-                    <Grid2 size={{ xs: 6, sm: 2 }}>
-                      <CustomTextField
-                        fullWidth select
-                        label='Thời hạn gia hạn'
-                        value={renewalDuration}
-                        onChange={e => setRenewalDuration(e.target.value)}
-                      >
-                        <MenuItem value=''>Theo NCC (mặc định)</MenuItem>
-                        <MenuItem value='custom'>Khách tự chọn</MenuItem>
-                        <MenuItem value='original'>Như lần mua đầu</MenuItem>
-                      </CustomTextField>
-                    </Grid2>
-                    <Grid2 size={{ xs: 6, sm: 2 }}>
-                      <CustomTextField
-                        fullWidth select
-                        label='Gia hạn khi hết hạn'
-                        value={allowExpiredRenew}
-                        onChange={e => setAllowExpiredRenew(e.target.value)}
-                      >
-                        <MenuItem value=''>Theo NCC (mặc định)</MenuItem>
-                        <MenuItem value='true'>Cho phép</MenuItem>
-                        <MenuItem value='false'>Không cho phép</MenuItem>
-                      </CustomTextField>
-                    </Grid2>
-                  </>
-                )}
 
                 <Grid2 size={{ xs: 6, sm: 3 }}>
                   <Controller
