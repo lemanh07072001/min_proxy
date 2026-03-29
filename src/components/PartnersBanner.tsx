@@ -2,19 +2,32 @@
 
 import React, { useMemo } from 'react'
 
-import { usePublicPartners } from '@/hooks/apis/usePartners'
+import type { ServerPartner } from '@/utils/getServerPartners'
 
-const PartnersBanner = () => {
-  const { data: partners } = usePublicPartners()
+interface Props {
+  partners: ServerPartner[]
+}
 
-  // Nhân đôi danh sách để tạo hiệu ứng infinite scroll liền mạch
-  const duplicated = useMemo(() => {
+// Số item tối thiểu trên track để cuộn mượt (lấp đầy viewport + dư)
+const MIN_ITEMS = 12
+
+const PartnersBanner = ({ partners }: Props) => {
+  // Nhân bản đủ để lấp đầy 2 lần viewport → cuộn infinite không bị trống
+  const track = useMemo(() => {
     if (!partners?.length) return []
 
-    return [...partners, ...partners]
+    const repeatCount = Math.max(Math.ceil(MIN_ITEMS / partners.length), 3)
+    const oneSet = Array.from({ length: repeatCount }, () => partners).flat()
+
+    // Cần 2 bản giống nhau liền kề để translateX(-50%) loop liền mạch
+    return [...oneSet, ...oneSet]
   }, [partners])
 
   if (!partners?.length) return null
+
+  // Tốc độ cuộn dựa trên số item thực (1 set)
+  const oneSetCount = track.length / 2
+  const duration = Math.max(oneSetCount * 3, 15)
 
   return (
     <div
@@ -23,35 +36,14 @@ const PartnersBanner = () => {
         overflow: 'hidden',
         background: 'linear-gradient(90deg, #f8fafc 0%, #fff 50%, #f8fafc 100%)',
         borderBottom: '1px solid #e2e8f0',
-        padding: '8px 0',
+        padding: '6px 0',
+        flexShrink: 0,
         position: 'relative'
       }}
     >
       {/* Fade edges */}
-      <div
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          width: 60,
-          height: '100%',
-          background: 'linear-gradient(90deg, #f8fafc, transparent)',
-          zIndex: 2,
-          pointerEvents: 'none'
-        }}
-      />
-      <div
-        style={{
-          position: 'absolute',
-          top: 0,
-          right: 0,
-          width: 60,
-          height: '100%',
-          background: 'linear-gradient(270deg, #f8fafc, transparent)',
-          zIndex: 2,
-          pointerEvents: 'none'
-        }}
-      />
+      <div style={{ position: 'absolute', top: 0, left: 0, width: 60, height: '100%', background: 'linear-gradient(90deg, #f8fafc, transparent)', zIndex: 2, pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', top: 0, right: 0, width: 60, height: '100%', background: 'linear-gradient(270deg, #f8fafc, transparent)', zIndex: 2, pointerEvents: 'none' }} />
 
       {/* Scrolling track */}
       <div
@@ -59,12 +51,14 @@ const PartnersBanner = () => {
         style={{
           display: 'flex',
           alignItems: 'center',
-          gap: 40,
+          gap: 48,
           width: 'max-content',
-          animation: `partnersScroll ${Math.max(partners.length * 4, 20)}s linear infinite`
+          animation: `partnersScroll ${duration}s linear infinite`
         }}
       >
-        {duplicated.map((partner, index) => {
+        {track.map((partner, index) => {
+          const hasLogo = !!partner.logo_url
+
           const content = (
             <div
               style={{
@@ -72,44 +66,25 @@ const PartnersBanner = () => {
                 alignItems: 'center',
                 gap: 8,
                 flexShrink: 0,
-                padding: partner.logo_url ? '4px 14px' : '4px 16px',
+                padding: '5px 16px',
                 borderRadius: 20,
-                background: 'rgba(255,255,255,0.8)',
+                background: 'rgba(255,255,255,0.85)',
                 border: '1px solid #f1f5f9',
-                cursor: partner.link ? 'pointer' : 'default'
+                cursor: partner.link ? 'pointer' : 'default',
+                transition: 'border-color 0.2s'
               }}
             >
-              {partner.logo_url ? (
+              {hasLogo ? (
                 <img
-                  src={partner.logo_url}
+                  src={partner.logo_url!}
                   alt={partner.name}
-                  style={{
-                    height: 22,
-                    maxWidth: 80,
-                    objectFit: 'contain',
-                    flexShrink: 0
-                  }}
+                  loading='lazy'
+                  style={{ height: 20, maxWidth: 90, objectFit: 'contain', flexShrink: 0 }}
                 />
               ) : (
-                <span
-                  style={{
-                    width: 8,
-                    height: 8,
-                    borderRadius: '50%',
-                    backgroundColor: 'var(--primary-color, #6366f1)',
-                    flexShrink: 0
-                  }}
-                />
+                <span style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: 'var(--primary-color, #6366f1)', flexShrink: 0 }} />
               )}
-              <span
-                style={{
-                  fontSize: 13,
-                  fontWeight: 600,
-                  color: '#475569',
-                  whiteSpace: 'nowrap',
-                  letterSpacing: '0.02em'
-                }}
-              >
+              <span style={{ fontSize: 13, fontWeight: 600, color: '#475569', whiteSpace: 'nowrap', letterSpacing: '0.02em' }}>
                 {partner.name}
               </span>
             </div>
@@ -117,7 +92,7 @@ const PartnersBanner = () => {
 
           return partner.link ? (
             <a
-              key={`${partner.id}-${index}`}
+              key={`p-${index}`}
               href={partner.link}
               target='_blank'
               rel='noopener noreferrer'
@@ -126,26 +101,22 @@ const PartnersBanner = () => {
               {content}
             </a>
           ) : (
-            <div key={`${partner.id}-${index}`} style={{ flexShrink: 0 }}>
+            <div key={`p-${index}`} style={{ flexShrink: 0 }}>
               {content}
             </div>
           )
         })}
       </div>
 
-      <style
-        dangerouslySetInnerHTML={{
-          __html: `
-            @keyframes partnersScroll {
-              0% { transform: translateX(0); }
-              100% { transform: translateX(-50%); }
-            }
-            .partners-scroll-track:hover {
-              animation-play-state: paused;
-            }
-          `
-        }}
-      />
+      <style dangerouslySetInnerHTML={{ __html: `
+        @keyframes partnersScroll {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+        .partners-scroll-track:hover {
+          animation-play-state: paused;
+        }
+      `}} />
     </div>
   )
 }

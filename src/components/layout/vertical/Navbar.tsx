@@ -10,7 +10,6 @@ const Navbar = async () => {
 
   return (
     <LayoutNavbar>
-      {/* Truyền dữ liệu user xuống Client Component nếu cần */}
       <NavbarContent  />
     </LayoutNavbar>
   )

@@ -47,6 +47,7 @@ export default function TablePartner({ onOpenModal }: TablePartnerProps) {
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [partnerToDelete, setPartnerToDelete] = useState<any>(null)
+  const [previewImage, setPreviewImage] = useState<string | null>(null)
 
   const { data: dataPartners = [], isLoading } = usePartners()
   const deleteMutation = useDeletePartner()
@@ -97,12 +98,20 @@ export default function TablePartner({ onOpenModal }: TablePartnerProps) {
           const logoUrl = row.original?.logo_url
 
           return logoUrl ? (
-            <Image src={logoUrl} alt='' width={60} height={30} style={{ objectFit: 'contain' }} />
+            <img
+              src={logoUrl}
+              alt={row.original?.name || ''}
+              style={{ width: '100%', maxWidth: 220, height: 50, objectFit: 'contain', cursor: 'pointer', borderRadius: 6, border: '1px solid #e2e8f0', background: '#f8fafc', padding: '2px 8px' }}
+              onClick={e => {
+                e.stopPropagation()
+                setPreviewImage(logoUrl)
+              }}
+            />
           ) : (
             <span className='text-gray-400'>—</span>
           )
         },
-        size: 80
+        size: 240
       },
       {
         header: 'Tên đối tác',
@@ -261,6 +270,15 @@ export default function TablePartner({ onOpenModal }: TablePartnerProps) {
           </div>
         </div>
       </div>
+
+      {/* Preview ảnh logo */}
+      <Dialog open={!!previewImage} onClose={() => setPreviewImage(null)} maxWidth='md'>
+        <DialogContent sx={{ p: 1, background: '#f8fafc' }}>
+          {previewImage && (
+            <img src={previewImage} alt='Preview' style={{ maxWidth: '100%', maxHeight: '70vh', objectFit: 'contain', display: 'block' }} />
+          )}
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
         <DialogTitle>Xác nhận xóa đối tác</DialogTitle>

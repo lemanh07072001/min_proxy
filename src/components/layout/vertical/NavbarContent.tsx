@@ -20,6 +20,7 @@ import { useBranding } from '@/app/contexts/BrandingContext'
 
 import NavToggle from './NavToggle'
 import ModeDropdown from '@components/layout/shared/ModeDropdown'
+import PartnersBannerInline from '@/components/PartnersBannerInline'
 import UserDropdown from '@components/layout/shared/UserDropdown'
 import AuthModal from '@/components/modals/AuthModal'
 import { useModalContext } from '@/app/contexts/ModalContext'
@@ -54,11 +55,10 @@ const NavbarContent = () => {
   }
 
   return (
-    <div className={classnames(verticalLayoutClasses.navbarContent, 'flex items-center justify-between gap-4 is-full')}>
-      <div className='flex items-center gap-4'>
+    <div className={classnames(verticalLayoutClasses.navbarContent, 'flex items-center justify-between gap-4 is-full')} style={{ height: '100%' }}>
+      <div className='flex items-center gap-2' style={{ width: '40%', minWidth: 0, flexShrink: 0, height: '100%' }}>
         <NavToggle />
-        <ModeDropdown />
-
+        <PartnersBannerInline />
       </div>
       <div className='flex items-center gap-2'>
         {(isAuthenticated || !isUnauthenticated) && pendingRecord && (

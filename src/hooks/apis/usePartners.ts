@@ -14,20 +14,30 @@ export interface Partner {
   link: string | null
   status: string
   order: number
+  display_duration: number
 }
 
 /**
- * Lấy danh sách đối tác active (public, không cần auth) — dùng cho banner
+ * Lấy danh sách đối tác active (public) — dùng cho banner
  */
 export const usePublicPartners = () => {
+  const axiosAuth = useAxiosAuth()
+
   return useQuery({
     queryKey: ['partners-public'],
     queryFn: async () => {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.mktproxy.com/api'
-      const res = await fetch(`${apiUrl}/get-partners`)
-      const json = await res.json()
+      try {
+        const res = await axiosAuth.get('/get-partners')
 
-      return (json?.data ?? []) as Partner[]
+        return (res?.data?.data ?? []) as Partner[]
+      } catch {
+        // Fallback nếu axiosAuth fail (chưa login)
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || ''
+        const res = await fetch(`${apiUrl}/get-partners`)
+        const json = await res.json()
+
+        return (json?.data ?? []) as Partner[]
+      }
     },
     refetchOnMount: false,
     refetchOnWindowFocus: false,

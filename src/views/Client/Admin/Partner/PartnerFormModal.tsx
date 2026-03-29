@@ -40,7 +40,7 @@ const BANNER_SPECS = {
 const LANDING_SPECS = {
   maxWidth: 300,
   maxHeight: 120,
-  recommendedSize: '160x80',
+  recommendedHeight: 80,
   maxFileSize: 1024 * 1024,
   acceptedFormats: ['image/png', 'image/svg+xml', 'image/webp', 'image/jpeg'],
   acceptedExtensions: '.png,.svg,.webp,.jpg,.jpeg',
@@ -48,14 +48,25 @@ const LANDING_SPECS = {
   description: 'Ảnh lớn hơn, hiển thị trong grid đối tác trên trang chủ. Nên ~160x80px, nền trong suốt.'
 }
 
+// Chuyển text → slug (viết thường, không dấu, cách bởi -)
+function toSlug(text: string): string {
+  return text
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/đ/g, 'd').replace(/Đ/g, 'd')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+}
+
 interface LogoState {
   file: File | null
   preview: string | null
-  error: string | null
+  warning: string | null
   dimensions: { w: number; h: number } | null
 }
 
-const initialLogoState: LogoState = { file: null, preview: null, error: null, dimensions: null }
+const initialLogoState: LogoState = { file: null, preview: null, warning: null, dimensions: null }
 
 interface PartnerFormModalProps {
   open: boolean
@@ -73,6 +84,9 @@ export default function PartnerFormModal({ open, onClose, type, partnerData }: P
   const [bannerLogo, setBannerLogo] = useState<LogoState>(initialLogoState)
   const [landingLogo, setLandingLogo] = useState<LogoState>(initialLogoState)
 
+  const [bannerFilename, setBannerFilename] = useState('')
+  const [landingFilename, setLandingFilename] = useState('')
+
   const {
     control,
     handleSubmit,
@@ -85,7 +99,8 @@ export default function PartnerFormModal({ open, onClose, type, partnerData }: P
       subtitle: '',
       link: '',
       order: '0',
-      status: 'active'
+      status: 'active',
+      display_duration: '2'
     }
   })
 
@@ -99,32 +114,35 @@ export default function PartnerFormModal({ open, onClose, type, partnerData }: P
         subtitle: partnerData.subtitle || '',
         link: partnerData.link || '',
         order: String(partnerData.order ?? 0),
-        status: partnerData.status || 'active'
+        status: partnerData.status || 'active',
+        display_duration: String(partnerData.display_duration ?? 2)
       })
       setDescriptions(partnerData.description?.length ? partnerData.description : [''])
     } else if (open && type === 'create') {
-      reset({ name: '', subtitle: '', link: '', order: '0', status: 'active' })
+      reset({ name: '', subtitle: '', link: '', order: '0', status: 'active', display_duration: '2' })
       setDescriptions([''])
     }
 
     if (open) {
       setBannerLogo(initialLogoState)
       setLandingLogo(initialLogoState)
+      setBannerFilename('')
+      setLandingFilename('')
     }
   }, [open, type, partnerData, reset])
 
   const validateAndSetLogo = useCallback(
     (file: File, specs: typeof BANNER_SPECS, setter: (s: LogoState) => void) => {
-      // Validate format
+      const warnings: string[] = []
+
+      // Check format — cảnh báo nhưng vẫn cho lưu
       if (!specs.acceptedFormats.includes(file.type)) {
-        setter({ file: null, preview: null, dimensions: null, error: `Chỉ chấp nhận ${specs.acceptedExtensions}. File này là ${file.type || 'không rõ'}.` })
-        return
+        warnings.push(`Nên dùng ${specs.acceptedExtensions}. File này là ${file.type || 'không rõ'}.`)
       }
 
-      // Validate file size
+      // Check file size
       if (file.size > specs.maxFileSize) {
-        setter({ file: null, preview: null, dimensions: null, error: `File quá lớn (${(file.size / 1024).toFixed(0)}KB). Tối đa ${specs.maxFileSize / 1024}KB.` })
-        return
+        warnings.push(`File hơi lớn (${(file.size / 1024).toFixed(0)}KB). Khuyến nghị < ${specs.maxFileSize / 1024}KB.`)
       }
 
       const reader = new FileReader()
@@ -133,7 +151,7 @@ export default function PartnerFormModal({ open, onClose, type, partnerData }: P
         const dataUrl = reader.result as string
 
         if (file.type === 'image/svg+xml') {
-          setter({ file, preview: dataUrl, dimensions: null, error: null })
+          setter({ file, preview: dataUrl, dimensions: null, warning: warnings.length ? warnings.join(' ') : null })
           return
         }
 
@@ -144,16 +162,11 @@ export default function PartnerFormModal({ open, onClose, type, partnerData }: P
           const h = img.naturalHeight
 
           if (w > specs.maxWidth || h > specs.maxHeight) {
-            setter({
-              file: null,
-              preview: dataUrl,
-              dimensions: { w, h },
-              error: `Ảnh ${w}x${h}px vượt quá chuẩn (tối đa ${specs.maxWidth}x${specs.maxHeight}px).`
-            })
-            return
+            warnings.push(`Ảnh ${w}x${h}px vượt chuẩn (khuyến nghị tối đa ${specs.maxWidth}x${specs.maxHeight}px).`)
           }
 
-          setter({ file, preview: dataUrl, dimensions: { w, h }, error: null })
+          // Luôn cho lưu — chỉ cảnh báo
+          setter({ file, preview: dataUrl, dimensions: { w, h }, warning: warnings.length ? warnings.join(' ') : null })
         }
 
         img.src = dataUrl
@@ -189,6 +202,7 @@ export default function PartnerFormModal({ open, onClose, type, partnerData }: P
     if (data.link) formData.append('link', data.link)
     formData.append('order', data.order || '0')
     formData.append('status', data.status)
+    formData.append('display_duration', data.display_duration || '2')
 
     const filteredDescs = descriptions.filter(d => d.trim())
 
@@ -196,8 +210,14 @@ export default function PartnerFormModal({ open, onClose, type, partnerData }: P
       formData.append(`description[${i}]`, desc)
     })
 
-    if (bannerLogo.file) formData.append('logo', bannerLogo.file)
-    if (landingLogo.file) formData.append('logo_landing', landingLogo.file)
+    if (bannerLogo.file) {
+      formData.append('logo', bannerLogo.file)
+      if (bannerFilename) formData.append('logo_filename', bannerFilename)
+    }
+    if (landingLogo.file) {
+      formData.append('logo_landing', landingLogo.file)
+      if (landingFilename) formData.append('logo_landing_filename', landingFilename)
+    }
 
     const mutation = type === 'create' ? createMutation : updateMutation
 
@@ -213,7 +233,6 @@ export default function PartnerFormModal({ open, onClose, type, partnerData }: P
   }
 
   const isPending = createMutation.isPending || updateMutation.isPending
-  const hasError = !!bannerLogo.error || !!landingLogo.error
 
   return (
     <Dialog
@@ -330,12 +349,29 @@ export default function PartnerFormModal({ open, onClose, type, partnerData }: P
               />
             </Grid2>
 
-            <Grid2 size={{ xs: 12, sm: 3 }}>
+            <Grid2 size={{ xs: 6, sm: 3 }}>
               <Controller
                 name='order'
                 control={control}
                 render={({ field }) => (
                   <CustomTextField {...field} fullWidth type='number' label='Thứ tự' />
+                )}
+              />
+            </Grid2>
+
+            <Grid2 size={{ xs: 6, sm: 3 }}>
+              <Controller
+                name='display_duration'
+                control={control}
+                render={({ field }) => (
+                  <CustomTextField
+                    {...field}
+                    fullWidth
+                    type='number'
+                    label='Thời gian hiển thị (giây)'
+                    helperText='Mặc định 2s. Đối tác ưu tiên có thể để 5-10s'
+                    inputProps={{ min: 1, max: 30 }}
+                  />
                 )}
               />
             </Grid2>
@@ -352,6 +388,8 @@ export default function PartnerFormModal({ open, onClose, type, partnerData }: P
                 logoState={bannerLogo}
                 currentUrl={partnerData?.logo_url}
                 inputId='partner-banner-logo'
+                filename={bannerFilename}
+                onFilenameChange={setBannerFilename}
                 onFileSelect={file => validateAndSetLogo(file, BANNER_SPECS, setBannerLogo)}
                 onClear={() => setBannerLogo(initialLogoState)}
               />
@@ -361,37 +399,42 @@ export default function PartnerFormModal({ open, onClose, type, partnerData }: P
                 <Typography variant='caption' sx={{ fontWeight: 600, color: '#64748b', mb: 0.5, display: 'block' }}>
                   Xem trước banner header:
                 </Typography>
-                <Box
-                  sx={{
-                    overflow: 'hidden',
-                    background: 'linear-gradient(90deg, #f8fafc 0%, #fff 50%, #f8fafc 100%)',
-                    border: '1px solid #e2e8f0',
-                    borderRadius: 1,
-                    py: '6px',
-                    position: 'relative'
-                  }}
-                >
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: '24px', px: 2, justifyContent: 'center', overflow: 'hidden' }}>
-                    {previewBannerPartners.map((p, i) => (
-                      <Box
-                        key={i}
-                        sx={{
-                          display: 'flex', alignItems: 'center', gap: 0.75, flexShrink: 0,
-                          px: '10px', py: '3px', borderRadius: '16px',
-                          background: 'rgba(255,255,255,0.8)',
-                          border: p.isCurrent ? '2px solid var(--primary-color, #6366f1)' : '1px solid #f1f5f9'
-                        }}
-                      >
-                        {p.logo_url ? (
-                          <img src={p.logo_url} alt={p.name} style={{ height: 18, maxWidth: 60, objectFit: 'contain' }} />
-                        ) : (
-                          <span style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: 'var(--primary-color, #6366f1)' }} />
-                        )}
-                        <span style={{ fontSize: 11, fontWeight: 600, color: '#475569', whiteSpace: 'nowrap' }}>{p.name}</span>
+
+                {(() => {
+                  return (
+                    <Box
+                      sx={{
+                        overflow: 'hidden',
+                        background: 'linear-gradient(90deg, #f8fafc 0%, #fff 50%, #f8fafc 100%)',
+                        border: '1px solid #e2e8f0',
+                        borderRadius: 1,
+                        py: '6px',
+                        position: 'relative'
+                      }}
+                    >
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: '24px', px: 2, justifyContent: 'center', overflow: 'hidden' }}>
+                        {previewBannerPartners.map((p, i) => (
+                          <Box
+                            key={i}
+                            sx={{
+                              display: 'flex', alignItems: 'center', gap: 0.75, flexShrink: 0,
+                              px: '10px', py: '3px', borderRadius: '16px',
+                              background: 'rgba(255,255,255,0.8)',
+                              border: p.isCurrent ? '2px solid var(--primary-color, #6366f1)' : '1px solid #f1f5f9'
+                            }}
+                          >
+                            {p.logo_url ? (
+                              <img src={p.logo_url} alt={p.name} style={{ height: 18, maxWidth: 60, objectFit: 'contain' }} />
+                            ) : (
+                              <span style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: 'var(--primary-color, #6366f1)' }} />
+                            )}
+                            <span style={{ fontSize: 11, fontWeight: 600, color: '#475569', whiteSpace: 'nowrap' }}>{p.name}</span>
+                          </Box>
+                        ))}
                       </Box>
-                    ))}
-                  </Box>
-                </Box>
+                    </Box>
+                  )
+                })()}
               </Box>
             </Grid2>
 
@@ -403,6 +446,8 @@ export default function PartnerFormModal({ open, onClose, type, partnerData }: P
                 logoState={landingLogo}
                 currentUrl={partnerData?.logo_landing_url}
                 inputId='partner-landing-logo'
+                filename={landingFilename}
+                onFilenameChange={setLandingFilename}
                 onFileSelect={file => validateAndSetLogo(file, LANDING_SPECS, setLandingLogo)}
                 onClear={() => setLandingLogo(initialLogoState)}
               />
@@ -461,7 +506,7 @@ export default function PartnerFormModal({ open, onClose, type, partnerData }: P
         <Button
           onClick={handleSubmit(onSubmit)}
           variant='contained'
-          disabled={isPending || hasError}
+          disabled={isPending}
           sx={{ color: '#fff' }}
         >
           {isPending ? 'Đang xử lý...' : type === 'create' ? 'Thêm mới' : 'Cập nhật'}
@@ -480,6 +525,8 @@ function LogoUploadSection({
   logoState,
   currentUrl,
   inputId,
+  filename,
+  onFilenameChange,
   onFileSelect,
   onClear
 }: {
@@ -488,13 +535,24 @@ function LogoUploadSection({
   logoState: LogoState
   currentUrl?: string | null
   inputId: string
+  filename: string
+  onFilenameChange: (val: string) => void
   onFileSelect: (file: File) => void
   onClear: () => void
 }) {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
 
-    if (file) onFileSelect(file)
+    if (file) {
+      onFileSelect(file)
+
+      // Auto-suggest slug từ tên file gốc (bỏ extension)
+      if (!filename) {
+        const nameWithoutExt = file.name.replace(/\.[^.]+$/, '')
+
+        onFilenameChange(toSlug(nameWithoutExt))
+      }
+    }
     else onClear()
   }
 
@@ -502,8 +560,36 @@ function LogoUploadSection({
     e.preventDefault()
     const file = e.dataTransfer.files?.[0]
 
-    if (file) onFileSelect(file)
+    if (file) {
+      onFileSelect(file)
+      if (!filename) {
+        const nameWithoutExt = file.name.replace(/\.[^.]+$/, '')
+
+        onFilenameChange(toSlug(nameWithoutExt))
+      }
+    }
   }
+
+  // Tự động slug hóa khi gõ
+  const handleFilenameInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value
+
+    // Cho phép gõ tự do nhưng auto-slug: lowercase, chỉ a-z 0-9 và -
+    const slugged = raw
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/đ/g, 'd').replace(/Đ/g, 'd')
+      .toLowerCase()
+      .replace(/[^a-z0-9-]/g, '-')
+      .replace(/-{2,}/g, '-')
+
+    onFilenameChange(slugged)
+  }
+
+  // Extension từ file đang chọn
+  const ext = logoState.file
+    ? '.' + (logoState.file.name.split('.').pop() || 'png')
+    : ''
 
   return (
     <Box>
@@ -526,7 +612,7 @@ function LogoUploadSection({
         onDrop={handleDrop}
         onDragOver={e => e.preventDefault()}
         sx={{
-          border: logoState.error ? '2px dashed #ef4444' : '2px dashed #cbd5e1',
+          border: logoState.warning ? '2px dashed #f59e0b' : '2px dashed #cbd5e1',
           borderRadius: 2,
           p: 2,
           textAlign: 'center',
@@ -549,10 +635,30 @@ function LogoUploadSection({
         </Typography>
       </Box>
 
-      {/* Error */}
-      {logoState.error && (
-        <Alert severity='error' sx={{ mt: 1, py: 0, '& .MuiAlert-message': { py: 0.5 } }}>
-          <Typography variant='caption'>{logoState.error}</Typography>
+      {/* Tên file SEO — chỉ hiện khi có file mới */}
+      {logoState.file && (
+        <Box sx={{ mt: 1.5 }}>
+          <CustomTextField
+            fullWidth
+            size='small'
+            label='Tên file (SEO)'
+            value={filename}
+            onChange={handleFilenameInput}
+            placeholder='vd: logo-viettel-proxy'
+            helperText={filename ? `Lưu thành: ${filename}${ext}` : 'Viết thường, không dấu, cách bởi dấu -'}
+            InputProps={{
+              endAdornment: ext ? (
+                <Typography variant='caption' color='textSecondary' sx={{ whiteSpace: 'nowrap' }}>{ext}</Typography>
+              ) : null
+            }}
+          />
+        </Box>
+      )}
+
+      {/* Warning — chỉ cảnh báo, vẫn cho lưu */}
+      {logoState.warning && (
+        <Alert severity='warning' sx={{ mt: 1, py: 0, '& .MuiAlert-message': { py: 0.5 } }}>
+          <Typography variant='caption'>{logoState.warning}</Typography>
         </Alert>
       )}
 
@@ -569,7 +675,7 @@ function LogoUploadSection({
           }}>
             <img src={logoState.preview} alt='Preview' style={{ maxHeight: 50, maxWidth: '100%', objectFit: 'contain', display: 'block' }} />
           </Box>
-          {!logoState.error && (
+          {!logoState.warning && (
             <Typography variant='caption' color='success.main'>Ảnh hợp lệ</Typography>
           )}
         </Box>

@@ -16,7 +16,6 @@ import { getMode, getSettingsFromCookie, getSystemMode } from '@core/utils/serve
 import ScrollToTop from '@core/components/scroll-to-top'
 import BrandingThemeSync from '@/components/BrandingThemeSync'
 import Footer from './components/Footer'
-import PartnersBanner from '@/components/PartnersBanner'
 
 const Layout = async (props: ChildrenType) => {
   const { children } = props
@@ -64,7 +63,6 @@ const Layout = async (props: ChildrenType) => {
         <ThemeProvider direction={direction} systemMode={systemMode}>
           <div className='landing-page-wrapper'>
             <Header serverLogo={branding.logo_url || ''} serverName={branding.site_name || ''} />
-            <PartnersBanner />
             <main className='landing-page'>
               {children}
             </main>

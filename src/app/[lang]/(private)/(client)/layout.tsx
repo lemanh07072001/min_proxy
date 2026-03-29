@@ -18,7 +18,6 @@ import ThemeProvider from '@components/theme'
 import AuthGuard from '@/hocs/AuthGuard'
 import PageTransition from '@/components/PageTransition'
 import BrandingThemeSync from '@/components/BrandingThemeSync'
-import PartnersBanner from '@/components/PartnersBanner'
 
 // Context Imports — chỉ 3 providers mà root layout CHƯA cung cấp
 // (NextAuthProvider + ModalContextProvider đã có ở root layout [lang]/layout.tsx)
@@ -41,7 +40,6 @@ const Layout = async (props: ChildrenType & { params: Promise<{ lang: string }> 
   const params = await props.params
   const lang = params.lang as Locale
 
-  // Không gọi async functions (cookies, getDictionary) → layout static → navigation instant
   const mode = themeConfig.mode
   const systemMode = 'light' as const
 
@@ -57,7 +55,7 @@ const Layout = async (props: ChildrenType & { params: Promise<{ lang: string }> 
                 verticalLayout={
                 <VerticalLayout
                   navigation={<Navigation mode={mode} />}
-                  navbar={<><Navbar /><PartnersBanner /></>}
+                  navbar={<Navbar />}
                   landingPage={false}
                 >
                     <AuthGuard locale={lang}>
@@ -69,7 +67,7 @@ const Layout = async (props: ChildrenType & { params: Promise<{ lang: string }> 
                 }
                 horizontalLayout={
                   <HorizontalLayout
-                    header={<><Header /><PartnersBanner /></>}
+                    header={<Header />}
                     footer={<HorizontalFooter />}
                   >
                     <AuthGuard locale={lang}>
