@@ -18,9 +18,9 @@ import { VALUE_LABELS, ORDER_FIELDS, ITEM_FIELDS } from '../ProviderFormTypes'
 // ─── Sub-components ─────────────────────────────────
 
 const VALUE_HINTS: Record<string, string> = {
-  provider_order_code: 'VD: 46de8719-6f6a-411b... (mã đơn bên NCC, lưu khi mua)',
-  provider_item_id: 'VD: 566171 (ID proxy bên NCC, lưu khi mua)',
-  duration: 'VD: 30 (số ngày khách chọn gia hạn)',
+  provider_order_code: 'Lấy từ order_items.provider_order_code — VD: 46de8719... Dùng cho mode "1 lệnh cả đơn" (lấy từ item đầu tiên có mã)',
+  provider_item_id: 'Lấy từ order_items.provider_item_id — VD: 566171. Dùng cho mode "gọi riêng từng proxy" (mỗi item có ID riêng)',
+  duration: 'Số ngày khách chọn gia hạn — VD: 30. Hệ thống tự truyền',
   custom: 'Giá trị cố định — luôn gửi giống nhau mỗi lần gia hạn',
 }
 
@@ -36,10 +36,10 @@ function RenewParamRow({ index, control, onRemove }: { index: number; control: S
         <Typography sx={{ fontSize: 12, color: '#94a3b8', flexShrink: 0 }}>=</Typography>
         <Controller name={`renew.params_rows.${index}.value_type` as any} control={control} render={({ field }) => (
           <CustomTextField {...field} size='small' select sx={{ minWidth: 200 }} label={index === 0 ? 'Giá trị lấy từ đâu?' : undefined}>
-            <MenuItem value='provider_order_code'>Mã đơn NCC (tự lấy từ đơn gốc)</MenuItem>
-            <MenuItem value='provider_item_id'>ID proxy NCC (tự lấy từ đơn gốc)</MenuItem>
-            <MenuItem value='duration'>Số ngày gia hạn (khách chọn)</MenuItem>
-            <MenuItem value='custom'>Giá trị cố định (nhập tay)</MenuItem>
+            <MenuItem value='provider_order_code'>Mã đơn NCC — từ order_items (cả đơn dùng chung)</MenuItem>
+            <MenuItem value='provider_item_id'>ID proxy NCC — từ order_items (mỗi proxy riêng)</MenuItem>
+            <MenuItem value='duration'>Số ngày gia hạn — khách chọn lúc gia hạn</MenuItem>
+            <MenuItem value='custom'>Giá trị cố định — nhập tay, không đổi</MenuItem>
           </CustomTextField>
         )} />
         {valueType === 'custom' && (
