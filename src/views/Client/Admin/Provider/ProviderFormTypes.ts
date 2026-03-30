@@ -18,6 +18,15 @@ export interface ResponseMappingRule {
   from: string
   to: string
   store: string
+  save_as: string      // 'raw' | 'array_push' | 'split_comma'
+}
+
+export interface RotateParamRule {
+  param: string        // tên param gửi NCC
+  source: string       // 'order_items' | 'default'
+  field: string        // field lấy data (dot path: metadata.region, provider_key)
+  value: string        // giá trị cố định (khi source=default)
+  send_as: string      // 'raw' | 'join_comma' | 'join_newline' | 'first'
 }
 
 export interface ApiConfigBuyResponse {
@@ -104,6 +113,7 @@ export interface ApiConfigRotate {
   response_http: string
   response_socks5: string
   double_ampersand: boolean
+  rotate_params: RotateParamRule[]
 }
 
 export interface IpConfig {
@@ -333,6 +343,7 @@ export const defaultValues: FormValues = {
     response_http: 'http',
     response_socks5: 'socks5',
     double_ampersand: false,
+    rotate_params: [],
   },
   ip_config: {
     enabled: false,

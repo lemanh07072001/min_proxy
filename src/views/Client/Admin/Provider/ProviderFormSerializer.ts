@@ -210,7 +210,7 @@ export function parseBuySection(buy: any): ApiConfigBuy {
       proxy_fields_type: proxyFields.type || '',
       item_id_field: buyResp.item_id_field || '',
       response_mapping: Array.isArray(buyResp.response_mapping)
-        ? buyResp.response_mapping.map((r: any) => ({ from: r.from || '', to: r.to || '', store: r.store || 'metadata' }))
+        ? buyResp.response_mapping.map((r: any) => ({ from: r.from || '', to: r.to || '', store: r.store || 'metadata', save_as: r.save_as || 'raw' }))
         : [],
     }
   }
@@ -239,6 +239,12 @@ export function parseApiConfig(apiConfig: any): Partial<FormValues> {
       response_http: rotate.response?.proxy_fields?.http || 'http',
       response_socks5: rotate.response?.proxy_fields?.socks5 || 'socks5',
       double_ampersand: rotate.double_ampersand || false,
+      rotate_params: Array.isArray(rotate.rotate_params)
+        ? rotate.rotate_params.map((rp: any) => ({
+            param: rp.param || '', source: rp.source || 'order_items',
+            field: rp.field || '', value: rp.value || '', send_as: rp.send_as || 'raw',
+          }))
+        : [],
     },
     ip_config: {
       enabled: !!apiConfig.ip_config,
@@ -384,6 +390,7 @@ export function buildBuySection(buy: ApiConfigBuy): object | null {
     resp.response_mapping = validMapping.map((r: ResponseMappingRule) => ({
       from: r.from, to: r.to,
       store: (!r.store || r.store === '_custom_') ? 'metadata' : r.store,
+      ...(r.save_as && r.save_as !== 'raw' ? { save_as: r.save_as } : {}),
     }))
   }
 
@@ -473,7 +480,16 @@ export function buildApiConfig(form: FormValues): object | null {
           http: form.rotate.response_http || 'http',
           socks5: form.rotate.response_socks5 || 'socks5',
         }
-      }
+      },
+      ...(form.rotate.rotate_params?.length ? {
+        rotate_params: form.rotate.rotate_params
+          .filter(rp => rp.param && (rp.source === 'default' ? rp.value : rp.field))
+          .map(rp => ({
+            param: rp.param, source: rp.source,
+            ...(rp.source === 'order_items' ? { field: rp.field } : { value: rp.value }),
+            ...(rp.send_as !== 'raw' ? { send_as: rp.send_as } : {}),
+          }))
+      } : {}),
     }
   }
 

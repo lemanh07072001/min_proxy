@@ -1,12 +1,83 @@
-import { Controller, useWatch } from 'react-hook-form'
+import { Controller, useFieldArray, useWatch } from 'react-hook-form'
 import Grid2 from '@mui/material/Grid2'
 import Box from '@mui/material/Box'
 import Typography from '@mui/material/Typography'
 import MenuItem from '@mui/material/MenuItem'
+import Button from '@mui/material/Button'
+import IconButton from '@mui/material/IconButton'
+import { Plus, Trash2 } from 'lucide-react'
 
 import CustomTextField from '@core/components/mui/TextField'
 import FieldHint from '../components/FieldHint'
 import type { SectionProps } from '../ProviderFormTypes'
+
+function RotateParamsTable({ control }: SectionProps) {
+  const { fields, append, remove } = useFieldArray({ control, name: 'rotate.rotate_params' as any })
+
+  return (
+    <Box sx={{ border: '1px solid #c4b5fd', borderTop: '3px solid #8b5cf6', borderRadius: 2, overflow: 'hidden' }}>
+      <Box sx={{ background: '#f5f3ff', borderBottom: '1px solid #c4b5fd', px: 2, py: 1.25, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Box>
+          <Typography sx={{ fontSize: 14, fontWeight: 700, color: '#8b5cf6' }}>
+            Params lấy từ DB gửi kèm khi xoay
+          </Typography>
+          <Typography sx={{ fontSize: 12, color: '#475569', mt: 0.25 }}>
+            Ngoài key proxy + token, cần gửi thêm data nào cho NCC? VD: IP whitelist, protocol, region...
+          </Typography>
+        </Box>
+        <Button size='small' startIcon={<Plus size={14} />} onClick={() => append({ param: '', source: 'order_items', field: '', value: '', send_as: 'raw' })}>
+          Thêm
+        </Button>
+      </Box>
+      <Box sx={{ p: 2 }}>
+        {fields.length === 0 && (
+          <Typography variant='caption' color='text.secondary' sx={{ fontStyle: 'italic' }}>
+            Chưa có. Bấm "Thêm" nếu cần gửi thêm data từ đơn hàng khi xoay proxy.
+          </Typography>
+        )}
+        {fields.map((f, i) => (
+          <RotateParamRow key={f.id} index={i} control={control} onRemove={() => remove(i)} />
+        ))}
+      </Box>
+    </Box>
+  )
+}
+
+function RotateParamRow({ index, control, onRemove }: { index: number; control: any; onRemove: () => void }) {
+  const source = useWatch({ control, name: `rotate.rotate_params.${index}.source` })
+
+  return (
+    <Box sx={{ display: 'flex', gap: 1, mb: 0.5, alignItems: 'center' }}>
+      <Controller name={`rotate.rotate_params.${index}.param` as any} control={control} render={({ field }) => (
+        <CustomTextField {...field} size='small' placeholder='Param gửi NCC (VD: ip)' sx={{ flex: 1, minWidth: 120 }} />
+      )} />
+      <Controller name={`rotate.rotate_params.${index}.source` as any} control={control} render={({ field }) => (
+        <CustomTextField {...field} size='small' select sx={{ minWidth: 140 }}>
+          <MenuItem value='order_items'>Từ order_item</MenuItem>
+          <MenuItem value='default'>Giá trị cố định</MenuItem>
+        </CustomTextField>
+      )} />
+      {source === 'order_items' ? (
+        <Controller name={`rotate.rotate_params.${index}.field` as any} control={control} render={({ field }) => (
+          <CustomTextField {...field} size='small' placeholder='Field (VD: provider_key, allow_ips)' sx={{ flex: 1, minWidth: 150 }} />
+        )} />
+      ) : (
+        <Controller name={`rotate.rotate_params.${index}.value` as any} control={control} render={({ field }) => (
+          <CustomTextField {...field} size='small' placeholder='Giá trị cố định' sx={{ flex: 1, minWidth: 150 }} />
+        )} />
+      )}
+      <Controller name={`rotate.rotate_params.${index}.send_as` as any} control={control} render={({ field }) => (
+        <CustomTextField {...field} size='small' select value={field.value || 'raw'} sx={{ minWidth: 140 }}>
+          <MenuItem value='raw'>Nguyên</MenuItem>
+          <MenuItem value='join_comma'>Mảng → phẩy</MenuItem>
+          <MenuItem value='join_newline'>Mảng → xuống dòng</MenuItem>
+          <MenuItem value='first'>Lấy phần tử đầu</MenuItem>
+        </CustomTextField>
+      )} />
+      <IconButton size='small' onClick={onRemove} color='error'><Trash2 size={14} /></IconButton>
+    </Box>
+  )
+}
 
 export default function RotateSection({ control }: SectionProps) {
   const enabled = useWatch({ control, name: 'rotate.enabled' })
@@ -140,6 +211,9 @@ export default function RotateSection({ control }: SectionProps) {
               </Grid2>
             </Box>
           </Box>
+
+          {/* Bước 3: Params lấy từ DB gửi kèm khi xoay */}
+          <RotateParamsTable control={control} />
 
           {/* Minh hoạ flow */}
           <Box sx={{ p: 1.5, background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 1.5 }}>

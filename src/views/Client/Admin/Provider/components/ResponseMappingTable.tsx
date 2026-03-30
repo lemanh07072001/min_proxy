@@ -47,6 +47,13 @@ function ResponseMappingRow({ prefix, index, control, onRemove }: BuySectionProp
           )}
         </>
       )} />
+      <Controller name={`${prefix}.response.response_mapping.${index}.save_as` as any} control={control} render={({ field }) => (
+        <CustomTextField {...field} size='small' select value={field.value || 'raw'} sx={{ minWidth: 130 }}>
+          <MenuItem value='raw'>Nguyên</MenuItem>
+          <MenuItem value='array_push'>Thêm vào mảng</MenuItem>
+          <MenuItem value='split_comma'>Tách phẩy → mảng</MenuItem>
+        </CustomTextField>
+      )} />
       <IconButton size='small' onClick={onRemove} color='error'><Trash2 size={14} /></IconButton>
     </Box>
   )
@@ -62,7 +69,7 @@ export default function ResponseMappingTable({ prefix, control }: BuySectionProp
           Lưu thêm dữ liệu từ nhà cung cấp (mặc định)
           <FieldHint text='Cấu hình mặc định cho tất cả sản phẩm của nhà cung cấp này. Từng sản phẩm có thể ghi đè riêng trong form sản phẩm.' />
         </Typography>
-        <Button size='small' startIcon={<Plus size={14} />} onClick={() => append({ from: '', to: '', store: 'metadata' })}>
+        <Button size='small' startIcon={<Plus size={14} />} onClick={() => append({ from: '', to: '', store: 'metadata', save_as: 'raw' })}>
           Thêm
         </Button>
       </Box>
