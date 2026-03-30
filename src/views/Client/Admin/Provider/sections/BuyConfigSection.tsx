@@ -247,6 +247,18 @@ function StepSuccessCheck({ prefix, control }: BuySectionProps) {
             />
           )} />
         </Grid2>
+        {responseType === 'array_last_status' && (
+          <Grid2 size={{ xs: 3, sm: 2 }}>
+            <Controller name={`${prefix}.response.success_check`} control={control} render={({ field }) => (
+              <CustomTextField {...field} fullWidth select
+                label={<>Check ở object <FieldHint text='Mảng có nhiều object — chọn object nào để kiểm tra thành công.\n\nVD: [{proxy}, {status:200}] → chọn "Cuối"\nVD: [{status:100}, {proxy}] → chọn "Đầu"' /></>}
+              >
+                <MenuItem value='last'>Cuối cùng</MenuItem>
+                <MenuItem value='first'>Đầu tiên</MenuItem>
+              </CustomTextField>
+            )} />
+          </Grid2>
+        )}
       </Grid2>
     </PipelineStepCard>
   )

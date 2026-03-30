@@ -24,6 +24,7 @@ export interface ApiConfigBuyResponse {
   type: string
   success_field: string
   success_value: number | string
+  success_check: string          // 'last' | 'first' — chỉ dùng khi type=array_last_status
   error_message_field: string
   error_codes: ErrorCodeRule[]
   http_errors: HttpErrorRule[]
@@ -297,6 +298,7 @@ export const defaultBuy: ApiConfigBuy = {
     type: 'array_last_status',
     success_field: 'statusCode',
     success_value: 200,
+    success_check: 'last',
     error_message_field: '',
     error_codes: [],
     http_errors: [],

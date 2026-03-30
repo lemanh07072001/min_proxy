@@ -186,6 +186,7 @@ export function parseBuySection(buy: any): ApiConfigBuy {
       type: buyResp.type || 'array_last_status',
       success_field: buyResp.success_field || 'statusCode',
       success_value: buyResp.success_value ?? 200,
+      success_check: buyResp.success_check || 'last',
       error_message_field: buyResp.error_message_field || '',
       error_codes: (buyResp.error_codes || []).map((r: any) => ({
         field: r.field || '',
@@ -335,6 +336,9 @@ export function buildBuySection(buy: ApiConfigBuy): object | null {
 
   if (buy.response.success_field) resp.success_field = buy.response.success_field
   if (buy.response.success_value !== '') resp.success_value = Number(buy.response.success_value)
+  if (buy.response.type === 'array_last_status' && buy.response.success_check) {
+    resp.success_check = buy.response.success_check
+  }
   if (buy.response.error_message_field) resp.error_message_field = buy.response.error_message_field
   if (buy.response.fallback_message) resp.fallback_message = buy.response.fallback_message
 
