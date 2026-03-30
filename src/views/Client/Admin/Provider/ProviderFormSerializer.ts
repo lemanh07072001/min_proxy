@@ -451,9 +451,9 @@ export function buildApiConfig(form: FormValues): object | null {
   const buyRotating = buildBuySection(form.buy_rotating)
   const buyStatic = buildBuySection(form.buy_static)
 
-  // Gửi section enabled hoặc null (xóa) — đảm bảo BE merge đúng
-  config.buy_rotating = buyRotating
-  config.buy_static = buyStatic
+  // Chỉ gửi section có data — section không gửi → BE merge giữ nguyên cũ
+  if (buyRotating) config.buy_rotating = buyRotating
+  if (buyStatic) config.buy_static = buyStatic
 
   if (form.rotate.enabled) {
     config.rotate = {
