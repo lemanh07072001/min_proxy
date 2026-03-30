@@ -49,6 +49,7 @@ import { useApiKeys } from '@/hooks/apis/useOrders'
 import { useRenewOrder, useRenewInfo, useRenewalRefund, useRenewalConfirm, useOrderHistoryLogs } from '@/hooks/apis/useRenewal'
 import { useRole } from '@/hooks/useRole'
 import { useOrderHistories, type OrderHistoryItem } from '@/hooks/apis/useOrderHistories'
+import { useOrderItemLogs, type OrderItemLog } from '@/hooks/apis/useOrderItemLogs'
 
 const formatVND = (v: number) => new Intl.NumberFormat('vi-VN').format(v) + 'đ'
 
@@ -82,6 +83,7 @@ const OrderDetail: React.FC<OrderDetailProps> = ({ open, onClose, order }) => {
   const [renewOpen, setRenewOpen] = useState(false)
   const [detailTab, setDetailTab] = useState(0)
   const [viewLogId, setViewLogId] = useState<number | null>(null)
+  const [viewItemKey, setViewItemKey] = useState<string | null>(null)
   const { isAdmin } = useRole()
 
   const { data: apiKeysData = [], isLoading: isLoadingKeys } = useApiKeys(order?.id, open)
@@ -309,7 +311,7 @@ return row.original?.key || row.original?.api_key || ''
         open={open}
         onClose={() => { setDetailTab(0); onClose() }}
         fullWidth
-        maxWidth={renewOpen ? 'lg' : 'md'}
+        maxWidth={(renewOpen || viewItemKey) ? 'lg' : 'md'}
         PaperProps={{
           sx: {
             borderRadius: '12px',
@@ -402,7 +404,8 @@ return row.original?.key || row.original?.api_key || ''
               </Tabs>
 
               {/* Tab: Proxy */}
-              {detailTab === 0 && <Box sx={{ p: '16px 20px' }}>
+              {detailTab === 0 && <Box sx={{ display: 'flex', gap: 0 }}>
+              <Box sx={{ flex: 1, minWidth: 0, p: '16px 20px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
                   <Typography sx={{ fontSize: '14px', fontWeight: 600, color: '#1e293b' }}>
                     Danh sách proxy ({totalRows})
@@ -488,15 +491,30 @@ return row.original?.key || row.original?.api_key || ''
                           ))}
                         </thead>
                         <tbody>
-                          {table.getRowModel().rows.map(row => (
-                            <tr key={row.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                          {table.getRowModel().rows.map(row => {
+                            const item = row.original as any
+                            const itemKey = item.key || item.api_key
+                            const isRotating = item.type === 'ROTATING'
+                            const isViewing = viewItemKey === itemKey
+
+                            return (
+                            <tr key={row.id}
+                              style={{
+                                borderBottom: '1px solid #f1f5f9', cursor: isRotating ? 'pointer' : undefined,
+                                background: isViewing ? '#eff6ff' : undefined, transition: 'background 0.15s',
+                              }}
+                              onClick={() => { if (isRotating && itemKey) setViewItemKey(viewItemKey === itemKey ? null : itemKey) }}
+                              onMouseEnter={(e) => { if (isRotating && !isViewing) e.currentTarget.style.background = '#f8fafc' }}
+                              onMouseLeave={(e) => { if (isRotating && !isViewing) e.currentTarget.style.background = '' }}
+                            >
                               {row.getVisibleCells().map(cell => (
                                 <td key={cell.id} style={{ padding: '8px 10px' }}>
                                   {flexRender(cell.column.columnDef.cell, cell.getContext())}
                                 </td>
                               ))}
                             </tr>
-                          ))}
+                            )
+                          })}
                         </tbody>
                       </table>
                     </div>
@@ -528,6 +546,28 @@ return row.original?.key || row.original?.api_key || ''
                     </Typography>
                   </Box>
                 )}
+              </Box>
+
+              {/* Panel phải: log xoay proxy */}
+              {viewItemKey && (
+                <Box sx={{
+                  flex: '0 0 38%', borderLeft: '1px solid #e2e8f0',
+                  overflowY: 'auto', maxHeight: '60vh', p: '12px 16px',
+                  animation: 'slideInRight 0.2s ease-out',
+                  '@keyframes slideInRight': { from: { opacity: 0, transform: 'translateX(20px)' }, to: { opacity: 1, transform: 'translateX(0)' } },
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                    <div style={{ fontSize: '12px', fontWeight: 600, color: '#374151' }}>Log xoay proxy</div>
+                    <button onClick={() => setViewItemKey(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', padding: 2 }}>
+                      <X size={14} />
+                    </button>
+                  </div>
+                  <div style={{ fontSize: '11px', color: '#6366f1', fontFamily: 'monospace', marginBottom: 8, wordBreak: 'break-all' }}>
+                    {viewItemKey}
+                  </div>
+                  <ClientItemLogPanel itemKey={viewItemKey} />
+                </Box>
+              )}
               </Box>}
 
               {/* Tab: Lịch sử gia hạn */}
@@ -963,6 +1003,55 @@ function InfoCard({ icon, label, value, highlight }: { icon: React.ReactNode; la
         {value}
       </Typography>
     </Box>
+  )
+}
+
+// ====== Client Item Log Panel ======
+
+const ITEM_LOG_ACTION: Record<string, { label: string; color: string }> = {
+  rotate_success: { label: 'OK', color: '#16a34a' },
+  rotate_error: { label: 'Lỗi', color: '#dc2626' },
+  rotate_timeout: { label: 'Timeout', color: '#f59e0b' },
+  no_provider: { label: 'No NCC', color: '#ea580c' },
+}
+
+function ClientItemLogPanel({ itemKey }: { itemKey: string }) {
+  const { data: logs, isLoading } = useOrderItemLogs(itemKey)
+
+  if (isLoading) return <div style={{ fontSize: '11px', color: '#94a3b8' }}>Đang tải...</div>
+  if (!logs?.length) return <div style={{ fontSize: '11px', color: '#cbd5e1', textAlign: 'center', padding: '20px 0' }}>Chưa có log xoay (log tự xóa sau 30 phút)</div>
+
+  return (
+    <div>
+      {logs.map((log: OrderItemLog, i: number) => {
+        const action = ITEM_LOG_ACTION[log.action] ?? { label: log.action, color: '#94a3b8' }
+        const isError = log.action.includes('error') || log.action === 'rotate_timeout' || log.action === 'no_provider'
+
+        return (
+          <div key={i} style={{ padding: '8px 0', borderBottom: '1px solid #f1f5f9', fontSize: '11px' }}>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+              <span style={{ color: '#94a3b8', fontFamily: 'monospace', width: 55, flexShrink: 0 }}>
+                {log.created_at ? new Date(log.created_at).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : ''}
+              </span>
+              <span style={{ color: action.color, fontWeight: 600, flexShrink: 0 }}>{action.label}</span>
+              {log.duration_ms != null && (
+                <span style={{ color: '#94a3b8', flexShrink: 0 }}>{log.duration_ms}ms</span>
+              )}
+              {log.provider_code && (
+                <span style={{ color: '#8b5cf6', fontSize: '10px' }}>{log.provider_code}</span>
+              )}
+            </div>
+
+            <div style={{
+              color: isError ? '#dc2626' : '#64748b', marginTop: 2, wordBreak: 'break-all',
+              ...(isError ? { background: '#fef2f2', padding: '3px 6px', borderRadius: 3 } : {})
+            }}>
+              {log.message}
+            </div>
+          </div>
+        )
+      })}
+    </div>
   )
 }
 

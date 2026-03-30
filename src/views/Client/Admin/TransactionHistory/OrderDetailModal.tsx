@@ -38,6 +38,7 @@ import { useApiKeys, useUpdateItem } from '@/hooks/apis/useOrders'
 import { useOrderLogs, type OrderLog } from '@/hooks/apis/useOrderLogs'
 import { useOrderHistories, type OrderHistoryItem } from '@/hooks/apis/useOrderHistories'
 import { useOrderHistoryLogs, type HistoryLogItem } from '@/hooks/apis/useRenewal'
+import { useOrderItemLogs, type OrderItemLog } from '@/hooks/apis/useOrderItemLogs'
 
 interface OrderDetailModalProps {
   isOpen: boolean
@@ -71,6 +72,7 @@ export default function OrderDetailModal({ isOpen, onClose, orderData, isLoading
   const [rowSelection, setRowSelection] = useState({})
   const [tabIndex, setTabIndex] = useState(0)
   const [viewLogId, setViewLogId] = useState<number | null>(null)
+  const [viewItemKey, setViewItemKey] = useState<string | null>(null)
 
   const orderId = orderData?.order?.id
   const { data: dataApiKeys, isLoading: loadingApiKeys } = useApiKeys(orderId, isOpen)
@@ -296,7 +298,7 @@ return p || '-'
   })
 
   useEffect(() => {
-    if (!isOpen) { setRowSelection({}); setTabIndex(0); setViewLogId(null) }
+    if (!isOpen) { setRowSelection({}); setTabIndex(0); setViewLogId(null); setViewItemKey(null) }
   }, [isOpen])
 
   if (!isOpen) return null
@@ -309,7 +311,7 @@ return p || '-'
       onClose={onClose}
       open={isOpen}
       closeAfterTransition={false}
-      maxWidth={viewLogId ? 'lg' : 'md'}
+      maxWidth={(viewLogId || viewItemKey) ? 'lg' : 'md'}
       fullWidth
       PaperProps={{ sx: { borderRadius: '12px', maxHeight: '85vh', mt: '5vh', mb: 'auto' } }}
     >
@@ -378,7 +380,8 @@ return p || '-'
           {/* Tab content */}
           <div style={{ padding: '16px 20px' }}>
             {tabIndex === 0 && (
-              <>
+              <div style={{ display: 'flex', gap: 0 }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
                 {/* Copy/Download buttons */}
                 {selectedCount > 0 && (
                   <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 10 }}>
@@ -439,7 +442,7 @@ return p || '-'
                         </thead>
                         <tbody>
                           {table.getRowModel().rows.map(row => (
-                            <ExpandableItemRow key={row.id} row={row} />
+                            <ExpandableItemRow key={row.id} row={row} activeItemKey={viewItemKey} onViewLogs={(k) => setViewItemKey(viewItemKey === k ? null : k)} />
                           ))}
                         </tbody>
                       </table>
@@ -471,7 +474,29 @@ return p || '-'
                     <p style={{ color: '#94a3b8', fontSize: '13px' }}>Chưa có proxy</p>
                   </div>
                 )}
-              </>
+              </div>
+
+              {/* Panel phải: log xoay proxy */}
+              {viewItemKey && (
+                <div style={{
+                  flex: '0 0 38%', borderLeft: '1px solid #e2e8f0',
+                  overflowY: 'auto', maxHeight: '60vh', padding: '12px 16px',
+                  animation: 'slideInRight 0.2s ease-out',
+                }}>
+                  <style>{`@keyframes slideInRight { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }`}</style>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                    <div style={{ fontSize: '12px', fontWeight: 600, color: '#374151' }}>Log xoay proxy</div>
+                    <button onClick={() => setViewItemKey(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', padding: 2 }}>
+                      <X size={14} />
+                    </button>
+                  </div>
+                  <div style={{ fontSize: '11px', color: '#6366f1', fontFamily: 'monospace', marginBottom: 8, wordBreak: 'break-all' }}>
+                    {viewItemKey}
+                  </div>
+                  <ItemLogPanel itemKey={viewItemKey} />
+                </div>
+              )}
+              </div>
             )}
 
             {tabIndex === 1 && (
@@ -655,10 +680,12 @@ function OrderRawDataPanel({ order }: { order: any }) {
 }
 
 /** Expandable row cho OrderItem — click row xem chi tiết bên dưới */
-function ExpandableItemRow({ row }: { row: any }) {
+function ExpandableItemRow({ row, activeItemKey, onViewLogs }: { row: any; activeItemKey?: string | null; onViewLogs?: (key: string) => void }) {
   const [expanded, setExpanded] = useState(false)
   const item = row.original
   const colCount = row.getVisibleCells().length
+  const itemKey = item.key || item.api_key
+  const isViewing = activeItemKey === itemKey
 
   return (
     <>
@@ -666,14 +693,18 @@ function ExpandableItemRow({ row }: { row: any }) {
         style={{
           borderBottom: expanded ? 'none' : '1px solid #f1f5f9',
           cursor: 'pointer', transition: 'background 0.15s',
-          background: expanded ? '#f0f4ff' : undefined,
+          background: isViewing ? '#eff6ff' : expanded ? '#f0f4ff' : undefined,
         }}
         onClick={(e) => {
           if ((e.target as HTMLElement).closest('input[type="checkbox"], button')) return
-          setExpanded(!expanded)
+          if (item.type === 'ROTATING' && onViewLogs && itemKey) {
+            onViewLogs(itemKey)
+          } else {
+            setExpanded(!expanded)
+          }
         }}
-        onMouseEnter={(e) => { if (!expanded) e.currentTarget.style.background = '#f8fafc' }}
-        onMouseLeave={(e) => { if (!expanded) e.currentTarget.style.background = '' }}
+        onMouseEnter={(e) => { if (!expanded && !isViewing) e.currentTarget.style.background = '#f8fafc' }}
+        onMouseLeave={(e) => { if (!expanded && !isViewing) e.currentTarget.style.background = '' }}
       >
         {row.getVisibleCells().map((cell: any) => (
           <td key={cell.id} style={{ padding: '8px 10px' }}>
@@ -1277,3 +1308,59 @@ const navBtnStyle = (disabled: boolean): React.CSSProperties => ({
   cursor: disabled ? 'not-allowed' : 'pointer',
   opacity: disabled ? 0.5 : 1, color: '#374151'
 })
+
+// ====== Item Rotate Log Panel ======
+
+const ITEM_LOG_ACTION: Record<string, { label: string; color: string }> = {
+  rotate_success: { label: 'OK', color: '#16a34a' },
+  rotate_error: { label: 'Lỗi', color: '#dc2626' },
+  rotate_timeout: { label: 'Timeout', color: '#f59e0b' },
+  no_provider: { label: 'No NCC', color: '#ea580c' },
+}
+
+function ItemLogPanel({ itemKey }: { itemKey: string }) {
+  const { data: logs, isLoading } = useOrderItemLogs(itemKey)
+
+  if (isLoading) return <div style={{ fontSize: '11px', color: '#94a3b8' }}>Đang tải...</div>
+  if (!logs?.length) return <div style={{ fontSize: '11px', color: '#cbd5e1', textAlign: 'center', padding: '20px 0' }}>Chưa có log xoay (log tự xóa sau 30 phút)</div>
+
+  return (
+    <div>
+      {logs.map((log: OrderItemLog, i: number) => {
+        const action = ITEM_LOG_ACTION[log.action] ?? { label: log.action, color: '#94a3b8' }
+        const isError = log.action.includes('error') || log.action === 'rotate_timeout' || log.action === 'no_provider'
+
+        return (
+          <div key={i} style={{ padding: '8px 0', borderBottom: '1px solid #f1f5f9', fontSize: '11px' }}>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+              <span style={{ color: '#94a3b8', fontFamily: 'monospace', width: 55, flexShrink: 0 }}>
+                {log.created_at ? new Date(log.created_at).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : ''}
+              </span>
+              <span style={{ color: action.color, fontWeight: 600, flexShrink: 0 }}>{action.label}</span>
+              {log.duration_ms != null && (
+                <span style={{ color: '#94a3b8', flexShrink: 0 }}>{log.duration_ms}ms</span>
+              )}
+              {log.provider_code && (
+                <span style={{ color: '#8b5cf6', fontSize: '10px' }}>{log.provider_code}</span>
+              )}
+            </div>
+
+            <div style={{
+              color: isError ? '#dc2626' : '#64748b', marginTop: 2, wordBreak: 'break-all',
+              ...(isError ? { background: '#fef2f2', padding: '3px 6px', borderRadius: 3 } : {})
+            }}>
+              {log.message}
+            </div>
+
+            {log.response && (
+              <details style={{ marginTop: 3 }} open={isError}>
+                <summary style={{ fontSize: '11px', color: isError ? '#ef4444' : '#22c55e', cursor: 'pointer', fontWeight: 500 }}>Response</summary>
+                <CodeBlock value={log.response} color={isError ? '#fca5a5' : '#86efac'} />
+              </details>
+            )}
+          </div>
+        )
+      })}
+    </div>
+  )
+}
