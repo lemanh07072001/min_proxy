@@ -24,17 +24,28 @@ function ResponseMappingRow({ prefix, index, control, onRemove }: BuySectionProp
         <CustomTextField {...field} size='small' placeholder={isCustom ? 'Tên field trung gian (VD: provider_key)' : 'Tên field lưu (VD: region)'} sx={{ flex: 1, minWidth: 120 }} />
       )} />
       <Controller name={`${prefix}.response.response_mapping.${index}.store` as any} control={control} render={({ field }) => (
-        <CustomTextField
-          size='small' select
-          value={isCustom ? '_custom' : (store ?? 'metadata')}
-          onChange={e => { const v = e.target.value; field.onChange(v === '_custom' ? '' : v) }}
-          sx={{ minWidth: 180 }}
-        >
-          <MenuItem value='root'>Cấp 1 (flat)</MenuItem>
-          <MenuItem value='proxy'>Trong proxy</MenuItem>
-          <MenuItem value='metadata'>Trong metadata</MenuItem>
-          <MenuItem value='_custom'>Object tự đặt tên...</MenuItem>
-        </CustomTextField>
+        <>
+          <CustomTextField
+            size='small' select
+            value={isCustom ? '_custom' : (store || 'metadata')}
+            onChange={e => { const v = e.target.value; field.onChange(v === '_custom' ? '_custom_' : v) }}
+            sx={{ minWidth: 180 }}
+          >
+            <MenuItem value='root'>Cấp 1 (flat)</MenuItem>
+            <MenuItem value='proxy'>Trong proxy</MenuItem>
+            <MenuItem value='metadata'>Trong metadata</MenuItem>
+            <MenuItem value='_custom'>Object tự đặt tên...</MenuItem>
+          </CustomTextField>
+          {isCustom && (
+            <CustomTextField
+              size='small'
+              value={store === '_custom_' ? '' : store}
+              onChange={e => field.onChange(e.target.value || '_custom_')}
+              placeholder='Tên object (VD: extra_info)'
+              sx={{ minWidth: 160 }}
+            />
+          )}
+        </>
       )} />
       <IconButton size='small' onClick={onRemove} color='error'><Trash2 size={14} /></IconButton>
     </Box>

@@ -377,7 +377,10 @@ export function buildBuySection(buy: ApiConfigBuy): object | null {
 
   const validMapping = buy.response.response_mapping.filter((r: ResponseMappingRule) => r.from && r.to)
   if (validMapping.length > 0) {
-    resp.response_mapping = validMapping.map((r: ResponseMappingRule) => ({ from: r.from, to: r.to, store: r.store || 'metadata' }))
+    resp.response_mapping = validMapping.map((r: ResponseMappingRule) => ({
+      from: r.from, to: r.to,
+      store: (!r.store || r.store === '_custom_') ? 'metadata' : r.store,
+    }))
   }
 
   if (buy.response_mode === 'deferred') {
