@@ -1013,6 +1013,7 @@ const ITEM_LOG_ACTION: Record<string, { label: string; color: string }> = {
   rotate_error: { label: 'Lỗi', color: '#dc2626' },
   rotate_timeout: { label: 'Timeout', color: '#f59e0b' },
   no_provider: { label: 'No NCC', color: '#ea580c' },
+  paused: { label: 'Tạm dừng', color: '#7c3aed' },
 }
 
 function ClientItemLogPanel({ itemKey }: { itemKey: string }) {
@@ -1025,7 +1026,7 @@ function ClientItemLogPanel({ itemKey }: { itemKey: string }) {
     <div>
       {logs.map((log: OrderItemLog, i: number) => {
         const action = ITEM_LOG_ACTION[log.action] ?? { label: log.action, color: '#94a3b8' }
-        const isError = log.action.includes('error') || log.action === 'rotate_timeout' || log.action === 'no_provider'
+        const isError = log.action.includes('error') || log.action === 'rotate_timeout' || log.action === 'no_provider' || log.action === 'paused'
 
         return (
           <div key={i} style={{ padding: '8px 0', borderBottom: '1px solid #f1f5f9', fontSize: '11px' }}>
