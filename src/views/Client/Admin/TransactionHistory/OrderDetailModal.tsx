@@ -34,7 +34,7 @@ import { Chip, Checkbox, CircularProgress } from '@mui/material'
 
 import { formatDateTimeLocal } from '@/utils/formatDate'
 import { ORDER_STATUS_LABELS_ADMIN, ORDER_STATUS, ORDER_STATUS_COLORS_ADMIN } from '@/constants'
-import { useApiKeys } from '@/hooks/apis/useOrders'
+import { useApiKeys, useUpdateItem } from '@/hooks/apis/useOrders'
 import { useOrderLogs, type OrderLog } from '@/hooks/apis/useOrderLogs'
 import { useOrderHistories, type OrderHistoryItem } from '@/hooks/apis/useOrderHistories'
 import { useOrderHistoryLogs, type HistoryLogItem } from '@/hooks/apis/useRenewal'
@@ -698,8 +698,29 @@ function ExpandableItemRow({ row }: { row: any }) {
   )
 }
 
-/** Panel chi tiết OrderItem — bảng có nhóm, luôn hiện cột đối tác */
+/** Panel chi tiết OrderItem — bảng có nhóm, luôn hiện cột đối tác + inline edit */
 function ItemDetailPanel({ item }: { item: any }) {
+  const [editing, setEditing] = useState(false)
+  const [proxyStr, setProxyStr] = useState('')
+  const [provKey, setProvKey] = useState('')
+  const updateItem = useUpdateItem()
+
+  const startEdit = () => {
+    const proxy = item.proxy || item.proxys || {}
+    const http = proxy.http || proxy.HTTP || ''
+    setProxyStr(http)
+    setProvKey(item.provider_key || '')
+    setEditing(true)
+  }
+
+  const saveEdit = () => {
+    const key = item.key || item.api_key
+    if (!key) return
+    updateItem.mutate(
+      { itemKey: key, proxyString: proxyStr, providerKey: provKey },
+      { onSuccess: () => setEditing(false) }
+    )
+  }
   const origins: Record<string, string> = item.metadata?._field_origins || {}
   const proxy = item.proxy || item.proxys
   const sts = item.status === 0 ? 'Hoạt động' : item.status === 1 ? 'Đã tắt' : 'Hết hạn'
@@ -769,6 +790,34 @@ function ItemDetailPanel({ item }: { item: any }) {
           ))}
         </tbody>
       </table>
+
+      {/* Inline edit */}
+      <div style={{ padding: '8px 10px', borderTop: '1px solid #edf0f4', display: 'flex', gap: 8, alignItems: 'center' }}>
+        {!editing ? (
+          <button onClick={startEdit} style={{ fontSize: '12px', color: '#6366f1', background: '#eef2ff', border: '1px solid #c7d2fe', borderRadius: 6, padding: '4px 12px', cursor: 'pointer', fontWeight: 500 }}>
+            Sửa proxy
+          </button>
+        ) : (
+          <>
+            <input
+              value={proxyStr} onChange={e => setProxyStr(e.target.value)}
+              placeholder='ip:port:user:pass'
+              style={{ flex: 1, fontSize: '12px', fontFamily: 'monospace', padding: '5px 8px', border: '1px solid #c7d2fe', borderRadius: 4 }}
+            />
+            <input
+              value={provKey} onChange={e => setProvKey(e.target.value)}
+              placeholder='provider_key'
+              style={{ width: 180, fontSize: '12px', fontFamily: 'monospace', padding: '5px 8px', border: '1px solid #c7d2fe', borderRadius: 4 }}
+            />
+            <button onClick={saveEdit} disabled={updateItem.isPending} style={{ fontSize: '12px', color: '#fff', background: updateItem.isPending ? '#a5b4fc' : '#6366f1', border: 'none', borderRadius: 6, padding: '5px 14px', cursor: 'pointer', fontWeight: 500 }}>
+              {updateItem.isPending ? 'Đang lưu...' : 'Lưu'}
+            </button>
+            <button onClick={() => setEditing(false)} style={{ fontSize: '12px', color: '#64748b', background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: 6, padding: '5px 10px', cursor: 'pointer' }}>
+              Huỷ
+            </button>
+          </>
+        )}
+      </div>
     </div>
   )
 }

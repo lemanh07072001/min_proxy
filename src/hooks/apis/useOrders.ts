@@ -97,6 +97,27 @@ export const useFillProxies = () => {
   })
 }
 
+// Hook admin sửa proxy 1 item
+export const useUpdateItem = () => {
+  const axiosAuth = useAxiosAuth()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ itemKey, proxyString, providerKey }: { itemKey: string; proxyString?: string; providerKey?: string }) => {
+      const res = await axiosAuth.post(`/admin/update-item/${itemKey}`, {
+        ...(proxyString !== undefined ? { proxy_string: proxyString } : {}),
+        ...(providerKey !== undefined ? { provider_key: providerKey } : {}),
+      })
+
+      return res?.data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['orderApiKeys'] })
+      queryClient.invalidateQueries({ queryKey: ['adminOrders'] })
+    }
+  })
+}
+
 // Hook để xóa đơn hàng
 export const useDeleteOrder = () => {
   const axiosAuth = useAxiosAuth()
