@@ -13,7 +13,7 @@ import type { BuySectionProps, FormValues } from '../ProviderFormTypes'
 function ResponseMappingRow({ prefix, index, control, onRemove }: BuySectionProps & { index: number; onRemove: () => void }) {
   const store = useWatch({ control, name: `${prefix}.response.response_mapping.${index}.store` as any })
   const presets = ['root', 'proxy', 'metadata']
-  const isCustom = !!store && !presets.includes(store)
+  const isCustom = store !== undefined && store !== null && !presets.includes(store)
 
   return (
     <Box sx={{ display: 'flex', gap: 1, mb: 0.5, alignItems: 'center' }}>
@@ -21,31 +21,20 @@ function ResponseMappingRow({ prefix, index, control, onRemove }: BuySectionProp
         <CustomTextField {...field} size='small' placeholder='Trường NCC (VD: data.region)' sx={{ flex: 1, minWidth: 150 }} />
       )} />
       <Controller name={`${prefix}.response.response_mapping.${index}.to` as any} control={control} render={({ field }) => (
-        <CustomTextField {...field} size='small' placeholder='Tên field lưu (VD: region)' sx={{ flex: 1, minWidth: 120 }} />
+        <CustomTextField {...field} size='small' placeholder={isCustom ? 'Tên field trung gian (VD: provider_key)' : 'Tên field lưu (VD: region)'} sx={{ flex: 1, minWidth: 120 }} />
       )} />
       <Controller name={`${prefix}.response.response_mapping.${index}.store` as any} control={control} render={({ field }) => (
-        <>
-          <CustomTextField
-            size='small' select
-            value={isCustom ? '_custom' : (store || 'metadata')}
-            onChange={e => { const v = e.target.value; field.onChange(v === '_custom' ? '' : v) }}
-            sx={{ minWidth: 180 }}
-          >
-            <MenuItem value='root'>Cấp 1 (flat)</MenuItem>
-            <MenuItem value='proxy'>Trong proxy</MenuItem>
-            <MenuItem value='metadata'>Trong metadata</MenuItem>
-            <MenuItem value='_custom'>Object tự đặt tên...</MenuItem>
-          </CustomTextField>
-          {(isCustom || store === '') && (
-            <CustomTextField
-              size='small'
-              value={isCustom ? store : ''}
-              onChange={e => field.onChange(e.target.value || '')}
-              placeholder='Tên object (VD: extra_info)'
-              sx={{ minWidth: 140 }}
-            />
-          )}
-        </>
+        <CustomTextField
+          size='small' select
+          value={isCustom ? '_custom' : (store ?? 'metadata')}
+          onChange={e => { const v = e.target.value; field.onChange(v === '_custom' ? '' : v) }}
+          sx={{ minWidth: 180 }}
+        >
+          <MenuItem value='root'>Cấp 1 (flat)</MenuItem>
+          <MenuItem value='proxy'>Trong proxy</MenuItem>
+          <MenuItem value='metadata'>Trong metadata</MenuItem>
+          <MenuItem value='_custom'>Object tự đặt tên...</MenuItem>
+        </CustomTextField>
       )} />
       <IconButton size='small' onClick={onRemove} color='error'><Trash2 size={14} /></IconButton>
     </Box>
