@@ -322,24 +322,6 @@ return pct > 0 ? Math.round(pct) : null
         </div>
 
         <div className='checkout-body' style={{ position: 'relative' }}>
-          {/* Floating banner — nổi trên đỉnh body, tắt riêng không ảnh hưởng banner dưới */}
-          {showTopBanner && (apiError || purchaseSuccess) && (
-            <div style={{
-              position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10,
-              padding: '10px 14px', borderBottom: '1px solid',
-              fontSize: '13px', display: 'flex', alignItems: 'center', gap: 8,
-              boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-              background: purchaseSuccess ? '#f0fdf4' : '#fef2f2',
-              borderColor: purchaseSuccess ? '#bbf7d0' : '#fecaca',
-              color: purchaseSuccess ? '#16a34a' : '#dc2626',
-            }}>
-              {purchaseSuccess ? <CheckCircle size={16} style={{ flexShrink: 0 }} /> : <AlertTriangle size={16} style={{ flexShrink: 0 }} />}
-              <span style={{ flex: 1 }}>{purchaseSuccess ? 'Mua proxy thành công!' : apiError}</span>
-              <button type='button' onClick={() => setShowTopBanner(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2 }}>
-                <X size={14} color='#94a3b8' />
-              </button>
-            </div>
-          )}
           <p className='checkout-product-name'>{productName} <span style={{ fontSize: '12px', fontWeight: 500, color: '#94a3b8' }}>#{serviceTypeId}</span></p>
 
           {/* Per-unit duration input */}
@@ -735,17 +717,37 @@ return (
 
           {/* Lỗi từ API */}
           {apiError && !purchaseSuccess && (
-            <div className='checkout-warning'>
+            <div className='checkout-warning' style={showTopBanner ? {
+              position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10,
+              borderRadius: 0, margin: 0, boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+            } : undefined}>
               <AlertTriangle size={16} />
-              <span>{apiError}</span>
+              <span style={{ flex: 1 }}>{apiError}</span>
+              {showTopBanner && (
+                <button type='button' onClick={() => setShowTopBanner(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, flexShrink: 0 }}>
+                  <X size={14} color='#94a3b8' />
+                </button>
+              )}
             </div>
           )}
 
           {/* Mua thành công */}
           {purchaseSuccess && (
-            <div style={{ padding: '10px 14px', background: '#f0fdf4', borderRadius: 8, border: '1px solid #bbf7d0', fontSize: '13px', color: '#16a34a', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{
+              padding: '10px 14px', background: '#f0fdf4', border: '1px solid #bbf7d0',
+              fontSize: '13px', color: '#16a34a', display: 'flex', alignItems: 'center', gap: 8,
+              ...(showTopBanner ? {
+                position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10,
+                borderRadius: 0, margin: 0, boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+              } : { borderRadius: 8 }),
+            }}>
               <CheckCircle size={16} />
-              <span>Mua proxy thành công!</span>
+              <span style={{ flex: 1 }}>Mua proxy thành công!</span>
+              {showTopBanner && (
+                <button type='button' onClick={() => setShowTopBanner(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, flexShrink: 0 }}>
+                  <X size={14} color='#94a3b8' />
+                </button>
+              )}
             </div>
           )}
         </div>
