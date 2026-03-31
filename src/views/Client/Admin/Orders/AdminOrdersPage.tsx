@@ -898,7 +898,7 @@ return {
                     size='small'
                     onClick={handleApplyFilters}
                     disabled={isFetching}
-                    sx={{ color: '#fff', minWidth: 100, height: 36, fontSize: '13px' }}
+                    sx={{ color: '#fff', minWidth: 100, height: 36, fontSize: '13px', background: 'var(--primary-gradient, var(--primary-hover))', '&:hover': { opacity: 0.9 } }}
                     startIcon={
                       isFetching
                         ? <Loader2 size={15} style={{ animation: 'spin 1s linear infinite' }} />

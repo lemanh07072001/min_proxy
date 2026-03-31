@@ -92,7 +92,7 @@ export default function ProxyKeysPage() {
           </CustomTextField>
           <Button
             variant='contained' size='small' onClick={handleSearch} disabled={searching}
-            sx={{ height: 40, textTransform: 'none', fontWeight: 600, px: 3, minWidth: 110 }}
+            sx={{ height: 40, textTransform: 'none', fontWeight: 600, px: 3, minWidth: 110, background: 'var(--primary-gradient, var(--primary-hover))', '&:hover': { opacity: 0.9 } }}
           >
             <Search size={15} style={{ marginRight: 6, ...(searching ? { animation: 'spin 0.8s linear infinite' } : {}) }} />
             {searching ? 'Đang tìm...' : 'Tìm kiếm'}

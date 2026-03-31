@@ -288,7 +288,7 @@ export default function HistoryOrderPage() {
                   variant='contained'
                   size='small'
                   onClick={handleSearch}
-                  sx={{ height: 36, borderRadius: '8px', fontSize: '13px', textTransform: 'none', whiteSpace: 'nowrap', px: 2 }}
+                  sx={{ height: 36, borderRadius: '8px', fontSize: '13px', textTransform: 'none', whiteSpace: 'nowrap', px: 2, background: 'var(--primary-gradient, var(--primary-hover))', '&:hover': { opacity: 0.9 } }}
                 >
                   Tìm kiếm
                 </Button>
