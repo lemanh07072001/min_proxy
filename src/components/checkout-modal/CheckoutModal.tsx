@@ -718,8 +718,9 @@ return (
           {/* Lỗi từ API */}
           {apiError && !purchaseSuccess && (
             <div className='checkout-warning' style={showTopBanner ? {
-              position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10,
-              borderRadius: 0, margin: 0, boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+              position: 'sticky', top: 0, zIndex: 10,
+              borderRadius: 0, margin: '0 -16px', padding: '10px 14px',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
             } : undefined}>
               <AlertTriangle size={16} />
               <span style={{ flex: 1 }}>{apiError}</span>
@@ -737,8 +738,8 @@ return (
               padding: '10px 14px', background: '#f0fdf4', border: '1px solid #bbf7d0',
               fontSize: '13px', color: '#16a34a', display: 'flex', alignItems: 'center', gap: 8,
               ...(showTopBanner ? {
-                position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10,
-                borderRadius: 0, margin: 0, boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                position: 'sticky', top: 0, zIndex: 10,
+                borderRadius: 0, margin: '0 -16px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
               } : { borderRadius: 8 }),
             }}>
               <CheckCircle size={16} />
