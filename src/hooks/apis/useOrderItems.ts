@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import useAxiosAuth from '@/hocs/useAxiosAuth'
 
 export interface OrderItemRecord {
@@ -26,12 +26,12 @@ interface OrderItemsMeta {
   last_page: number
 }
 
-interface OrderItemsResponse {
+export interface OrderItemsResponse {
   data: OrderItemRecord[]
   meta: OrderItemsMeta
 }
 
-interface OrderItemsParams {
+export interface OrderItemsParams {
   page?: number
   limit?: number
   type?: string
@@ -52,5 +52,20 @@ export const useOrderItems = (params: OrderItemsParams, isAdmin = false, enabled
     },
     enabled,
     staleTime: 15_000,
+  })
+}
+
+export const useUpdateAllowIps = () => {
+  const axiosAuth = useAxiosAuth()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ key, allow_ips }: { key: string; allow_ips: string[] }) => {
+      const res = await axiosAuth.put(`/order-items/${key}/allow-ips`, { allow_ips })
+      return res.data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['orderItems'] })
+    },
   })
 }
