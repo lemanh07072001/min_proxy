@@ -1003,9 +1003,9 @@ return { values: {}, errors: formattedErrors }
 
   // useWatch cô lập re-render — chỉ re-render khi các field này thay đổi
   // useWatch cô lập re-render — chỉ re-render khi các field này thay đổi
-  const [watchedType, watchedRotationType, watchedTag, watchedStatus, watchedAuthType] = useWatch({
+  const [watchedType, watchedRotationType, watchedTag, watchedStatus, watchedAuthType, watchedRotationInterval] = useWatch({
     control,
-    name: ['type', 'rotation_type', 'tag', 'status', 'auth_type'],
+    name: ['type', 'rotation_type', 'tag', 'status', 'auth_type', 'rotation_interval'],
   })
 
   const { data: countries } = useCountries()
@@ -1810,49 +1810,56 @@ return <Chip key={val} label={p?.label || val} size='small' />
                   </Box>
                 </Grid2>
 
-                {/* ── Cấu hình xoay IP (chỉ proxy xoay) ── */}
+                {/* ── Proxy xoay — thông số hiển thị ── */}
+                {watchedType === '1' && (
+                  <>
+                    <Grid2 size={{ xs: 6, sm: 3 }}>
+                      <Controller name='rotation_type' control={control} render={({ field }) => (
+                        <CustomTextField {...field} fullWidth select label='Kiểu xoay' value={field.value || ''}>
+                          <MenuItem value=''><em>—</em></MenuItem>
+                          <MenuItem value='per_request'>Đổi IP mỗi request</MenuItem>
+                          <MenuItem value='sticky'>Giữ IP cố định (Sticky)</MenuItem>
+                          <MenuItem value='time_based'>Đổi IP theo thời gian</MenuItem>
+                        </CustomTextField>
+                      )} />
+                    </Grid2>
+                    <Grid2 size={{ xs: 6, sm: 3 }}>
+                      <Controller name='pool_size' control={control} render={({ field }) => (
+                        <CustomTextField {...field} fullWidth label='Pool size' placeholder='VD: 10K+' />
+                      )} />
+                    </Grid2>
+                  </>
+                )}
+
+                {/* ── Tự động xoay IP (chỉ proxy xoay) ── */}
                 {watchedType === '1' && (
                   <Grid2 size={{ xs: 12 }}>
-                    <Box sx={{ p: 1.5, background: '#fffbeb', borderRadius: 2, border: '1px solid #fde68a' }}>
-                      <Typography sx={{ fontSize: 12, fontWeight: 700, color: '#92400e', mb: 1.5 }}>Cấu hình xoay IP</Typography>
-                      <Grid2 container spacing={1}>
-                        <Grid2 size={{ xs: 4 }}>
-                          <Controller name='rotation_interval' control={control} render={({ field: { value, onChange, ...field } }) => {
-                            const presets = ['', '30', '60', '120', '300', '600', '1800', '3600']
-                            const strVal = String(value || '')
-                            const isCustom = strVal && !presets.includes(strVal)
-                            const fmt = (s: number) => s >= 3600 ? (s / 3600) + ' giờ' : s >= 60 ? (s / 60) + ' phút' : s + ' giây'
-                            return (
-                              <CustomTextField {...field} value={strVal} onChange={(e: any) => onChange(e.target.value === '' ? '' : e.target.value)} fullWidth select label='Tự động xoay mỗi'>
-                                <MenuItem value=''><em>Tắt — không tự xoay</em></MenuItem>
-                                <MenuItem value='30'>30 giây</MenuItem>
-                                <MenuItem value='60'>1 phút</MenuItem>
-                                <MenuItem value='120'>2 phút</MenuItem>
-                                <MenuItem value='300'>5 phút</MenuItem>
-                                <MenuItem value='600'>10 phút</MenuItem>
-                                <MenuItem value='1800'>30 phút</MenuItem>
-                                <MenuItem value='3600'>1 giờ</MenuItem>
-                                {isCustom && <MenuItem value={strVal}>{fmt(Number(strVal))}</MenuItem>}
-                              </CustomTextField>
-                            )
-                          }} />
-                        </Grid2>
-                        <Grid2 size={{ xs: 4 }}>
-                          <Controller name='rotation_type' control={control} render={({ field }) => (
-                            <CustomTextField {...field} fullWidth select label='Hiển thị cho người mua' value={field.value || ''}>
-                              <MenuItem value=''><em>Không hiển thị</em></MenuItem>
-                              <MenuItem value='per_request'>Đổi IP mỗi request</MenuItem>
-                              <MenuItem value='sticky'>Giữ IP cố định (Sticky)</MenuItem>
-                              <MenuItem value='time_based'>Đổi IP theo thời gian</MenuItem>
+                    <Box sx={{ p: 1.5, background: '#fffbeb', borderRadius: 2, border: '1px solid #fde68a', display: 'flex', alignItems: 'center', gap: 2 }}>
+                      <Typography sx={{ fontSize: 12, fontWeight: 700, color: '#92400e', whiteSpace: 'nowrap' }}>Hệ thống tự xoay IP</Typography>
+                      <Box sx={{ width: 200 }}>
+                        <Controller name='rotation_interval' control={control} render={({ field: { value, onChange, ...field } }) => {
+                          const presets = ['', '30', '60', '120', '300', '600', '1800', '3600']
+                          const strVal = String(value || '')
+                          const isCustom = strVal && !presets.includes(strVal)
+                          const fmt = (s: number) => s >= 3600 ? (s / 3600) + ' giờ' : s >= 60 ? (s / 60) + ' phút' : s + ' giây'
+                          return (
+                            <CustomTextField {...field} value={strVal} onChange={(e: any) => onChange(e.target.value === '' ? '' : e.target.value)} fullWidth select size='small'>
+                              <MenuItem value=''><em>Tắt</em></MenuItem>
+                              <MenuItem value='30'>Mỗi 30 giây</MenuItem>
+                              <MenuItem value='60'>Mỗi 1 phút</MenuItem>
+                              <MenuItem value='120'>Mỗi 2 phút</MenuItem>
+                              <MenuItem value='300'>Mỗi 5 phút</MenuItem>
+                              <MenuItem value='600'>Mỗi 10 phút</MenuItem>
+                              <MenuItem value='1800'>Mỗi 30 phút</MenuItem>
+                              <MenuItem value='3600'>Mỗi 1 giờ</MenuItem>
+                              {isCustom && <MenuItem value={strVal}>Mỗi {fmt(Number(strVal))}</MenuItem>}
                             </CustomTextField>
-                          )} />
-                        </Grid2>
-                        <Grid2 size={{ xs: 4 }}>
-                          <Controller name='pool_size' control={control} render={({ field }) => (
-                            <CustomTextField {...field} fullWidth label='Pool size' placeholder='VD: 10K+' />
-                          )} />
-                        </Grid2>
-                      </Grid2>
+                          )
+                        }} />
+                      </Box>
+                      <Typography sx={{ fontSize: 11, color: '#92400e' }}>
+                        {watchedRotationInterval ? 'Hệ thống tự gọi NCC xoay IP theo chu kỳ' : 'Proxy không tự xoay — user tự xoay khi cần'}
+                      </Typography>
                     </Box>
                   </Grid2>
                 )}
