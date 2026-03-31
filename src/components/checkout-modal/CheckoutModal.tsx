@@ -316,37 +316,36 @@ return pct > 0 ? Math.round(pct) : null
           </button>
         </div>
 
-        {/* Floating banner — nổi trên cùng body, click tắt */}
-        {apiError && !purchaseSuccess && (
-          <div
-            onClick={() => setApiError('')}
-            style={{
-              position: 'sticky', top: 0, zIndex: 10, cursor: 'pointer',
+        <div className='checkout-body' style={{ position: 'relative' }}>
+          {/* Floating banner — nổi trên cùng body, click X tắt banner */}
+          {apiError && !purchaseSuccess && (
+            <div style={{
+              position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10,
               padding: '10px 14px', background: '#fef2f2', borderBottom: '1px solid #fecaca',
               fontSize: '13px', color: '#dc2626', display: 'flex', alignItems: 'center', gap: 8,
-            }}
-          >
-            <AlertTriangle size={16} style={{ flexShrink: 0 }} />
-            <span style={{ flex: 1 }}>{apiError}</span>
-            <X size={14} style={{ flexShrink: 0, color: '#94a3b8' }} />
-          </div>
-        )}
-        {purchaseSuccess && (
-          <div
-            onClick={() => setPurchaseSuccess(false)}
-            style={{
-              position: 'sticky', top: 0, zIndex: 10, cursor: 'pointer',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+            }}>
+              <AlertTriangle size={16} style={{ flexShrink: 0 }} />
+              <span style={{ flex: 1 }}>{apiError}</span>
+              <button type='button' onClick={() => setApiError('')} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2 }}>
+                <X size={14} color='#94a3b8' />
+              </button>
+            </div>
+          )}
+          {purchaseSuccess && (
+            <div style={{
+              position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10,
               padding: '10px 14px', background: '#f0fdf4', borderBottom: '1px solid #bbf7d0',
               fontSize: '13px', color: '#16a34a', display: 'flex', alignItems: 'center', gap: 8,
-            }}
-          >
-            <CheckCircle size={16} style={{ flexShrink: 0 }} />
-            <span style={{ flex: 1 }}>Mua proxy thành công!</span>
-            <X size={14} style={{ flexShrink: 0, color: '#94a3b8' }} />
-          </div>
-        )}
-
-        <div className='checkout-body'>
+              boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+            }}>
+              <CheckCircle size={16} style={{ flexShrink: 0 }} />
+              <span style={{ flex: 1 }}>Mua proxy thành công!</span>
+              <button type='button' onClick={() => setPurchaseSuccess(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2 }}>
+                <X size={14} color='#94a3b8' />
+              </button>
+            </div>
+          )}
           <p className='checkout-product-name'>{productName} <span style={{ fontSize: '12px', fontWeight: 500, color: '#94a3b8' }}>#{serviceTypeId}</span></p>
 
           {/* Per-unit duration input */}
