@@ -1460,6 +1460,44 @@ return <Chip key={val} label={p?.label || val} size='small' />
               </Grid2>
               </div>
 
+              {/* ========== Section: Tự động xoay IP (chỉ Rotating) ========== */}
+              {watchedType === '1' && (
+              <CollapsibleSection title='Tự động xoay IP' icon={RefreshCw} iconColor='#f59e0b' iconBg='#fffbeb'>
+                <Grid2 container spacing={2} alignItems='center'>
+                  <Grid2 size={{ xs: 6, sm: 4 }}>
+                    <Controller name='rotation_interval' control={control} render={({ field: { value, onChange, ...field } }) => {
+                      const presets = ['', '30', '60', '120', '300', '600', '1800', '3600']
+                      const strVal = String(value || '')
+                      const isCustom = strVal && !presets.includes(strVal)
+                      const fmt = (s: number) => s >= 3600 ? (s / 3600) + ' giờ' : s >= 60 ? (s / 60) + ' phút' : s + ' giây'
+                      return (
+                        <CustomTextField {...field} value={strVal} onChange={(e: any) => onChange(e.target.value === '' ? '' : e.target.value)} fullWidth select label='Chu kỳ xoay'>
+                          <MenuItem value=''><em>Tắt — không tự xoay</em></MenuItem>
+                          <MenuItem value='30'>Mỗi 30 giây</MenuItem>
+                          <MenuItem value='60'>Mỗi 1 phút</MenuItem>
+                          <MenuItem value='120'>Mỗi 2 phút</MenuItem>
+                          <MenuItem value='300'>Mỗi 5 phút</MenuItem>
+                          <MenuItem value='600'>Mỗi 10 phút</MenuItem>
+                          <MenuItem value='1800'>Mỗi 30 phút</MenuItem>
+                          <MenuItem value='3600'>Mỗi 1 giờ</MenuItem>
+                          {isCustom && <MenuItem value={strVal}>Mỗi {fmt(Number(strVal))}</MenuItem>}
+                        </CustomTextField>
+                      )
+                    }} />
+                  </Grid2>
+                  <Grid2 size={{ xs: 6, sm: 8 }}>
+                    <Box sx={{ p: 1.5, background: watchedRotationInterval ? '#f0fdf4' : '#f8fafc', borderRadius: 1.5, border: '1px solid', borderColor: watchedRotationInterval ? '#bbf7d0' : '#e2e8f0' }}>
+                      <Typography sx={{ fontSize: 12, color: watchedRotationInterval ? '#166534' : '#64748b' }}>
+                        {watchedRotationInterval
+                          ? `Hệ thống tự gọi NCC xoay IP cho tất cả proxy đang hoạt động của sản phẩm này`
+                          : 'Không tự xoay — khách hàng tự gọi API xoay IP khi cần'}
+                      </Typography>
+                    </Box>
+                  </Grid2>
+                </Grid2>
+              </CollapsibleSection>
+              )}
+
               {/* ========== Section: Thông số sản phẩm ========== */}
               <CollapsibleSection title='Thông số sản phẩm' icon={Zap} iconColor='#22c55e' iconBg='#f0fdf4'>
               <Grid2 container spacing={1}>
@@ -1787,39 +1825,6 @@ return <Chip key={val} label={p?.label || val} size='small' />
                     </Box>
                   </Box>
                 </Grid2>
-
-                {/* ── Tự động xoay IP (chỉ proxy xoay) ── */}
-                {watchedType === '1' && (
-                  <Grid2 size={{ xs: 12 }}>
-                    <Box sx={{ p: 1.5, background: '#fffbeb', borderRadius: 2, border: '1px solid #fde68a', display: 'flex', alignItems: 'center', gap: 2 }}>
-                      <Typography sx={{ fontSize: 12, fontWeight: 700, color: '#92400e', whiteSpace: 'nowrap' }}>Tự động xoay IP</Typography>
-                      <Box sx={{ width: 200 }}>
-                        <Controller name='rotation_interval' control={control} render={({ field: { value, onChange, ...field } }) => {
-                          const presets = ['', '30', '60', '120', '300', '600', '1800', '3600']
-                          const strVal = String(value || '')
-                          const isCustom = strVal && !presets.includes(strVal)
-                          const fmt = (s: number) => s >= 3600 ? (s / 3600) + ' giờ' : s >= 60 ? (s / 60) + ' phút' : s + ' giây'
-                          return (
-                            <CustomTextField {...field} value={strVal} onChange={(e: any) => onChange(e.target.value === '' ? '' : e.target.value)} fullWidth select size='small'>
-                              <MenuItem value=''><em>Tắt</em></MenuItem>
-                              <MenuItem value='30'>Mỗi 30 giây</MenuItem>
-                              <MenuItem value='60'>Mỗi 1 phút</MenuItem>
-                              <MenuItem value='120'>Mỗi 2 phút</MenuItem>
-                              <MenuItem value='300'>Mỗi 5 phút</MenuItem>
-                              <MenuItem value='600'>Mỗi 10 phút</MenuItem>
-                              <MenuItem value='1800'>Mỗi 30 phút</MenuItem>
-                              <MenuItem value='3600'>Mỗi 1 giờ</MenuItem>
-                              {isCustom && <MenuItem value={strVal}>Mỗi {fmt(Number(strVal))}</MenuItem>}
-                            </CustomTextField>
-                          )
-                        }} />
-                      </Box>
-                      <Typography sx={{ fontSize: 11, color: '#92400e' }}>
-                        {watchedRotationInterval ? 'Hệ thống tự gọi NCC xoay IP theo chu kỳ' : 'Không tự xoay — user tự xoay khi cần'}
-                      </Typography>
-                    </Box>
-                  </Grid2>
-                )}
 
                 {/* ── Thông số hiển thị — user nhìn thấy trên trang sản phẩm ── */}
                 <Grid2 size={{ xs: 12 }}>
