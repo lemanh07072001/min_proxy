@@ -1778,15 +1778,16 @@ return <Chip key={val} label={p?.label || val} size='small' />
                   </Box>
                 </Grid2>
 
-                {/* ── Giới hạn sử dụng ── */}
+                {/* ── Thông số hiển thị trên trang sản phẩm ── */}
                 <Grid2 size={{ xs: 12 }}>
                   <Box sx={{ p: 1.5, background: '#f8fafc', borderRadius: 2, border: '1px solid #e2e8f0' }}>
-                    <Typography sx={{ fontSize: 12, fontWeight: 700, color: '#475569', mb: 1.5 }}>Giới hạn sử dụng</Typography>
+                    <Typography sx={{ fontSize: 12, fontWeight: 700, color: '#475569', mb: 0.5 }}>Thông số hiển thị trên trang sản phẩm</Typography>
+                    <Typography sx={{ fontSize: 11, color: '#94a3b8', mb: 1.5 }}>Người mua nhìn thấy các thông số này khi chọn sản phẩm</Typography>
                     <Grid2 container spacing={1}>
-                      <Grid2 size={{ xs: 4 }}>
+                      <Grid2 size={{ xs: 6, sm: 3 }}>
                         <Controller name='bandwidth' control={control} render={({ field }) => (
                           <CustomTextField {...field} fullWidth select label='Băng thông' value={field.value || ''}>
-                            <MenuItem value=''><em>Không giới hạn</em></MenuItem>
+                            <MenuItem value=''><em>—</em></MenuItem>
                             <MenuItem value='unlimited'>Unlimited</MenuItem>
                             <MenuItem value='1GB'>1 GB</MenuItem>
                             <MenuItem value='5GB'>5 GB</MenuItem>
@@ -1796,40 +1797,37 @@ return <Chip key={val} label={p?.label || val} size='small' />
                           </CustomTextField>
                         )} />
                       </Grid2>
-                      <Grid2 size={{ xs: 4 }}>
+                      <Grid2 size={{ xs: 6, sm: 3 }}>
                         <Controller name='request_limit' control={control} render={({ field }) => (
-                          <CustomTextField {...field} fullWidth label='Giới hạn request' placeholder='Không giới hạn' />
+                          <CustomTextField {...field} fullWidth label='Giới hạn request' placeholder='—' />
                         )} />
                       </Grid2>
-                      <Grid2 size={{ xs: 4 }}>
+                      <Grid2 size={{ xs: 6, sm: 3 }}>
                         <Controller name='concurrent_connections' control={control} render={({ field }) => (
-                          <CustomTextField {...field} value={field.value ?? ''} onChange={e => { field.onChange(e.target.value === '' ? null : Number(e.target.value)) }} fullWidth type='number' label='Kết nối đồng thời' placeholder='Không giới hạn' />
+                          <CustomTextField {...field} value={field.value ?? ''} onChange={e => { field.onChange(e.target.value === '' ? null : Number(e.target.value)) }} fullWidth type='number' label='Kết nối đồng thời' placeholder='—' />
                         )} />
                       </Grid2>
+                      {watchedType === '1' && (
+                        <>
+                          <Grid2 size={{ xs: 6, sm: 3 }}>
+                            <Controller name='rotation_type' control={control} render={({ field }) => (
+                              <CustomTextField {...field} fullWidth select label='Kiểu xoay' value={field.value || ''}>
+                                <MenuItem value=''><em>—</em></MenuItem>
+                                <MenuItem value='sticky'>Giữ IP cố định (Sticky)</MenuItem>
+                                <MenuItem value='time_based'>Đổi IP theo thời gian</MenuItem>
+                              </CustomTextField>
+                            )} />
+                          </Grid2>
+                          <Grid2 size={{ xs: 6, sm: 3 }}>
+                            <Controller name='pool_size' control={control} render={({ field }) => (
+                              <CustomTextField {...field} fullWidth label='Pool size' placeholder='—' />
+                            )} />
+                          </Grid2>
+                        </>
+                      )}
                     </Grid2>
                   </Box>
                 </Grid2>
-
-                {/* ── Proxy xoay — thông số hiển thị ── */}
-                {watchedType === '1' && (
-                  <>
-                    <Grid2 size={{ xs: 6, sm: 3 }}>
-                      <Controller name='rotation_type' control={control} render={({ field }) => (
-                        <CustomTextField {...field} fullWidth select label='Kiểu xoay' value={field.value || ''}>
-                          <MenuItem value=''><em>—</em></MenuItem>
-                          <MenuItem value='per_request'>Đổi IP mỗi request</MenuItem>
-                          <MenuItem value='sticky'>Giữ IP cố định (Sticky)</MenuItem>
-                          <MenuItem value='time_based'>Đổi IP theo thời gian</MenuItem>
-                        </CustomTextField>
-                      )} />
-                    </Grid2>
-                    <Grid2 size={{ xs: 6, sm: 3 }}>
-                      <Controller name='pool_size' control={control} render={({ field }) => (
-                        <CustomTextField {...field} fullWidth label='Pool size' placeholder='VD: 10K+' />
-                      )} />
-                    </Grid2>
-                  </>
-                )}
 
                 {/* ── Tự động xoay IP (chỉ proxy xoay) ── */}
                 {watchedType === '1' && (
