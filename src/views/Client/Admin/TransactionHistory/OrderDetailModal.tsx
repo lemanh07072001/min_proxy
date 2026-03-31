@@ -106,12 +106,12 @@ export default function OrderDetailModal({ isOpen, onClose, orderData, isLoading
   }
 
   const getProxyText = (item: any) => {
-    // Support new `proxy` field (object with http, socks5, ip, port) and old `proxys` field
     const p = item.proxy || item.proxys
-
-    if (p && typeof p === 'object') return p.http || p.HTTP || p.socks5 || p.SOCK5 || '-'
-
-return p || '-'
+    if (p && typeof p === 'object') {
+      const raw = p.http || p.HTTP || p.socks5 || p.SOCKS5 || ''
+      return raw.replace(/:+$/, '') || '-' // cắt trailing colons (ip:port:: → ip:port)
+    }
+    return p || '-'
   }
 
   const getStatusBadge = (status: string) => {
@@ -196,6 +196,7 @@ return p || '-'
           const proxys = row.original.proxy || row.original.proxys
           const text = getProxyText(row.original)
           const protocol = row.original.protocol || proxys?.loaiproxy || '-'
+          const allowIps = row.original.allow_ips
           return (
             <div style={{ fontSize: '11px' }}>
               <div style={{ fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={text}>
@@ -204,6 +205,11 @@ return p || '-'
               <div style={{ color: '#94a3b8', fontSize: '10px', marginTop: 2 }}>
                 {protocol?.toUpperCase()}
               </div>
+              {allowIps?.length > 0 && (
+                <div style={{ fontSize: '10px', color: '#2563eb', marginTop: 2 }} title={allowIps.join(', ')}>
+                  IP: {allowIps.join(', ')}
+                </div>
+              )}
             </div>
           )
         }
