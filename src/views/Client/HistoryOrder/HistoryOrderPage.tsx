@@ -55,7 +55,6 @@ export default function HistoryOrderPage() {
   const [searchText, setSearchText] = useState(urlSearch)
   const [appliedSearch, setAppliedSearch] = useState(urlSearch)
   const [statusFilter, setStatusFilter] = useState<string>('all')
-  const [isSearching, setIsSearching] = useState(false)
 
   const queryClient = useQueryClient()
 
@@ -67,14 +66,12 @@ export default function HistoryOrderPage() {
     dataUpdatedAt
   } = useHistoryOrders(appliedSearch || undefined)
 
-  const handleSearch = async () => {
+  const handleSearch = () => {
     const text = searchText.trim()
     setAppliedSearch(text)
     setPagination(prev => ({ ...prev, pageIndex: 0 }))
-    setIsSearching(true)
-    // Invalidate + chờ refetch hoàn tất → luôn gọi server
-    await queryClient.invalidateQueries({ queryKey: ['userOrders'] })
-    setIsSearching(false)
+    // Invalidate tất cả userOrders queries → luôn gọi server
+    queryClient.invalidateQueries({ queryKey: ['userOrders'] })
   }
 
   // Client-side filtering (status only — search đã server-side)
@@ -294,9 +291,8 @@ export default function HistoryOrderPage() {
                   variant='contained'
                   size='small'
                   onClick={handleSearch}
-                  disabled={isSearching}
-                  startIcon={isSearching ? <Loader2 size={15} style={{ animation: 'spin 1s linear infinite' }} /> : <Search size={15} />}
-                  sx={{ height: 36, borderRadius: '8px', fontSize: '13px', textTransform: 'none', whiteSpace: 'nowrap', px: 2, background: 'var(--primary-gradient, var(--primary-hover))', '&:hover': { opacity: 0.9 }, '&.Mui-disabled': { background: 'var(--primary-gradient, var(--primary-hover))', opacity: 0.7, color: '#fff' } }}
+                  startIcon={isFetching ? <Loader2 size={15} style={{ animation: 'spin 1s linear infinite' }} /> : <Search size={15} />}
+                  sx={{ height: 36, borderRadius: '8px', fontSize: '13px', textTransform: 'none', whiteSpace: 'nowrap', px: 2, background: 'var(--primary-gradient, var(--primary-hover))', '&:hover': { opacity: 0.9 } }}
                 >
                   Tìm kiếm
                 </Button>
