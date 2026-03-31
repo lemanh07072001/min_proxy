@@ -188,9 +188,9 @@ export default function ProxyKeysPage() {
                     </span>
                   </td>
                   <td style={tdStyle}>
-                    {item.order_id ? (
-                      <a href={`/${locale}/history-order`} style={{ fontSize: '11px', color: '#6366f1', display: 'inline-flex', alignItems: 'center', gap: 2, textDecoration: 'none' }}>
-                        #{item.order_id} <ExternalLink size={10} />
+                    {item.order_code ? (
+                      <a href={`/${locale}/history-order?search=${item.order_code}`} style={{ fontSize: '11px', color: '#6366f1', display: 'inline-flex', alignItems: 'center', gap: 2, textDecoration: 'none' }}>
+                        {item.order_code} <ExternalLink size={10} />
                       </a>
                     ) : '—'}
                   </td>

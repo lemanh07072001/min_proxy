@@ -186,9 +186,9 @@ export default function AdminProxyKeysPage() {
                     ) : <span style={{ color: '#cbd5e1', fontSize: '11px' }}>—</span>}
                   </td>
                   <td style={tdStyle}>
-                    {item.order_id ? (
-                      <a href={`/${locale}/admin/orders`} style={{ fontSize: '11px', color: '#6366f1', display: 'inline-flex', alignItems: 'center', gap: 2 }}>
-                        #{item.order_id} <ExternalLink size={10} />
+                    {item.order_code ? (
+                      <a href={`/${locale}/admin/orders?search=${item.order_code}`} style={{ fontSize: '11px', color: '#6366f1', display: 'inline-flex', alignItems: 'center', gap: 2, textDecoration: 'none' }}>
+                        {item.order_code} <ExternalLink size={10} />
                       </a>
                     ) : '—'}
                   </td>

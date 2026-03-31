@@ -14,6 +14,7 @@ export interface OrderItemRecord {
   allow_ips?: string[]
   expired_at?: string
   created_at?: string
+  order_code?: string
   provider_key?: string
   provider_order_code?: string
   next_rotate_seconds?: number
