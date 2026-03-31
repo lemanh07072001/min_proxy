@@ -16,6 +16,7 @@ import {
   Link,
   Wallet,
   EthernetPort,
+  Key,
 
   // Admin icons
   Users,
@@ -328,6 +329,13 @@ const VerticalMenu = ({ scrollMenu }: Props) => {
           >
             Đơn hàng của tôi
           </MenuItem>
+          <MenuItem
+            icon={<Key size={20} strokeWidth={1.5} />}
+            {...nav('proxy-keys')}
+            href={`/${locale}/proxy-keys`}
+          >
+            Proxy của tôi
+          </MenuItem>
         </MenuSection>
 
         <MenuSection label={ml.finance || 'Tài chính'} rootStyles={menuSectionHeaderStyles}>
@@ -448,6 +456,15 @@ const VerticalMenu = ({ scrollMenu }: Props) => {
                 href={`/${locale}/admin/orders`}
               >
                 Quản lý đơn hàng
+              </MenuItem>
+            )}
+            {hasPermission('admin.transactionHistory') && (
+              <MenuItem
+                icon={<Key size={20} strokeWidth={1.5} />}
+                {...nav('admin/proxy-keys')}
+                href={`/${locale}/admin/proxy-keys`}
+              >
+                Proxy Keys
               </MenuItem>
             )}
 
