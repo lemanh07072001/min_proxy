@@ -301,6 +301,14 @@ return p || '-'
     if (!isOpen) { setRowSelection({}); setTabIndex(0); setViewLogId(null); setViewItemKey(null) }
   }, [isOpen])
 
+  // Auto-show log panel khi mở modal — chọn item ROTATING đầu tiên
+  useEffect(() => {
+    if (isOpen && dataApiKeys?.length && !viewItemKey) {
+      const firstRotating = dataApiKeys.find((item: any) => item.type === 'ROTATING')
+      if (firstRotating?.key) setViewItemKey(firstRotating.key)
+    }
+  }, [isOpen, dataApiKeys])
+
   if (!isOpen) return null
 
   const order = orderData?.order
@@ -477,7 +485,11 @@ return p || '-'
               </div>
 
               {/* Panel phải: log xoay proxy */}
-              {viewItemKey && (
+              {viewItemKey && (() => {
+                const activeItem = (dataApiKeys || []).find((item: any) => item.key === viewItemKey)
+                const nextRotate = activeItem?.next_rotate_seconds
+
+                return (
                 <div style={{
                   flex: '0 0 38%', borderLeft: '1px solid #e2e8f0',
                   overflowY: 'auto', maxHeight: '60vh', padding: '12px 16px',
@@ -490,11 +502,18 @@ return p || '-'
                       <X size={14} />
                     </button>
                   </div>
-                  <div style={{ fontSize: '11px', color: '#6366f1', fontFamily: 'monospace', marginBottom: 8, wordBreak: 'break-all' }}>
+                  <div style={{ fontSize: '11px', color: '#6366f1', fontFamily: 'monospace', marginBottom: 4, wordBreak: 'break-all' }}>
                     {viewItemKey}
                   </div>
+                  {nextRotate != null && (
+                    <div style={{ fontSize: '11px', color: nextRotate > 0 ? '#f59e0b' : '#16a34a', marginBottom: 8 }}>
+                      {nextRotate > 0 ? `Xoay tiếp sau ${nextRotate}s` : 'Sẵn sàng xoay'}
+                    </div>
+                  )}
                   <ItemLogPanel itemKey={viewItemKey} />
                 </div>
+                )
+              })()}
               )}
               </div>
             )}
@@ -1353,9 +1372,23 @@ function ItemLogPanel({ itemKey }: { itemKey: string }) {
               {log.message}
             </div>
 
+            {log.request && (
+              <details style={{ marginTop: 3 }}>
+                <summary style={{ fontSize: '11px', color: '#3b82f6', cursor: 'pointer', fontWeight: 500 }}>Request payload</summary>
+                {log.request.url && (
+                  <div style={{ fontSize: '10px', color: '#6366f1', fontFamily: 'monospace', padding: '3px 6px', background: '#eef2ff', borderRadius: 3, marginTop: 2, wordBreak: 'break-all' }}>
+                    {log.request.method || 'GET'} {log.request.url}
+                  </div>
+                )}
+                {log.request.params && (
+                  <CodeBlock value={typeof log.request.params === 'string' ? log.request.params : JSON.stringify(log.request.params, null, 2)} color='#93c5fd' />
+                )}
+              </details>
+            )}
+
             {log.response && (
               <details style={{ marginTop: 3 }} open={isError}>
-                <summary style={{ fontSize: '11px', color: isError ? '#ef4444' : '#22c55e', cursor: 'pointer', fontWeight: 500 }}>Response</summary>
+                <summary style={{ fontSize: '11px', color: isError ? '#ef4444' : '#22c55e', cursor: 'pointer', fontWeight: 500 }}>Response{log.status_code ? ` (${log.status_code})` : ''}</summary>
                 <CodeBlock value={log.response} color={isError ? '#fca5a5' : '#86efac'} />
               </details>
             )}
