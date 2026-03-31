@@ -325,8 +325,8 @@ return pct > 0 ? Math.round(pct) : null
           {/* Banner nổi — sticky đầu body, click X → về vị trí cuối */}
           {showTopBanner && (apiError || purchaseSuccess) && (
             <div style={{
-              position: 'sticky', top: 0, zIndex: 10,
-              margin: '-20px -20px 12px', padding: '10px 14px',
+              position: 'sticky', top: -20, zIndex: 10,
+              margin: '-20px -20px 12px -20px', padding: '10px 14px',
               fontSize: '13px', display: 'flex', alignItems: 'center', gap: 8,
               boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
               background: purchaseSuccess ? '#f0fdf4' : '#fef2f2',
