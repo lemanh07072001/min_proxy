@@ -64,25 +64,16 @@ export default function HistoryOrderPage() {
     isFetching,
     refetch,
     dataUpdatedAt
-  } = useHistoryOrders()
+  } = useHistoryOrders(appliedSearch || undefined)
 
   const handleSearch = () => {
     setAppliedSearch(searchText.trim())
     setPagination(prev => ({ ...prev, pageIndex: 0 }))
   }
 
-  // Client-side filtering
+  // Client-side filtering (status only — search đã server-side)
   const filteredOrders = useMemo(() => {
     let result = dataOrders
-
-    if (appliedSearch.trim()) {
-      const search = appliedSearch.trim().toLowerCase()
-
-      result = result.filter((order: any) =>
-        order.order_code?.toLowerCase().includes(search) ||
-        order.service_name?.toLowerCase().includes(search)
-      )
-    }
 
     if (statusFilter !== 'all') {
       result = result.filter((order: any) => String(order.status) === statusFilter)

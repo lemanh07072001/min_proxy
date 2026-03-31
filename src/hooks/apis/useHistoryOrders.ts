@@ -6,14 +6,16 @@ import { useTabVisible } from '@/hooks/useTabVisible'
 // Status đang chờ xử lý — cần polling
 const PENDING_STATUSES = [0, 1, 9, 10]
 
-export const useHistoryOrders = () => {
+export const useHistoryOrders = (search?: string) => {
   const axiosAuth = useAxiosAuth()
   const isTabVisible = useTabVisible()
 
   return useQuery({
-    queryKey: ['userOrders'],
+    queryKey: ['userOrders', search],
     queryFn: async () => {
-      const res = await axiosAuth.get('/get-order')
+      const res = await axiosAuth.get('/get-order', {
+        params: search ? { search } : undefined
+      })
 
       return res.data.data
     },
