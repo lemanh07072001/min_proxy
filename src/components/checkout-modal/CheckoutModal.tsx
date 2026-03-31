@@ -81,6 +81,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({
   const [discountCode, setDiscountCode] = useState('')
   const [purchaseSuccess, setPurchaseSuccess] = useState(false)
   const [apiError, setApiError] = useState('')
+  const [showTopBanner, setShowTopBanner] = useState(false)
   const [authMethod, setAuthMethod] = useState<'userpass' | 'ip_whitelist'>('userpass')
   const [customUser, setCustomUser] = useState('')
   const [customPass, setCustomPass] = useState('')
@@ -106,6 +107,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({
     setQuantity(1)
     setDiscountCode('')
     setPurchaseSuccess(false)
+    setShowTopBanner(false)
     setCustomUser('')
     setCustomPass('')
     setAllowIp('')
@@ -125,6 +127,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({
     if (open) {
       setPurchaseSuccess(false)
       setApiError('')
+      setShowTopBanner(false)
       isSubmitting.current = false
     }
   }, [open])
@@ -220,6 +223,7 @@ return pct > 0 ? Math.round(pct) : null
       } else {
         setPurchaseSuccess(true)
         setApiError('')
+        setShowTopBanner(true)
 
         // Số dư thật từ response — không cần gọi /me
         if (data.data?.new_balance != null) {
@@ -236,6 +240,7 @@ return pct > 0 ? Math.round(pct) : null
     onError: (error: any) => {
       isSubmitting.current = false
       setApiError(error.response?.data?.message || 'Lỗi không xác định, vui lòng thử lại.')
+      setShowTopBanner(true)
     }
   })
 
@@ -317,31 +322,20 @@ return pct > 0 ? Math.round(pct) : null
         </div>
 
         <div className='checkout-body' style={{ position: 'relative' }}>
-          {/* Floating banner — nổi trên cùng body, click X tắt banner */}
-          {apiError && !purchaseSuccess && (
+          {/* Floating banner — nổi trên đỉnh body, tắt riêng không ảnh hưởng banner dưới */}
+          {showTopBanner && (apiError || purchaseSuccess) && (
             <div style={{
               position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10,
-              padding: '10px 14px', background: '#fef2f2', borderBottom: '1px solid #fecaca',
-              fontSize: '13px', color: '#dc2626', display: 'flex', alignItems: 'center', gap: 8,
+              padding: '10px 14px', borderBottom: '1px solid',
+              fontSize: '13px', display: 'flex', alignItems: 'center', gap: 8,
               boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+              background: purchaseSuccess ? '#f0fdf4' : '#fef2f2',
+              borderColor: purchaseSuccess ? '#bbf7d0' : '#fecaca',
+              color: purchaseSuccess ? '#16a34a' : '#dc2626',
             }}>
-              <AlertTriangle size={16} style={{ flexShrink: 0 }} />
-              <span style={{ flex: 1 }}>{apiError}</span>
-              <button type='button' onClick={() => setApiError('')} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2 }}>
-                <X size={14} color='#94a3b8' />
-              </button>
-            </div>
-          )}
-          {purchaseSuccess && (
-            <div style={{
-              position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10,
-              padding: '10px 14px', background: '#f0fdf4', borderBottom: '1px solid #bbf7d0',
-              fontSize: '13px', color: '#16a34a', display: 'flex', alignItems: 'center', gap: 8,
-              boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-            }}>
-              <CheckCircle size={16} style={{ flexShrink: 0 }} />
-              <span style={{ flex: 1 }}>Mua proxy thành công!</span>
-              <button type='button' onClick={() => setPurchaseSuccess(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2 }}>
+              {purchaseSuccess ? <CheckCircle size={16} style={{ flexShrink: 0 }} /> : <AlertTriangle size={16} style={{ flexShrink: 0 }} />}
+              <span style={{ flex: 1 }}>{purchaseSuccess ? 'Mua proxy thành công!' : apiError}</span>
+              <button type='button' onClick={() => setShowTopBanner(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2 }}>
                 <X size={14} color='#94a3b8' />
               </button>
             </div>
@@ -771,6 +765,7 @@ return (
                 onClick={() => {
                   setPurchaseSuccess(false)
                   setApiError('')
+                  setShowTopBanner(false)
                   isSubmitting.current = false
                 }}
               >
