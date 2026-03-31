@@ -730,11 +730,9 @@ function StepAdvancedOptions({ prefix, control }: BuySectionProps) {
 
 export default function BuyConfigSection({ control, setValue }: { control: BuySectionProps['control']; setValue?: any }) {
   const [activeType, setActiveType] = useState<'rotating' | 'static'>('rotating')
-  const prefix = activeType === 'rotating' ? 'buy_rotating' : 'buy_static' as const
 
   const rotatingEnabled = useWatch({ control, name: 'buy_rotating.enabled' })
   const staticEnabled = useWatch({ control, name: 'buy_static.enabled' })
-  const enabled = useWatch({ control, name: `${prefix}.enabled` })
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -770,35 +768,45 @@ export default function BuyConfigSection({ control, setValue }: { control: BuySe
         ))}
       </Box>
 
-      {/* Enable/Disable */}
-      <Controller
-        name={`${prefix}.enabled`}
-        control={control}
-        render={({ field: { value, onChange, ...field } }) => (
-          <CustomTextField
-            {...field}
-            value={value ? 'true' : 'false'}
-            onChange={(e) => onChange(e.target.value === 'true')}
-            fullWidth select label={`Bật cấu hình mua ${activeType === 'rotating' ? 'proxy xoay' : 'proxy tĩnh'}`}
-          >
-            <MenuItem value='false'>Tắt</MenuItem>
-            <MenuItem value='true'>Bật</MenuItem>
-          </CustomTextField>
-        )}
-      />
+      {/* Render cả 2 tab, ẩn tab không active — giữ form fields mounted */}
+      {(['rotating', 'static'] as const).map(type => {
+        const prefix = type === 'rotating' ? 'buy_rotating' : 'buy_static' as const
+        const enabled = type === 'rotating' ? rotatingEnabled : staticEnabled
 
-      {/* Pipeline Steps */}
-      {enabled && (
-        <>
-          <StepApiCall prefix={prefix} control={control} />
-          <StepSuccessCheck prefix={prefix} control={control} />
-          <StepProxyExtract prefix={prefix} control={control} />
-          <StepDataStorage prefix={prefix} control={control} />
-          <StepErrorHandling prefix={prefix} control={control} />
-          <StepAdvancedOptions prefix={prefix} control={control} />
-          <ResponseDryRun prefix={prefix} control={control} setValue={setValue} />
-        </>
-      )}
+        return (
+          <Box key={type} sx={{ display: activeType === type ? 'block' : 'none' }}>
+            {/* Enable/Disable */}
+            <Controller
+              name={`${prefix}.enabled`}
+              control={control}
+              render={({ field: { value, onChange, ...field } }) => (
+                <CustomTextField
+                  {...field}
+                  value={value ? 'true' : 'false'}
+                  onChange={(e) => onChange(e.target.value === 'true')}
+                  fullWidth select label={`Bật cấu hình mua ${type === 'rotating' ? 'proxy xoay' : 'proxy tĩnh'}`}
+                >
+                  <MenuItem value='false'>Tắt</MenuItem>
+                  <MenuItem value='true'>Bật</MenuItem>
+                </CustomTextField>
+              )}
+            />
+
+            {/* Pipeline Steps */}
+            {enabled && (
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}>
+                <StepApiCall prefix={prefix} control={control} />
+                <StepSuccessCheck prefix={prefix} control={control} />
+                <StepProxyExtract prefix={prefix} control={control} />
+                <StepDataStorage prefix={prefix} control={control} />
+                <StepErrorHandling prefix={prefix} control={control} />
+                <StepAdvancedOptions prefix={prefix} control={control} />
+                <ResponseDryRun prefix={prefix} control={control} setValue={setValue} />
+              </Box>
+            )}
+          </Box>
+        )
+      })}
     </Box>
   )
 }
