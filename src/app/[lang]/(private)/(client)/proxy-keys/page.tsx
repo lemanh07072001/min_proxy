@@ -2,8 +2,8 @@
 
 import { useState, useCallback } from 'react'
 import { useParams } from 'next/navigation'
-import { Box, Typography, MenuItem, IconButton, Tooltip, Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/material'
-import { Key, RefreshCw, Shield, Search, Copy, Check, ExternalLink, Settings } from 'lucide-react'
+import { Box, Typography, MenuItem, IconButton, Tooltip, Dialog, DialogTitle, DialogContent, DialogActions, Button, Card } from '@mui/material'
+import { Key, RefreshCw, Shield, Search, Copy, Check, ExternalLink, Settings2 } from 'lucide-react'
 import { toast } from 'react-toastify'
 import CustomTextField from '@core/components/mui/TextField'
 import { useOrderItems, useUpdateAllowIps, type OrderItemRecord } from '@/hooks/apis/useOrderItems'
@@ -24,19 +24,14 @@ const formatProxy = (item: OrderItemRecord) => {
 export default function ProxyKeysPage() {
   const params = useParams()
   const locale = params.lang || 'vi'
-
-  // Filters — state riêng cho form, chỉ apply khi click Tìm
   const [type, setType] = useState('')
   const [status, setStatus] = useState('')
   const [search, setSearch] = useState('')
   const [limit, setLimit] = useState(100)
-
-  // Applied filters — dùng để query
   const [appliedFilters, setAppliedFilters] = useState<any>({ limit: 100 })
-
   const [copied, setCopied] = useState<string | null>(null)
   const [editItem, setEditItem] = useState<OrderItemRecord | null>(null)
-  const [editIps, setEditIps] = useState('')
+  const [editIp, setEditIp] = useState('')
 
   const { data, isLoading, isFetching, refetch } = useOrderItems(appliedFilters, false)
   const updateIps = useUpdateAllowIps()
@@ -44,12 +39,7 @@ export default function ProxyKeysPage() {
   const meta = data?.meta
 
   const handleSearch = useCallback(() => {
-    setAppliedFilters({
-      limit,
-      type: type || undefined,
-      status: status || undefined,
-      search: search || undefined,
-    })
+    setAppliedFilters({ limit, type: type || undefined, status: status || undefined, search: search || undefined })
     setTimeout(() => refetch(), 50)
   }, [type, status, search, limit, refetch])
 
@@ -59,173 +49,167 @@ export default function ProxyKeysPage() {
     setTimeout(() => setCopied(null), 1500)
   }
 
-  const handleSaveIps = () => {
+  const handleSaveIp = () => {
     if (!editItem) return
-    const ips = editIps.split(',').map(s => s.trim()).filter(Boolean)
-    const ipRegex = /^(\d{1,3}\.){3}\d{1,3}$/
-    const invalid = ips.find(ip => !ipRegex.test(ip))
-    if (invalid) { toast.error(`IP không hợp lệ: ${invalid}`); return }
-
-    updateIps.mutate({ key: editItem.key, allow_ips: ips }, {
+    const ip = editIp.trim()
+    if (ip && !/^(\d{1,3}\.){3}\d{1,3}$/.test(ip)) { toast.error('IP không hợp lệ'); return }
+    updateIps.mutate({ key: editItem.key, allow_ips: ip ? [ip] : [] }, {
       onSuccess: () => { setEditItem(null); refetch() },
       onError: () => toast.error('Lỗi cập nhật IP'),
     })
   }
 
+  const searching = isLoading || isFetching
+
   return (
     <Box sx={{ p: { xs: 2, sm: 3 }, maxWidth: 1200, mx: 'auto' }}>
-      <Typography variant='h5' sx={{ fontWeight: 700, mb: 2.5, display: 'flex', alignItems: 'center', gap: 1, color: '#1e293b' }}>
-        <Key size={22} /> Danh sách proxy
+      {/* Header */}
+      <Typography variant='h5' sx={{ fontWeight: 700, mb: 2.5, color: '#1e293b' }}>
+        Danh sách proxy
       </Typography>
 
-      {/* Filter bar */}
-      <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap', alignItems: 'flex-end' }}>
-        <CustomTextField select label='Loại' value={type} onChange={e => setType(e.target.value)} size='small' sx={{ width: 130 }}>
-          <MenuItem value=''>Tất cả</MenuItem>
-          <MenuItem value='ROTATING'>Xoay</MenuItem>
-          <MenuItem value='STATIC'>Tĩnh</MenuItem>
-        </CustomTextField>
-        <CustomTextField select label='Trạng thái' value={status} onChange={e => setStatus(e.target.value)} size='small' sx={{ width: 140 }}>
-          <MenuItem value=''>Tất cả</MenuItem>
-          <MenuItem value='0'>Hoạt động</MenuItem>
-          <MenuItem value='2'>Hết hạn</MenuItem>
-        </CustomTextField>
-        <CustomTextField
-          size='small' label='Tìm key' placeholder='Nhập key...'
-          value={search} onChange={e => setSearch(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && handleSearch()}
-          sx={{ width: 220 }}
-        />
-        <CustomTextField select label='Hiển thị' value={limit} onChange={e => setLimit(Number(e.target.value))} size='small' sx={{ width: 100 }}>
-          <MenuItem value={100}>100</MenuItem>
-          <MenuItem value={500}>500</MenuItem>
-          <MenuItem value={1000}>1.000</MenuItem>
-          <MenuItem value={5000}>5.000</MenuItem>
-          <MenuItem value={10000}>10.000</MenuItem>
-        </CustomTextField>
-        <Button
-          variant='contained'
-          size='small'
-          onClick={handleSearch}
-          disabled={isFetching}
-          startIcon={<Search size={14} style={isFetching ? { animation: 'spin 1s linear infinite' } : {}} />}
-          sx={{ height: 40, textTransform: 'none', fontWeight: 600, px: 2.5 }}
-        >
-          {isFetching ? 'Đang tìm...' : 'Tìm kiếm'}
-        </Button>
-      </Box>
+      {/* Filter card */}
+      <Card variant='outlined' sx={{ p: 2, mb: 2.5, borderColor: '#e2e8f0' }}>
+        <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', alignItems: 'flex-end' }}>
+          <CustomTextField select value={type} onChange={e => setType(e.target.value)} size='small' sx={{ minWidth: 120 }} label='Loại'>
+            <MenuItem value=''>Tất cả</MenuItem>
+            <MenuItem value='ROTATING'>Xoay</MenuItem>
+            <MenuItem value='STATIC'>Tĩnh</MenuItem>
+          </CustomTextField>
+          <CustomTextField select value={status} onChange={e => setStatus(e.target.value)} size='small' sx={{ minWidth: 130 }} label='Trạng thái'>
+            <MenuItem value=''>Tất cả</MenuItem>
+            <MenuItem value='0'>Hoạt động</MenuItem>
+            <MenuItem value='2'>Hết hạn</MenuItem>
+          </CustomTextField>
+          <CustomTextField
+            size='small' placeholder='Tìm theo key...'
+            value={search} onChange={e => setSearch(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && handleSearch()}
+            sx={{ minWidth: 200, flex: 1 }}
+          />
+          <CustomTextField select value={limit} onChange={e => setLimit(Number(e.target.value))} size='small' sx={{ width: 90 }} label='Số lượng'>
+            {[100, 500, 1000, 5000, 10000].map(n => <MenuItem key={n} value={n}>{n.toLocaleString()}</MenuItem>)}
+          </CustomTextField>
+          <Button
+            variant='contained' size='small' onClick={handleSearch} disabled={searching}
+            sx={{ height: 40, textTransform: 'none', fontWeight: 600, px: 3, minWidth: 110 }}
+          >
+            <Search size={15} style={{ marginRight: 6, ...(searching ? { animation: 'spin 0.8s linear infinite' } : {}) }} />
+            {searching ? 'Đang tìm...' : 'Tìm kiếm'}
+          </Button>
+        </Box>
+      </Card>
       <style>{`@keyframes spin { from { transform: rotate(0deg) } to { transform: rotate(360deg) } }`}</style>
 
-      {/* Results info */}
-      {meta && (
-        <Typography sx={{ fontSize: 12, color: '#94a3b8', mb: 1 }}>
-          {meta.total} proxy
-        </Typography>
-      )}
+      {/* Table card */}
+      <Card variant='outlined' sx={{ borderColor: '#e2e8f0', overflow: 'hidden' }}>
+        {meta && (
+          <Box sx={{ px: 2, py: 1, borderBottom: '1px solid #f1f5f9', background: '#fafbfc' }}>
+            <Typography sx={{ fontSize: 12, color: '#64748b' }}>{meta.total.toLocaleString()} proxy</Typography>
+          </Box>
+        )}
+        <Box sx={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+            <thead>
+              <tr>
+                <th style={thStyle}>Key</th>
+                <th style={thStyle}>Loại</th>
+                <th style={thStyle}>Proxy</th>
+                <th style={thStyle}>IP Whitelist</th>
+                <th style={thStyle}>Trạng thái</th>
+                <th style={thStyle}>Hết hạn</th>
+                <th style={thStyle}>Đơn hàng</th>
+                <th style={{ ...thStyle, width: 40 }}></th>
+              </tr>
+            </thead>
+            <tbody>
+              {searching ? (
+                <tr><td colSpan={8} style={emptyStyle}>
+                  <RefreshCw size={18} style={{ animation: 'spin 0.8s linear infinite', color: '#94a3b8' }} />
+                  <div style={{ marginTop: 6 }}>Đang tải...</div>
+                </td></tr>
+              ) : items.length === 0 ? (
+                <tr><td colSpan={8} style={emptyStyle}>
+                  {meta ? 'Không tìm thấy proxy nào' : 'Nhấn "Tìm kiếm" để bắt đầu'}
+                </td></tr>
+              ) : items.map((item: OrderItemRecord) => {
+                const st = STATUS_MAP[item.status] ?? STATUS_MAP[2]
+                const proxyText = formatProxy(item)
+                return (
+                  <tr key={item._id} style={{ borderBottom: '1px solid #f1f5f9', transition: 'background 0.1s' }}
+                    onMouseEnter={e => (e.currentTarget.style.background = '#f8fafc')}
+                    onMouseLeave={e => (e.currentTarget.style.background = '')}
+                  >
+                    <td style={tdStyle}>
+                      <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
+                        <span style={{ fontFamily: 'monospace', fontSize: '11px', color: '#6366f1' }}>{item.key.slice(0, 12)}...</span>
+                        <CopyBtn copied={copied === item.key} onClick={() => copyText(item.key, item.key)} />
+                      </Box>
+                    </td>
+                    <td style={tdStyle}>
+                      <TypeBadge type={item.type} />
+                    </td>
+                    <td style={tdStyle}>
+                      <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
+                        <span style={{ fontFamily: 'monospace', fontSize: '11px' }}>{proxyText}</span>
+                        {proxyText !== '—' && <CopyBtn copied={copied === `p-${item._id}`} onClick={() => copyText(proxyText, `p-${item._id}`)} />}
+                      </Box>
+                      <div style={{ fontSize: '10px', color: '#94a3b8', marginTop: 1 }}>{(item.protocol || 'http').toUpperCase()}</div>
+                    </td>
+                    <td style={tdStyle}>
+                      {item.allow_ips?.length ? (
+                        <span style={{ fontSize: '11px', color: '#2563eb', fontFamily: 'monospace' }}>{item.allow_ips[0]}</span>
+                      ) : <span style={{ color: '#cbd5e1', fontSize: '11px' }}>—</span>}
+                    </td>
+                    <td style={tdStyle}>
+                      <span style={{ padding: '2px 10px', borderRadius: 99, fontSize: '11px', fontWeight: 600, color: st.color, background: st.bg }}>{st.label}</span>
+                    </td>
+                    <td style={tdStyle}>
+                      <span style={{ fontSize: '11px', color: '#64748b' }}>
+                        {item.expired_at ? new Date(item.expired_at).toLocaleDateString('vi-VN') : '—'}
+                      </span>
+                    </td>
+                    <td style={tdStyle}>
+                      {item.order_code ? (
+                        <a href={`/${locale}/history-order?search=${item.order_code}`} style={{ fontSize: '11px', color: '#6366f1', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 3 }}>
+                          {item.order_code.slice(-8)} <ExternalLink size={10} />
+                        </a>
+                      ) : '—'}
+                    </td>
+                    <td style={{ ...tdStyle, textAlign: 'center' }}>
+                      {item.status === 0 && (
+                        <Tooltip title='Cập nhật IP'>
+                          <IconButton size='small' onClick={() => { setEditItem(item); setEditIp((item.allow_ips || [])[0] || '') }}>
+                            <Settings2 size={14} color='#64748b' />
+                          </IconButton>
+                        </Tooltip>
+                      )}
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </Box>
+      </Card>
 
-      {/* Table */}
-      <Box sx={{ overflowX: 'auto', border: '1px solid #e2e8f0', borderRadius: 2, bgcolor: '#fff' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
-          <thead>
-            <tr style={{ background: '#f8fafc' }}>
-              <th style={thStyle}>Key</th>
-              <th style={thStyle}>Loại</th>
-              <th style={thStyle}>Proxy</th>
-              <th style={thStyle}>IP Whitelist</th>
-              <th style={thStyle}>Trạng thái</th>
-              <th style={thStyle}>Hết hạn</th>
-              <th style={thStyle}>Đơn</th>
-              <th style={{ ...thStyle, textAlign: 'center' }}></th>
-            </tr>
-          </thead>
-          <tbody>
-            {isLoading || isFetching ? (
-              <tr><td colSpan={8} style={{ textAlign: 'center', padding: 40, color: '#94a3b8' }}>
-                <RefreshCw size={20} style={{ animation: 'spin 1s linear infinite', marginBottom: 8 }} />
-                <div>Đang tải...</div>
-              </td></tr>
-            ) : items.length === 0 ? (
-              <tr><td colSpan={8} style={{ textAlign: 'center', padding: 40, color: '#94a3b8' }}>
-                {meta ? 'Không tìm thấy proxy nào' : 'Nhấn "Tìm kiếm" để xem danh sách proxy'}
-              </td></tr>
-            ) : items.map((item: OrderItemRecord) => {
-              const st = STATUS_MAP[item.status] ?? STATUS_MAP[2]
-              const proxyText = formatProxy(item)
-              return (
-                <tr key={item._id} style={{ borderBottom: '1px solid #f1f5f9' }} onMouseEnter={e => (e.currentTarget.style.background = '#fafbfc')} onMouseLeave={e => (e.currentTarget.style.background = '')}>
-                  <td style={tdStyle}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                      <span style={{ fontFamily: 'monospace', fontSize: '11px', color: '#6366f1', maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'inline-block' }} title={item.key}>{item.key}</span>
-                      <CopyBtn copied={copied === item.key} onClick={() => copyText(item.key, item.key)} />
-                    </Box>
-                  </td>
-                  <td style={tdStyle}>
-                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: '11px', padding: '2px 6px', borderRadius: 4, background: item.type === 'ROTATING' ? '#fffbeb' : '#eff6ff', color: item.type === 'ROTATING' ? '#d97706' : '#2563eb' }}>
-                      {item.type === 'ROTATING' ? <RefreshCw size={11} /> : <Shield size={11} />}
-                      {item.type === 'ROTATING' ? 'Xoay' : 'Tĩnh'}
-                    </span>
-                  </td>
-                  <td style={tdStyle}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                      <span style={{ fontFamily: 'monospace', fontSize: '11px' }}>{proxyText}</span>
-                      {proxyText !== '—' && <CopyBtn copied={copied === `p-${item._id}`} onClick={() => copyText(proxyText, `p-${item._id}`)} />}
-                    </Box>
-                    <div style={{ fontSize: '10px', color: '#94a3b8' }}>{(item.protocol || 'http').toUpperCase()}</div>
-                  </td>
-                  <td style={tdStyle}>
-                    {item.allow_ips?.length ? (
-                      <span style={{ fontSize: '11px', color: '#2563eb', fontFamily: 'monospace' }}>{item.allow_ips.join(', ')}</span>
-                    ) : <span style={{ color: '#cbd5e1', fontSize: '11px' }}>—</span>}
-                  </td>
-                  <td style={tdStyle}>
-                    <span style={{ padding: '2px 8px', borderRadius: 99, fontSize: '11px', fontWeight: 600, color: st.color, background: st.bg }}>
-                      {st.label}
-                    </span>
-                  </td>
-                  <td style={tdStyle}>
-                    <span style={{ fontSize: '11px', color: '#64748b' }}>
-                      {item.expired_at ? new Date(item.expired_at).toLocaleDateString('vi-VN') : '—'}
-                    </span>
-                  </td>
-                  <td style={tdStyle}>
-                    {item.order_code ? (
-                      <a href={`/${locale}/history-order?search=${item.order_code}`} style={{ fontSize: '11px', color: '#6366f1', display: 'inline-flex', alignItems: 'center', gap: 2, textDecoration: 'none' }}>
-                        {item.order_code} <ExternalLink size={10} />
-                      </a>
-                    ) : '—'}
-                  </td>
-                  <td style={{ ...tdStyle, textAlign: 'center' }}>
-                    <Tooltip title='Cập nhật IP Whitelist'>
-                      <IconButton size='small' onClick={() => { setEditItem(item); setEditIps((item.allow_ips || []).join(', ')) }} sx={{ p: 0.5 }}>
-                        <Settings size={14} color='#64748b' />
-                      </IconButton>
-                    </Tooltip>
-                  </td>
-                </tr>
-              )
-            })}
-          </tbody>
-        </table>
-      </Box>
-
-      {/* Edit IP Whitelist Dialog */}
-      <Dialog open={!!editItem} onClose={() => setEditItem(null)} maxWidth='xs' fullWidth>
-        <DialogTitle sx={{ fontSize: 15, fontWeight: 700 }}>Cập nhật IP Whitelist</DialogTitle>
+      {/* Edit IP Dialog */}
+      <Dialog open={!!editItem} onClose={() => setEditItem(null)} maxWidth='xs' fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
+        <DialogTitle sx={{ fontSize: 15, fontWeight: 700, pb: 1 }}>Cập nhật IP Whitelist</DialogTitle>
         <DialogContent>
-          <Typography sx={{ fontSize: 12, color: '#64748b', mb: 1.5 }}>
-            Key: <span style={{ fontFamily: 'monospace', color: '#6366f1' }}>{editItem?.key}</span>
+          <Typography sx={{ fontSize: 12, color: '#64748b', mb: 2 }}>
+            Chỉ thiết bị có IP này mới kết nối được proxy.
           </Typography>
           <CustomTextField
-            fullWidth multiline rows={3}
-            label='Danh sách IP (cách nhau bởi dấu phẩy)'
-            placeholder='VD: 123.45.67.89, 98.76.54.32'
-            value={editIps}
-            onChange={e => setEditIps(e.target.value)}
+            fullWidth label='Địa chỉ IP' placeholder='VD: 123.45.67.89'
+            value={editIp} onChange={e => setEditIp(e.target.value.replace(/[^0-9.]/g, ''))}
+            inputProps={{ maxLength: 15 }}
+            helperText='Để trống để xóa IP whitelist'
           />
         </DialogContent>
-        <DialogActions>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
           <Button onClick={() => setEditItem(null)} color='inherit'>Hủy</Button>
-          <Button onClick={handleSaveIps} variant='contained' disabled={updateIps.isPending}>
+          <Button onClick={handleSaveIp} variant='contained' disabled={updateIps.isPending}>
             {updateIps.isPending ? 'Đang lưu...' : 'Lưu'}
           </Button>
         </DialogActions>
@@ -237,12 +221,23 @@ export default function ProxyKeysPage() {
 function CopyBtn({ copied, onClick }: { copied: boolean; onClick: () => void }) {
   return (
     <Tooltip title={copied ? 'Đã copy!' : 'Copy'}>
-      <IconButton size='small' onClick={onClick} sx={{ p: 0.25 }}>
+      <IconButton size='small' onClick={onClick} sx={{ p: 0.25, opacity: 0.5, '&:hover': { opacity: 1 } }}>
         {copied ? <Check size={11} color='#16a34a' /> : <Copy size={11} color='#94a3b8' />}
       </IconButton>
     </Tooltip>
   )
 }
 
-const thStyle: React.CSSProperties = { padding: '8px 10px', textAlign: 'left', fontSize: '12px', fontWeight: 600, color: '#64748b', borderBottom: '1px solid #e2e8f0', whiteSpace: 'nowrap' }
-const tdStyle: React.CSSProperties = { padding: '8px 10px', verticalAlign: 'middle' }
+function TypeBadge({ type }: { type: string }) {
+  const isRotating = type === 'ROTATING'
+  return (
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: '11px', padding: '2px 8px', borderRadius: 99, fontWeight: 600, background: isRotating ? '#fef3c7' : '#dbeafe', color: isRotating ? '#b45309' : '#1d4ed8' }}>
+      {isRotating ? <RefreshCw size={10} /> : <Shield size={10} />}
+      {isRotating ? 'Xoay' : 'Tĩnh'}
+    </span>
+  )
+}
+
+const thStyle: React.CSSProperties = { padding: '10px 12px', textAlign: 'left', fontSize: '12px', fontWeight: 600, color: '#475569', borderBottom: '2px solid #e2e8f0', background: '#f8fafc', whiteSpace: 'nowrap' }
+const tdStyle: React.CSSProperties = { padding: '10px 12px', verticalAlign: 'middle' }
+const emptyStyle: React.CSSProperties = { textAlign: 'center', padding: 50, color: '#94a3b8', fontSize: '13px' }
