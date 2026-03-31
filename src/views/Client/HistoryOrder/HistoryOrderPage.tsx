@@ -67,8 +67,11 @@ export default function HistoryOrderPage() {
   } = useHistoryOrders(appliedSearch || undefined)
 
   const handleSearch = () => {
-    setAppliedSearch(searchText.trim())
+    const text = searchText.trim()
+    setAppliedSearch(text)
     setPagination(prev => ({ ...prev, pageIndex: 0 }))
+    // Force refetch ngay cả khi queryKey không đổi
+    setTimeout(() => refetch(), 50)
   }
 
   // Client-side filtering (status only — search đã server-side)
