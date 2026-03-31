@@ -39,6 +39,7 @@ import { useServiceType, useCreateServiceType, useUpdateServiceType } from '@/ho
 import MultiInputModal from '@/views/Client/Admin/ServiceType/MultiInputModal'
 // PriceByDurationModal removed — giá theo thời gian giờ inline trong form
 import CollapsibleSection from '@/views/Client/Admin/ServiceType/CollapsibleSection'
+import { useBranding } from '@/app/contexts/BrandingContext'
 
 import '@/views/Client/RotatingProxy/styles.css'
 
@@ -564,6 +565,7 @@ interface ServiceFormModalProps {
 
 export default function ServiceFormModal({ open, onClose, serviceId, initialData }: ServiceFormModalProps) {
   const isEditMode = !!serviceId
+  const { isChild } = useBranding()
 
   // Data fetching
   const { data: providers = [], isLoading: loadingProviders } = useProviders()
@@ -595,6 +597,7 @@ export default function ServiceFormModal({ open, onClose, serviceId, initialData
   const [responseMappingRows, setResponseMappingRows] = useState<{ from: string; to: string; store: string }[]>([])
   const [purchaseOptions, setPurchaseOptions] = useState<PurchaseOption[]>([])
   const [allowCustomAuth, setAllowCustomAuth] = useState(false)
+  const [requireIp, setRequireIp] = useState(false)
   const [renewable, setRenewable] = useState(false)
   const [renewalDuration, setRenewalDuration] = useState('')
   const [allowExpiredRenew, setAllowExpiredRenew] = useState('')
@@ -773,6 +776,7 @@ return { values: {}, errors: formattedErrors }
       // Load purchase options + allow_custom_auth từ metadata
       const meta = serviceData.metadata || {}
       setAllowCustomAuth(!!meta.allow_custom_auth)
+      setRequireIp(!!meta.require_ip)
       setRenewable(!!meta.renewable)
       setRenewalDuration(meta.renewal_duration || '')
       setAllowExpiredRenew(meta.allow_expired_renew != null ? String(meta.allow_expired_renew) : '')
@@ -838,6 +842,7 @@ return { values: {}, errors: formattedErrors }
       setPurchaseOptions([])
       setResponseMappingRows([])
       setAllowCustomAuth(false)
+      setRequireIp(false)
       setRenewable(false)
       setRenewalDuration('')
       setAllowExpiredRenew('')
@@ -908,6 +913,7 @@ return { values: {}, errors: formattedErrors }
     const metadataFinal = {
       ...(metadata || {}),
       allow_custom_auth: allowCustomAuth,
+      require_ip: requireIp || undefined,
       renewable: renewable || undefined,
       renewal_duration: renewalDuration || undefined,
       allow_expired_renew: allowExpiredRenew === 'true' ? true : (allowExpiredRenew === 'false' ? false : undefined),
@@ -1519,6 +1525,56 @@ return <Chip key={val} label={p?.label || val} size='small' />
                   </Grid2>
                 )}
 
+                {/* IP Whitelist mode — bắt buộc hay không */}
+                {(watchedAuthType === 'ip_whitelist' || watchedAuthType === 'both') && (
+                  <Grid2 size={{ xs: 12 }}>
+                    <div style={{ border: '1px solid #e2e8f0', borderRadius: 10, padding: '12px 14px', background: '#fafbfc' }}>
+                    <div style={{ fontSize: '12px', fontWeight: 700, color: '#1e293b', marginBottom: 8 }}>IP Whitelist khi mua</div>
+                    <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+                      <button
+                        type='button'
+                        onClick={() => setRequireIp(false)}
+                        style={{
+                          padding: '6px 14px', fontSize: '12px', fontWeight: 600, borderRadius: 8, border: '1.5px solid',
+                          cursor: 'pointer', transition: 'all 0.15s',
+                          background: !requireIp ? '#1e293b' : '#fff',
+                          color: !requireIp ? '#fff' : '#64748b',
+                          borderColor: !requireIp ? '#1e293b' : '#e2e8f0',
+                        }}
+                      >
+                        Tùy chọn
+                      </button>
+                      <button
+                        type='button'
+                        onClick={() => setRequireIp(true)}
+                        style={{
+                          padding: '6px 14px', fontSize: '12px', fontWeight: 600, borderRadius: 8, border: '1.5px solid',
+                          cursor: 'pointer', transition: 'all 0.15s',
+                          background: requireIp ? '#1e293b' : '#fff',
+                          color: requireIp ? '#fff' : '#64748b',
+                          borderColor: requireIp ? '#1e293b' : '#e2e8f0',
+                        }}
+                      >
+                        Bắt buộc
+                      </button>
+                    </div>
+                    <div style={{ padding: '8px 12px', borderRadius: 8, fontSize: '12px', border: '1px solid', background: requireIp ? '#fef2f2' : '#f0fdf4', borderColor: requireIp ? '#fecaca' : '#bbf7d0' }}>
+                      {requireIp ? (
+                        <div>
+                          <strong style={{ color: '#dc2626' }}>Bắt buộc:</strong> Khách phải nhập IP whitelist khi mua (API + UI)
+                          <div style={{ color: '#64748b', marginTop: 2 }}>Không nhập IP → không thể mua</div>
+                        </div>
+                      ) : (
+                        <div>
+                          <strong style={{ color: '#166534' }}>Tùy chọn:</strong> Khách có thể nhập IP hoặc bỏ qua
+                          <div style={{ color: '#64748b', marginTop: 2 }}>IP whitelist là tùy chọn — không bắt buộc</div>
+                        </div>
+                      )}
+                    </div>
+                    </div>
+                  </Grid2>
+                )}
+
                 {/* ═══ Gia hạn settings ═══ */}
                 <Grid2 size={{ xs: 12 }}>
                   <Box sx={{ border: '1px solid #fcd34d', borderTop: '3px solid #f59e0b', borderRadius: 2, overflow: 'hidden' }}>
@@ -1570,8 +1626,8 @@ return <Chip key={val} label={p?.label || val} size='small' />
                               </CustomTextField>
                             </Grid2>
 
-                            {/* Preview NCC renew params */}
-                            {(() => {
+                            {/* Preview NCC renew params — chỉ site mẹ */}
+                            {!isChild && (() => {
                               const watchedProviderId = watch('provider_id')
                               const selectedProvider = providers?.find((p: any) => String(p.id) === String(watchedProviderId))
                               const nccRenew = selectedProvider?.api_config?.renew
