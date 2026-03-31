@@ -1,12 +1,35 @@
 'use client'
 
-import { memo, useCallback, useState } from 'react'
+import { memo, useCallback, useMemo, useState } from 'react'
 
 import { useQueueStatus, useClearCircuitBreaker } from '@/hooks/apis/useQueueStatus'
 import type { LogEntry, WorkerState, CircuitBreaker } from '@/hooks/apis/useQueueStatus'
 
+// ─── Tab config ─────────────────────────────────────────────────────────────
+
+interface TabDef {
+  key: string
+  label: string
+  workerKey?: string        // key trong data.workers — undefined = tab "Tất cả"
+  queueKey?: string         // key trong data.queues
+  queueLabel?: string
+  color: string
+  badge: string             // CSS class cho log badge
+}
+
+const TABS: TabDef[] = [
+  { key: 'all', label: 'Tất cả', color: 'gray', badge: '' },
+  { key: 'placeorder', label: 'Mua hàng', workerKey: 'placeorder', queueKey: 'placeorder', queueLabel: 'Queue Mua', color: 'blue', badge: 'bg-blue-100 text-blue-700' },
+  { key: 'renewal', label: 'Gia hạn', workerKey: 'renewal', queueKey: 'renewal', queueLabel: 'Queue Gia hạn', color: 'green', badge: 'bg-green-100 text-green-700' },
+  { key: 'rotate', label: 'Xoay IP', workerKey: 'rotate', queueKey: 'rotate', queueLabel: 'Queue Xoay', color: 'amber', badge: 'bg-amber-100 text-amber-700' },
+  { key: 'fetch', label: 'Lấy Proxy', workerKey: 'fetch', queueLabel: 'Đơn chờ NCC', color: 'purple', badge: 'bg-purple-100 text-purple-700' },
+]
+
+// ─── Main ───────────────────────────────────────────────────────────────────
+
 export default function QueueMonitorPage() {
   const [enabled, setEnabled] = useState(true)
+  const [activeTab, setActiveTab] = useState('all')
   const { data, isLoading } = useQueueStatus(enabled)
   const clearCB = useClearCircuitBreaker()
 
@@ -14,6 +37,15 @@ export default function QueueMonitorPage() {
     (provider: string) => clearCB.mutate(provider),
     [clearCB]
   )
+
+  const tab = TABS.find(t => t.key === activeTab) || TABS[0]
+
+  // Filter logs theo tab
+  const filteredLogs = useMemo(() => {
+    const logs = data?.logs ?? []
+    if (tab.key === 'all') return logs
+    return logs.filter(l => l.w === tab.workerKey)
+  }, [data?.logs, tab])
 
   if (isLoading) return <div className='p-6 text-gray-500'>Loading...</div>
 
@@ -34,32 +66,71 @@ export default function QueueMonitorPage() {
         </button>
       </div>
 
-      {/* Cards */}
-      <div className='grid grid-cols-2 lg:grid-cols-4 gap-3'>
-        <StatCard label='Queue Mua' value={data?.queues.placeorder ?? 0} color='blue' />
-        <StatCard label='Queue Gia hạn' value={data?.queues.renewal ?? 0} color='green' />
-        <WorkerCard name='Worker Mua' worker={data?.workers.placeorder} />
-        <WorkerCard name='Worker Gia hạn' worker={data?.workers.renewal} />
+      {/* Tabs */}
+      <div className='flex gap-1 bg-gray-100 rounded-lg p-1'>
+        {TABS.map(t => {
+          const isActive = t.key === activeTab
+          const logCount = t.key === 'all'
+            ? (data?.logs ?? []).length
+            : (data?.logs ?? []).filter(l => l.w === t.workerKey).length
+
+          return (
+            <button
+              key={t.key}
+              onClick={() => setActiveTab(t.key)}
+              className={`flex items-center gap-1.5 px-4 py-1.5 rounded-md text-xs font-medium transition-all ${
+                isActive
+                  ? 'bg-white text-gray-800 shadow-sm'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              {t.label}
+              {logCount > 0 && (
+                <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${isActive ? 'bg-gray-200 text-gray-600' : 'bg-gray-200/60 text-gray-400'}`}>
+                  {logCount}
+                </span>
+              )}
+            </button>
+          )
+        })}
       </div>
+
+      {/* Cards — tab "Tất cả" hiện tất cả, tab riêng chỉ hiện worker + queue đó */}
+      {tab.key === 'all' ? (
+        <div className='grid grid-cols-2 lg:grid-cols-4 gap-3'>
+          <StatCard label='Queue Mua' value={data?.queues.placeorder ?? 0} color='blue' />
+          <StatCard label='Queue Gia hạn' value={data?.queues.renewal ?? 0} color='green' />
+          <StatCard label='Queue Xoay' value={data?.queues?.rotate ?? 0} color='amber' />
+          <WorkerCard name='Worker Mua' worker={data?.workers.placeorder} />
+          <WorkerCard name='Worker Gia hạn' worker={data?.workers.renewal} />
+          <WorkerCard name='Worker Xoay' worker={data?.workers?.rotate} />
+          <WorkerCard name='Worker Lấy Proxy' worker={data?.workers?.fetch} />
+        </div>
+      ) : (
+        <div className='grid grid-cols-2 gap-3'>
+          {tab.queueKey && <StatCard label={tab.queueLabel || ''} value={data?.queues?.[tab.queueKey] ?? 0} color={tab.color as any} />}
+          {tab.workerKey && <WorkerCard name={`Worker ${tab.label}`} worker={data?.workers?.[tab.workerKey]} />}
+        </div>
+      )}
 
       {/* Circuit Breakers */}
       <CBSection breakers={data?.circuit_breakers ?? {}} onClear={handleClearCB} clearing={clearCB.isPending} />
 
-      {/* Log */}
-      <LogTable logs={data?.logs ?? []} />
+      {/* Log — filtered */}
+      <LogTable logs={filteredLogs} title={tab.key === 'all' ? 'Activity Log' : `Log — ${tab.label}`} />
     </div>
   )
 }
 
 // ─── Sub-components (memo) ───
 
-const StatCard = memo(function StatCard({ label, value, color }: { label: string; value: number; color: 'blue' | 'green' }) {
-  const accent = color === 'blue' ? 'text-blue-600' : 'text-green-600'
+const StatCard = memo(function StatCard({ label, value, color }: { label: string; value: number; color: string }) {
+  const accents: Record<string, string> = { blue: 'text-blue-600', green: 'text-green-600', amber: 'text-amber-600', purple: 'text-purple-600', gray: 'text-gray-600' }
 
   return (
     <div className='bg-white rounded-lg border border-gray-100 px-4 py-3'>
       <p className='text-[11px] text-gray-400 uppercase tracking-wide'>{label}</p>
-      <p className={`text-2xl font-bold ${accent} mt-0.5`}>{value}</p>
+      <p className={`text-2xl font-bold ${accents[color] || 'text-gray-600'} mt-0.5`}>{value}</p>
     </div>
   )
 })
@@ -133,16 +204,16 @@ const CBSection = memo(function CBSection({
   )
 })
 
-const LogTable = memo(function LogTable({ logs }: { logs: LogEntry[] }) {
+const LogTable = memo(function LogTable({ logs, title = 'Activity Log' }: { logs: LogEntry[]; title?: string }) {
   return (
     <div className='bg-white rounded-lg border border-gray-100 overflow-hidden'>
       <div className='px-3 py-2 border-b border-gray-100 flex items-center justify-between'>
-        <p className='text-xs font-semibold text-gray-600'>Activity Log</p>
-        <span className='text-[10px] text-gray-300'>{logs.length}/100</span>
+        <p className='text-xs font-semibold text-gray-600'>{title}</p>
+        <span className='text-[10px] text-gray-300'>{logs.length} entries</span>
       </div>
       <div className='max-h-[420px] overflow-y-auto'>
         {logs.length === 0 ? (
-          <p className='p-4 text-xs text-gray-300 text-center'>—</p>
+          <p className='p-4 text-xs text-gray-300 text-center'>Chưa có log</p>
         ) : (
           <table className='w-full'>
             <thead className='sticky top-0 bg-gray-50/95 backdrop-blur-sm'>
@@ -169,7 +240,9 @@ const LogTable = memo(function LogTable({ logs }: { logs: LogEntry[] }) {
 const WORKER_BADGE: Record<string, string> = {
   renewal: 'bg-green-100 text-green-700',
   placeorder: 'bg-blue-100 text-blue-700',
-  admin: 'bg-purple-100 text-purple-700'
+  rotate: 'bg-amber-100 text-amber-700',
+  fetch: 'bg-purple-100 text-purple-700',
+  admin: 'bg-gray-100 text-gray-700',
 }
 
 const LogRow = memo(function LogRow({ log }: { log: LogEntry }) {

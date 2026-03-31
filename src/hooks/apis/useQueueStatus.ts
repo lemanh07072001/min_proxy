@@ -34,10 +34,15 @@ export interface QueueStatusData {
   queues: {
     renewal: number
     placeorder: number
+    rotate: number
+    [key: string]: number
   }
   workers: {
     renewal: WorkerState | null
     placeorder: WorkerState | null
+    rotate: WorkerState | null
+    fetch: WorkerState | null
+    [key: string]: WorkerState | null | undefined
   }
   logs: LogEntry[]
   circuit_breakers: Record<string, CircuitBreaker>
