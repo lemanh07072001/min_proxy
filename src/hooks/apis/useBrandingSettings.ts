@@ -75,9 +75,9 @@ export interface BrandingSettings {
 
   // Landing page
   landing_pricing: {
-    viettel?: { price?: string; originalPrice?: string; discount?: string }
-    fpt?: { price?: string; originalPrice?: string; discount?: string }
-    vnpt?: { price?: string; originalPrice?: string; discount?: string }
+    viettel?: { price?: string; originalPrice?: string; discount?: string; period?: string | Record<string, string> }
+    fpt?: { price?: string; originalPrice?: string; discount?: string; period?: string | Record<string, string> }
+    vnpt?: { price?: string; originalPrice?: string; discount?: string; period?: string | Record<string, string> }
   } | null
 
   // Menu labels

@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 
 import Image from 'next/image'
+import { useParams } from 'next/navigation'
 
 import { useDispatch, useSelector } from 'react-redux'
 import { toast } from 'react-toastify'
@@ -55,6 +56,7 @@ const EXPIRE_SECONDS = 600
 export default function RechargePage() {
   const { user } = useSelector((state: RootState) => state.user)
   const dispatch = useDispatch<AppDispatch>()
+  const params = useParams()
   const branding = useBranding()
   const denominations = useMemo(() => {
     if (branding?.deposit_preset_amounts?.length) {
@@ -635,7 +637,13 @@ return `https://img.vietqr.io/image/${bankInfo.bank_code}-${bankInfo.account_num
                         Chuyển <strong>đúng số tiền</strong> và <strong>đúng nội dung</strong> chuyển khoản.
                       </Typography>
                       <Typography sx={{ fontSize: '12px', color: '#92400e', lineHeight: 1.6 }}>
-                        Tiền sẽ tự động cộng sau <strong>1–5 phút</strong>. Nếu đã chuyển khoản quá <strong>10 phút</strong> mà chưa nhận được, vui lòng liên hệ Admin để được hỗ trợ.
+                        Tiền sẽ tự động cộng sau <strong>1–5 phút</strong>. Vui lòng chờ hệ thống xử lý, không rời khỏi trang.
+                      </Typography>
+                      <Typography sx={{ fontSize: '11px', color: '#78716c', lineHeight: 1.6, mt: 0.5, fontStyle: 'italic' }}>
+                        Nếu quá 10 phút chưa được cộng tiền, hãy liên hệ Admin hoặc{' '}
+                        <a href={`/${params.lang || 'vi'}/tickets`} style={{ color: 'var(--primary-color)', fontWeight: 600, textDecoration: 'underline' }}>
+                          tạo ticket hỗ trợ
+                        </a>.
                       </Typography>
                     </Box>
 

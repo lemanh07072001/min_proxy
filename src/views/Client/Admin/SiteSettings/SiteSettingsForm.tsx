@@ -22,6 +22,22 @@ import type { BankSettings } from '@/hooks/apis/useBankSettings'
 import { useBranding } from '@/app/contexts/BrandingContext'
 import useAxiosAuth from '@/hocs/useAxiosAuth'
 
+// ─── Helpers ────────────────────────────────────────────────────────────────
+
+/** Migrate landing_pricing.period từ string cũ sang Record<locale, string> */
+function migrateLandingPricing(data: any): any {
+  if (!data) return null
+  const result = { ...data }
+
+  for (const key of ['viettel', 'fpt', 'vnpt']) {
+    if (result[key]?.period && typeof result[key].period === 'string') {
+      result[key] = { ...result[key], period: { vi: result[key].period } }
+    }
+  }
+
+  return result
+}
+
 // ─── Constants ───────────────────────────────────────────────────────────────
 
 const ICON_OPTIONS = [
@@ -292,7 +308,7 @@ export default function SiteSettingsForm() {
         deposit_min_amount: brandingData.deposit_min_amount ?? null,
         deposit_preset_amounts: brandingData.deposit_preset_amounts ?? null,
         deposit_notify_telegram: brandingData.deposit_notify_telegram ?? null,
-        landing_pricing: brandingData.landing_pricing ?? null,
+        landing_pricing: migrateLandingPricing(brandingData.landing_pricing),
         menu_labels: brandingData.menu_labels ?? null,
       })
     }
@@ -1885,65 +1901,88 @@ export default function SiteSettingsForm() {
                 {['viettel', 'fpt', 'vnpt'].map(key => {
                   const label = key === 'viettel' ? 'Viettel Proxy' : key === 'fpt' ? 'FPT Proxy' : 'VNPT Proxy'
                   const currentVal = (branding.landing_pricing as any)?.[key] || {}
+                  const periodObj = typeof currentVal.period === 'object' && currentVal.period ? currentVal.period : {}
+
                   return (
-                    <div key={key} style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 12 }}>
-                      <span style={{ width: 100, fontWeight: 600, fontSize: 13 }}>{label}</span>
-                      <TextField
-                        size='small'
-                        label='Giá bán'
-                        placeholder='18.000'
-                        value={currentVal.price || ''}
-                        onChange={e => setBranding(prev => ({
-                          ...prev,
-                          landing_pricing: {
-                            ...(prev.landing_pricing || {}),
-                            [key]: { ...(prev.landing_pricing as any)?.[key], price: e.target.value }
-                          }
-                        }))}
-                        sx={{ width: 120 }}
-                      />
-                      <TextField
-                        size='small'
-                        label='Giá gốc'
-                        placeholder='25.000'
-                        value={currentVal.originalPrice || ''}
-                        onChange={e => setBranding(prev => ({
-                          ...prev,
-                          landing_pricing: {
-                            ...(prev.landing_pricing || {}),
-                            [key]: { ...(prev.landing_pricing as any)?.[key], originalPrice: e.target.value }
-                          }
-                        }))}
-                        sx={{ width: 120 }}
-                      />
-                      <TextField
-                        size='small'
-                        label='Giảm giá'
-                        placeholder='28%'
-                        value={currentVal.discount || ''}
-                        onChange={e => setBranding(prev => ({
-                          ...prev,
-                          landing_pricing: {
-                            ...(prev.landing_pricing || {}),
-                            [key]: { ...(prev.landing_pricing as any)?.[key], discount: e.target.value }
-                          }
-                        }))}
-                        sx={{ width: 100 }}
-                      />
-                      <TextField
-                        size='small'
-                        label='Thời hạn'
-                        placeholder='1 tháng'
-                        value={currentVal.period || ''}
-                        onChange={e => setBranding(prev => ({
-                          ...prev,
-                          landing_pricing: {
-                            ...(prev.landing_pricing || {}),
-                            [key]: { ...(prev.landing_pricing as any)?.[key], period: e.target.value }
-                          }
-                        }))}
-                        sx={{ width: 100 }}
-                      />
+                    <div key={key} style={{ marginBottom: 16, padding: 12, background: '#fff', borderRadius: 8, border: '1px solid #e2e8f0' }}>
+                      <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 8, color: '#334155' }}>{label}</div>
+                      {/* Row 1: Giá */}
+                      <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 8 }}>
+                        <TextField
+                          size='small'
+                          label='Giá bán'
+                          placeholder='18.000'
+                          value={currentVal.price || ''}
+                          onChange={e => setBranding(prev => ({
+                            ...prev,
+                            landing_pricing: {
+                              ...(prev.landing_pricing || {}),
+                              [key]: { ...(prev.landing_pricing as any)?.[key], price: e.target.value }
+                            }
+                          }))}
+                          sx={{ width: 120 }}
+                        />
+                        <TextField
+                          size='small'
+                          label='Giá gốc'
+                          placeholder='25.000'
+                          value={currentVal.originalPrice || ''}
+                          onChange={e => setBranding(prev => ({
+                            ...prev,
+                            landing_pricing: {
+                              ...(prev.landing_pricing || {}),
+                              [key]: { ...(prev.landing_pricing as any)?.[key], originalPrice: e.target.value }
+                            }
+                          }))}
+                          sx={{ width: 120 }}
+                        />
+                        <TextField
+                          size='small'
+                          label='Giảm giá'
+                          placeholder='28%'
+                          value={currentVal.discount || ''}
+                          onChange={e => setBranding(prev => ({
+                            ...prev,
+                            landing_pricing: {
+                              ...(prev.landing_pricing || {}),
+                              [key]: { ...(prev.landing_pricing as any)?.[key], discount: e.target.value }
+                            }
+                          }))}
+                          sx={{ width: 100 }}
+                        />
+                      </div>
+                      {/* Row 2: Thời hạn per locale */}
+                      <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                        <span style={{ fontSize: 12, fontWeight: 600, color: '#475569', whiteSpace: 'nowrap' }}>Thời hạn hiển thị:</span>
+                        {[
+                          { code: 'vi', label: 'Tiếng Việt', placeholder: '1 tháng' },
+                          { code: 'en', label: 'English', placeholder: '1 month' },
+                          { code: 'cn', label: '中文', placeholder: '1个月' },
+                          { code: 'ko', label: '한국어', placeholder: '1개월' },
+                          { code: 'ja', label: '日本語', placeholder: '1ヶ月' },
+                        ].map(lang => (
+                          <TextField
+                            key={lang.code}
+                            size='small'
+                            label={lang.label}
+                            placeholder={lang.placeholder}
+                            value={(periodObj as any)[lang.code] || ''}
+                            onChange={e => setBranding(prev => {
+                              const prevItem = (prev.landing_pricing as any)?.[key] || {}
+                              const prevPeriod = typeof prevItem.period === 'object' && prevItem.period ? prevItem.period : {}
+
+                              return {
+                                ...prev,
+                                landing_pricing: {
+                                  ...(prev.landing_pricing || {}),
+                                  [key]: { ...prevItem, period: { ...prevPeriod, [lang.code]: e.target.value } }
+                                }
+                              }
+                            })}
+                            sx={{ width: 110 }}
+                          />
+                        ))}
+                      </div>
                     </div>
                   )
                 })}

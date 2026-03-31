@@ -11,13 +11,19 @@ import { useTranslation } from 'react-i18next'
 import Link from '@components/Link'
 
 interface LandingPricingItem {
-  price?: string; originalPrice?: string; discount?: string; period?: string
+  price?: string; originalPrice?: string; discount?: string; period?: string | Record<string, string>
 }
 
 interface LandingPricing {
   viettel?: LandingPricingItem
   fpt?: LandingPricingItem
   vnpt?: LandingPricingItem
+}
+
+function getPeriod(item: LandingPricingItem | undefined, locale: string): string {
+  if (!item?.period) return ''
+  if (typeof item.period === 'string') return item.period
+  return item.period[locale] || item.period['vi'] || ''
 }
 
 export default function ProductsSection({ local, landingPricing }: { local: string; landingPricing?: LandingPricing | null }) {
@@ -33,7 +39,7 @@ export default function ProductsSection({ local, landingPricing }: { local: stri
       img: '/images/softwares/viettel.png',
       price: p.viettel?.price || '18.000',
       originalPrice: p.viettel?.originalPrice || '25.000',
-      period: p.viettel?.period || '',
+      period: getPeriod(p.viettel, local),
       discount: p.viettel?.discount || '28%',
       features: (t('landing.products.cards.viettel.features', { returnObjects: true }) as string[] || []),
       color: '#e53e3e',
@@ -47,7 +53,7 @@ export default function ProductsSection({ local, landingPricing }: { local: stri
       img: '/images/softwares/fpt.png',
       price: p.fpt?.price || '18.000',
       originalPrice: p.fpt?.originalPrice || '24.000',
-      period: p.fpt?.period || '',
+      period: getPeriod(p.fpt, local),
       discount: p.fpt?.discount || '25%',
       features: (t('landing.products.cards.fpt.features', { returnObjects: true }) as string[] || []),
       color: '#f56500',
@@ -61,7 +67,7 @@ export default function ProductsSection({ local, landingPricing }: { local: stri
       img: '/images/softwares/vnpt.png',
       price: p.vnpt?.price || '18.000',
       originalPrice: p.vnpt?.originalPrice || '26.000',
-      period: p.vnpt?.period || '',
+      period: getPeriod(p.vnpt, local),
       discount: p.vnpt?.discount || '31%',
       features: (t('landing.products.cards.vnpt.features', { returnObjects: true }) as string[] || []),
       color: '#3182ce',

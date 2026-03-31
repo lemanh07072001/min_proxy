@@ -55,6 +55,7 @@ export default function HistoryOrderPage() {
   const [searchText, setSearchText] = useState(urlSearch)
   const [appliedSearch, setAppliedSearch] = useState(urlSearch)
   const [statusFilter, setStatusFilter] = useState<string>('all')
+  const [isSearching, setIsSearching] = useState(false)
 
   const queryClient = useQueryClient()
 
@@ -66,12 +67,14 @@ export default function HistoryOrderPage() {
     dataUpdatedAt
   } = useHistoryOrders(appliedSearch || undefined)
 
-  const handleSearch = () => {
+  const handleSearch = async () => {
     const text = searchText.trim()
     setAppliedSearch(text)
     setPagination(prev => ({ ...prev, pageIndex: 0 }))
-    // Force refetch ngay cả khi queryKey không đổi
-    setTimeout(() => refetch(), 50)
+    setIsSearching(true)
+    // Invalidate + chờ refetch hoàn tất → luôn gọi server
+    await queryClient.invalidateQueries({ queryKey: ['userOrders'] })
+    setIsSearching(false)
   }
 
   // Client-side filtering (status only — search đã server-side)
@@ -264,7 +267,7 @@ export default function HistoryOrderPage() {
                     ),
                     endAdornment: searchText ? (
                       <InputAdornment position='end'>
-                        <IconButton size='small' onClick={() => { setSearchText(''); setAppliedSearch(''); setPagination(prev => ({ ...prev, pageIndex: 0 })) }} sx={{ p: '2px' }}>
+                        <IconButton size='small' onClick={() => { setSearchText(''); setAppliedSearch(''); setPagination(prev => ({ ...prev, pageIndex: 0 })); queryClient.invalidateQueries({ queryKey: ['userOrders'] }) }} sx={{ p: '2px' }}>
                           <X size={14} />
                         </IconButton>
                       </InputAdornment>
@@ -291,7 +294,9 @@ export default function HistoryOrderPage() {
                   variant='contained'
                   size='small'
                   onClick={handleSearch}
-                  sx={{ height: 36, borderRadius: '8px', fontSize: '13px', textTransform: 'none', whiteSpace: 'nowrap', px: 2, background: 'var(--primary-gradient, var(--primary-hover))', '&:hover': { opacity: 0.9 } }}
+                  disabled={isSearching}
+                  startIcon={isSearching ? <Loader2 size={15} style={{ animation: 'spin 1s linear infinite' }} /> : <Search size={15} />}
+                  sx={{ height: 36, borderRadius: '8px', fontSize: '13px', textTransform: 'none', whiteSpace: 'nowrap', px: 2, background: 'var(--primary-gradient, var(--primary-hover))', '&:hover': { opacity: 0.9 }, '&.Mui-disabled': { background: 'var(--primary-gradient, var(--primary-hover))', opacity: 0.7, color: '#fff' } }}
                 >
                   Tìm kiếm
                 </Button>

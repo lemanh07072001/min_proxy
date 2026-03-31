@@ -3157,3 +3157,28 @@ Các phần dưới đây nằm ngoài scope "flow mua proxy" nhưng có thể c
 - `UsersPage` + `TableUsers`: thêm nút "Markup NCC" (icon Tags) vào cột thao tác
 
 **Files:** `ServiceFormModal.tsx`, `useUserProviderPricing.ts`, `ProviderPricingModal.tsx`, `UsersPage.tsx`, `TableUsers.tsx`
+
+### 31/03/2026
+
+#### 13.N+3 Proxy Keys pages + Search server-side + Rotate config UI
+
+**Sửa:**
+- **Proxy Keys pages (MỚI)**: user (`/proxy-keys`) + admin (`/admin/proxy-keys`) — filter, search, copy, update IP whitelist
+- **Menu**: user "Danh sách proxy", admin "Proxy Keys"
+- **BuyConfigSection**: render cả 2 tab rotating/static (display:none), giữ form data khi switch
+- **OrderDetailModal**: auto-show log panel, request payload/URL, `next_rotate_seconds`, trim trailing colons, hiện `allow_ips`
+- **ServiceFormModal**: section "Tự động xoay IP" riêng biệt (switch + dropdown preset), nhóm thông số hiển thị tách biệt, `max_ips` config
+- **ChildServiceFormModal**: dropdown preset xoay, label tiếng Việt
+- **CheckoutModal**: nhập nhiều IP (comma), validate format + max_ips
+- **History order + Admin orders**: search server-side, URL `?search=` param fill input
+
+**Files:** `ProxyKeysPage.tsx`, `AdminProxyKeysPage.tsx`, `BuyConfigSection.tsx`, `OrderDetailModal.tsx`, `ServiceFormModal.tsx`, `ChildServiceFormModal.tsx`, `CheckoutModal.tsx`, `HistoryOrderPage.tsx`, `AdminOrdersPage.tsx`, `VerticalMenu.tsx`
+
+#### 13.N+4 Fix nút Tìm kiếm + Period landing page đa ngôn ngữ
+
+**Sửa:**
+- **HistoryOrderPage**: thay `setTimeout(refetch)` bằng `queryClient.invalidateQueries` — luôn gọi server khi click. Thêm animation xoay (Loader2) + icon Search trên nút. Nút clear (X) cũng invalidate query
+- **Landing page period i18n**: `period` chuyển từ `string` sang `Record<locale, string>`. Admin form hiện 5 input per locale (VI/EN/CN/KO/JA). `ProductsSection` đọc period theo locale hiện tại, fallback vi → ''. Backward compat: data cũ (string) tự migrate sang `{ vi: value }`
+- **Type**: `useBrandingSettings.ts` thêm `period` vào `landing_pricing` type
+
+**Files:** `HistoryOrderPage.tsx`, `SiteSettingsForm.tsx`, `ProductsSection.tsx`, `useBrandingSettings.ts`
