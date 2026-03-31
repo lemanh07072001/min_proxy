@@ -80,16 +80,17 @@ export interface AdminOrdersParams {
   order_type?: number | null
   sort_by?: string
   sort_order?: string
+  search?: string
 }
 
 export const useAdminOrders = (params: AdminOrdersParams, enabled = true) => {
   const { data: session } = useSession() as any
   const axiosAuth = useAxiosAuth()
 
-  const { start, end, page = 1, per_page = 100, status, provider_id, order_type, sort_by = 'created_at', sort_order = 'desc' } = params
+  const { start, end, page = 1, per_page = 100, status, provider_id, order_type, sort_by = 'created_at', sort_order = 'desc', search } = params
 
   return useQuery({
-    queryKey: ['adminOrders', start, end, page, per_page, status, provider_id, order_type, sort_by, sort_order],
+    queryKey: ['adminOrders', start, end, page, per_page, status, provider_id, order_type, sort_by, sort_order, search],
     queryFn: async () => {
       const res = await axiosAuth.get('/order-report/detail', {
         params: {
@@ -101,7 +102,8 @@ export const useAdminOrders = (params: AdminOrdersParams, enabled = true) => {
           sort_order,
           ...(status !== null && status !== undefined ? { status } : {}),
           ...(provider_id ? { provider_id } : {}),
-          ...(order_type !== null && order_type !== undefined ? { order_type } : {})
+          ...(order_type !== null && order_type !== undefined ? { order_type } : {}),
+          ...(search ? { search } : {})
         }
       })
 

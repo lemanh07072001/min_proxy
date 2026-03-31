@@ -203,7 +203,8 @@ export default function AdminOrdersPage() {
       provider_id: providerFilter,
       order_type: orderTypeFilter,
       sort_by: sortBy,
-      sort_order: sortOrder
+      sort_order: sortOrder,
+      search: searchQuery || undefined
     },
     true
   )
