@@ -598,6 +598,7 @@ export default function ServiceFormModal({ open, onClose, serviceId, initialData
   const [purchaseOptions, setPurchaseOptions] = useState<PurchaseOption[]>([])
   const [allowCustomAuth, setAllowCustomAuth] = useState(false)
   const [requireIp, setRequireIp] = useState(false)
+  const [maxIps, setMaxIps] = useState(1)
   const [renewable, setRenewable] = useState(false)
   const [renewalDuration, setRenewalDuration] = useState('')
   const [allowExpiredRenew, setAllowExpiredRenew] = useState('')
@@ -777,6 +778,7 @@ return { values: {}, errors: formattedErrors }
       const meta = serviceData.metadata || {}
       setAllowCustomAuth(!!meta.allow_custom_auth)
       setRequireIp(!!meta.require_ip)
+      setMaxIps(meta.max_ips || 1)
       setRenewable(!!meta.renewable)
       setRenewalDuration(meta.renewal_duration || '')
       setAllowExpiredRenew(meta.allow_expired_renew != null ? String(meta.allow_expired_renew) : '')
@@ -843,6 +845,7 @@ return { values: {}, errors: formattedErrors }
       setResponseMappingRows([])
       setAllowCustomAuth(false)
       setRequireIp(false)
+      setMaxIps(1)
       setRenewable(false)
       setRenewalDuration('')
       setAllowExpiredRenew('')
@@ -914,6 +917,7 @@ return { values: {}, errors: formattedErrors }
       ...(metadata || {}),
       allow_custom_auth: allowCustomAuth,
       require_ip: requireIp || undefined,
+      max_ips: maxIps > 1 ? maxIps : undefined,
       renewable: renewable || undefined,
       renewal_duration: renewalDuration || undefined,
       allow_expired_renew: allowExpiredRenew === 'true' ? true : (allowExpiredRenew === 'false' ? false : undefined),
@@ -1558,16 +1562,22 @@ return <Chip key={val} label={p?.label || val} size='small' />
                         Bắt buộc
                       </button>
                     </div>
+                    <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 8 }}>
+                      <div style={{ fontSize: '12px', color: '#475569' }}>Số IP tối đa:</div>
+                      <select value={maxIps} onChange={e => setMaxIps(Number(e.target.value))} style={{ padding: '4px 8px', borderRadius: 6, border: '1px solid #d1d5db', fontSize: '12px' }}>
+                        {[1, 2, 3, 5, 10].map(n => <option key={n} value={n}>{n} IP</option>)}
+                      </select>
+                    </div>
                     <div style={{ padding: '8px 12px', borderRadius: 8, fontSize: '12px', border: '1px solid', background: requireIp ? '#fef2f2' : '#f0fdf4', borderColor: requireIp ? '#fecaca' : '#bbf7d0' }}>
                       {requireIp ? (
                         <div>
-                          <strong style={{ color: '#dc2626' }}>Bắt buộc:</strong> Khách phải nhập IP whitelist khi mua (API + UI)
-                          <div style={{ color: '#64748b', marginTop: 2 }}>Không nhập IP → không thể mua</div>
+                          <strong style={{ color: '#dc2626' }}>Bắt buộc:</strong> Khách phải nhập IP whitelist khi mua
+                          <div style={{ color: '#64748b', marginTop: 2 }}>Không nhập IP → không thể mua. Tối đa {maxIps} IP, cách nhau bởi dấu phẩy.</div>
                         </div>
                       ) : (
                         <div>
                           <strong style={{ color: '#166534' }}>Tùy chọn:</strong> Khách có thể nhập IP hoặc bỏ qua
-                          <div style={{ color: '#64748b', marginTop: 2 }}>IP whitelist là tùy chọn — không bắt buộc</div>
+                          <div style={{ color: '#64748b', marginTop: 2 }}>Tối đa {maxIps} IP, cách nhau bởi dấu phẩy.</div>
                         </div>
                       )}
                     </div>

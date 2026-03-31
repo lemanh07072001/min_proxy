@@ -40,6 +40,7 @@ interface CheckoutModalProps {
   timeUnit?: 'day' | 'month'
   pricePerUnit?: number
   allowCustomAuth?: boolean
+  maxIps?: number
   discountTiers?: Array<{ min: string; max: string; discount: string }>
   quantityTiers?: Array<{ min: string; max: string; discount?: string; price?: string }>
   customFields?: Array<{
@@ -70,6 +71,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({
   timeUnit = 'day',
   pricePerUnit = 0,
   allowCustomAuth = false,
+  maxIps = 1,
   discountTiers = [],
   quantityTiers = [],
   customFields
@@ -261,10 +263,25 @@ return pct > 0 ? Math.round(pct) : null
       return
     }
     // Validate IP nếu chọn ip_whitelist
-    if (showIpField && authMethod === 'ip_whitelist' && !allowIp) {
-      toast.error('Vui lòng nhập IP whitelist.')
-      isSubmitting.current = false
-      return
+    if (showIpField && authMethod === 'ip_whitelist') {
+      const ips = allowIp.split(',').map((ip: string) => ip.trim()).filter(Boolean)
+      if (ips.length === 0) {
+        toast.error('Vui lòng nhập IP whitelist.')
+        isSubmitting.current = false
+        return
+      }
+      const ipRegex = /^(\d{1,3}\.){3}\d{1,3}$/
+      const invalidIp = ips.find((ip: string) => !ipRegex.test(ip))
+      if (invalidIp) {
+        toast.error(`IP không hợp lệ: ${invalidIp}`)
+        isSubmitting.current = false
+        return
+      }
+      if (maxIps > 0 && ips.length > maxIps) {
+        toast.error(`Tối đa ${maxIps} IP`)
+        isSubmitting.current = false
+        return
+      }
     }
     // Validate required custom fields
     const missingField = customFields?.find(field => field.required && !customFieldValues[field.key || field.param || ''])
@@ -294,7 +311,7 @@ return pct > 0 ? Math.round(pct) : null
       // Auth options
       ...(customUser && { custom_user: customUser, custom_pass: customPass }),
       ...(showAuthOptions && { auth_method: authMethod }),
-      ...(showIpField && allowIp && { allow_ips: [allowIp] }),
+      ...(showIpField && allowIp && { allow_ips: allowIp.split(',').map((ip: string) => ip.trim()).filter(Boolean) }),
       ...(Object.keys(customFieldValues).length > 0 && { custom_fields: customFieldValues }),
     }
 
@@ -582,17 +599,16 @@ return (
                     IP được phép sử dụng proxy
                   </div>
                   <div style={{ fontSize: '11px', color: '#94a3b8', marginBottom: 8 }}>
-                    Chỉ thiết bị có IP này mới kết nối được. Bạn có thể thay đổi IP sau khi mua.
+                    Chỉ thiết bị có IP này mới kết nối được.{maxIps > 1 ? ` Tối đa ${maxIps} IP, cách nhau bởi dấu phẩy.` : ''}
                   </div>
                   <div>
                     <div style={{ fontSize: '10px', color: '#64748b', marginBottom: 3, fontWeight: 500 }}>Địa chỉ IP</div>
                     <input
                       type='text'
-                      placeholder='VD: 123.45.67.89'
+                      placeholder='VD: 123.45.67.89, 98.76.54.32'
                       value={allowIp}
-                      onChange={e => setAllowIp(e.target.value.replace(/[^0-9.]/g, ''))}
+                      onChange={e => setAllowIp(e.target.value.replace(/[^0-9.,\s]/g, ''))}
                       className='discount-input'
-                      maxLength={15}
                       style={{ width: '100%', padding: '8px 10px', border: '1px solid #d1d5db', borderRadius: 6, fontSize: '13px' }}
                     />
                   </div>

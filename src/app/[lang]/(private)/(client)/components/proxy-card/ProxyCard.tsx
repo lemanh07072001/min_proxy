@@ -317,6 +317,7 @@ return
         discountTiers={provider.metadata?.discount_tiers || []}
         quantityTiers={provider.metadata?.quantity_tiers || []}
         customFields={provider.metadata?.custom_fields || undefined}
+        maxIps={provider.metadata?.max_ips || 1}
       />
     </>
   )

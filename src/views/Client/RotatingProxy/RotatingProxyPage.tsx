@@ -599,6 +599,7 @@ return
         discountTiers={plan.metadata?.discount_tiers || []}
         quantityTiers={plan.metadata?.quantity_tiers || []}
         customFields={plan.metadata?.custom_fields || undefined}
+        maxIps={plan.metadata?.max_ips || 1}
       />
     </>
   )
