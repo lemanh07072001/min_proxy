@@ -1500,7 +1500,7 @@ return <Chip key={val} label={p?.label || val} size='small' />
                       }} />
                     </Box>
                   ) : (
-                    <Typography sx={{ fontSize: 13, color: '#94a3b8' }}>Tắt — khách tự xoay IP khi cần</Typography>
+                    <Typography sx={{ fontSize: 13, color: '#94a3b8' }}>Tắt — hệ thống không tự xoay IP</Typography>
                   )}
                 </Box>
               </CollapsibleSection>
