@@ -29,6 +29,7 @@ const Footer = () => {
     organization_email,
     organization_address,
     footer_text,
+    favicon,
   } = useBranding()
 
   const socialLinks = (social_links || []).filter((l: any) => l.url)
@@ -94,7 +95,11 @@ const Footer = () => {
           {/* Cột 1: Thông tin site */}
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-              <Shield size={24} color='var(--primary-hover, #ef4444)' />
+              {favicon ? (
+                <img src={favicon} alt='' style={{ width: 28, height: 28, objectFit: 'contain' }} />
+              ) : (
+                <Shield size={24} color='var(--primary-hover, #ef4444)' />
+              )}
               <span style={{ fontSize: 18, fontWeight: 700 }}>{appName || 'Proxy Service'}</span>
             </div>
             {organization_address && (

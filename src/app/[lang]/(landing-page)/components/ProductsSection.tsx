@@ -10,10 +10,14 @@ import { useTranslation } from 'react-i18next'
 
 import Link from '@components/Link'
 
+interface LandingPricingItem {
+  price?: string; originalPrice?: string; discount?: string; period?: string
+}
+
 interface LandingPricing {
-  viettel?: { price?: string; originalPrice?: string; discount?: string }
-  fpt?: { price?: string; originalPrice?: string; discount?: string }
-  vnpt?: { price?: string; originalPrice?: string; discount?: string }
+  viettel?: LandingPricingItem
+  fpt?: LandingPricingItem
+  vnpt?: LandingPricingItem
 }
 
 export default function ProductsSection({ local, landingPricing }: { local: string; landingPricing?: LandingPricing | null }) {
@@ -29,7 +33,7 @@ export default function ProductsSection({ local, landingPricing }: { local: stri
       img: '/images/softwares/viettel.png',
       price: p.viettel?.price || '18.000',
       originalPrice: p.viettel?.originalPrice || '25.000',
-      period: t('time.months'),
+      period: p.viettel?.period || '',
       discount: p.viettel?.discount || '28%',
       features: (t('landing.products.cards.viettel.features', { returnObjects: true }) as string[] || []),
       color: '#e53e3e',
@@ -43,7 +47,7 @@ export default function ProductsSection({ local, landingPricing }: { local: stri
       img: '/images/softwares/fpt.png',
       price: p.fpt?.price || '18.000',
       originalPrice: p.fpt?.originalPrice || '24.000',
-      period: t('time.months'),
+      period: p.fpt?.period || '',
       discount: p.fpt?.discount || '25%',
       features: (t('landing.products.cards.fpt.features', { returnObjects: true }) as string[] || []),
       color: '#f56500',
@@ -57,7 +61,7 @@ export default function ProductsSection({ local, landingPricing }: { local: stri
       img: '/images/softwares/vnpt.png',
       price: p.vnpt?.price || '18.000',
       originalPrice: p.vnpt?.originalPrice || '26.000',
-      period: t('time.months'),
+      period: p.vnpt?.period || '',
       discount: p.vnpt?.discount || '31%',
       features: (t('landing.products.cards.vnpt.features', { returnObjects: true }) as string[] || []),
       color: '#3182ce',
@@ -108,7 +112,7 @@ export default function ProductsSection({ local, landingPricing }: { local: stri
                     <div className='price-old'>{product.originalPrice}đ</div>
                     <div className='price-current'>
                       <span className='price-amount'>{product.price}đ</span>
-                      <span className='price-period'>/{product.period}</span>
+                      {product.period && <span className='price-period'>/{product.period}</span>}
                     </div>
                   </div>
 

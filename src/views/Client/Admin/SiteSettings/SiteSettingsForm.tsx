@@ -1930,6 +1930,20 @@ export default function SiteSettingsForm() {
                         }))}
                         sx={{ width: 100 }}
                       />
+                      <TextField
+                        size='small'
+                        label='Thời hạn'
+                        placeholder='1 tháng'
+                        value={currentVal.period || ''}
+                        onChange={e => setBranding(prev => ({
+                          ...prev,
+                          landing_pricing: {
+                            ...(prev.landing_pricing || {}),
+                            [key]: { ...(prev.landing_pricing as any)?.[key], period: e.target.value }
+                          }
+                        }))}
+                        sx={{ width: 100 }}
+                      />
                     </div>
                   )
                 })}
