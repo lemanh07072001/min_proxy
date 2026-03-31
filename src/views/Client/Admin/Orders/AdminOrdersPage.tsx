@@ -3,6 +3,7 @@
 import { useMemo, useState, useCallback } from 'react'
 
 import Image from 'next/image'
+import { useSearchParams } from 'next/navigation'
 
 import { useQueryClient } from '@tanstack/react-query'
 import { useBranding } from '@/app/contexts/BrandingContext'
@@ -145,7 +146,9 @@ export default function AdminOrdersPage() {
   const defaults = useMemo(() => getDefaults(), [])
 
   // Staged filter inputs
-  const [searchInput, setSearchInput] = useState('')
+  const searchParams = useSearchParams()
+  const urlSearch = searchParams.get('search') || ''
+  const [searchInput, setSearchInput] = useState(urlSearch)
   const [startInput, setStartInput] = useState(toInputDate(defaults.start))
   const [endInput, setEndInput] = useState(toInputDate(defaults.end))
   const [statusInput, setStatusInput] = useState<string>('')
@@ -153,7 +156,7 @@ export default function AdminOrdersPage() {
   const [orderTypeInput, setOrderTypeInput] = useState<string>('')
 
   // Applied filters
-  const [searchQuery, setSearchQuery] = useState('')
+  const [searchQuery, setSearchQuery] = useState(urlSearch)
   const [startDate, setStartDate] = useState(defaults.start)
   const [endDate, setEndDate] = useState(defaults.end)
   const [statusFilter, setStatusFilter] = useState<number | null>(null)

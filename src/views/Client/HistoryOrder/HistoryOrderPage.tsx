@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 
 import Image from 'next/image'
+import { useSearchParams } from 'next/navigation'
 
 import {
   List,
@@ -49,8 +50,10 @@ export default function HistoryOrderPage() {
   const [open, setOpen] = useState(false)
   const [selectedOrder, setSelectedOrder] = useState<any | null>(null)
   const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 })
-  const [searchText, setSearchText] = useState('')
-  const [appliedSearch, setAppliedSearch] = useState('')
+  const searchParams = useSearchParams()
+  const urlSearch = searchParams.get('search') || ''
+  const [searchText, setSearchText] = useState(urlSearch)
+  const [appliedSearch, setAppliedSearch] = useState(urlSearch)
   const [statusFilter, setStatusFilter] = useState<string>('all')
 
   const queryClient = useQueryClient()
