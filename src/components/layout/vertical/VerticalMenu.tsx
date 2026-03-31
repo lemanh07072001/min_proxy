@@ -331,8 +331,8 @@ const VerticalMenu = ({ scrollMenu }: Props) => {
           </MenuItem>
           <MenuItem
             icon={<Key size={20} strokeWidth={1.5} />}
-            {...nav('proxy-keys')}
-            href={`/${locale}/proxy-keys`}
+            {...nav('order-items')}
+            href={`/${locale}/order-items`}
           >
             Danh sách proxy
           </MenuItem>
@@ -461,8 +461,8 @@ const VerticalMenu = ({ scrollMenu }: Props) => {
             {hasPermission('admin.transactionHistory') && (
               <MenuItem
                 icon={<Key size={20} strokeWidth={1.5} />}
-                {...nav('admin/proxy-keys')}
-                href={`/${locale}/admin/proxy-keys`}
+                {...nav('admin/order-items')}
+                href={`/${locale}/admin/order-items`}
               >
                 Proxy Keys
               </MenuItem>
