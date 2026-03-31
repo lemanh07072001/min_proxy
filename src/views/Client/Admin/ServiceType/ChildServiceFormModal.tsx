@@ -1315,10 +1315,10 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
                           control={control}
                           render={({ field }) => (
                             <CustomTextField {...field} fullWidth select label='Kiểu xoay'>
-                              <MenuItem value=''><em>— Không chọn —</em></MenuItem>
-                              <MenuItem value='per_request'>Per request</MenuItem>
-                              <MenuItem value='sticky'>Sticky</MenuItem>
-                              <MenuItem value='time_based'>Time-based</MenuItem>
+                              <MenuItem value=''><em>— Chưa chọn —</em></MenuItem>
+                              <MenuItem value='per_request'>Đổi IP mỗi request</MenuItem>
+                              <MenuItem value='sticky'>Giữ IP cố định (Sticky)</MenuItem>
+                              <MenuItem value='time_based'>Đổi IP theo thời gian</MenuItem>
                             </CustomTextField>
                           )}
                         />
@@ -1327,9 +1327,32 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
                         <Controller
                           name='rotation_interval'
                           control={control}
-                          render={({ field }) => (
-                            <CustomTextField {...field} fullWidth label='Thời gian xoay' placeholder='VD: 5 phút' />
-                          )}
+                          render={({ field: { value, onChange, ...field } }) => {
+                            const presets = ['', '30', '60', '120', '300', '600', '1800', '3600']
+                            const strVal = String(value || '')
+                            const isCustom = strVal && !presets.includes(strVal)
+                            const formatSeconds = (s: number) => s >= 3600 ? (s / 3600) + ' giờ' : s >= 60 ? (s / 60) + ' phút' : s + ' giây'
+
+                            return (
+                              <CustomTextField
+                                {...field}
+                                value={strVal}
+                                onChange={(e: any) => onChange(e.target.value === '' ? '' : e.target.value)}
+                                fullWidth select
+                                label='Tự động xoay IP'
+                              >
+                                <MenuItem value=''><em>Tắt</em></MenuItem>
+                                <MenuItem value='30'>30 giây</MenuItem>
+                                <MenuItem value='60'>1 phút</MenuItem>
+                                <MenuItem value='120'>2 phút</MenuItem>
+                                <MenuItem value='300'>5 phút</MenuItem>
+                                <MenuItem value='600'>10 phút</MenuItem>
+                                <MenuItem value='1800'>30 phút</MenuItem>
+                                <MenuItem value='3600'>1 giờ</MenuItem>
+                                {isCustom && <MenuItem value={strVal}>{formatSeconds(Number(strVal))}</MenuItem>}
+                              </CustomTextField>
+                            )
+                          }}
                         />
                       </Grid2>
                       <Grid2 size={{ xs: 4 }}>
@@ -1689,7 +1712,7 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
                       <FeatureRow icon={RefreshCw} iconColor='#e53e3e' label='Kiểu xoay' value={getRotationTypeLabel(watchAll.rotation_type)} />
                     )}
                     {watchAll.type === '1' && watchAll.rotation_interval && (
-                      <FeatureRow icon={Clock} iconColor='#64748b' label='Thời gian xoay' value={watchAll.rotation_interval} />
+                      <FeatureRow icon={Clock} iconColor='#64748b' label='Tự động xoay' value={Number(watchAll.rotation_interval) >= 60 ? Math.floor(Number(watchAll.rotation_interval) / 60) + ' phút' : watchAll.rotation_interval + ' giây'} />
                     )}
                     {watchAll.type === '1' && watchAll.pool_size && (
                       <FeatureRow icon={Globe} iconColor='#0ea5e9' label='Pool size' value={watchAll.pool_size} />

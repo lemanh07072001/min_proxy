@@ -237,8 +237,8 @@ const ServicePreview = memo(function ServicePreview({ control, serviceId, priceF
   const specFeatureRows = [
     previewObj.auth_type && { label: 'Xác thực', value: convertAuthType(previewObj.auth_type) + ((previewObj.auth_type === 'userpass' || previewObj.auth_type === 'both') ? (allowCustomAuth ? ' (Tự nhập)' : ' (Random)') : ''), icon: Shield, color: 'var(--primary-hover, #f97316)' },
     previewObj.bandwidth && { label: 'Băng thông', value: previewObj.bandwidth === 'unlimited' ? 'Không giới hạn' : previewObj.bandwidth, icon: Wifi, color: '#3b82f6' },
-    watchedType === '1' && previewObj.rotation_type && { label: 'Kiểu xoay', value: previewObj.rotation_type === 'per_request' ? 'Per request' : previewObj.rotation_type === 'sticky' ? 'Sticky session' : previewObj.rotation_type === 'time_based' ? 'Time-based' : previewObj.rotation_type, icon: RefreshCw, color: '#8b5cf6' },
-    watchedType === '1' && previewObj.rotation_interval && { label: 'Thời gian xoay IP', value: previewObj.rotation_interval, icon: Clock, color: '#f59e0b' },
+    watchedType === '1' && previewObj.rotation_type && { label: 'Kiểu xoay', value: previewObj.rotation_type === 'per_request' ? 'Đổi IP mỗi request' : previewObj.rotation_type === 'sticky' ? 'Giữ IP cố định' : previewObj.rotation_type === 'time_based' ? 'Đổi IP theo thời gian' : previewObj.rotation_type, icon: RefreshCw, color: '#8b5cf6' },
+    watchedType === '1' && previewObj.rotation_interval && { label: 'Tự động xoay', value: Number(previewObj.rotation_interval) >= 3600 ? Number(previewObj.rotation_interval) / 3600 + ' giờ' : Number(previewObj.rotation_interval) >= 60 ? Math.floor(Number(previewObj.rotation_interval) / 60) + ' phút' : previewObj.rotation_interval + ' giây', icon: Clock, color: '#f59e0b' },
     watchedType === '1' && previewObj.pool_size && { label: 'Pool size', value: previewObj.pool_size, icon: Globe, color: '#06b6d4' },
     previewObj.request_limit && { label: 'Giới hạn request', value: previewObj.request_limit, icon: Zap, color: '#22c55e' },
     previewObj.concurrent_connections && { label: 'Kết nối đồng thời', value: previewObj.concurrent_connections, icon: Users, color: '#ef4444' },
@@ -1824,7 +1824,7 @@ return <Chip key={val} label={p?.label || val} size='small' />
                   />
                 </Grid2>
 
-                {/* Chỉ hiện khi type = Rotating */}
+                {/* Proxy xoay */}
                 {watchedType === '1' && (
                   <>
                     <Grid2 size={{ xs: 6, sm: 3 }}>
@@ -1833,33 +1833,54 @@ return <Chip key={val} label={p?.label || val} size='small' />
                         control={control}
                         render={({ field }) => (
                           <CustomTextField {...field} fullWidth select label='Kiểu xoay' value={field.value || ''}>
-                            <MenuItem value=''><em>—</em></MenuItem>
-                            <MenuItem value='per_request'>Per request</MenuItem>
-                            <MenuItem value='sticky'>Sticky</MenuItem>
-                            <MenuItem value='time_based'>Time-based</MenuItem>
+                            <MenuItem value=''><em>— Chưa chọn —</em></MenuItem>
+                            <MenuItem value='per_request'>Đổi IP mỗi request</MenuItem>
+                            <MenuItem value='sticky'>Giữ IP cố định (Sticky)</MenuItem>
+                            <MenuItem value='time_based'>Đổi IP theo thời gian</MenuItem>
                           </CustomTextField>
                         )}
                       />
                     </Grid2>
 
-                    {watchedRotationType && watchedRotationType !== 'per_request' && (
-                      <Grid2 size={{ xs: 6, sm: 3 }}>
-                        <Controller
-                          name='rotation_interval'
-                          control={control}
-                          render={({ field }) => (
-                            <CustomTextField {...field} fullWidth label={watchedRotationType === 'sticky' ? 'Giữ IP' : 'Xoay'} placeholder='10 phút' />
-                          )}
-                        />
-                      </Grid2>
-                    )}
+                    <Grid2 size={{ xs: 6, sm: 3 }}>
+                      <Controller
+                        name='rotation_interval'
+                        control={control}
+                        render={({ field: { value, onChange, ...field } }) => {
+                          const presets = ['', '30', '60', '120', '300', '600', '1800', '3600']
+                          const strVal = String(value || '')
+                          const isCustom = strVal && !presets.includes(strVal)
+                          const formatSeconds = (s: number) => s >= 3600 ? (s / 3600) + ' giờ' : s >= 60 ? (s / 60) + ' phút' : s + ' giây'
+
+                          return (
+                            <CustomTextField
+                              {...field}
+                              value={strVal}
+                              onChange={(e: any) => onChange(e.target.value === '' ? '' : e.target.value)}
+                              fullWidth select
+                              label='Tự động xoay IP'
+                            >
+                              <MenuItem value=''><em>Tắt</em></MenuItem>
+                              <MenuItem value='30'>30 giây</MenuItem>
+                              <MenuItem value='60'>1 phút</MenuItem>
+                              <MenuItem value='120'>2 phút</MenuItem>
+                              <MenuItem value='300'>5 phút</MenuItem>
+                              <MenuItem value='600'>10 phút</MenuItem>
+                              <MenuItem value='1800'>30 phút</MenuItem>
+                              <MenuItem value='3600'>1 giờ</MenuItem>
+                              {isCustom && <MenuItem value={strVal}>{formatSeconds(Number(strVal))}</MenuItem>}
+                            </CustomTextField>
+                          )
+                        }}
+                      />
+                    </Grid2>
 
                     <Grid2 size={{ xs: 6, sm: 3 }}>
                       <Controller
                         name='pool_size'
                         control={control}
                         render={({ field }) => (
-                          <CustomTextField {...field} fullWidth label='Pool size' placeholder='10K+' />
+                          <CustomTextField {...field} fullWidth label='Pool size' placeholder='VD: 10K+' />
                         )}
                       />
                     </Grid2>

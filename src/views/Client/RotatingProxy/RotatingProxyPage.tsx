@@ -511,7 +511,7 @@ return
             <StaticFeatureRow feature={{ label: 'Kiểu xoay', value: plan.rotation_type === 'per_request' ? 'Per request' : plan.rotation_type === 'sticky' ? 'Sticky session' : plan.rotation_type === 'time_based' ? 'Time-based' : plan.rotation_type, icon: RefreshCw, iconColor: '#8b5cf6' }} />
           )}
           {plan?.rotation_interval && (
-            <StaticFeatureRow feature={{ label: 'Thời gian xoay IP', value: plan.rotation_interval, icon: Clock, iconColor: '#f59e0b' }} />
+            <StaticFeatureRow feature={{ label: 'Chu kỳ xoay', value: Number(plan.rotation_interval) >= 60 ? Math.floor(Number(plan.rotation_interval) / 60) + ' phút' : plan.rotation_interval + ' giây', icon: Clock, iconColor: '#f59e0b' }} />
           )}
           {plan?.pool_size && (
             <StaticFeatureRow feature={{ label: 'Pool size', value: plan.pool_size, icon: Globe, iconColor: '#06b6d4' }} />
