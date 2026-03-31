@@ -334,7 +334,7 @@ const VerticalMenu = ({ scrollMenu }: Props) => {
             {...nav('proxy-keys')}
             href={`/${locale}/proxy-keys`}
           >
-            Proxy của tôi
+            Danh sách proxy
           </MenuItem>
         </MenuSection>
 

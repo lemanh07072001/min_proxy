@@ -42,7 +42,7 @@ export default function ProxyKeysPage() {
   return (
     <Box sx={{ p: 3, maxWidth: 1200, mx: 'auto' }}>
       <Typography variant='h5' sx={{ fontWeight: 700, mb: 3, display: 'flex', alignItems: 'center', gap: 1 }}>
-        <Key size={22} /> Proxy của tôi
+        <Key size={22} /> Danh sách proxy
       </Typography>
 
       {/* Filters */}
