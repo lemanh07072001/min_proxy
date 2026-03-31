@@ -316,6 +316,36 @@ return pct > 0 ? Math.round(pct) : null
           </button>
         </div>
 
+        {/* Floating banner — nổi trên cùng body, click tắt */}
+        {apiError && !purchaseSuccess && (
+          <div
+            onClick={() => setApiError('')}
+            style={{
+              position: 'sticky', top: 0, zIndex: 10, cursor: 'pointer',
+              padding: '10px 14px', background: '#fef2f2', borderBottom: '1px solid #fecaca',
+              fontSize: '13px', color: '#dc2626', display: 'flex', alignItems: 'center', gap: 8,
+            }}
+          >
+            <AlertTriangle size={16} style={{ flexShrink: 0 }} />
+            <span style={{ flex: 1 }}>{apiError}</span>
+            <X size={14} style={{ flexShrink: 0, color: '#94a3b8' }} />
+          </div>
+        )}
+        {purchaseSuccess && (
+          <div
+            onClick={() => setPurchaseSuccess(false)}
+            style={{
+              position: 'sticky', top: 0, zIndex: 10, cursor: 'pointer',
+              padding: '10px 14px', background: '#f0fdf4', borderBottom: '1px solid #bbf7d0',
+              fontSize: '13px', color: '#16a34a', display: 'flex', alignItems: 'center', gap: 8,
+            }}
+          >
+            <CheckCircle size={16} style={{ flexShrink: 0 }} />
+            <span style={{ flex: 1 }}>Mua proxy thành công!</span>
+            <X size={14} style={{ flexShrink: 0, color: '#94a3b8' }} />
+          </div>
+        )}
+
         <div className='checkout-body'>
           <p className='checkout-product-name'>{productName} <span style={{ fontSize: '12px', fontWeight: 500, color: '#94a3b8' }}>#{serviceTypeId}</span></p>
 
