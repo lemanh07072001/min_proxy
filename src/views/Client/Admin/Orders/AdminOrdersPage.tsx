@@ -840,7 +840,7 @@ return {
                     </MenuItem>
                     {providers.map((p: any) => (
                       <MenuItem key={p.id} value={String(p.id)}>
-                        {p.name}
+                        {p.title}
                       </MenuItem>
                     ))}
                   </CustomTextField>
