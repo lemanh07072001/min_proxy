@@ -19,6 +19,8 @@ import {
   Loader
 } from 'lucide-react'
 
+import { extractProxyValue, extractProtocol } from '@/utils/protocolProxy'
+
 import Button from '@mui/material/Button'
 
 import {
@@ -142,10 +144,10 @@ export default function OrderProxyPage() {
         accessorKey: 'provider',
         header: 'Nhà mạng',
         cell: ({ row }) => {
-          const proxys = row.original.proxys || {} // fallback nếu null
-          const loaiproxy = proxys.loaiproxy || '-' // fallback nếu không tồn tại
+          const proxys = row.original.proxys || {}
+          const protocol = extractProtocol(proxys) || '-'
 
-          return <span className='text-red'>{loaiproxy}</span>
+          return <span className='text-red'>{protocol}</span>
         },
         size: 140
       },
@@ -154,18 +156,15 @@ export default function OrderProxyPage() {
         header: 'Proxy',
         cell: ({ row }) => {
           const proxys = row.original.proxys || {}
-
-          const proxyValues = Object.entries(proxys)
-            .filter(([key]) => key !== 'loaiproxy')
-            .map(([_, value]) => value)
+          const proxyValue = extractProxyValue(proxys)
 
           return (
             <div className='proxy-cell'>
               <span className='proxy-label'>
-                {proxyValues[0] || <Loader className='animate-spin text-gray-400' size={18} />}
+                {proxyValue || <Loader className='animate-spin text-gray-400' size={18} />}
               </span>
-              {proxyValues[0] && (
-                <button className='icon-button' onClick={() => copy(proxyValues[0])}>
+              {proxyValue && (
+                <button className='icon-button' onClick={() => copy(proxyValue)}>
                   <Copy size={14} />
                 </button>
               )}
@@ -178,10 +177,10 @@ export default function OrderProxyPage() {
         accessorKey: 'protocol',
         header: 'Loại',
         cell: ({ row }) => {
-          const proxys = row.original.proxys || {} // nếu null hoặc undefined, fallback thành {}
-          const keys = Object.keys(proxys)
+          const proxys = row.original.proxys || {}
+          const protocol = extractProtocol(proxys)
 
-          return <div className='font-bold'>{keys[0]?.toUpperCase() || '-'}</div>
+          return <div className='font-bold'>{protocol || '-'}</div>
         },
         size: 80
       },

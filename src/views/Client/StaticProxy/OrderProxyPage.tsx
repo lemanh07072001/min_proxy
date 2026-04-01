@@ -6,6 +6,8 @@ import Image from 'next/image'
 
 import { Copy, CircleQuestionMark, BadgeCheck, BadgeMinus, Clock, Clock3, List, Download, Loader } from 'lucide-react'
 
+import { extractProxyValue, extractProtocol } from '@/utils/protocolProxy'
+
 import Button from '@mui/material/Button'
 
 import {
@@ -266,10 +268,10 @@ export default function OrderProxyPage() {
         accessorKey: 'provider',
         header: 'Nhà mạng',
         cell: ({ row }: { row: any }) => {
-          const proxys = row.original.proxys || {} // fallback nếu null
-          const loaiproxy = (proxys as any).loaiproxy || <Loader className='animate-spin text-gray-400' size={18} />
+          const proxys = row.original.proxys || {}
+          const protocol = extractProtocol(proxys)
 
-          return <span className='text-red'>{loaiproxy}</span>
+          return <span className='text-red'>{protocol || <Loader className='animate-spin text-gray-400' size={18} />}</span>
         },
         size: 140
       },
@@ -278,14 +280,9 @@ export default function OrderProxyPage() {
         header: 'Proxy',
         cell: ({ row }: { row: any }) => {
           const proxys = row.original.proxys || {}
+          const proxyValue = extractProxyValue(proxys)
 
-          const proxyValues = Object.entries(proxys)
-            .filter(([key]) => key !== 'loaiproxy')
-            .map(([_, value]) => value)
-
-          const firstProxy = proxyValues[0] as string | undefined
-
-          if (!firstProxy) {
+          if (!proxyValue) {
             return (
               <div className='flex items-center gap-1 text-gray-500'>
                 <Loader className='animate-spin text-gray-400' size={16} />
@@ -296,10 +293,10 @@ export default function OrderProxyPage() {
 
           return (
             <div className='proxy-cell flex items-center gap-1'>
-              <span className='proxy-label text-red-600'>{firstProxy}</span>
+              <span className='proxy-label text-red-600'>{proxyValue}</span>
               <button
                 className='icon-button hover:text-blue-500 transition'
-                onClick={() => copy(firstProxy)}
+                onClick={() => copy(proxyValue)}
                 title='Sao chép proxy'
               >
                 <Copy size={14} />
@@ -313,10 +310,10 @@ export default function OrderProxyPage() {
         accessorKey: 'protocol',
         header: 'Loại',
         cell: ({ row }: { row: any }) => {
-          const proxys = row.original.proxys || {} // nếu null hoặc undefined, fallback thành {}
-          const keys = Object.keys(proxys)
+          const proxys = row.original.proxys || {}
+          const protocol = extractProtocol(proxys)
 
-          return <div className='font-bold'>{keys[0]?.toUpperCase() || '-'}</div>
+          return <div className='font-bold'>{protocol || '-'}</div>
         },
         size: 80
       },
@@ -398,14 +395,10 @@ export default function OrderProxyPage() {
     return selectedRows.map(row => {
       const proxys = row.original.proxys || {}
 
-      const proxyValues = Object.entries(proxys)
-        .filter(([key]) => key !== 'loaiproxy')
-        .map(([_, value]) => value)
-
       return {
         id: row.original.id,
-        proxy: proxyValues[0] || '-',
-        provider: (proxys as any).loaiproxy || '-',
+        proxy: extractProxyValue(proxys) || '-',
+        provider: extractProtocol(proxys) || '-',
         status: row.original.status
       }
     })

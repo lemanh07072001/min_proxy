@@ -13,6 +13,8 @@ import {
   Chip,
   IconButton
 } from '@mui/material'
+
+import { extractProxyValue, extractProtocol } from '@/utils/protocolProxy'
 import { X, Copy, Clock, Clock3 } from 'lucide-react'
 
 import { formatDateTimeLocal } from '@/utils/formatDate'
@@ -88,162 +90,51 @@ const ProxyDetailModal: React.FC<ProxyDetailModalProps> = ({ open, onClose, prox
                 </Button>
               </Box>
 
-              {/* HTTP Proxy */}
-              {proxy.proxys?.http && (
-                <Box sx={{ mb: 2 }}>
-                  <Typography variant='body2' color='text.secondary' sx={{ mb: 1 }}>
-                    HTTP Proxy:
-                  </Typography>
-                  <Box
-                    sx={{
-                      p: 2,
-                      bgcolor: 'grey.50',
-                      borderRadius: 1,
-                      border: '1px solid',
-                      borderColor: 'grey.300'
-                    }}
-                  >
-                    <div className='flex items-center gap-2'>
-                      <Typography
-                        variant='body1'
-                        sx={{
-                          flex: 1,
-                          fontFamily: 'monospace',
-                          wordBreak: 'break-all',
-                          fontSize: '0.9rem'
-                        }}
-                      >
-                        {proxy.proxys.http}
-                      </Typography>
-                      <Button
-                        variant='outlined'
-                        size='small'
-                        startIcon={<Copy size={14} />}
-                        onClick={() => copy(proxy.proxys.http, 'Đã copy HTTP proxy!')}
-                      >
-                        Copy
-                      </Button>
-                    </div>
-                  </Box>
-                </Box>
-              )}
+              {/* Proxy Value */}
+              {(() => {
+                const proxys = proxy.proxys || proxy
+                const proxyValue = extractProxyValue(proxys)
+                const protocol = extractProtocol(proxys) || proxy.protocol?.toUpperCase() || 'HTTP'
 
-              {/* SOCKS5 Proxy */}
-              {proxy.proxys?.socks5 && (
-                <Box sx={{ mb: 2 }}>
-                  <Typography variant='body2' color='text.secondary' sx={{ mb: 1 }}>
-                    SOCKS5 Proxy:
-                  </Typography>
-                  <Box
-                    sx={{
-                      p: 2,
-                      bgcolor: 'grey.50',
-                      borderRadius: 1,
-                      border: '1px solid',
-                      borderColor: 'grey.300'
-                    }}
-                  >
-                    <div className='flex items-center gap-2'>
-                      <Typography
-                        variant='body1'
-                        sx={{
-                          flex: 1,
-                          fontFamily: 'monospace',
-                          wordBreak: 'break-all',
-                          fontSize: '0.9rem'
-                        }}
-                      >
-                        {proxy.proxys.socks5}
-                      </Typography>
-                      <Button
-                        variant='outlined'
-                        size='small'
-                        startIcon={<Copy size={14} />}
-                        onClick={() => copy(proxy.proxys.socks5, 'Đã copy SOCKS5 proxy!')}
-                      >
-                        Copy
-                      </Button>
-                    </div>
+                return proxyValue ? (
+                  <Box sx={{ mb: 2 }}>
+                    <Typography variant='body2' color='text.secondary' sx={{ mb: 1 }}>
+                      {protocol} Proxy:
+                    </Typography>
+                    <Box
+                      sx={{
+                        p: 2,
+                        bgcolor: 'grey.50',
+                        borderRadius: 1,
+                        border: '1px solid',
+                        borderColor: 'grey.300'
+                      }}
+                    >
+                      <div className='flex items-center gap-2'>
+                        <Typography
+                          variant='body1'
+                          sx={{
+                            flex: 1,
+                            fontFamily: 'monospace',
+                            wordBreak: 'break-all',
+                            fontSize: '0.9rem'
+                          }}
+                        >
+                          {proxyValue}
+                        </Typography>
+                        <Button
+                          variant='outlined'
+                          size='small'
+                          startIcon={<Copy size={14} />}
+                          onClick={() => copy(proxyValue, `Đã copy ${protocol} proxy!`)}
+                        >
+                          Copy
+                        </Button>
+                      </div>
+                    </Box>
                   </Box>
-                </Box>
-              )}
-
-              {/* Demo Proxy Information */}
-              {!proxy.proxys?.http && !proxy.proxys?.socks5 && (
-                <Box sx={{ mb: 2 }}>
-                  <Typography variant='body2' color='text.secondary' sx={{ mb: 1 }}>
-                    HTTP Proxy:
-                  </Typography>
-                  <Box
-                    sx={{
-                      p: 2,
-                      bgcolor: 'grey.50',
-                      borderRadius: 1,
-                      border: '1px solid',
-                      borderColor: 'grey.300',
-                      mb: 2
-                    }}
-                  >
-                    <div className='flex items-center gap-2'>
-                      <Typography
-                        variant='body1'
-                        sx={{
-                          flex: 1,
-                          fontFamily: 'monospace',
-                          wordBreak: 'break-all',
-                          fontSize: '0.9rem'
-                        }}
-                      >
-                        {proxy.http}
-                      </Typography>
-                      <Button
-                        variant='outlined'
-                        size='small'
-                        startIcon={<Copy size={14} />}
-                        onClick={() => copy(proxy.http, 'Đã copy HTTP proxy!')}
-                      >
-                        Copy
-                      </Button>
-                    </div>
-                  </Box>
-
-                  <Typography variant='body2' color='text.secondary' sx={{ mb: 1 }}>
-                    SOCKS5 Proxy:
-                  </Typography>
-                  <Box
-                    sx={{
-                      p: 2,
-                      bgcolor: 'grey.50',
-                      borderRadius: 1,
-                      border: '1px solid',
-                      borderColor: 'grey.300',
-                      mb: 2
-                    }}
-                  >
-                    <div className='flex items-center gap-2'>
-                      <Typography
-                        variant='body1'
-                        sx={{
-                          flex: 1,
-                          fontFamily: 'monospace',
-                          wordBreak: 'break-all',
-                          fontSize: '0.9rem'
-                        }}
-                      >
-                        {proxy.socks5}
-                      </Typography>
-                      <Button
-                        variant='outlined'
-                        size='small'
-                        startIcon={<Copy size={14} />}
-                        onClick={() => copy(proxy.socks5, 'Đã copy SOCKS5 proxy!')}
-                      >
-                        Copy
-                      </Button>
-                    </div>
-                  </Box>
-                </Box>
-              )}
+                ) : null
+              })()}
 
               {/* No proxy data */}
               {!proxy && !proxy.http && !proxy.socks5 && (

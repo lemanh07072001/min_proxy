@@ -37,6 +37,8 @@ import {
 } from 'lucide-react'
 
 import { RefreshCw, Loader, AlertTriangle, ChevronDown, ChevronRight, Undo2 } from 'lucide-react'
+
+import { extractProxyValue, getProxyString as getProxyStringUtil } from '@/utils/protocolProxy'
 import { toast } from 'react-toastify'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -140,12 +142,7 @@ return days > 0 ? `${days}d ${hours}h` : `${hours}h`
         cell: ({ row }: { row: any }) => {
           if (order?.service_type === '0') {
             const proxys = row.original.proxy || row.original.proxys || {}
-
-            const proxyValues = Object.entries(proxys)
-              .filter(([key]) => key !== 'loaiproxy')
-              .map(([_, value]) => value)
-
-            const firstProxy = String(proxyValues[0] || '-')
+            const firstProxy = extractProxyValue(proxys) || '-'
 
             return (
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontFamily: 'monospace', fontSize: '12px' }}>
@@ -226,10 +223,8 @@ return days > 0 ? `${days}d ${hours}h` : `${hours}h`
     const texts = selectedRows.map((row: any) => {
       if (order?.service_type === '0') {
         const proxys = row.original.proxy || row.original.proxys || {}
-        const vals = Object.entries(proxys).filter(([k]) => k !== 'loaiproxy').map(([_, v]) => v)
 
-
-return String(vals[0] || '')
+return extractProxyValue(proxys)
       }
 
 
@@ -248,10 +243,7 @@ return row.original?.key || row.original?.api_key || ''
   }
 
   const getProxyString = (item: any, protocol: 'http' | 'socks5') => {
-    const p = item.proxy || item.proxys
-    if (!p || typeof p !== 'object') return item.key || item.api_key || ''
-    if (protocol === 'socks5') return p.socks5 || p.SOCKS5 || p.http || p.HTTP || ''
-    return p.http || p.HTTP || p.socks5 || p.SOCKS5 || ''
+    return getProxyStringUtil(item, protocol)
   }
 
   const handleExport = () => {

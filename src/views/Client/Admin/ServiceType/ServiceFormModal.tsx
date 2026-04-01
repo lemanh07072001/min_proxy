@@ -1784,7 +1784,7 @@ return <Chip key={val} label={p?.label || val} size='small' />
                                               </Grid2>
                                               {(row.source === 'orders' || row.source === 'order_items') && (
                                                 <Grid2 size={{ xs: 12, sm: 6 }}>
-                                                  <CustomTextField size='small' fullWidth label='Field trong DB' placeholder='provider_item_id, proxy.loaiproxy'
+                                                  <CustomTextField size='small' fullWidth label='Field trong DB' placeholder='provider_item_id, proxy.protocol'
                                                     value={row.field || ''} onChange={e => {
                                                       const next = [...renewOverrideParams]; next[i] = { ...next[i], field: e.target.value }; setRenewOverrideParams(next)
                                                     }} />

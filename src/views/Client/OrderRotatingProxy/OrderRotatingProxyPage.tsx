@@ -19,6 +19,8 @@ import {
   Loader
 } from 'lucide-react'
 
+import { extractProtocol } from '@/utils/protocolProxy'
+
 import Button from '@mui/material/Button'
 
 import {
@@ -118,10 +120,9 @@ export default function OrderRotatingProxyPage() {
     if (typeFilter !== 'all') {
       filtered = filtered.filter((item: any) => {
         const proxys = item.proxy || item.proxys || {}
-        const keys = Object.keys(proxys)
-        const firstKey = keys[0]?.toLowerCase()
+        const protocol = extractProtocol(proxys).toLowerCase()
 
-        return firstKey === typeFilter.toLowerCase()
+        return protocol === typeFilter.toLowerCase()
       })
     }
 

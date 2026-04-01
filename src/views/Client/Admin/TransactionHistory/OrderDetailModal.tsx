@@ -26,6 +26,7 @@ import {
   Eye
 } from 'lucide-react'
 
+import { extractProxyValue, extractProtocol } from '@/utils/protocolProxy'
 import { useReactTable, getCoreRowModel, flexRender, getPaginationRowModel } from '@tanstack/react-table'
 import Dialog from '@mui/material/Dialog'
 import Tabs from '@mui/material/Tabs'
@@ -108,8 +109,8 @@ export default function OrderDetailModal({ isOpen, onClose, orderData, isLoading
   const getProxyText = (item: any) => {
     const p = item.proxy || item.proxys
     if (p && typeof p === 'object') {
-      const raw = p.http || p.HTTP || p.socks5 || p.SOCKS5 || ''
-      return raw.replace(/:+$/, '') || '-' // cắt trailing colons (ip:port:: → ip:port)
+      const raw = extractProxyValue(p)
+      return raw.replace(/:+$/, '') || '-'
     }
     return p || '-'
   }
@@ -195,7 +196,7 @@ export default function OrderDetailModal({ isOpen, onClose, orderData, isLoading
         cell: ({ row }: { row: any }) => {
           const proxys = row.original.proxy || row.original.proxys
           const text = getProxyText(row.original)
-          const protocol = row.original.protocol || proxys?.loaiproxy || '-'
+          const protocol = row.original.protocol || extractProtocol(proxys) || '-'
           const allowIps = row.original.allow_ips
           return (
             <div style={{ fontSize: '11px' }}>
@@ -762,8 +763,8 @@ function ItemDetailPanel({ item }: { item: any }) {
 
   const startEdit = () => {
     const proxy = item.proxy || item.proxys || {}
-    const http = proxy.http || proxy.HTTP || ''
-    setProxyStr(http)
+    const proxyValue = extractProxyValue(proxy)
+    setProxyStr(proxyValue)
     setProvKey(item.provider_key || '')
     setEditing(true)
   }

@@ -107,7 +107,7 @@ function RenewParamRow({
             )} />
             {fieldValue === '__custom' && (
               <Controller name={`renew.renew_params.${index}.field` as any} control={control} render={({ field }) => (
-                <CustomTextField {...field} size='small' fullWidth placeholder='proxy.loaiproxy' sx={{ mt: 1 }} />
+                <CustomTextField {...field} size='small' fullWidth placeholder='proxy.protocol' sx={{ mt: 1 }} />
               )} />
             )}
           </Grid2>
