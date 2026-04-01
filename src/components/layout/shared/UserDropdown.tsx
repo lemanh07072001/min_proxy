@@ -116,9 +116,10 @@ const UserDropdown = () => {
         sx={{
           display: 'flex',
           alignItems: 'center',
-          gap: { xs: '6px', lg: '8px' },
+          gap: { xs: '5px', lg: '8px' },
           cursor: 'pointer',
-          padding: { xs: '3px 10px 3px 3px', lg: '4px 10px 4px 4px' },
+          padding: { xs: '2px 8px 2px 2px', lg: '4px 10px 4px 4px' },
+          height: { xs: 32, lg: 'auto' },
           borderRadius: '50px',
           bgcolor: open ? `${primaryHover}18` : `${primaryHover}08`,
           border: '1.5px solid',
@@ -130,15 +131,15 @@ const UserDropdown = () => {
           },
         }}
       >
-        {/* Avatar với online badge */}
+        {/* Avatar */}
         <Box sx={{ position: 'relative', flexShrink: 0 }}>
           <Avatar
             alt={userName}
             src={userAvatar}
             sx={{
-              width: { xs: 28, lg: 34 },
-              height: { xs: 28, lg: 34 },
-              fontSize: { xs: '0.7rem', lg: '0.85rem' },
+              width: { xs: 24, lg: 34 },
+              height: { xs: 24, lg: 34 },
+              fontSize: { xs: '0.6rem', lg: '0.85rem' },
               fontWeight: 700,
               bgcolor: primaryHover,
               color: '#fff',
@@ -151,18 +152,18 @@ const UserDropdown = () => {
               position: 'absolute',
               bottom: -1,
               right: -1,
-              width: 9,
-              height: 9,
+              width: { xs: 7, lg: 9 },
+              height: { xs: 7, lg: 9 },
               bgcolor: '#22c55e',
               borderRadius: '50%',
-              border: '2px solid',
+              border: '1.5px solid',
               borderColor: 'background.paper',
             }}
           />
         </Box>
 
         {/* Mobile: tên ngắn */}
-        <Typography sx={{ display: { xs: 'block', lg: 'none' }, fontSize: '0.7rem', fontWeight: 600, color: 'text.primary', maxWidth: 60, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        <Typography sx={{ display: { xs: 'block', lg: 'none' }, fontSize: '0.7rem', fontWeight: 600, color: 'text.primary', maxWidth: 55, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', lineHeight: 1.2 }}>
           {userName.split(' ').pop()}
         </Typography>
 

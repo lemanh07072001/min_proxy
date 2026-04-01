@@ -94,15 +94,18 @@ const LanguageDropdown = () => {
 
   return (
     <>
-      <IconButton
+      <Box
         ref={anchorRef}
         onClick={handleToggle}
         sx={{
-          width: 38,
-          height: 38,
-          borderRadius: '50%',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '4px',
+          height: 32,
+          borderRadius: '50px',
           border: `1.5px solid ${primaryHover}30`,
-          padding: 0,
+          padding: '4px 10px',
+          cursor: 'pointer',
           transition: 'all 0.2s ease',
           '&:hover': {
             borderColor: `${primaryHover}70`,
@@ -111,17 +114,22 @@ const LanguageDropdown = () => {
         }}
       >
         {currentLanguage ? (
-          <Image
-            src={currentLanguage.flag}
-            alt={currentLanguage.langName}
-            width={24}
-            height={24}
-            className='rounded-full'
-          />
+          <>
+            <Image
+              src={currentLanguage.flag}
+              alt={currentLanguage.langName}
+              width={18}
+              height={18}
+              className='rounded-full'
+            />
+            <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#334155', textTransform: 'uppercase' }}>
+              {currentLanguage.langCode}
+            </span>
+          </>
         ) : (
           <i className='tabler-language' />
         )}
-      </IconButton>
+      </Box>
       <Popper
         open={open}
         transition
