@@ -82,58 +82,52 @@ const Footer = () => {
       </div>
 
       {/* Footer content */}
-      <div style={{ padding: '48px 24px', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-        <div
-          style={{
-            maxWidth: 1140,
-            margin: '0 auto',
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-            gap: 32
-          }}
-        >
-          {/* Cột 1: Thông tin site */}
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-              {favicon ? (
-                <img src={favicon} alt='' style={{ width: 28, height: 28, objectFit: 'contain' }} />
-              ) : (
-                <Shield size={24} color='var(--primary-hover, #ef4444)' />
-              )}
-              <span style={{ fontSize: 18, fontWeight: 700 }}>{appName || 'Proxy Service'}</span>
-            </div>
-            {organization_address && (
-              <p style={{ ...linkStyle, marginBottom: 6 }}>📍 {organization_address}</p>
+      <div style={{ padding: '40px 20px', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+        <div style={{ maxWidth: 1140, margin: '0 auto' }}>
+          {/* Thông tin site — full width */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+            {favicon ? (
+              <img src={favicon} alt='' style={{ width: 24, height: 24, objectFit: 'contain' }} />
+            ) : (
+              <Shield size={20} color='var(--primary-hover, #ef4444)' />
             )}
-            {organization_phone && (
-              <p style={{ ...linkStyle, marginBottom: 6 }}>📞 {organization_phone}</p>
-            )}
-            {organization_email && (
-              <p style={{ ...linkStyle, marginBottom: 6 }}>✉️ {organization_email}</p>
-            )}
+            <span style={{ fontSize: 16, fontWeight: 700 }}>{appName || 'Proxy Service'}</span>
+          </div>
+          <div style={{ marginBottom: 24, fontSize: 13, lineHeight: 1.8, color: 'rgba(255,255,255,0.6)' }}>
+            {organization_address && <span>📍 {organization_address}</span>}
+            {organization_phone && <span style={{ marginLeft: organization_address ? 16 : 0 }}>📞 {organization_phone}</span>}
+            {organization_email && <span style={{ marginLeft: 16 }}>✉️ {organization_email}</span>}
           </div>
 
-          {/* Cột 2: Sản phẩm */}
-          <div>
-            <h4 style={{ fontSize: 16, fontWeight: 600, marginBottom: 16, color: 'white' }}>Sản phẩm</h4>
-            <Link href={`/${locale}/proxy-tinh`} style={linkStyle}>Proxy tĩnh</Link>
-            <Link href={`/${locale}/proxy-xoay`} style={linkStyle}>Proxy xoay</Link>
-            <Link href={`/${locale}/recharge`} style={linkStyle}>Nạp tiền</Link>
-            <Link href={`/${locale}/api-docs`} style={linkStyle}>API Docs</Link>
-          </div>
-
-          {/* Cột 3: Hỗ trợ */}
-          <div>
-            <h4 style={{ fontSize: 16, fontWeight: 600, marginBottom: 16, color: 'white' }}>Hỗ trợ</h4>
-            <Link href={`/${locale}/support-tickets`} style={linkStyle}>Ticket hỗ trợ</Link>
-            <Link href={`/${locale}/contact`} style={linkStyle}>Liên hệ</Link>
-          </div>
-
-          {/* Cột 4: Mạng xã hội — lấy từ settings */}
-          {socialLinks.length > 0 && (
+          {/* Grid: Sản phẩm + Hỗ trợ + Kết nối — mobile 2 cột */}
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
+              gap: 24
+            }}
+          >
+            {/* Sản phẩm */}
             <div>
-              <h4 style={{ fontSize: 16, fontWeight: 600, marginBottom: 16, color: 'white' }}>Kết nối</h4>
-              <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+              <h4 style={{ fontSize: 14, fontWeight: 600, marginBottom: 12, color: 'white' }}>Sản phẩm</h4>
+              <Link href={`/${locale}/proxy-tinh`} style={linkStyle}>Proxy tĩnh</Link>
+              <Link href={`/${locale}/proxy-xoay`} style={linkStyle}>Proxy xoay</Link>
+              <Link href={`/${locale}/recharge`} style={linkStyle}>Nạp tiền</Link>
+              <Link href={`/${locale}/api-docs`} style={linkStyle}>API Docs</Link>
+            </div>
+
+            {/* Hỗ trợ */}
+            <div>
+              <h4 style={{ fontSize: 14, fontWeight: 600, marginBottom: 12, color: 'white' }}>Hỗ trợ</h4>
+              <Link href={`/${locale}/support-tickets`} style={linkStyle}>Ticket hỗ trợ</Link>
+              <Link href={`/${locale}/contact`} style={linkStyle}>Liên hệ</Link>
+            </div>
+
+            {/* Mạng xã hội */}
+            {socialLinks.length > 0 && (
+              <div>
+                <h4 style={{ fontSize: 14, fontWeight: 600, marginBottom: 12, color: 'white' }}>Kết nối</h4>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                 {socialLinks.map((link: any, i: number) => {
                   const SvgIcon = SOCIAL_ICON_MAP[link.platform]
 
@@ -161,11 +155,12 @@ const Footer = () => {
               </div>
             </div>
           )}
+          </div>
         </div>
       </div>
 
       {/* Bottom */}
-      <div style={{ padding: '16px 24px', textAlign: 'center', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+      <div style={{ padding: '16px 20px', textAlign: 'center', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
         <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)' }}>
           {footer_text || `© ${new Date().getFullYear()} ${appName || 'Proxy Service'}. All rights reserved.`}
         </div>

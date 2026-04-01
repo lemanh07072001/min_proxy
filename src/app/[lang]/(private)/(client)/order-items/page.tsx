@@ -63,37 +63,40 @@ export default function ProxyKeysPage() {
 
   return (
     <Box sx={{ p: { xs: 1.5, sm: 3 }, maxWidth: 1200, mx: 'auto' }}>
-      {/* Header + Filter — compact */}
+      {/* Header + Filter */}
       <Card variant='outlined' sx={{ mb: 2, borderColor: '#e2e8f0', overflow: 'hidden' }}>
-        {/* Title row */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 2, pt: 1.5, pb: 1 }}>
+        {/* Title */}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 2, pt: 1.5, pb: 0.5 }}>
           <Key size={17} color='#6366f1' />
           <Typography sx={{ fontWeight: 700, fontSize: '15px', color: '#1e293b' }}>Danh sách proxy</Typography>
         </Box>
-        {/* Filters row — wrap */}
-        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center', px: 2, pb: 1.5 }}>
-          <CustomTextField select value={type} onChange={e => setType(e.target.value)} size='small' sx={{ minWidth: 90, flex: '0 0 auto' }}>
-            <MenuItem value=''>Tất cả loại</MenuItem>
+        {/* Row 1: Loại + Trạng thái */}
+        <Box sx={{ display: 'flex', gap: 1, px: 2, pb: 1 }}>
+          <CustomTextField select value={type} onChange={e => setType(e.target.value)} size='small' label='Loại' sx={{ flex: 1, minWidth: 0 }}>
+            <MenuItem value=''>Tất cả</MenuItem>
             <MenuItem value='ROTATING'>Xoay</MenuItem>
             <MenuItem value='STATIC'>Tĩnh</MenuItem>
           </CustomTextField>
-          <CustomTextField select value={status} onChange={e => setStatus(e.target.value)} size='small' sx={{ minWidth: 100, flex: '0 0 auto' }}>
-            <MenuItem value=''>Tất cả TT</MenuItem>
+          <CustomTextField select value={status} onChange={e => setStatus(e.target.value)} size='small' label='Trạng thái' sx={{ flex: 1, minWidth: 0 }}>
+            <MenuItem value=''>Tất cả</MenuItem>
             <MenuItem value='0'>Hoạt động</MenuItem>
             <MenuItem value='2'>Hết hạn</MenuItem>
           </CustomTextField>
+          <CustomTextField select value={limit} onChange={e => setLimit(Number(e.target.value))} size='small' label='Hiển thị' sx={{ flex: '0 0 80px' }}>
+            {[100, 500, 1000, 5000, 10000].map(n => <MenuItem key={n} value={n}>{n.toLocaleString()}</MenuItem>)}
+          </CustomTextField>
+        </Box>
+        {/* Row 2: Search + Button */}
+        <Box sx={{ display: 'flex', gap: 1, px: 2, pb: 1.5 }}>
           <CustomTextField
             size='small' placeholder='Tìm theo key...'
             value={search} onChange={e => setSearch(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && handleSearch()}
-            sx={{ flex: '1 1 120px', minWidth: 0 }}
+            sx={{ flex: 1, minWidth: 0 }}
           />
-          <CustomTextField select value={limit} onChange={e => setLimit(Number(e.target.value))} size='small' sx={{ width: 80, flex: '0 0 auto' }}>
-            {[100, 500, 1000, 5000, 10000].map(n => <MenuItem key={n} value={n}>{n.toLocaleString()}</MenuItem>)}
-          </CustomTextField>
           <Button
             variant='contained' size='small' onClick={handleSearch} disabled={searching}
-            sx={{ height: 36, textTransform: 'none', fontWeight: 600, px: 2, flexShrink: 0, background: 'var(--primary-gradient, var(--primary-hover))', '&:hover': { opacity: 0.9 } }}
+            sx={{ height: 40, textTransform: 'none', fontWeight: 600, px: 2, flexShrink: 0, background: 'var(--primary-gradient, var(--primary-hover))', '&:hover': { opacity: 0.9 } }}
           >
             <Search size={14} style={{ marginRight: 4, ...(searching ? { animation: 'spin 0.8s linear infinite' } : {}) }} />
             Tìm

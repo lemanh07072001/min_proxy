@@ -116,13 +116,13 @@ const UserDropdown = () => {
         sx={{
           display: 'flex',
           alignItems: 'center',
-          gap: '8px',
+          gap: { xs: '6px', lg: '8px' },
           cursor: 'pointer',
-          padding: { xs: '0', lg: '4px 10px 4px 4px' },
+          padding: { xs: '3px 10px 3px 3px', lg: '4px 10px 4px 4px' },
           borderRadius: '50px',
-          bgcolor: open ? `${primaryHover}18` : 'transparent',
-          border: { xs: 'none', lg: '1.5px solid' },
-          borderColor: open ? primaryHover : `${primaryHover}30`,
+          bgcolor: open ? `${primaryHover}18` : `${primaryHover}08`,
+          border: '1.5px solid',
+          borderColor: open ? primaryHover : `${primaryHover}25`,
           transition: 'all 0.2s ease',
           '&:hover': {
             borderColor: `${primaryHover}70`,
@@ -130,20 +130,18 @@ const UserDropdown = () => {
           },
         }}
       >
-        {/* Avatar với online badge — 38px đồng đều với language */}
+        {/* Avatar với online badge */}
         <Box sx={{ position: 'relative', flexShrink: 0 }}>
           <Avatar
             alt={userName}
             src={userAvatar}
             sx={{
-              width: 38,
-              height: 38,
-              fontSize: '0.85rem',
+              width: { xs: 28, lg: 34 },
+              height: { xs: 28, lg: 34 },
+              fontSize: { xs: '0.7rem', lg: '0.85rem' },
               fontWeight: 700,
               bgcolor: primaryHover,
               color: '#fff',
-              border: '1.5px solid',
-              borderColor: `${primaryHover}30`,
             }}
           >
             {initials}
@@ -151,10 +149,10 @@ const UserDropdown = () => {
           <Box
             sx={{
               position: 'absolute',
-              bottom: 0,
-              right: 0,
-              width: 10,
-              height: 10,
+              bottom: -1,
+              right: -1,
+              width: 9,
+              height: 9,
               bgcolor: '#22c55e',
               borderRadius: '50%',
               border: '2px solid',
@@ -162,6 +160,11 @@ const UserDropdown = () => {
             }}
           />
         </Box>
+
+        {/* Mobile: tên ngắn */}
+        <Typography sx={{ display: { xs: 'block', lg: 'none' }, fontSize: '0.7rem', fontWeight: 600, color: 'text.primary', maxWidth: 60, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          {userName.split(' ').pop()}
+        </Typography>
 
         {/* Tên + số dư */}
         <Box sx={{ display: { xs: 'none', lg: 'flex' }, flexDirection: 'column', minWidth: 0, maxWidth: 130 }}>
