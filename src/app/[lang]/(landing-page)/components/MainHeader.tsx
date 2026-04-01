@@ -103,44 +103,48 @@ const MainHeader = ({ serverLogo, serverName }: MainHeaderProps) => {
           transition: 'all 0.3s ease'
         }}
       >
-        <div
-          style={{
+        <Box
+          sx={{
             maxWidth: 1200,
             margin: '0 auto',
             width: '100%',
-            padding: '0 28px',
+            padding: { xs: '0 12px', sm: '0 20px', md: '0 28px' },
             display: 'flex',
             alignItems: 'center',
             height: '100%'
           }}
         >
-          {/* Logo */}
+          {/* Logo — thu nhỏ trên mobile */}
           <a href='#' style={{ display: 'flex', alignItems: 'center', textDecoration: 'none', flexShrink: 0 }}>
             {logo ? (
-              <img
+              <Box
+                component='img'
                 src={logo}
                 alt={name}
-                width={150}
-                height={42}
-                style={{ objectFit: 'contain', maxWidth: '100%', maxHeight: 42 }}
+                sx={{
+                  objectFit: 'contain',
+                  maxHeight: { xs: 32, sm: 38, md: 42 },
+                  width: 'auto',
+                  maxWidth: { xs: 120, sm: 140, md: 150 },
+                }}
               />
             ) : (
               <span style={{ fontSize: '18px', fontWeight: 700, color: '#1e293b' }}>{name}</span>
             )}
           </a>
 
-          {/* Mobile: toggle + user actions */}
+          {/* Mobile: toggle + user actions — cân bằng kích thước */}
           <div className='header-mobile'>
             <button
               className='navbar-toggler'
               type='button'
-              style={{ border: 'none', boxShadow: 'none' }}
+              style={{ border: 'none', boxShadow: 'none', padding: '4px 8px' }}
               onClick={toggleMobileMenu}
             >
               <span className='navbar-toggler-icon'></span>
             </button>
 
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
               <LanguageDropdown />
               <div style={{ display: isUnauthenticated ? 'none' : 'flex' }}>
                 <UserDropdown />
@@ -157,7 +161,7 @@ const MainHeader = ({ serverLogo, serverName }: MainHeaderProps) => {
           <div className={`navbar-collapse ${isOpenMenu ? 'show' : ''}`} id='navbarNav' style={{ flex: 1 }}>
             {isMobile ? <MenuMobile onClose={handleCloseMenu} /> : <MenuDesktop />}
           </div>
-        </div>
+        </Box>
       </nav>
 
       <AuthModal />

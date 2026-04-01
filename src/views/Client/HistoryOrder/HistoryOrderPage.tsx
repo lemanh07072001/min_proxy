@@ -240,63 +240,64 @@ export default function HistoryOrderPage() {
         <div className='table-container'>
           {/* Toolbar */}
           <div className='table-toolbar' style={{ flexDirection: 'column', alignItems: 'stretch', gap: 0, padding: 0 }}>
-            {/* Row 1: Title + Search — responsive wrap trên mobile */}
-            <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', gap: 8, borderBottom: '1px solid #f1f5f9' }}>
-              <div className='header-left' style={{ flexShrink: 0 }}>
+            {/* Row 1: Title */}
+            <div style={{ display: 'flex', alignItems: 'center', padding: '12px 16px 8px', gap: 8 }}>
+              <div className='header-left'>
                 <div className='page-icon'>
                   <List size={17} />
                 </div>
                 <h5 className='mb-0 font-semibold' style={{ whiteSpace: 'nowrap' }}>Đơn hàng của tôi</h5>
               </div>
-              <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', flex: 1, minWidth: 0, justifyContent: 'flex-end' }}>
-                <TextField
-                  size='small'
-                  placeholder='Tìm mã đơn, dịch vụ...'
-                  value={searchText}
-                  onChange={e => setSearchText(e.target.value)}
-                  onKeyDown={e => { if (e.key === 'Enter') handleSearch() }}
-                  sx={{ flex: '1 1 160px', maxWidth: 260, minWidth: 120, '& .MuiOutlinedInput-root': { fontSize: '13px', borderRadius: '8px' } }}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position='start'>
-                        <Search size={15} color='#94a3b8' />
-                      </InputAdornment>
-                    ),
-                    endAdornment: searchText ? (
-                      <InputAdornment position='end'>
-                        <IconButton size='small' onClick={() => { setSearchText(''); setAppliedSearch(''); setPagination(prev => ({ ...prev, pageIndex: 0 })); queryClient.invalidateQueries({ queryKey: ['userOrders'] }) }} sx={{ p: '2px' }}>
-                          <X size={14} />
-                        </IconButton>
-                      </InputAdornment>
-                    ) : null
-                  }}
-                />
-                <CustomTextField
-                  select
-                  size='small'
-                  value={statusFilter}
-                  onChange={(e: any) => {
-                    setStatusFilter(e.target.value)
-                    setPagination(prev => ({ ...prev, pageIndex: 0 }))
-                  }}
-                  sx={{ flex: '0 1 155px', minWidth: 120, ...inputSx }}
-                  slotProps={{ select: { displayEmpty: true } }}
-                >
-                  <MenuItem value='all'>Tất cả trạng thái</MenuItem>
-                  {Object.entries(ORDER_STATUS_LABELS).map(([value, label]) => (
-                    <MenuItem key={value} value={value}>{label}</MenuItem>
-                  ))}
-                </CustomTextField>
-                <Button
-                  variant='contained'
-                  size='small'
-                  onClick={handleSearch}
-                  startIcon={isFetching ? <Loader2 size={15} style={{ animation: 'spin 1s linear infinite' }} /> : <Search size={15} />}
-                  sx={{ height: 36, borderRadius: '8px', fontSize: '13px', textTransform: 'none', whiteSpace: 'nowrap', px: 2, flexShrink: 0, background: 'var(--primary-gradient, var(--primary-hover))', '&:hover': { opacity: 0.9 } }}
-                >
-                  Tìm kiếm
-                </Button>
-              </div>
+            </div>
+            {/* Row 2: Search + Filter — full width, wrap trên mobile */}
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', padding: '0 16px 12px', borderBottom: '1px solid #f1f5f9' }}>
+              <TextField
+                size='small'
+                placeholder='Tìm mã đơn, dịch vụ...'
+                value={searchText}
+                onChange={e => setSearchText(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter') handleSearch() }}
+                sx={{ flex: '1 1 150px', minWidth: 0, '& .MuiOutlinedInput-root': { fontSize: '13px', borderRadius: '8px' } }}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position='start'>
+                      <Search size={15} color='#94a3b8' />
+                    </InputAdornment>
+                  ),
+                  endAdornment: searchText ? (
+                    <InputAdornment position='end'>
+                      <IconButton size='small' onClick={() => { setSearchText(''); setAppliedSearch(''); setPagination(prev => ({ ...prev, pageIndex: 0 })); queryClient.invalidateQueries({ queryKey: ['userOrders'] }) }} sx={{ p: '2px' }}>
+                        <X size={14} />
+                      </IconButton>
+                    </InputAdornment>
+                  ) : null
+                }}
+              />
+              <CustomTextField
+                select
+                size='small'
+                value={statusFilter}
+                onChange={(e: any) => {
+                  setStatusFilter(e.target.value)
+                  setPagination(prev => ({ ...prev, pageIndex: 0 }))
+                }}
+                sx={{ flex: '0 0 auto', minWidth: 140, ...inputSx }}
+                slotProps={{ select: { displayEmpty: true } }}
+              >
+                <MenuItem value='all'>Tất cả trạng thái</MenuItem>
+                {Object.entries(ORDER_STATUS_LABELS).map(([value, label]) => (
+                  <MenuItem key={value} value={value}>{label}</MenuItem>
+                ))}
+              </CustomTextField>
+              <Button
+                variant='contained'
+                size='small'
+                onClick={handleSearch}
+                startIcon={isFetching ? <Loader2 size={15} style={{ animation: 'spin 1s linear infinite' }} /> : <Search size={15} />}
+                sx={{ height: 36, borderRadius: '8px', fontSize: '13px', textTransform: 'none', whiteSpace: 'nowrap', px: 2, flexShrink: 0, background: 'var(--primary-gradient, var(--primary-hover))', '&:hover': { opacity: 0.9 } }}
+              >
+                Tìm kiếm
+              </Button>
             </div>
 
             {/* Pending orders banner */}
