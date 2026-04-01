@@ -237,6 +237,8 @@ export default function SiteSettingsForm() {
   const updateBankMutation = useUpdateBankSettings()
   const [bank, setBank] = useState<BankSettings>({ ...defaultBank })
 
+  const [affiliatePercent, setAffiliatePercent] = useState(2)
+
   const [activeTab, setActiveTab] = useState(0)
   const [colorMode, setColorMode] = useState<'preset' | 'custom'>('preset')
   const [seoLangTab, setSeoLangTab] = useState(0)
@@ -335,6 +337,14 @@ export default function SiteSettingsForm() {
     }
   }, [bankData])
 
+  useEffect(() => {
+    axiosAuth.get('/admin/affiliate-settings').then(res => {
+      if (res.data?.success) {
+        setAffiliatePercent(res.data.data.default_affiliate_percent ?? 2)
+      }
+    }).catch(() => {})
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
   // ─── Handlers ────────────────────────────────────────────────────────────
 
   const handleImageUpload = async (file: File, field: 'logo_url' | 'logo_icon_url' | 'favicon_url' | 'og_image_url') => {
@@ -388,6 +398,9 @@ export default function SiteSettingsForm() {
           youtube_videos: validVideos
         }),
         updateBrandingMutation.mutateAsync(branding),
+        axiosAuth.post('/admin/affiliate-settings', {
+          default_affiliate_percent: affiliatePercent
+        }),
       ])
       toast.success('Lưu cấu hình thành công')
     } catch {
@@ -1993,6 +2006,26 @@ export default function SiteSettingsForm() {
           {/* ═══════════════ Tab Cài đặt chung ═══════════════ */}
           {activeTab === availableTabs.findIndex(t => t.label === 'Cài đặt chung') && activeTab >= 0 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+              {/* Affiliate */}
+              <div style={{ background: '#f0fdf4', borderRadius: 12, padding: 20, border: '1px solid #bbf7d0' }}>
+                <div style={{ fontSize: 14, fontWeight: 700, color: '#166534', marginBottom: 4 }}>Hoa hồng Affiliate</div>
+                <div style={{ fontSize: 12, color: '#4ade80', marginBottom: 16 }}>Tỷ lệ hoa hồng cho người giới thiệu. Áp dụng chung cho tất cả user.</div>
+                <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+                  <span style={{ width: 160, fontSize: 13, color: '#64748b' }}>Hoa hồng mặc định</span>
+                  <TextField
+                    size='small'
+                    type='number'
+                    value={affiliatePercent}
+                    onChange={e => {
+                      const v = Math.max(0, Math.min(100, parseInt(e.target.value) || 0))
+                      setAffiliatePercent(v)
+                    }}
+                    slotProps={{ input: { endAdornment: <span style={{ color: '#94a3b8', fontSize: 13 }}>%</span> } }}
+                    sx={{ width: 120 }}
+                  />
+                </div>
+              </div>
+
               <div style={{ background: '#f8fafc', borderRadius: 12, padding: 20, border: '1px solid #e2e8f0' }}>
                 <div style={{ fontSize: 14, fontWeight: 700, color: '#1e293b', marginBottom: 4 }}>Tên menu sidebar</div>
                 <div style={{ fontSize: 12, color: '#64748b', marginBottom: 16 }}>Đổi tên hiển thị các mục menu. Bỏ trống = giữ mặc định. Cache SSR 5 phút.</div>
