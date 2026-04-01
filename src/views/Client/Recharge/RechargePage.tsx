@@ -297,21 +297,38 @@ return `https://img.vietqr.io/image/${bankInfo.bank_code}-${bankInfo.account_num
             >
               <Typography sx={{ fontWeight: 600, fontSize: '14px', color: 'var(--mui-palette-text-primary, #1e293b)', mb: 1, display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <CircleAlert size={16} color='var(--primary-color)' />
-                Cấu hình tên người chuyển tiền
+                Xác nhận tên tài khoản ngân hàng
               </Typography>
-              <Typography sx={{ fontSize: '13px', color: 'var(--mui-palette-text-secondary, #64748b)', mb: 2, lineHeight: 1.5 }}>
-                Bạn cần nhập tên chủ tài khoản ngân hàng trước khi nạp tiền. Tên này sẽ được dùng cố định cho tất cả giao dịch.
+              <Typography sx={{ fontSize: '13px', color: 'var(--mui-palette-text-secondary, #64748b)', mb: 1.5, lineHeight: 1.6 }}>
+                Nhập đúng tên chủ tài khoản ngân hàng bạn sẽ dùng để chuyển khoản nạp tiền. Hệ thống dùng tên này để tự động xác nhận giao dịch.
               </Typography>
+              <Box
+                sx={{
+                  background: '#fffbeb',
+                  border: '1px solid #fde68a',
+                  borderRadius: '8px',
+                  padding: '10px 12px',
+                  mb: 2,
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: '8px'
+                }}
+              >
+                <CircleAlert size={14} color='#b45309' style={{ flexShrink: 0, marginTop: 2 }} />
+                <Typography sx={{ fontSize: '12px', color: '#92400e', lineHeight: 1.5 }}>
+                  <strong>Lưu ý:</strong> Tên phải khớp với tên hiển thị khi chuyển khoản. Nếu sai, tiền sẽ không được cộng tự động. Tên sau khi lưu không thể thay đổi.
+                </Typography>
+              </Box>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 <CustomTextField
-                  placeholder='VD: Nguyen Van A'
+                  placeholder='VD: NGUYEN VAN A (viết in hoa, không dấu)'
                   value={transferNameInput}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTransferNameInput(e.target.value)}
                   size='small'
                   sx={{ '& .MuiInputBase-root': { fontSize: '14px' } }}
                 />
                 <Typography sx={{ fontSize: '11px', color: 'var(--mui-palette-text-disabled, #94a3b8)', lineHeight: 1.4 }}>
-                  Hệ thống tự động bỏ dấu và viết hoa. Tên sau khi lưu sẽ không thể thay đổi.
+                  Mở app ngân hàng → xem tên chủ tài khoản → nhập chính xác tên đó. Hệ thống tự động bỏ dấu và viết hoa.
                 </Typography>
                 {transferNameError && (
                   <Box

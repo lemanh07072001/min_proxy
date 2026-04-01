@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 
 import { usePathname } from 'next/navigation'
 
@@ -16,23 +16,13 @@ const PUBLIC_ROUTES = ['/home', '/proxy-tinh', '/proxy-xoay', '/check-proxy', '/
 
 export default function AuthGuard({ children, locale }: ChildrenType & { locale: Locale }) {
   const pathname = usePathname()
-  const { status } = useSession()
+  const { data: session, status } = useSession()
   const wasAuthenticatedRef = useRef(false)
-  const [settled, setSettled] = useState(false)
-  const timerRef = useRef<ReturnType<typeof setTimeout>>()
 
   useEffect(() => {
     if (status === 'authenticated') {
-      clearTimeout(timerRef.current)
       wasAuthenticatedRef.current = true
-      setSettled(true)
-    } else if (status === 'unauthenticated') {
-      // Chờ 800ms trước khi kết luận thật sự unauthenticated
-      // NextAuth có thể trả 'unauthenticated' thoáng qua khi client navigation
-      timerRef.current = setTimeout(() => setSettled(true), 800)
     }
-
-    return () => clearTimeout(timerRef.current)
   }, [status])
 
   // Public routes: luôn render content
@@ -42,14 +32,14 @@ export default function AuthGuard({ children, locale }: ChildrenType & { locale:
   // Đã đăng nhập → render content
   if (status === 'authenticated') return <>{children}</>
 
-  // Loading hoặc chưa settled → LUÔN giữ content cũ nếu đã từng authenticated
-  // Tránh flash trắng / flash login khi client navigation
-  if (status === 'loading' || !settled) {
-    if (wasAuthenticatedRef.current) return <>{children}</>
-    return null
-  }
+  // Đã từng authenticated trong session này → LUÔN giữ content
+  // Nếu token chết thật → axios interceptor gặp 401 → refresh fail → signOut()
+  // AuthGuard KHÔNG tự quyết định logout — chỉ BE mới xác nhận được token hết hạn
+  if (wasAuthenticatedRef.current) return <>{children}</>
 
-  // Chắc chắn unauthenticated (settled = true, đợi đủ 800ms)
-  wasAuthenticatedRef.current = false
+  // Đang loading lần đầu → chờ, không hiện gì
+  if (status === 'loading') return null
+
+  // Chưa bao giờ authenticated + BE xác nhận không có session → hiện login
   return <EmptyAuthPage lang={locale} />
 }
