@@ -58,6 +58,8 @@ export interface FinancialReportData {
     affiliate_cost: number
     profit: number
     margin_percent: number
+    expected_cost: number
+    expected_affiliate: number
   }
   deposits: {
     deposit_auto: number

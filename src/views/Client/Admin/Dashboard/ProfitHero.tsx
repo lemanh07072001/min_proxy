@@ -21,9 +21,11 @@ export default function ProfitHero({ revenue, periodDays }: ProfitHeroProps) {
   const dailyRevenue = Math.round(revenue.confirmed / periodDays)
 
 
-  // Lợi nhuận dự kiến từ pipeline: expected × margin hiện tại
-  const expectedProfit = revenue.expected > 0 && revenue.margin_percent > 0
-    ? Math.round(revenue.expected * revenue.margin_percent / 100)
+  // Lợi nhuận dự kiến từ pipeline: expected - expected_cost - expected_affiliate
+  const expectedCost = revenue.expected_cost ?? 0
+  const expectedAffiliate = revenue.expected_affiliate ?? 0
+  const expectedProfit = revenue.expected > 0
+    ? Math.round(revenue.expected - expectedCost - expectedAffiliate)
     : 0
 
   return (
@@ -46,6 +48,11 @@ export default function ProfitHero({ revenue, periodDays }: ProfitHeroProps) {
           {revenue.expected > 0 && (
             <div className='text-xs opacity-60 mt-1'>
               Pipeline: {formatCurrency(revenue.expected)} đang hoạt động → lãi dự kiến +{formatCurrency(expectedProfit)}
+            </div>
+          )}
+          {(revenue.confirmed > 0 || revenue.expected > 0) && (
+            <div className='text-xs opacity-60 mt-0.5'>
+              Tổng dự kiến: DT {formatCurrency(revenue.confirmed + revenue.expected)} · CP {formatCurrency(revenue.cost_actual + expectedCost)} · Lãi {formatCurrency(revenue.profit + expectedProfit)}
             </div>
           )}
         </div>
