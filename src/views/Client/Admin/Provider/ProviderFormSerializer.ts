@@ -1,6 +1,6 @@
 import type {
   FormValues, ApiConfigBuy, RenewParamRow, DurationMapRow, InheritParam,
-  RenewParamConfig,
+  RenewParamConfig, ParamsMappingEntry, ParamsMappingValueMap,
   ErrorCodeRule, HttpErrorRule, ResponseMappingRule,
 } from './ProviderFormTypes'
 import { defaultBuy, defaultFetchProxies, defaultValues, SYSTEM_VARS, VALUE_MAP } from './ProviderFormTypes'
@@ -152,6 +152,18 @@ export function parseBuySection(buy: any): ApiConfigBuy {
     protocol_override_param: buy.protocol_override?.param || 'type',
     protocol_override_http: buy.protocol_override?.map?.http || 'HTTP',
     protocol_override_socks5: buy.protocol_override?.map?.socks5 || 'SOCKS5',
+    params_mapping_enabled: Array.isArray(buy.params_mapping) && buy.params_mapping.length > 0,
+    params_mapping: Array.isArray(buy.params_mapping)
+      ? buy.params_mapping.map((entry: any) => ({
+          variable: entry.variable || '',
+          param: entry.param || '',
+          value_map: entry.value_map && typeof entry.value_map === 'object' && !Array.isArray(entry.value_map)
+            ? Object.entries(entry.value_map).map(([from, to]) => ({ from, to: String(to) }))
+            : Array.isArray(entry.value_map) ? entry.value_map : [],
+          default_value: entry.default != null ? String(entry.default) : '',
+          format: entry.format || 'comma',
+        }))
+      : [],
     response_mode: buy.response_mode || 'immediate',
     fetch_proxies: (() => {
       const fp = buy.fetch_proxies
@@ -332,6 +344,27 @@ export function buildBuySection(buy: ApiConfigBuy): object | null {
         http: buy.protocol_override_http || 'HTTP',
         socks5: buy.protocol_override_socks5 || 'SOCKS5',
       }
+    }
+  }
+
+  // Params mapping — biến chuẩn → param NCC
+  if (buy.params_mapping_enabled && buy.params_mapping?.length > 0) {
+    const validMapping = buy.params_mapping.filter((e: ParamsMappingEntry) => e.variable && e.param)
+    if (validMapping.length > 0) {
+      result.params_mapping = validMapping.map((e: ParamsMappingEntry) => {
+        const entry: any = { variable: e.variable, param: e.param }
+
+        // value_map: array → object { "http": "1", "socks5": "2" }
+        const validVm = (e.value_map || []).filter((vm: ParamsMappingValueMap) => vm.from && vm.to)
+        if (validVm.length > 0) {
+          entry.value_map = Object.fromEntries(validVm.map((vm: ParamsMappingValueMap) => [vm.from, vm.to]))
+        }
+
+        if (e.default_value) entry.default = e.default_value
+        if (e.format && e.format !== 'comma') entry.format = e.format
+
+        return entry
+      })
     }
   }
 

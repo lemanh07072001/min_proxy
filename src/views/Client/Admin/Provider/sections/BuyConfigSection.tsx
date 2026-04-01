@@ -20,7 +20,11 @@ import PipelineStepCard from '../components/PipelineStepCard'
 import ResponseMappingTable from '../components/ResponseMappingTable'
 import SavePreviewBox from '../components/SavePreviewBox'
 import ResponseDryRun from '../components/ResponseDryRun'
-import type { BuySectionProps } from '../ProviderFormTypes'
+import Chip from '@mui/material/Chip'
+import Tooltip from '@mui/material/Tooltip'
+import Alert from '@mui/material/Alert'
+import type { BuySectionProps, ParamsMappingEntry } from '../ProviderFormTypes'
+import { STANDARD_VARIABLES, VARIABLE_FORMAT_OPTIONS, defaultParamsMappingEntry } from '../ProviderFormTypes'
 
 // ─── Pipeline Step 1: API Call ──────────────────────
 
@@ -651,6 +655,183 @@ function StepErrorHandling({ prefix, control }: BuySectionProps) {
   )
 }
 
+// ─── Pipeline Step 6: Params Mapping ──────────────────
+
+function StepParamsMapping({ prefix, control }: BuySectionProps) {
+  const enabled = useWatch({ control, name: `${prefix}.params_mapping_enabled` })
+  const { fields, append, remove } = useFieldArray({ control, name: `${prefix}.params_mapping` })
+  const mappingValues = useWatch({ control, name: `${prefix}.params_mapping` }) as ParamsMappingEntry[] | undefined
+
+  // Biến đã chọn → disable trong dropdown
+  const usedVars = (mappingValues || []).map(m => m.variable).filter(Boolean)
+
+  // Biến nào đã map → hiện warning thay thế config cũ
+  const replacedConfigs = usedVars.map(v => {
+    const labels: Record<string, string> = {
+      protocol: 'Protocol Override (tuỳ chọn nâng cao)',
+      quantity: 'Tên param số lượng (Step 1)',
+      duration: 'Tên param thời hạn (Step 1)',
+      username: 'User tự chọn User:Pass (tuỳ chọn nâng cao)',
+      password: 'User tự chọn User:Pass (tuỳ chọn nâng cao)',
+      allow_ips: 'IP Whitelist (tab riêng)',
+      auth_token: 'Xác thực query (Step 1)',
+    }
+    return labels[v]
+  }).filter(Boolean)
+
+  return (
+    <PipelineStepCard
+      step={6}
+      title='Params Mapping — biến chuẩn hệ thống'
+      description='Map biến hệ thống (protocol, quantity, duration...) sang tên param NCC. Biến nào được map sẽ thay thế config cũ tương ứng. Biến chưa map → config cũ vẫn hoạt động.'
+    >
+      <Grid2 container spacing={2}>
+        <Grid2 size={{ xs: 12 }}>
+          <Controller name={`${prefix}.params_mapping_enabled`} control={control} render={({ field: { value, onChange, ...field } }) => (
+            <CustomTextField {...field} value={value ? 'true' : 'false'} onChange={(e) => onChange(e.target.value === 'true')} fullWidth select
+              label='Bật params mapping'
+            >
+              <MenuItem value='false'>Tắt — dùng config cũ</MenuItem>
+              <MenuItem value='true'>Bật — cấu hình biến chuẩn</MenuItem>
+            </CustomTextField>
+          )} />
+        </Grid2>
+
+        {enabled && (
+          <>
+            {/* Warning: config cũ bị thay */}
+            {replacedConfigs.length > 0 && (
+              <Grid2 size={{ xs: 12 }}>
+                <Alert severity='info' sx={{ fontSize: 12 }}>
+                  Config cũ sau sẽ <strong>không còn tác dụng</strong> (đã được thay bởi mapping):
+                  <Box sx={{ mt: 0.5, display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+                    {[...new Set(replacedConfigs)].map(c => (
+                      <Chip key={c} label={c} size='small' variant='outlined' sx={{ fontSize: 11 }} />
+                    ))}
+                  </Box>
+                </Alert>
+              </Grid2>
+            )}
+
+            {/* Bảng mapping */}
+            {fields.map((field, index) => {
+              const currentVar = mappingValues?.[index]?.variable
+              const varDef = STANDARD_VARIABLES.find(v => v.value === currentVar)
+              const hasFormat = varDef?.hasFormat
+
+              return (
+                <Grid2 size={{ xs: 12 }} key={field.id}>
+                  <Box sx={{ p: 1.5, background: '#faf5ff', borderRadius: 1.5, border: '1px solid #e9d5ff', position: 'relative' }}>
+                    <IconButton size='small' onClick={() => remove(index)} sx={{ position: 'absolute', top: 4, right: 4, color: '#ef4444' }}>
+                      <Trash2 size={14} />
+                    </IconButton>
+
+                    <Grid2 container spacing={1.5}>
+                      {/* Biến chuẩn dropdown */}
+                      <Grid2 size={{ xs: 12, sm: 3 }}>
+                        <Controller name={`${prefix}.params_mapping.${index}.variable`} control={control} render={({ field: f }) => (
+                          <CustomTextField {...f} fullWidth select size='small' label='Biến hệ thống'>
+                            {STANDARD_VARIABLES.map(sv => (
+                              <MenuItem key={sv.value} value={sv.value} disabled={usedVars.includes(sv.value) && sv.value !== currentVar}>
+                                <Box>
+                                  <Typography variant='body2' sx={{ fontSize: 13 }}>{sv.label}</Typography>
+                                  <Typography variant='caption' sx={{ color: '#94a3b8', fontSize: 10 }}>{sv.source}</Typography>
+                                </Box>
+                              </MenuItem>
+                            ))}
+                          </CustomTextField>
+                        )} />
+                      </Grid2>
+
+                      {/* Param NCC */}
+                      <Grid2 size={{ xs: 12, sm: 2 }}>
+                        <Controller name={`${prefix}.params_mapping.${index}.param`} control={control} render={({ field: f }) => (
+                          <CustomTextField {...f} fullWidth size='small' label='Param NCC' placeholder='VD: soluong' />
+                        )} />
+                      </Grid2>
+
+                      {/* Giá trị mặc định */}
+                      <Grid2 size={{ xs: 12, sm: 2 }}>
+                        <Controller name={`${prefix}.params_mapping.${index}.default_value`} control={control} render={({ field: f }) => (
+                          <CustomTextField {...f} fullWidth size='small' label='Mặc định' placeholder='Bỏ trống' />
+                        )} />
+                      </Grid2>
+
+                      {/* Format (chỉ hiện cho biến array như allow_ips) */}
+                      {hasFormat && (
+                        <Grid2 size={{ xs: 12, sm: 2 }}>
+                          <Controller name={`${prefix}.params_mapping.${index}.format`} control={control} render={({ field: f }) => (
+                            <CustomTextField {...f} fullWidth select size='small' label='Định dạng'>
+                              {VARIABLE_FORMAT_OPTIONS.map(opt => (
+                                <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>
+                              ))}
+                            </CustomTextField>
+                          )} />
+                        </Grid2>
+                      )}
+
+                      {/* Value Map — bảng chuyển giá trị */}
+                      <Grid2 size={{ xs: 12 }}>
+                        <ValueMapEditor prefix={prefix} control={control} index={index} />
+                      </Grid2>
+                    </Grid2>
+                  </Box>
+                </Grid2>
+              )
+            })}
+
+            {/* Nút thêm */}
+            <Grid2 size={{ xs: 12 }}>
+              <Button
+                size='small'
+                startIcon={<Plus size={14} />}
+                onClick={() => append({ ...defaultParamsMappingEntry })}
+                disabled={usedVars.length >= STANDARD_VARIABLES.length}
+                sx={{ textTransform: 'none', fontSize: 12 }}
+              >
+                Thêm biến
+              </Button>
+            </Grid2>
+          </>
+        )}
+      </Grid2>
+    </PipelineStepCard>
+  )
+}
+
+/** Bảng value_map con — 2 cột: Giá trị gốc | Giá trị gửi NCC */
+function ValueMapEditor({ prefix, control, index }: BuySectionProps & { index: number }) {
+  const { fields, append, remove } = useFieldArray({ control, name: `${prefix}.params_mapping.${index}.value_map` })
+
+  return (
+    <Box>
+      <Typography variant='caption' sx={{ color: '#7c3aed', fontWeight: 600, mb: 0.5, display: 'block' }}>
+        Chuyển giá trị (tuỳ chọn)
+        <Tooltip title='VD: Khi user chọn "http", gửi NCC giá trị "1" thay vì "http". Bỏ trống nếu gửi nguyên.' arrow>
+          <Box component='span' sx={{ ml: 0.5, cursor: 'help', color: '#a78bfa' }}>ⓘ</Box>
+        </Tooltip>
+      </Typography>
+      {fields.map((f, vmIdx) => (
+        <Box key={f.id} sx={{ display: 'flex', gap: 1, mb: 0.5, alignItems: 'center' }}>
+          <Controller name={`${prefix}.params_mapping.${index}.value_map.${vmIdx}.from`} control={control} render={({ field }) => (
+            <CustomTextField {...field} size='small' placeholder='Giá trị gốc (VD: http)' sx={{ flex: 1 }} />
+          )} />
+          <Typography variant='caption' sx={{ color: '#94a3b8' }}>→</Typography>
+          <Controller name={`${prefix}.params_mapping.${index}.value_map.${vmIdx}.to`} control={control} render={({ field }) => (
+            <CustomTextField {...field} size='small' placeholder='Gửi NCC (VD: 1)' sx={{ flex: 1 }} />
+          )} />
+          <IconButton size='small' onClick={() => remove(vmIdx)} sx={{ color: '#ef4444' }}>
+            <Trash2 size={12} />
+          </IconButton>
+        </Box>
+      ))}
+      <Button size='small' onClick={() => append({ from: '', to: '' })} sx={{ textTransform: 'none', fontSize: 11, color: '#7c3aed' }}>
+        + Thêm chuyển giá trị
+      </Button>
+    </Box>
+  )
+}
+
 // ─── Advanced Options (collapsible) ─────────────────
 
 function StepAdvancedOptions({ prefix, control }: BuySectionProps) {
@@ -800,6 +981,7 @@ export default function BuyConfigSection({ control, setValue }: { control: BuySe
                 <StepProxyExtract prefix={prefix} control={control} />
                 <StepDataStorage prefix={prefix} control={control} />
                 <StepErrorHandling prefix={prefix} control={control} />
+                <StepParamsMapping prefix={prefix} control={control} />
                 <StepAdvancedOptions prefix={prefix} control={control} />
                 <ResponseDryRun prefix={prefix} control={control} setValue={setValue} />
               </Box>

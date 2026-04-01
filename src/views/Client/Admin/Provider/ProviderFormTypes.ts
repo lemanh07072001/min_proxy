@@ -21,6 +21,19 @@ export interface ResponseMappingRule {
   save_as: string      // 'raw' | 'array_push' | 'split_comma'
 }
 
+export interface ParamsMappingValueMap {
+  from: string
+  to: string
+}
+
+export interface ParamsMappingEntry {
+  variable: string         // biến chuẩn: protocol, quantity, duration, username, password, allow_ips, auth_token, ip_version
+  param: string            // tên param gửi NCC
+  value_map: ParamsMappingValueMap[]  // bảng chuyển giá trị (VD: http→1)
+  default_value: string    // giá trị mặc định nếu biến null
+  format: string           // chỉ dùng cho array: comma | first | array
+}
+
 export interface RotateParamRule {
   param: string        // tên param gửi NCC
   source: string       // 'order_items' | 'default'
@@ -97,6 +110,8 @@ export interface ApiConfigBuy {
   protocol_override_param: string
   protocol_override_http: string
   protocol_override_socks5: string
+  params_mapping_enabled: boolean
+  params_mapping: ParamsMappingEntry[]
   response_mode: string
   fetch_proxies: FetchProxiesConfig
   response: ApiConfigBuyResponse
@@ -243,6 +258,33 @@ export const ORDER_FIELDS = [
   { value: 'proxy_type', label: 'Loại proxy' },
 ]
 
+// ─── Standard Variables (biến chuẩn hệ thống) ─────
+
+export const STANDARD_VARIABLES = [
+  { value: 'protocol',   label: 'Giao thức (HTTP/SOCKS5)', source: 'Từ đơn hàng' },
+  { value: 'quantity',   label: 'Số lượng proxy',          source: 'Từ đơn hàng' },
+  { value: 'duration',   label: 'Thời hạn (ngày)',         source: 'Từ đơn hàng' },
+  { value: 'username',   label: 'Username proxy',          source: 'Khách nhập khi mua' },
+  { value: 'password',   label: 'Password proxy',          source: 'Khách nhập khi mua' },
+  { value: 'allow_ips',  label: 'IP whitelist',            source: 'Khách nhập khi mua', hasFormat: true },
+  { value: 'auth_token', label: 'Token API (NCC)',         source: 'Từ cấu hình NCC' },
+  { value: 'ip_version', label: 'IP version (v4/v6)',      source: 'Từ sản phẩm' },
+]
+
+export const VARIABLE_FORMAT_OPTIONS = [
+  { value: 'comma', label: 'Nối bằng dấu phẩy (1.2.3.4,5.6.7.8)' },
+  { value: 'first', label: 'Chỉ lấy giá trị đầu tiên' },
+  { value: 'array', label: 'Mảng riêng (param[0]=..., param[1]=...)' },
+]
+
+export const defaultParamsMappingEntry: ParamsMappingEntry = {
+  variable: '',
+  param: '',
+  value_map: [],
+  default_value: '',
+  format: 'comma',
+}
+
 export const ITEM_FIELDS = [
   { value: 'provider_order_code', label: 'Mã đơn NCC' },
   { value: 'provider_item_id', label: 'ID proxy NCC' },
@@ -302,6 +344,8 @@ export const defaultBuy: ApiConfigBuy = {
   protocol_override_param: 'type',
   protocol_override_http: 'HTTP',
   protocol_override_socks5: 'SOCKS5',
+  params_mapping_enabled: false,
+  params_mapping: [],
   response_mode: 'immediate',
   fetch_proxies: { ...defaultFetchProxies },
   response: {
