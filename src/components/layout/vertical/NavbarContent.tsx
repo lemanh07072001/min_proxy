@@ -110,29 +110,30 @@ const NavbarContent = () => {
           </Box>
         )}
 
-        {/* Nạp tiền — mobile: icon 32px, desktop: text */}
+        {/* Nạp tiền — mobile: icon tròn 38px đồng đều, desktop: text */}
         <Button
           variant='outlined'
           onClick={handleNavigateRecharge}
           sx={{
-            padding: { xs: '4px', sm: '7px 10px' },
+            padding: { xs: 0, sm: '7px 10px' },
             fontSize: { xs: '0.75rem', sm: '0.875rem' },
-            minWidth: { xs: 32, sm: 'auto' },
-            width: { xs: 32, sm: 'auto' },
-            height: { xs: 32, sm: 'auto' },
+            minWidth: { xs: 38, sm: 'auto' },
+            width: { xs: 38, sm: 'auto' },
+            height: { xs: 38, sm: 'auto' },
+            borderRadius: { xs: '50%', sm: '8px' },
             display: isUnauthenticated ? 'none' : 'flex',
             justifyContent: 'center',
             gap: { xs: 0, sm: '6px' },
-            borderColor: primaryHover,
+            borderColor: `${primaryHover}30`,
             color: primaryHover,
             whiteSpace: 'nowrap',
             '&:hover': {
-              borderColor: primaryHover,
+              borderColor: `${primaryHover}70`,
               backgroundColor: `${primaryHover}14`,
             }
           }}
         >
-          <Wallet size={16} />
+          <Wallet size={18} />
           <Box component='span' sx={{ display: { xs: 'none', sm: 'inline' } }}>Nạp tiền</Box>
         </Button>
 

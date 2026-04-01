@@ -98,41 +98,29 @@ const LanguageDropdown = () => {
         ref={anchorRef}
         onClick={handleToggle}
         sx={{
-          borderRadius: '8px',
-          border: `1px solid ${primaryHover}`,
-          padding: '6px 12px',
+          width: 38,
+          height: 38,
+          borderRadius: '50%',
+          border: `1.5px solid ${primaryHover}30`,
+          padding: 0,
+          transition: 'all 0.2s ease',
           '&:hover': {
-            borderRadius: '5px'
+            borderColor: `${primaryHover}70`,
+            bgcolor: `${primaryHover}14`,
           }
         }}
       >
-        <Box
-          sx={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            gap: '8px'
-          }}
-        >
-          {/* Phần hiển thị cờ hoặc icon ngôn ngữ */}
-          {currentLanguage ? (
-            <>
-              <Image
-                src={currentLanguage.flag}
-                alt={currentLanguage.langName}
-                width={22}
-                height={22}
-                className='rounded-full'
-              />
-              <span className='text-sm font-semibold d-none d-lg-block'>{currentLanguage.langName}</span>
-            </>
-          ) : (
-            <i className='tabler-language' />
-          )}
-
-          {/* Icon mũi tên thay đổi theo state 'open' */}
-          <i style={{ fontSize: '16px' }} className={open ? 'tabler-chevron-up' : 'tabler-chevron-down'} />
-        </Box>
+        {currentLanguage ? (
+          <Image
+            src={currentLanguage.flag}
+            alt={currentLanguage.langName}
+            width={24}
+            height={24}
+            className='rounded-full'
+          />
+        ) : (
+          <i className='tabler-language' />
+        )}
       </IconButton>
       <Popper
         open={open}

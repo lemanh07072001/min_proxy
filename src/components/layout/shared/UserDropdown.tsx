@@ -116,36 +116,34 @@ const UserDropdown = () => {
         sx={{
           display: 'flex',
           alignItems: 'center',
-          gap: '10px',
+          gap: '8px',
           cursor: 'pointer',
-          padding: '4px 12px 4px 4px',
+          padding: { xs: '0', lg: '4px 10px 4px 4px' },
           borderRadius: '50px',
-          bgcolor: open ? `${primaryHover}18` : `${primaryHover}0A`,
-          border: '1.5px solid',
+          bgcolor: open ? `${primaryHover}18` : 'transparent',
+          border: { xs: 'none', lg: '1.5px solid' },
           borderColor: open ? primaryHover : `${primaryHover}30`,
           transition: 'all 0.2s ease',
-          boxShadow: open ? `0 0 0 3px ${primaryHover}14` : 'none',
           '&:hover': {
             borderColor: `${primaryHover}70`,
             bgcolor: `${primaryHover}14`,
-            boxShadow: `0 2px 8px ${primaryHover}18`,
           },
         }}
       >
-        {/* Avatar với online badge */}
+        {/* Avatar với online badge — 38px đồng đều với language */}
         <Box sx={{ position: 'relative', flexShrink: 0 }}>
           <Avatar
             alt={userName}
             src={userAvatar}
             sx={{
-              width: 34,
-              height: 34,
-              fontSize: '0.8rem',
+              width: 38,
+              height: 38,
+              fontSize: '0.85rem',
               fontWeight: 700,
               bgcolor: primaryHover,
               color: '#fff',
-              border: '2px solid',
-              borderColor: `${primaryHover}40`,
+              border: '1.5px solid',
+              borderColor: `${primaryHover}30`,
             }}
           >
             {initials}
@@ -153,15 +151,14 @@ const UserDropdown = () => {
           <Box
             sx={{
               position: 'absolute',
-              bottom: -1,
-              right: -1,
-              width: 11,
-              height: 11,
+              bottom: 0,
+              right: 0,
+              width: 10,
+              height: 10,
               bgcolor: '#22c55e',
               borderRadius: '50%',
               border: '2px solid',
               borderColor: 'background.paper',
-              boxShadow: '0 0 0 1px #22c55e40',
             }}
           />
         </Box>
@@ -188,16 +185,18 @@ const UserDropdown = () => {
           )}
         </Box>
 
-        <ChevronDown
-          size={15}
-          style={{
-            color: primaryHover,
-            transition: 'transform 0.25s ease',
-            transform: open ? 'rotate(180deg)' : 'rotate(0deg)',
-            flexShrink: 0,
-            opacity: 0.7,
-          }}
-        />
+        {/* Chevron chỉ desktop */}
+        <Box sx={{ display: { xs: 'none', lg: 'flex' }, flexShrink: 0 }}>
+          <ChevronDown
+            size={15}
+            style={{
+              color: primaryHover,
+              transition: 'transform 0.25s ease',
+              transform: open ? 'rotate(180deg)' : 'rotate(0deg)',
+              opacity: 0.7,
+            }}
+          />
+        </Box>
       </Box>
 
       {/* ═══ Dropdown ═══ */}
