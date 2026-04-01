@@ -5,7 +5,6 @@ import { useState } from 'react'
 import DateRangeFilter from '@/views/Client/Admin/Dashboard/DateRangeFilter'
 import ProfitHero from '@/views/Client/Admin/Dashboard/ProfitHero'
 import TrendCharts from '@/views/Client/Admin/Dashboard/TrendCharts'
-import RevenueProfitCards from '@/views/Client/Admin/Dashboard/RevenueProfitCards'
 import OrdersDepositsRow from '@/views/Client/Admin/Dashboard/OrdersDepositsRow'
 import ProviderBreakdown from '@/views/Client/Admin/Dashboard/PartnerBreakdown'
 import ReconciliationCard from '@/views/Client/Admin/Dashboard/ReconciliationHero'
@@ -43,16 +42,13 @@ export default function DashboardPage() {
 
       {/* Nội dung dashboard — dim khi đang fetch để user thấy đang cập nhật */}
       <div className={`space-y-4 transition-opacity duration-300 ${isFetching ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
-        {/* 2. Hero: Lãi hay lỗ? Bao nhiêu? */}
+        {/* 2. Tổng quan: Lãi/lỗ + breakdown + dự kiến */}
         <ProfitHero revenue={data.revenue} periodDays={data.period_days} />
 
         {/* 3. Biểu đồ xu hướng: Doanh thu + Nạp tiền theo ngày */}
         <TrendCharts data={data.daily_trend} />
 
-        {/* 4. KPI Cards: Doanh thu, Chi phí, Lợi nhuận, Tổng nạp (với TB/ngày) */}
-        <RevenueProfitCards revenue={data.revenue} deposits={data.deposits} periodDays={data.period_days} />
-
-        {/* 5. Chi tiết: Đơn hàng + Nạp tiền (với TB/ngày) */}
+        {/* 4. Chi tiết: Đơn hàng + Dòng tiền + Chỉ số */}
         <OrdersDepositsRow
           orders={data.orders}
           deposits={data.deposits}
@@ -60,13 +56,13 @@ export default function DashboardPage() {
           periodDays={data.period_days}
         />
 
-        {/* 6. Hiệu suất theo nhà cung cấp */}
+        {/* 5. Hiệu suất theo nhà cung cấp */}
         <ProviderBreakdown data={data.provider_breakdown} />
 
-        {/* 7. Đối soát: lazy-load riêng */}
+        {/* 6. Đối soát tài chính */}
         <ReconciliationCard filterStart={filterParams.start} filterEnd={filterParams.end} />
 
-        {/* 8. Báo cáo đơn hàng theo trạng thái */}
+        {/* 7. Bảng chi tiết đơn hàng */}
         <OrderStatusReport filterStart={filterParams.start} filterEnd={filterParams.end} />
       </div>
     </div>
