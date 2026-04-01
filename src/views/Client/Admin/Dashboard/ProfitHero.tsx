@@ -20,8 +20,7 @@ export default function ProfitHero({ revenue, periodDays }: ProfitHeroProps) {
   const dailyProfit = Math.round(revenue.profit / periodDays)
   const dailyRevenue = Math.round(revenue.confirmed / periodDays)
 
-
-  // Lợi nhuận dự kiến từ pipeline: expected - expected_cost - expected_affiliate
+  // Lợi nhuận dự kiến từ đơn đang hoạt động
   const expectedCost = revenue.expected_cost ?? 0
   const expectedAffiliate = revenue.expected_affiliate ?? 0
   const expectedProfit = revenue.expected > 0
@@ -43,24 +42,24 @@ export default function ProfitHero({ revenue, periodDays }: ProfitHeroProps) {
             {formatCurrency(Math.abs(revenue.profit))}
           </div>
           <div className='text-sm opacity-70 mt-1'>
-            TB: {formatCurrency(Math.abs(dailyProfit))}/ngày · Margin: {revenue.margin_percent}%
+            Trung bình: {formatCurrency(Math.abs(dailyProfit))}/ngày · Biên lợi nhuận: {revenue.margin_percent}%
           </div>
           {revenue.expected > 0 && (
             <div className='text-xs opacity-60 mt-1'>
-              Pipeline: {formatCurrency(revenue.expected)} đang hoạt động → lãi dự kiến +{formatCurrency(expectedProfit)}
+              Đang hoạt động: {formatCurrency(revenue.expected)} → lãi dự kiến +{formatCurrency(expectedProfit)}
             </div>
           )}
           {(revenue.confirmed > 0 || revenue.expected > 0) && (
             <div className='text-xs opacity-60 mt-0.5'>
-              Tổng dự kiến: DT {formatCurrency(revenue.confirmed + revenue.expected)} · CP {formatCurrency(revenue.cost_actual + expectedCost)} · Lãi {formatCurrency(revenue.profit + expectedProfit)}
+              Tổng dự kiến: Doanh thu {formatCurrency(revenue.confirmed + revenue.expected)} · Chi phí {formatCurrency(revenue.cost_actual + expectedCost)} · Lãi {formatCurrency(revenue.profit + expectedProfit)}
             </div>
           )}
         </div>
         <div className='flex flex-col gap-2'>
           <div className='bg-white/15 rounded-xl px-4 py-3 text-right'>
-            <div className='text-xs opacity-70'>Doanh thu xác nhận</div>
+            <div className='text-xs opacity-70'>Doanh thu hoàn thành</div>
             <div className='text-xl font-bold'>{formatCurrency(revenue.confirmed)}</div>
-            <div className='text-xs opacity-70'>TB: {formatCurrency(dailyRevenue)}/ngày</div>
+            <div className='text-xs opacity-70'>Trung bình: {formatCurrency(dailyRevenue)}/ngày</div>
           </div>
           {expectedProfit > 0 && (
             <div className='bg-white/10 rounded-xl px-4 py-2 text-right'>
@@ -79,35 +78,35 @@ export default function ProfitHero({ revenue, periodDays }: ProfitHeroProps) {
         <div className='bg-white/10 rounded-lg px-3 py-2'>
           <div className='flex items-center gap-1.5 text-xs opacity-70 mb-1'>
             <DollarSign size={12} />
-            Doanh thu XN
+            Doanh thu
           </div>
           <div className='font-semibold'>{formatCurrency(revenue.confirmed)}</div>
         </div>
         <div className='bg-white/10 rounded-lg px-3 py-2'>
           <div className='flex items-center gap-1.5 text-xs opacity-70 mb-1'>
             <Receipt size={12} />
-            Chi phí TT
+            Chi phí
           </div>
           <div className='font-semibold'>{formatCurrency(revenue.cost_actual)}</div>
         </div>
         <div className='bg-white/10 rounded-lg px-3 py-2'>
           <div className='flex items-center gap-1.5 text-xs opacity-70 mb-1'>
             <RefreshCw size={12} />
-            Đã hoàn
+            Đã hoàn tiền
           </div>
           <div className='font-semibold'>{formatCurrency(revenue.refunded)}</div>
         </div>
         <div className='bg-white/10 rounded-lg px-3 py-2'>
           <div className='flex items-center gap-1.5 text-xs opacity-70 mb-1'>
             <Users size={12} />
-            Hoa hồng AF
+            Hoa hồng giới thiệu
           </div>
           <div className='font-semibold'>{formatCurrency(revenue.affiliate_cost)}</div>
         </div>
         <div className='bg-white/10 rounded-lg px-3 py-2'>
           <div className='flex items-center gap-1.5 text-xs opacity-70 mb-1'>
             <Clock size={12} />
-            Pipeline
+            Đang hoạt động
           </div>
           <div className='font-semibold text-yellow-200'>{formatCurrency(revenue.expected)}</div>
         </div>

@@ -27,7 +27,7 @@ export default function ProviderBreakdown({ data }: ProviderBreakdownProps) {
               <th className='text-right py-2 px-2 text-xs font-semibold text-gray-500 uppercase'>Doanh thu</th>
               <th className='text-right py-2 px-2 text-xs font-semibold text-gray-500 uppercase'>Chi phí</th>
               <th className='text-right py-2 px-2 text-xs font-semibold text-gray-500 uppercase'>Lợi nhuận</th>
-              <th className='text-right py-2 px-2 text-xs font-semibold text-gray-500 uppercase'>Margin</th>
+              <th className='text-right py-2 px-2 text-xs font-semibold text-gray-500 uppercase'>Biên lợi nhuận</th>
             </tr>
           </thead>
           <tbody>

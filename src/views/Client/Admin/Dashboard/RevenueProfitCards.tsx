@@ -23,13 +23,13 @@ export default function RevenueProfitCards({ revenue, deposits, periodDays }: Re
     <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3'>
       <div>
         <KPICard
-          label='Doanh Thu Xác Nhận'
+          label='Doanh Thu Hoàn Thành'
           value={revenue.confirmed}
           icon={<DollarSign size={24} />}
           color='blue'
         />
         <div className='mt-1 px-2 text-xs text-gray-500'>
-          Pipeline: <span className='font-semibold text-blue-600'>{fmt(revenue.expected)} đ</span>
+          Đang hoạt động: <span className='font-semibold text-blue-600'>{fmt(revenue.expected)} đ</span>
           {revenue.refunded > 0 && (
             <span className='text-red-500 ml-1'>(hoàn: {fmt(revenue.refunded)} đ)</span>
           )}
@@ -44,7 +44,7 @@ export default function RevenueProfitCards({ revenue, deposits, periodDays }: Re
           color='red'
         />
         <div className='mt-1 px-2 text-xs text-gray-500'>
-          Hoa hồng AF: <span className='font-semibold text-purple-600'>{fmt(revenue.affiliate_cost)} đ</span>
+          Hoa hồng giới thiệu: <span className='font-semibold text-purple-600'>{fmt(revenue.affiliate_cost)} đ</span>
         </div>
       </div>
 
@@ -56,20 +56,20 @@ export default function RevenueProfitCards({ revenue, deposits, periodDays }: Re
           color='green'
         />
         <div className='mt-1 px-2 text-xs text-gray-500'>
-          Margin: <span className='font-semibold text-green-600'>{revenue.margin_percent}%</span>
-          {' · '}TB: {formatCurrency(Math.round(revenue.profit / periodDays))}/ngày
+          Biên lợi nhuận: <span className='font-semibold text-green-600'>{revenue.margin_percent}%</span>
+          {' · '}Trung bình: {formatCurrency(Math.round(revenue.profit / periodDays))}/ngày
         </div>
       </div>
 
       <div>
         <KPICard
-          label='Tổng Nạp'
+          label='Tổng Nạp Tiền'
           value={totalDeposit}
           icon={<Wallet size={24} />}
           color='blue'
         />
         <div className='mt-1 px-2 text-xs text-gray-500'>
-          {formatNumber(totalDepositCount)} GD · TB: {formatCurrency(dailyDeposit)}/ngày ({dailyDepositCount} bill/ngày)
+          {formatNumber(totalDepositCount)} giao dịch · Trung bình: {formatCurrency(dailyDeposit)}/ngày ({dailyDepositCount} lần/ngày)
         </div>
       </div>
     </div>

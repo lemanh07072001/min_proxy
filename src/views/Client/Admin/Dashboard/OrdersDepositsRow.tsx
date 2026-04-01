@@ -71,7 +71,7 @@ export default function OrdersDepositsRow({ orders, deposits, revenue, periodDay
   const dailyDepositAmount = Math.round(totalDeposit / periodDays)
   const dailyDepositCount = Math.round(totalDepositCount / periodDays)
 
-  // Dòng tiền ròng = Nạp - Thanh toán - Rút AF
+  // Dòng tiền ròng = Nạp - Thanh toán - Rút hoa hồng
   const netCashFlow = totalDeposit - Math.abs(deposits.payment_total) - deposits.affiliate_withdrawn
   const isPositiveCashFlow = netCashFlow >= 0
 
@@ -95,7 +95,7 @@ export default function OrdersDepositsRow({ orders, deposits, revenue, periodDay
           Đơn Hàng
         </h3>
         <div className='text-xs text-gray-400 mb-3'>
-          TB: {formatNumber(dailyOrders)} đơn/ngày · Tổng: {formatNumber(orders.total)}
+          Trung bình: {formatNumber(dailyOrders)} đơn/ngày · Tổng: {formatNumber(orders.total)}
         </div>
         {activeStatuses.map((s: OrderStatusItem) => {
           const meta = STATUS_LABELS[s.status] ?? { label: s.label, color: 'text-gray-600' }
@@ -132,20 +132,20 @@ return (
           Dòng Tiền
         </h3>
         <div className='text-xs text-gray-400 mb-3'>
-          TB: {formatCurrency(dailyDepositAmount)}/ngày · {formatNumber(dailyDepositCount)} bill/ngày
+          Trung bình: {formatCurrency(dailyDepositAmount)}/ngày · {formatNumber(dailyDepositCount)} lần/ngày
         </div>
         <StatRow
           icon={<ArrowDownCircle size={14} className='text-green-500' />}
           label='Nạp tự động'
           value={formatCurrency(deposits.deposit_auto)}
-          sub={`${formatNumber(deposits.deposit_auto_count)} GD`}
+          sub={`${formatNumber(deposits.deposit_auto_count)} giao dịch`}
           color='text-green-600'
         />
         <StatRow
           icon={<UserPlus size={14} className='text-blue-500' />}
           label='Nạp thủ công'
           value={formatCurrency(deposits.deposit_manual)}
-          sub={`${formatNumber(deposits.deposit_manual_count)} GD`}
+          sub={`${formatNumber(deposits.deposit_manual_count)} giao dịch`}
           color='text-blue-600'
         />
         <div className='mt-3 pt-3 border-t border-gray-100'>
@@ -153,19 +153,19 @@ return (
             icon={<Receipt size={14} className='text-indigo-500' />}
             label='Thanh toán'
             value={formatCurrency(Math.abs(deposits.payment_total))}
-            sub={`${formatNumber(deposits.payment_count)} GD`}
+            sub={`${formatNumber(deposits.payment_count)} giao dịch`}
             color='text-indigo-600'
           />
           <StatRow
             icon={<RefreshCw size={14} className='text-red-500' />}
             label='Hoàn tiền'
             value={formatCurrency(deposits.refund_total)}
-            sub={`${formatNumber(deposits.refund_count)} GD`}
+            sub={`${formatNumber(deposits.refund_count)} giao dịch`}
             color='text-red-600'
           />
           <StatRow
             icon={<UserPlus size={14} className='text-purple-500' />}
-            label='Rút hoa hồng AF'
+            label='Rút hoa hồng giới thiệu'
             value={formatCurrency(deposits.affiliate_withdrawn)}
             color='text-purple-600'
           />
@@ -181,7 +181,7 @@ return (
             </div>
           </div>
           <div className='text-xs text-gray-400 mt-0.5 text-right'>
-            Nạp - Thanh toán - Rút AF
+            Nạp - Thanh toán - Rút hoa hồng
           </div>
         </div>
       </div>
@@ -197,9 +197,9 @@ return (
         </div>
         <StatRow
           icon={<DollarSign size={14} className='text-blue-500' />}
-          label='Giá trị đơn TB'
+          label='Giá trị trung bình/đơn'
           value={formatCurrency(aov)}
-          sub='AOV — trung bình mỗi đơn'
+          sub='Trung bình mỗi đơn hàng'
           color='text-blue-600'
         />
         <StatRow
