@@ -3182,3 +3182,20 @@ Các phần dưới đây nằm ngoài scope "flow mua proxy" nhưng có thể c
 - **Type**: `useBrandingSettings.ts` thêm `period` vào `landing_pricing` type
 
 **Files:** `HistoryOrderPage.tsx`, `SiteSettingsForm.tsx`, `ProductsSection.tsx`, `useBrandingSettings.ts`
+
+#### 13.N+5 Params Mapping UI — biến chuẩn hệ thống trên Provider form
+
+**Thêm:**
+- **BuyConfigSection**: Step 6 "Params Mapping" — bảng map biến chuẩn (protocol, quantity, duration, username, password, allow_ips, auth_token, ip_version) sang param NCC. Dropdown cố định, value_map bảng 2 cột, default value, format cho array. Alert warning config cũ bị thay khi biến được map
+- **ProviderFormTypes**: `ParamsMappingEntry` type, `STANDARD_VARIABLES` + `VARIABLE_FORMAT_OPTIONS` constants, field `params_mapping` + `params_mapping_enabled` trong `ApiConfigBuy`
+- **ProviderFormSerializer**: parse value_map object→array (DB→form), build array→object (form→DB). Backward compat: NCC chưa có mapping → `params_mapping_enabled = false`
+
+**Files:** `ProviderFormTypes.ts`, `ProviderFormSerializer.ts`, `BuyConfigSection.tsx`
+
+### 01/04/2026
+
+#### 13.N+6 Chuẩn hoá proxy object FE — utility thay inline logic
+
+**Thêm:** `extractProxyValue()`, `extractProtocol()`, `getProxyString()` trong `protocolProxy.ts`
+**Sửa:** 8 file hiển thị proxy dùng utility thay inline logic. Admin config labels đổi `loaiproxy` → `protocol`.
+**Files:** `protocolProxy.ts`, `OrderProxyPage.tsx` (2 files), `ProxyDetailModal.tsx`, `OrderRotatingProxyPage.tsx`, `OrderDetail.tsx`, `OrderDetailModal.tsx`, `ProviderFormTypes.ts`, `BuyConfigSection.tsx`, `RenewSection.tsx`, `ServiceFormModal.tsx`
