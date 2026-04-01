@@ -1,6 +1,7 @@
 'use client'
 
-import { DollarSign, TrendingDown, TrendingUp, Wallet } from 'lucide-react'
+import { DollarSign, TrendingDown, TrendingUp, Wallet, Info } from 'lucide-react'
+import Tooltip from '@mui/material/Tooltip'
 
 import KPICard from '@/components/UI/KPICard'
 import { formatCurrency, formatNumber } from '@/utils/formatters'
@@ -10,6 +11,16 @@ interface RevenueProfitCardsProps {
   revenue: FinancialReportData['revenue']
   deposits: FinancialReportData['deposits']
   periodDays: number
+}
+
+function Hint({ text }: { text: string }) {
+  return (
+    <Tooltip title={text} arrow placement='top'>
+      <span style={{ cursor: 'help', opacity: 0.6, verticalAlign: 'middle', marginLeft: 2 }}>
+        <Info size={11} />
+      </span>
+    </Tooltip>
+  )
 }
 
 export default function RevenueProfitCards({ revenue, deposits, periodDays }: RevenueProfitCardsProps) {
@@ -30,6 +41,7 @@ export default function RevenueProfitCards({ revenue, deposits, periodDays }: Re
         />
         <div className='mt-1 px-2 text-xs text-gray-500'>
           Đang hoạt động: <span className='font-semibold text-blue-600'>{fmt(revenue.expected)} đ</span>
+          <Hint text='Đơn hàng đang sử dụng, chưa hết hạn. Khi hết hạn sẽ cộng vào doanh thu hoàn thành.' />
           {revenue.refunded > 0 && (
             <span className='text-red-500 ml-1'>(hoàn: {fmt(revenue.refunded)} đ)</span>
           )}
@@ -45,6 +57,7 @@ export default function RevenueProfitCards({ revenue, deposits, periodDays }: Re
         />
         <div className='mt-1 px-2 text-xs text-gray-500'>
           Hoa hồng giới thiệu: <span className='font-semibold text-purple-600'>{fmt(revenue.affiliate_cost)} đ</span>
+          <Hint text='Tiền thưởng cho người giới thiệu khách hàng. Chi phí này được trừ khi tính lợi nhuận.' />
         </div>
       </div>
 
@@ -57,6 +70,7 @@ export default function RevenueProfitCards({ revenue, deposits, periodDays }: Re
         />
         <div className='mt-1 px-2 text-xs text-gray-500'>
           Biên lợi nhuận: <span className='font-semibold text-green-600'>{revenue.margin_percent}%</span>
+          <Hint text='Biên lợi nhuận = Lợi nhuận ÷ (Doanh thu − Hoàn tiền) × 100%. Cho biết mỗi 100đ doanh thu thực lãi bao nhiêu.' />
           {' · '}Trung bình: {formatCurrency(Math.round(revenue.profit / periodDays))}/ngày
         </div>
       </div>

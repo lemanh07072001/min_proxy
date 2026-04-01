@@ -1,6 +1,7 @@
 'use client'
 
-import { TrendingUp, TrendingDown, DollarSign, Receipt, RefreshCw, Users, Clock } from 'lucide-react'
+import { TrendingUp, TrendingDown, DollarSign, Receipt, RefreshCw, Users, Clock, Info } from 'lucide-react'
+import Tooltip from '@mui/material/Tooltip'
 
 import { formatCurrency } from '@/utils/formatters'
 import type { FinancialReportData } from '@/hooks/apis/useFinancialReport'
@@ -8,6 +9,17 @@ import type { FinancialReportData } from '@/hooks/apis/useFinancialReport'
 interface ProfitHeroProps {
   revenue: FinancialReportData['revenue']
   periodDays: number
+}
+
+/** Tooltip icon nhỏ — hover để xem giải thích */
+function Hint({ text }: { text: string }) {
+  return (
+    <Tooltip title={text} arrow placement='top'>
+      <span style={{ cursor: 'help', opacity: 0.5, verticalAlign: 'middle' }}>
+        <Info size={11} />
+      </span>
+    </Tooltip>
+  )
 }
 
 export default function ProfitHero({ revenue, periodDays }: ProfitHeroProps) {
@@ -37,6 +49,7 @@ export default function ProfitHero({ revenue, periodDays }: ProfitHeroProps) {
             <span className='text-sm font-medium uppercase tracking-wider opacity-80'>
               {isProfitable ? 'Đang có lãi' : 'Đang lỗ'}
             </span>
+            <Hint text='Lợi nhuận = Doanh thu hoàn thành − Hoàn tiền − Chi phí − Hoa hồng giới thiệu. Chỉ tính đơn hàng đã hết hạn (hoàn thành).' />
           </div>
           <div className='text-3xl font-bold'>
             {formatCurrency(Math.abs(revenue.profit))}
@@ -46,7 +59,8 @@ export default function ProfitHero({ revenue, periodDays }: ProfitHeroProps) {
           </div>
           {revenue.expected > 0 && (
             <div className='text-xs opacity-60 mt-1'>
-              Đang hoạt động: {formatCurrency(revenue.expected)} → lãi dự kiến +{formatCurrency(expectedProfit)}
+              Đang hoạt động: {formatCurrency(revenue.expected)} → lãi dự kiến +{formatCurrency(expectedProfit)}{' '}
+              <Hint text='Lãi dự kiến = Doanh thu đang hoạt động − Chi phí dự kiến − Hoa hồng dự kiến. Đây là đơn chưa hết hạn, khi hết hạn sẽ chuyển thành lợi nhuận thực tế.' />
             </div>
           )}
           {(revenue.confirmed > 0 || revenue.expected > 0) && (
@@ -57,7 +71,9 @@ export default function ProfitHero({ revenue, periodDays }: ProfitHeroProps) {
         </div>
         <div className='flex flex-col gap-2'>
           <div className='bg-white/15 rounded-xl px-4 py-3 text-right'>
-            <div className='text-xs opacity-70'>Doanh thu hoàn thành</div>
+            <div className='text-xs opacity-70'>
+              Doanh thu hoàn thành <Hint text='Tổng tiền thu từ đơn hàng đã hết hạn (mua mới + gia hạn). Đơn đang dùng chưa tính vào đây.' />
+            </div>
             <div className='text-xl font-bold'>{formatCurrency(revenue.confirmed)}</div>
             <div className='text-xs opacity-70'>Trung bình: {formatCurrency(dailyRevenue)}/ngày</div>
           </div>
@@ -78,35 +94,35 @@ export default function ProfitHero({ revenue, periodDays }: ProfitHeroProps) {
         <div className='bg-white/10 rounded-lg px-3 py-2'>
           <div className='flex items-center gap-1.5 text-xs opacity-70 mb-1'>
             <DollarSign size={12} />
-            Doanh thu
+            Doanh thu <Hint text='Tiền thu từ đơn hàng đã hoàn thành (hết hạn sử dụng)' />
           </div>
           <div className='font-semibold'>{formatCurrency(revenue.confirmed)}</div>
         </div>
         <div className='bg-white/10 rounded-lg px-3 py-2'>
           <div className='flex items-center gap-1.5 text-xs opacity-70 mb-1'>
             <Receipt size={12} />
-            Chi phí
+            Chi phí <Hint text='Tiền trả cho nhà cung cấp proxy (chỉ tính đơn đã hoàn thành)' />
           </div>
           <div className='font-semibold'>{formatCurrency(revenue.cost_actual)}</div>
         </div>
         <div className='bg-white/10 rounded-lg px-3 py-2'>
           <div className='flex items-center gap-1.5 text-xs opacity-70 mb-1'>
             <RefreshCw size={12} />
-            Đã hoàn tiền
+            Đã hoàn tiền <Hint text='Tiền hoàn lại cho khách hàng khi đơn bị lỗi hoặc huỷ' />
           </div>
           <div className='font-semibold'>{formatCurrency(revenue.refunded)}</div>
         </div>
         <div className='bg-white/10 rounded-lg px-3 py-2'>
           <div className='flex items-center gap-1.5 text-xs opacity-70 mb-1'>
             <Users size={12} />
-            Hoa hồng giới thiệu
+            Hoa hồng giới thiệu <Hint text={`Tiền thưởng cho người giới thiệu khách hàng mới (${Math.round((revenue.affiliate_cost / (revenue.confirmed || 1)) * 100)}% doanh thu)`} />
           </div>
           <div className='font-semibold'>{formatCurrency(revenue.affiliate_cost)}</div>
         </div>
         <div className='bg-white/10 rounded-lg px-3 py-2'>
           <div className='flex items-center gap-1.5 text-xs opacity-70 mb-1'>
             <Clock size={12} />
-            Đang hoạt động
+            Đang hoạt động <Hint text='Đơn hàng đang sử dụng, chưa hết hạn. Khi hết hạn sẽ chuyển thành doanh thu hoàn thành.' />
           </div>
           <div className='font-semibold text-yellow-200'>{formatCurrency(revenue.expected)}</div>
         </div>
