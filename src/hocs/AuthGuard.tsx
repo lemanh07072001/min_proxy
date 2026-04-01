@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import { usePathname } from 'next/navigation'
 
@@ -18,6 +18,24 @@ export default function AuthGuard({ children, locale }: ChildrenType & { locale:
   const pathname = usePathname()
   const { status } = useSession()
   const wasAuthenticatedRef = useRef(false)
+  // Chờ session ổn định — tránh flash login khi reload
+  // NextAuth có thể trả 'unauthenticated' thoáng qua trước khi sync cookie → authenticated
+  const [settled, setSettled] = useState(false)
+  const timerRef = useRef<ReturnType<typeof setTimeout>>()
+
+  useEffect(() => {
+    if (status === 'authenticated') {
+      // Authenticated ngay → clear timer, settled
+      clearTimeout(timerRef.current)
+      setSettled(true)
+    } else if (status === 'unauthenticated') {
+      // Chờ 500ms trước khi kết luận thật sự unauthenticated
+      // Đủ để NextAuth sync session từ cookie nếu có
+      timerRef.current = setTimeout(() => setSettled(true), 500)
+    }
+
+    return () => clearTimeout(timerRef.current)
+  }, [status])
 
   // Public routes: luôn render content, không cần auth
   const isPublicRoute = PUBLIC_ROUTES.some(route => pathname.endsWith(route))
@@ -31,7 +49,7 @@ export default function AuthGuard({ children, locale }: ChildrenType & { locale:
     wasAuthenticatedRef.current = true
   }
 
-  // Đang loading session — nếu đã authenticated trước đó thì giữ content, không flash trắng
+  // Đang loading session — giữ content cũ hoặc chờ
   if (status === 'loading') {
     if (wasAuthenticatedRef.current) {
       return <>{children}</>
@@ -45,7 +63,12 @@ export default function AuthGuard({ children, locale }: ChildrenType & { locale:
     return <>{children}</>
   }
 
-  // Chưa đăng nhập → hiện EmptyAuthPage
+  // Session chưa ổn định (vừa mount, status chớp unauthenticated) → chờ
+  if (!settled) {
+    return null
+  }
+
+  // Chắc chắn unauthenticated → hiện login
   wasAuthenticatedRef.current = false
 
   return <EmptyAuthPage lang={locale} />
