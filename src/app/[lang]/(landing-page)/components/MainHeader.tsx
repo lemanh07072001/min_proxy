@@ -133,18 +133,18 @@ const MainHeader = ({ serverLogo, serverName }: MainHeaderProps) => {
             )}
           </a>
 
-          {/* Mobile: toggle + user actions — cân bằng kích thước */}
+          {/* Mobile: hamburger cạnh logo, actions bên phải */}
           <div className='header-mobile'>
             <button
               className='navbar-toggler'
               type='button'
-              style={{ border: 'none', boxShadow: 'none', padding: '4px 8px' }}
+              style={{ border: 'none', boxShadow: 'none', padding: '4px 6px', marginLeft: 4 }}
               onClick={toggleMobileMenu}
             >
-              <span className='navbar-toggler-icon'></span>
+              <span className='navbar-toggler-icon' style={{ width: 20, height: 20 }}></span>
             </button>
 
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: '2px', ml: 'auto' }}>
               <LanguageDropdown />
               <div style={{ display: isUnauthenticated ? 'none' : 'flex' }}>
                 <UserDropdown />

@@ -88,19 +88,19 @@ const STATUS_CONFIG: Record<number, { label: string; color: string }> = {
 function StatCard({ title, value, icon: Icon, color }: { title: string; value: string | number; icon: any; color: string }) {
   return (
     <Card sx={{ height: '100%' }}>
-      <CardContent sx={{ display: 'flex', alignItems: 'center', gap: 2, py: 2, '&:last-child': { pb: 2 } }}>
+      <CardContent sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, sm: 2 }, py: { xs: 1.5, sm: 2 }, px: { xs: 1.5, sm: 2 }, '&:last-child': { pb: { xs: 1.5, sm: 2 } } }}>
         <div
           style={{
-            width: 48, height: 48, borderRadius: 12,
+            width: 36, height: 36, borderRadius: 10,
             backgroundColor: color + '20',
             display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
           }}
         >
-          <Icon size={24} color={color} />
+          <Icon size={18} color={color} />
         </div>
-        <div>
-          <Typography variant='body2' color='text.secondary' sx={{ mb: 0.5 }}>{title}</Typography>
-          <Typography variant='h6' fontWeight={600}>{value}</Typography>
+        <div style={{ minWidth: 0 }}>
+          <Typography sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' }, color: 'text.secondary', whiteSpace: 'nowrap' }}>{title}</Typography>
+          <Typography sx={{ fontSize: { xs: '0.85rem', sm: '1.1rem' }, fontWeight: 600, whiteSpace: 'nowrap' }}>{value}</Typography>
         </div>
       </CardContent>
     </Card>
@@ -736,17 +736,17 @@ return {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - var(--header-height, 64px))', overflow: 'hidden' }}>
           {/* Stats Cards — cố định */}
-          <Grid2 container spacing={2} sx={{ mb: 2, flexShrink: 0, px: 1 }}>
-            <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+          <Grid2 container spacing={{ xs: 1, sm: 2 }} sx={{ mb: { xs: 1, sm: 2 }, flexShrink: 0, px: 1 }}>
+            <Grid2 size={{ xs: 6, sm: 6, md: 3 }}>
               <StatCard title='Tổng đơn hàng' value={summary.total_orders} icon={ShoppingCart} color='#7C3AED' />
             </Grid2>
-            <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+            <Grid2 size={{ xs: 6, sm: 6, md: 3 }}>
               <StatCard title='Tổng doanh thu' value={formatVND(summary.total_amount)} icon={DollarSign} color='#059669' />
             </Grid2>
-            <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+            <Grid2 size={{ xs: 6, sm: 6, md: 3 }}>
               <StatCard title='Tổng vốn' value={formatVND(summary.total_cost)} icon={Package} color='#D97706' />
             </Grid2>
-            <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+            <Grid2 size={{ xs: 6, sm: 6, md: 3 }}>
               <StatCard title='Lợi nhuận' value={formatVND(summary.profit)} icon={TrendingUp} color='#2563EB' />
             </Grid2>
           </Grid2>
@@ -756,21 +756,25 @@ return {
             <div className='table-container' style={{ borderRadius: '12px', overflow: 'hidden', display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
               {/* Toolbar */}
               <div className='table-toolbar' style={{ flexDirection: 'column', alignItems: 'stretch', gap: 0, padding: 0, flexShrink: 0 }}>
-                {/* Row 1: Title + Search */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', borderBottom: '1px solid #f1f5f9' }}>
+                {/* Row 1: Title */}
+                <div style={{ display: 'flex', alignItems: 'center', padding: '10px 16px 6px', gap: 8 }}>
                   <div className='header-left'>
                     <div className='page-icon'>
                       <List size={17} />
                     </div>
-                    <h5 className='mb-0 font-semibold'>Quản lý đơn hàng</h5>
+                    <h5 className='mb-0 font-semibold' style={{ whiteSpace: 'nowrap' }}>Quản lý đơn hàng</h5>
                   </div>
+                </div>
+
+                {/* Row 2: Search + Filters — wrap trên mobile */}
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center', padding: '6px 16px 10px' }}>
                   <TextField
                     size='small'
                     placeholder='Tìm mã đơn, user...'
                     value={searchInput}
                     onChange={e => setSearchInput(e.target.value)}
                     onKeyDown={handleKeyDown}
-                    sx={{ width: 220, '& .MuiOutlinedInput-root': { fontSize: '13px', borderRadius: '8px' } }}
+                    sx={{ flex: '1 1 150px', minWidth: 0, '& .MuiOutlinedInput-root': { fontSize: '13px', borderRadius: '8px' } }}
                     InputProps={{
                       startAdornment: (
                         <InputAdornment position='start'>
@@ -786,16 +790,12 @@ return {
                       ) : null
                     }}
                   />
-                </div>
-
-                {/* Row 2: Filters */}
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center', padding: '10px 16px' }}>
                   <CustomTextField
                     size='small'
                     type='date'
                     value={startInput}
                     onChange={e => setStartInput(e.target.value)}
-                    sx={{ width: 145, ...inputSx }}
+                    sx={{ flex: '0 0 auto', width: 135, ...inputSx }}
                   />
                   <span style={{ color: '#94a3b8', fontSize: '13px' }}>—</span>
                   <CustomTextField
@@ -803,17 +803,15 @@ return {
                     type='date'
                     value={endInput}
                     onChange={e => setEndInput(e.target.value)}
-                    sx={{ width: 145, ...inputSx }}
+                    sx={{ flex: '0 0 auto', width: 135, ...inputSx }}
                   />
-
-                  <div style={{ width: 1, height: 24, backgroundColor: '#e2e8f0', margin: '0 4px' }} />
 
                   <CustomTextField
                     select
                     size='small'
                     value={statusInput}
                     onChange={e => setStatusInput(e.target.value)}
-                    sx={{ minWidth: 135, ...inputSx }}
+                    sx={{ flex: '0 1 auto', minWidth: 120, ...inputSx }}
                     slotProps={{ select: { displayEmpty: true } }}
                   >
                     <MenuItem value=''>
@@ -832,7 +830,7 @@ return {
                     size='small'
                     value={providerInput}
                     onChange={e => setProviderInput(e.target.value)}
-                    sx={{ minWidth: 130, ...inputSx }}
+                    sx={{ flex: '0 1 auto', minWidth: 120, ...inputSx }}
                     slotProps={{ select: { displayEmpty: true } }}
                   >
                     <MenuItem value=''>
@@ -850,7 +848,7 @@ return {
                     size='small'
                     value={orderTypeInput}
                     onChange={e => setOrderTypeInput(e.target.value)}
-                    sx={{ minWidth: 105, ...inputSx }}
+                    sx={{ flex: '0 1 auto', minWidth: 100, ...inputSx }}
                     slotProps={{ select: { displayEmpty: true } }}
                   >
                     <MenuItem value=''>
@@ -859,8 +857,6 @@ return {
                     <MenuItem value='0'>Mua mới</MenuItem>
                     <MenuItem value='1'>Gia hạn</MenuItem>
                   </CustomTextField>
-
-                  <div style={{ width: 1, height: 24, backgroundColor: '#e2e8f0', margin: '0 4px' }} />
 
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '13px', color: '#64748b' }}>
                     <span>Lấy</span>
