@@ -662,28 +662,19 @@ function StepParamsMapping({ prefix, control }: BuySectionProps) {
   const { fields, append, remove } = useFieldArray({ control, name: `${prefix}.params_mapping` })
   const mappingValues = useWatch({ control, name: `${prefix}.params_mapping` }) as ParamsMappingEntry[] | undefined
 
-  // Biến đã chọn → disable trong dropdown
   const usedVars = (mappingValues || []).map(m => m.variable).filter(Boolean)
 
-  // Biến nào đã map → hiện warning thay thế config cũ
-  const replacedConfigs = usedVars.map(v => {
-    const labels: Record<string, string> = {
-      protocol: 'Protocol Override (tuỳ chọn nâng cao)',
-      quantity: 'Tên param số lượng (Step 1)',
-      duration: 'Tên param thời hạn (Step 1)',
-      username: 'User tự chọn User:Pass (tuỳ chọn nâng cao)',
-      password: 'User tự chọn User:Pass (tuỳ chọn nâng cao)',
-      allow_ips: 'IP Whitelist (tab riêng)',
-      auth_token: 'Xác thực query (Step 1)',
-    }
-    return labels[v]
-  }).filter(Boolean)
+  const replacedLabels: Record<string, string> = {
+    protocol: 'Protocol Override', quantity: 'Quantity Param', duration: 'Duration Param',
+    username: 'User Override', password: 'User Override', allow_ips: 'IP Whitelist', auth_token: 'Auth Query',
+  }
+  const replacedConfigs = [...new Set(usedVars.map(v => replacedLabels[v]).filter(Boolean))]
 
   return (
     <PipelineStepCard
       step={6}
       title='Params Mapping — biến chuẩn hệ thống'
-      description='Map biến hệ thống (protocol, quantity, duration...) sang tên param NCC. Biến nào được map sẽ thay thế config cũ tương ứng. Biến chưa map → config cũ vẫn hoạt động.'
+      description='Mỗi dòng = 1 biến hệ thống được gửi sang NCC bằng tên param khác. Biến nào map ở đây sẽ thay config cũ tương ứng.'
     >
       <Grid2 container spacing={2}>
         <Grid2 size={{ xs: 12 }}>
@@ -699,92 +690,30 @@ function StepParamsMapping({ prefix, control }: BuySectionProps) {
 
         {enabled && (
           <>
-            {/* Warning: config cũ bị thay */}
             {replacedConfigs.length > 0 && (
               <Grid2 size={{ xs: 12 }}>
-                <Alert severity='info' sx={{ fontSize: 12 }}>
-                  Config cũ sau sẽ <strong>không còn tác dụng</strong> (đã được thay bởi mapping):
-                  <Box sx={{ mt: 0.5, display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
-                    {[...new Set(replacedConfigs)].map(c => (
-                      <Chip key={c} label={c} size='small' variant='outlined' sx={{ fontSize: 11 }} />
-                    ))}
-                  </Box>
+                <Alert severity='info' sx={{ fontSize: 12, py: 0.5 }}>
+                  Thay thế config cũ: {replacedConfigs.map(c => (
+                    <Chip key={c} label={c} size='small' variant='outlined' sx={{ fontSize: 11, ml: 0.5 }} />
+                  ))}
                 </Alert>
               </Grid2>
             )}
 
-            {/* Bảng mapping */}
+            {/* Mapping entries — mỗi entry là 1 flow card */}
             {fields.map((field, index) => {
               const currentVar = mappingValues?.[index]?.variable
               const varDef = STANDARD_VARIABLES.find(v => v.value === currentVar)
-              const hasFormat = varDef?.hasFormat
 
               return (
                 <Grid2 size={{ xs: 12 }} key={field.id}>
-                  <Box sx={{ p: 1.5, background: '#faf5ff', borderRadius: 1.5, border: '1px solid #e9d5ff', position: 'relative' }}>
-                    <IconButton size='small' onClick={() => remove(index)} sx={{ position: 'absolute', top: 4, right: 4, color: '#ef4444' }}>
-                      <Trash2 size={14} />
-                    </IconButton>
-
-                    <Grid2 container spacing={1.5}>
-                      {/* Biến chuẩn dropdown */}
-                      <Grid2 size={{ xs: 12, sm: 3 }}>
-                        <Controller name={`${prefix}.params_mapping.${index}.variable`} control={control} render={({ field: f }) => (
-                          <CustomTextField {...f} fullWidth select size='small' label='Biến hệ thống'>
-                            {STANDARD_VARIABLES.map(sv => (
-                              <MenuItem key={sv.value} value={sv.value} disabled={usedVars.includes(sv.value) && sv.value !== currentVar}>
-                                <Box>
-                                  <Typography variant='body2' sx={{ fontSize: 13 }}>{sv.label}</Typography>
-                                  <Typography variant='caption' sx={{ color: '#94a3b8', fontSize: 10 }}>{sv.source}</Typography>
-                                </Box>
-                              </MenuItem>
-                            ))}
-                          </CustomTextField>
-                        )} />
-                      </Grid2>
-
-                      {/* Param NCC */}
-                      <Grid2 size={{ xs: 12, sm: 2 }}>
-                        <Controller name={`${prefix}.params_mapping.${index}.param`} control={control} render={({ field: f }) => (
-                          <CustomTextField {...f} fullWidth size='small' label='Param NCC' placeholder='VD: soluong' />
-                        )} />
-                      </Grid2>
-
-                      {/* Giá trị mặc định */}
-                      <Grid2 size={{ xs: 12, sm: 2 }}>
-                        <Controller name={`${prefix}.params_mapping.${index}.default_value`} control={control} render={({ field: f }) => (
-                          <CustomTextField {...f} fullWidth size='small' label='Mặc định' placeholder='Bỏ trống' />
-                        )} />
-                      </Grid2>
-
-                      {/* Format (chỉ hiện cho biến array như allow_ips) */}
-                      {hasFormat && (
-                        <Grid2 size={{ xs: 12, sm: 2 }}>
-                          <Controller name={`${prefix}.params_mapping.${index}.format`} control={control} render={({ field: f }) => (
-                            <CustomTextField {...f} fullWidth select size='small' label='Định dạng'>
-                              {VARIABLE_FORMAT_OPTIONS.map(opt => (
-                                <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>
-                              ))}
-                            </CustomTextField>
-                          )} />
-                        </Grid2>
-                      )}
-
-                      {/* Value Map — bảng chuyển giá trị */}
-                      <Grid2 size={{ xs: 12 }}>
-                        <ValueMapEditor prefix={prefix} control={control} index={index} />
-                      </Grid2>
-                    </Grid2>
-                  </Box>
+                  <MappingCard prefix={prefix} control={control} index={index} currentVar={currentVar} varDef={varDef} usedVars={usedVars} onRemove={() => remove(index)} />
                 </Grid2>
               )
             })}
 
-            {/* Nút thêm */}
             <Grid2 size={{ xs: 12 }}>
-              <Button
-                size='small'
-                startIcon={<Plus size={14} />}
+              <Button size='small' startIcon={<Plus size={14} />}
                 onClick={() => append({ ...defaultParamsMappingEntry })}
                 disabled={usedVars.length >= STANDARD_VARIABLES.length}
                 sx={{ textTransform: 'none', fontSize: 12 }}
@@ -799,35 +728,120 @@ function StepParamsMapping({ prefix, control }: BuySectionProps) {
   )
 }
 
-/** Bảng value_map con — 2 cột: Giá trị gốc | Giá trị gửi NCC */
-function ValueMapEditor({ prefix, control, index }: BuySectionProps & { index: number }) {
-  const { fields, append, remove } = useFieldArray({ control, name: `${prefix}.params_mapping.${index}.value_map` })
+/** Flow card — hiển thị: Khách chọn X ──→ Gửi NCC param Y = giá trị Z */
+function MappingCard({ prefix, control, index, currentVar, varDef, usedVars, onRemove }: BuySectionProps & {
+  index: number; currentVar?: string; varDef?: (typeof STANDARD_VARIABLES)[0]; usedVars: string[]; onRemove: () => void
+}) {
+  const { fields: vmFields, append: vmAppend, remove: vmRemove } = useFieldArray({ control, name: `${prefix}.params_mapping.${index}.value_map` })
+  const paramValue = useWatch({ control, name: `${prefix}.params_mapping.${index}.param` })
+  const vmValues = useWatch({ control, name: `${prefix}.params_mapping.${index}.value_map` }) as { from: string; to: string }[] | undefined
+
+  // Ví dụ kết quả thực tế
+  const exampleResult = (() => {
+    if (!varDef || !paramValue) return null
+    const exVal = varDef.example?.split(', ')[0] || ''
+    const mapped = (vmValues || []).find(vm => vm.from && vm.from.toLowerCase() === exVal.toLowerCase())
+    const finalVal = mapped?.to || exVal
+    return `${paramValue}=${finalVal}`
+  })()
 
   return (
-    <Box>
-      <Typography variant='caption' sx={{ color: '#7c3aed', fontWeight: 600, mb: 0.5, display: 'block' }}>
-        Chuyển giá trị (tuỳ chọn)
-        <Tooltip title='VD: Khi user chọn "http", gửi NCC giá trị "1" thay vì "http". Bỏ trống nếu gửi nguyên.' arrow>
-          <Box component='span' sx={{ ml: 0.5, cursor: 'help', color: '#a78bfa' }}>ⓘ</Box>
-        </Tooltip>
-      </Typography>
-      {fields.map((f, vmIdx) => (
-        <Box key={f.id} sx={{ display: 'flex', gap: 1, mb: 0.5, alignItems: 'center' }}>
-          <Controller name={`${prefix}.params_mapping.${index}.value_map.${vmIdx}.from`} control={control} render={({ field }) => (
-            <CustomTextField {...field} size='small' placeholder='Giá trị gốc (VD: http)' sx={{ flex: 1 }} />
-          )} />
-          <Typography variant='caption' sx={{ color: '#94a3b8' }}>→</Typography>
-          <Controller name={`${prefix}.params_mapping.${index}.value_map.${vmIdx}.to`} control={control} render={({ field }) => (
-            <CustomTextField {...field} size='small' placeholder='Gửi NCC (VD: 1)' sx={{ flex: 1 }} />
-          )} />
-          <IconButton size='small' onClick={() => remove(vmIdx)} sx={{ color: '#ef4444' }}>
-            <Trash2 size={12} />
+    <Box sx={{ borderRadius: 2, border: '1px solid #e2e8f0', overflow: 'hidden' }}>
+      {/* Dòng 1: Khách chọn/nhập → Gửi NCC param */}
+      <Box sx={{ px: 2, py: 1.5, background: '#f8fafc', borderBottom: '1px solid #f1f5f9' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          {/* Variable dropdown */}
+          <Box sx={{ flex: 1 }}>
+            <Controller name={`${prefix}.params_mapping.${index}.variable`} control={control} render={({ field: f }) => (
+              <CustomTextField {...f} fullWidth select size='small'
+                label={varDef ? `${varDef.source}` : 'Chọn biến'}
+                slotProps={{ select: { renderValue: (val: unknown) => {
+                  const sv = STANDARD_VARIABLES.find(s => s.value === val)
+                  return sv ? `${sv.value} — ${sv.label}` : 'Chọn biến...'
+                }}}}
+              >
+                {STANDARD_VARIABLES.map(sv => (
+                  <MenuItem key={sv.value} value={sv.value} disabled={usedVars.includes(sv.value) && sv.value !== currentVar}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: '100%' }}>
+                      <code style={{ background: '#e2e8f0', padding: '2px 6px', borderRadius: 4, fontSize: 12, fontWeight: 600, minWidth: 75 }}>{sv.value}</code>
+                      <Box sx={{ flex: 1 }}>
+                        <Typography sx={{ fontSize: 13 }}>{sv.label}</Typography>
+                        <Typography sx={{ fontSize: 10, color: '#94a3b8' }}>{sv.source} — VD: {sv.example}</Typography>
+                      </Box>
+                    </Box>
+                  </MenuItem>
+                ))}
+              </CustomTextField>
+            )} />
+          </Box>
+
+          <Typography sx={{ fontSize: 20, color: '#6366f1', fontWeight: 700 }}>→</Typography>
+
+          {/* Param NCC */}
+          <Box sx={{ flex: 1 }}>
+            <Controller name={`${prefix}.params_mapping.${index}.param`} control={control} render={({ field: f }) => (
+              <CustomTextField {...f} fullWidth size='small' label='Gửi NCC bằng param' placeholder='VD: soluong, type, ngay' />
+            )} />
+          </Box>
+
+          <IconButton size='small' onClick={onRemove} sx={{ color: '#94a3b8', '&:hover': { color: '#ef4444' } }}>
+            <Trash2 size={16} />
           </IconButton>
         </Box>
-      ))}
-      <Button size='small' onClick={() => append({ from: '', to: '' })} sx={{ textTransform: 'none', fontSize: 11, color: '#7c3aed' }}>
-        + Thêm chuyển giá trị
-      </Button>
+
+        {/* Ví dụ kết quả */}
+        {exampleResult && (
+          <Typography sx={{ fontSize: 11, color: '#6366f1', mt: 0.75, pl: 0.5 }}>
+            VD: Khách chọn <strong>{varDef?.example?.split(', ')[0]}</strong> → gửi NCC <code style={{ background: '#eef2ff', padding: '1px 4px', borderRadius: 3 }}>{exampleResult}</code>
+          </Typography>
+        )}
+      </Box>
+
+      {/* Dòng 2: Tuỳ chọn — mặc định + format + chuyển giá trị */}
+      <Box sx={{ px: 2, py: 1.5 }}>
+        <Box sx={{ display: 'flex', gap: 1.5, mb: 1 }}>
+          <Controller name={`${prefix}.params_mapping.${index}.default_value`} control={control} render={({ field: f }) => (
+            <CustomTextField {...f} size='small' label='Nếu khách không nhập, gửi giá trị' placeholder='Bỏ trống = không gửi param này' sx={{ flex: 1 }} />
+          )} />
+          {varDef?.hasFormat && (
+            <Controller name={`${prefix}.params_mapping.${index}.format`} control={control} render={({ field: f }) => (
+              <CustomTextField {...f} select size='small' label='Gửi nhiều giá trị kiểu' sx={{ minWidth: 220 }}>
+                {VARIABLE_FORMAT_OPTIONS.map(opt => (
+                  <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>
+                ))}
+              </CustomTextField>
+            )} />
+          )}
+        </Box>
+
+        {/* Chuyển giá trị */}
+        <Typography variant='caption' sx={{ color: '#64748b', fontWeight: 600, display: 'block', mb: 0.5 }}>
+          Chuyển giá trị trước khi gửi NCC
+          <Typography component='span' variant='caption' sx={{ color: '#94a3b8', fontWeight: 400, ml: 0.5 }}>
+            — bỏ trống = gửi nguyên
+          </Typography>
+        </Typography>
+
+        {vmFields.map((f, vmIdx) => (
+          <Box key={f.id} sx={{ display: 'flex', gap: 1, mb: 0.5, alignItems: 'center' }}>
+            <Typography variant='caption' sx={{ color: '#94a3b8', minWidth: 65, fontSize: 11 }}>Khách chọn</Typography>
+            <Controller name={`${prefix}.params_mapping.${index}.value_map.${vmIdx}.from`} control={control} render={({ field }) => (
+              <CustomTextField {...field} size='small' placeholder={varDef?.example?.split(', ')[0] || 'VD: http'} sx={{ flex: 1 }} />
+            )} />
+            <Typography sx={{ color: '#6366f1', fontWeight: 600 }}>→</Typography>
+            <Typography variant='caption' sx={{ color: '#94a3b8', minWidth: 55, fontSize: 11 }}>gửi NCC</Typography>
+            <Controller name={`${prefix}.params_mapping.${index}.value_map.${vmIdx}.to`} control={control} render={({ field }) => (
+              <CustomTextField {...field} size='small' placeholder='VD: 1' sx={{ flex: 1 }} />
+            )} />
+            <IconButton size='small' onClick={() => vmRemove(vmIdx)} sx={{ color: '#94a3b8', '&:hover': { color: '#ef4444' } }}>
+              <Trash2 size={14} />
+            </IconButton>
+          </Box>
+        ))}
+        <Button size='small' onClick={() => vmAppend({ from: '', to: '' })} sx={{ textTransform: 'none', fontSize: 11, color: '#6366f1' }}>
+          + Thêm chuyển giá trị
+        </Button>
+      </Box>
     </Box>
   )
 }

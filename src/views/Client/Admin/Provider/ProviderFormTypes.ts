@@ -261,14 +261,14 @@ export const ORDER_FIELDS = [
 // ─── Standard Variables (biến chuẩn hệ thống) ─────
 
 export const STANDARD_VARIABLES = [
-  { value: 'protocol',   label: 'Giao thức (HTTP/SOCKS5)', source: 'Từ đơn hàng' },
-  { value: 'quantity',   label: 'Số lượng proxy',          source: 'Từ đơn hàng' },
-  { value: 'duration',   label: 'Thời hạn (ngày)',         source: 'Từ đơn hàng' },
-  { value: 'username',   label: 'Username proxy',          source: 'Khách nhập khi mua' },
-  { value: 'password',   label: 'Password proxy',          source: 'Khách nhập khi mua' },
-  { value: 'allow_ips',  label: 'IP whitelist',            source: 'Khách nhập khi mua', hasFormat: true },
-  { value: 'auth_token', label: 'Token API (NCC)',         source: 'Từ cấu hình NCC' },
-  { value: 'ip_version', label: 'IP version (v4/v6)',      source: 'Từ sản phẩm' },
+  { value: 'protocol',   label: 'Giao thức',      source: 'Khách chọn khi mua', example: 'HTTP, SOCKS5' },
+  { value: 'quantity',   label: 'Số lượng proxy',  source: 'Khách chọn khi mua', example: '1, 5, 10' },
+  { value: 'duration',   label: 'Thời hạn (ngày)', source: 'Khách chọn khi mua', example: '1, 7, 30' },
+  { value: 'username',   label: 'Username proxy',  source: 'Khách tự nhập',      example: 'myuser' },
+  { value: 'password',   label: 'Password proxy',  source: 'Khách tự nhập',      example: 'mypass' },
+  { value: 'allow_ips',  label: 'IP whitelist',    source: 'Khách tự nhập',      example: '1.2.3.4, 5.6.7.8', hasFormat: true },
+  { value: 'auth_token', label: 'Token API',       source: 'Tự động từ cấu hình', example: 'abc123...' },
+  { value: 'ip_version', label: 'IP version',      source: 'Tự động từ cấu hình', example: 'v4, v6' },
 ]
 
 export const VARIABLE_FORMAT_OPTIONS = [
