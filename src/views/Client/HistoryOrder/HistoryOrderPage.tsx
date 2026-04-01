@@ -240,22 +240,22 @@ export default function HistoryOrderPage() {
         <div className='table-container'>
           {/* Toolbar */}
           <div className='table-toolbar' style={{ flexDirection: 'column', alignItems: 'stretch', gap: 0, padding: 0 }}>
-            {/* Row 1: Title + Search */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', borderBottom: '1px solid #f1f5f9' }}>
-              <div className='header-left'>
+            {/* Row 1: Title + Search — responsive wrap trên mobile */}
+            <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', gap: 8, borderBottom: '1px solid #f1f5f9' }}>
+              <div className='header-left' style={{ flexShrink: 0 }}>
                 <div className='page-icon'>
                   <List size={17} />
                 </div>
-                <h5 className='mb-0 font-semibold'>Đơn hàng của tôi</h5>
+                <h5 className='mb-0 font-semibold' style={{ whiteSpace: 'nowrap' }}>Đơn hàng của tôi</h5>
               </div>
-              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', flex: 1, minWidth: 0, justifyContent: 'flex-end' }}>
                 <TextField
                   size='small'
                   placeholder='Tìm mã đơn, dịch vụ...'
                   value={searchText}
                   onChange={e => setSearchText(e.target.value)}
                   onKeyDown={e => { if (e.key === 'Enter') handleSearch() }}
-                  sx={{ width: 220, '& .MuiOutlinedInput-root': { fontSize: '13px', borderRadius: '8px' } }}
+                  sx={{ flex: '1 1 160px', maxWidth: 260, minWidth: 120, '& .MuiOutlinedInput-root': { fontSize: '13px', borderRadius: '8px' } }}
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position='start'>
@@ -279,7 +279,7 @@ export default function HistoryOrderPage() {
                     setStatusFilter(e.target.value)
                     setPagination(prev => ({ ...prev, pageIndex: 0 }))
                   }}
-                  sx={{ minWidth: 155, ...inputSx }}
+                  sx={{ flex: '0 1 155px', minWidth: 120, ...inputSx }}
                   slotProps={{ select: { displayEmpty: true } }}
                 >
                   <MenuItem value='all'>Tất cả trạng thái</MenuItem>
@@ -292,7 +292,7 @@ export default function HistoryOrderPage() {
                   size='small'
                   onClick={handleSearch}
                   startIcon={isFetching ? <Loader2 size={15} style={{ animation: 'spin 1s linear infinite' }} /> : <Search size={15} />}
-                  sx={{ height: 36, borderRadius: '8px', fontSize: '13px', textTransform: 'none', whiteSpace: 'nowrap', px: 2, background: 'var(--primary-gradient, var(--primary-hover))', '&:hover': { opacity: 0.9 } }}
+                  sx={{ height: 36, borderRadius: '8px', fontSize: '13px', textTransform: 'none', whiteSpace: 'nowrap', px: 2, flexShrink: 0, background: 'var(--primary-gradient, var(--primary-hover))', '&:hover': { opacity: 0.9 } }}
                 >
                   Tìm kiếm
                 </Button>

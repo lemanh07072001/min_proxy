@@ -382,17 +382,7 @@ return result
   const columns = useMemo(
     () => [
       {
-        accessorKey: 'code',
-        header: 'ID#Code',
-        minSize: 140,
-        cell: ({ row }: { row: any }) => (
-          <span style={{ fontFamily: 'monospace', fontSize: 12, color: '#64748b' }}>
-            {row.original?.id}#{row.original?.code || '—'}
-          </span>
-        ),
-      },
-      {
-        header: 'STT',
+        header: 'Thứ tự',
         size: 60,
         cell: ({ row }: { row: any }) => (
           <EditableOrderCell
@@ -402,13 +392,22 @@ return result
         )
       },
       {
-        header: 'Name',
-        cell: ({ row }: { row: any }) => (
-          <div>
-            <div className='font-bold'>{row.original?.name}</div>
-          </div>
-        ),
-        minSize: 180
+        header: 'Thông tin sản phẩm',
+        minSize: 220,
+        cell: ({ row }: { row: any }) => {
+          const o = row.original
+          return (
+            <div style={{ lineHeight: 1.5 }}>
+              <div style={{ fontWeight: 600, fontSize: '13px' }}>{o?.name}</div>
+              <div style={{ fontSize: '11px', color: '#64748b', fontFamily: 'monospace' }}>
+                #{o?.id}·{o?.code || '—'}
+              </div>
+              {!isChild && o?.provider?.title && (
+                <div style={{ fontSize: '11px', color: '#94a3b8' }}>NCC: {o.provider.title}</div>
+              )}
+            </div>
+          )
+        }
       },
       {
         header: 'Trạng thái',
@@ -425,87 +424,32 @@ return result
         minSize: 100
       },
       {
-        header: 'Nhà cung cấp',
+        header: 'Phân loại',
+        minSize: 150,
         cell: ({ row }: { row: any }) => {
+          const o = row.original
+          const type = o?.type
+          const typeText = type === 0 || type === '0' ? 'Tĩnh' : type === 1 || type === '1' ? 'Xoay' : type || '-'
+          const proxyType = o?.proxy_type
+          const proxyTypeText = proxyType === 'residential' ? 'Dân cư' : proxyType === 'datacenter' ? 'Datacenter' : proxyType || ''
+          const ipVersion = o?.ip_version
+          const ipText = ipVersion === 'ipv4' ? 'IPv4' : ipVersion === 'ipv6' ? 'IPv6' : ipVersion || ''
+          const protocols = o?.protocols
+
           return (
-            <div>
-              <div className='font-bold'>{row.original?.provider?.title}</div>
+            <div style={{ lineHeight: 1.6 }}>
+              <div style={{ fontWeight: 600, fontSize: '12px' }}>{typeText}{proxyTypeText ? ` · ${proxyTypeText}` : ''}</div>
+              {ipText && <div style={{ fontSize: '11px', color: '#64748b' }}>{ipText}</div>}
+              {protocols && protocols.length > 0 && (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3, marginTop: 2 }}>
+                  {protocols.map((p: string, i: number) => (
+                    <Chip key={i} label={p.toUpperCase()} size='small' variant='outlined' sx={{ height: 20, fontSize: '10px' }} />
+                  ))}
+                </div>
+              )}
             </div>
           )
-        },
-        minSize: 90
-      },
-      {
-        header: 'Type',
-        cell: ({ row }: { row: any }) => {
-          const type = row.original?.type
-          const displayText = type === 0 || type === '0' ? 'Tĩnh' : type === 1 || type === '1' ? 'Xoay' : type || '-'
-
-          
-return (
-            <div>
-              <div className='font-bold'>{displayText}</div>
-            </div>
-          )
-        },
-        minSize: 90
-      },
-      {
-        header: 'Proxy Type',
-        cell: ({ row }: { row: any }) => {
-          const proxyType = row.original?.proxy_type
-
-          
-return (
-            <div>
-              <div className='font-bold'>
-                {proxyType === 'residential' ? 'Dân cư' : proxyType === 'datacenter' ? 'Datacenter' : proxyType || '-'}
-              </div>
-            </div>
-          )
-        },
-        minSize: 90
-      },
-      {
-        header: 'IP Version',
-        cell: ({ row }: { row: any }) => {
-          const ipVersion = row.original?.ip_version
-
-          
-return (
-            <div>
-              <div className='font-bold'>
-                {ipVersion === 'ipv4' ? 'IPv4' : ipVersion === 'ipv6' ? 'IPv6' : ipVersion || '-'}
-              </div>
-            </div>
-          )
-        },
-        minSize: 90
-      },
-      {
-        header: 'Protocols',
-        cell: ({ row }: { row: any }) => {
-          const protocols = row.original?.protocols
-
-          if (!protocols || protocols.length === 0) {
-            return <div>-</div>
-          }
-
-          
-return (
-            <div className='flex flex-wrap gap-1'>
-              {protocols.map((protocol: string, index: number) => (
-                <Chip
-                  key={index}
-                  label={protocol === 'http' ? 'HTTP' : protocol === 'socks5' ? 'SOCKS5' : protocol.toUpperCase()}
-                  size='small'
-                  variant='outlined'
-                />
-              ))}
-            </div>
-          )
-        },
-        minSize: 140
+        }
       },
       {
         header: 'Giá bán',

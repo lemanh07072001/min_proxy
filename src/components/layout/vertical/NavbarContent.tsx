@@ -60,14 +60,14 @@ const NavbarContent = () => {
       {/* Phần trái: toggle + banner — ẩn banner mobile khi có pending */}
       <div className='flex items-center gap-2' style={{ minWidth: 0, flexShrink: 1, height: '100%', overflow: 'hidden' }}>
         <NavToggle />
-        <Box sx={{ display: hasPending ? { xs: 'none', sm: 'block' } : 'block', overflow: 'hidden', minWidth: 0 }}>
+        <Box sx={{ display: hasPending ? { xs: 'none', sm: 'block' } : 'block', overflow: 'hidden', minWidth: 0, flex: 1 }}>
           <PartnersBannerInline />
         </Box>
       </div>
 
-      {/* Phần phải: actions */}
-      <div className='flex items-center' style={{ flexShrink: 0, gap: 6 }}>
-        {/* Chờ thanh toán — mobile: compact (icon+tiền), tablet: 1 dòng, desktop: đầy đủ */}
+      {/* Phần phải: actions — mobile: icon-only, đồng đều 32px */}
+      <div className='flex items-center' style={{ flexShrink: 0, gap: 4 }}>
+        {/* Chờ thanh toán */}
         {hasPending && (
           <Box
             onClick={handleNavigateRecharge}
@@ -77,10 +77,11 @@ const NavbarContent = () => {
               gap: { xs: '4px', md: '10px' },
               background: '#fffbeb',
               border: '1px solid #f59e0b',
-              borderRadius: { xs: '8px', md: '10px' },
-              padding: { xs: '4px 8px', md: '6px 14px' },
+              borderRadius: '8px',
+              padding: { xs: '4px 6px', md: '6px 14px' },
               cursor: 'pointer',
               transition: 'all 0.2s',
+              height: { xs: 32, md: 'auto' },
               animation: 'pulse-border 2s infinite',
               '@keyframes pulse-border': {
                 '0%, 100%': { borderColor: '#f59e0b' },
@@ -92,9 +93,9 @@ const NavbarContent = () => {
               }
             }}
           >
-            <Clock size={16} color='#d97706' style={{ flexShrink: 0 }} />
+            <Clock size={15} color='#d97706' style={{ flexShrink: 0 }} />
             {/* Mobile: chỉ số tiền */}
-            <Typography sx={{ display: { xs: 'block', md: 'none' }, fontWeight: 700, fontSize: '0.7rem', color: '#92400e', whiteSpace: 'nowrap' }}>
+            <Typography sx={{ display: { xs: 'block', md: 'none' }, fontWeight: 700, fontSize: '0.65rem', color: '#92400e', whiteSpace: 'nowrap' }}>
               {Number(pendingRecord!.amount).toLocaleString('vi-VN')}đ
             </Typography>
             {/* Desktop: đầy đủ */}
@@ -109,16 +110,19 @@ const NavbarContent = () => {
           </Box>
         )}
 
-        {/* Nạp tiền */}
+        {/* Nạp tiền — mobile: icon 32px, desktop: text */}
         <Button
           variant='outlined'
           onClick={handleNavigateRecharge}
           sx={{
-            padding: { xs: '5px 8px', sm: '7px 10px' },
+            padding: { xs: '4px', sm: '7px 10px' },
             fontSize: { xs: '0.75rem', sm: '0.875rem' },
-            minWidth: 0,
+            minWidth: { xs: 32, sm: 'auto' },
+            width: { xs: 32, sm: 'auto' },
+            height: { xs: 32, sm: 'auto' },
             display: isUnauthenticated ? 'none' : 'flex',
-            gap: '6px',
+            justifyContent: 'center',
+            gap: { xs: 0, sm: '6px' },
             borderColor: primaryHover,
             color: primaryHover,
             whiteSpace: 'nowrap',
@@ -140,9 +144,13 @@ const NavbarContent = () => {
         </div>
         <Button
           onClick={handleOpenLoginModal}
-          className='px-4 py-2 text-sm text-white rounded-lg h transition-colors'
+          className='text-sm text-white rounded-lg transition-colors'
           sx={{
             display: isUnauthenticated ? 'inline-flex' : 'none',
+            padding: { xs: '4px 10px', sm: '6px 16px' },
+            fontSize: { xs: '0.75rem', sm: '0.875rem' },
+            minWidth: 0,
+            whiteSpace: 'nowrap',
             '&.MuiButtonBase-root': {
               background: 'var(--primary-gradient)'
             }
