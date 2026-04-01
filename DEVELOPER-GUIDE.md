@@ -3199,3 +3199,14 @@ Các phần dưới đây nằm ngoài scope "flow mua proxy" nhưng có thể c
 **Thêm:** `extractProxyValue()`, `extractProtocol()`, `getProxyString()` trong `protocolProxy.ts`
 **Sửa:** 8 file hiển thị proxy dùng utility thay inline logic. Admin config labels đổi `loaiproxy` → `protocol`.
 **Files:** `protocolProxy.ts`, `OrderProxyPage.tsx` (2 files), `ProxyDetailModal.tsx`, `OrderRotatingProxyPage.tsx`, `OrderDetail.tsx`, `OrderDetailModal.tsx`, `ProviderFormTypes.ts`, `BuyConfigSection.tsx`, `RenewSection.tsx`, `ServiceFormModal.tsx`
+
+#### 13.N+7 Hoa hồng Affiliate — field cài đặt chung (01/04/2026)
+
+**Thêm:** Field "Hoa hồng Affiliate (%)" vào tab Cài đặt chung trong trang Site Settings
+**Files:** SiteSettingsForm.tsx
+
+#### 13.N+8 Fix auth flash + cải thiện UX nạp tiền (01/04/2026)
+
+**Sửa:** AuthGuard bỏ timer 800ms, dựa vào `wasAuthenticated` — đã login thì luôn giữ content, axios interceptor quyết định signOut khi BE xác nhận token chết. Hết lỗi "phải đăng nhập" flash.
+**Sửa:** Form tên chuyển tiền: tiêu đề rõ nghĩa, warning box cảnh báo sai tên = không cộng tiền tự động, placeholder + helper hướng dẫn cụ thể.
+**Files:** `AuthGuard.tsx`, `RechargePage.tsx`
