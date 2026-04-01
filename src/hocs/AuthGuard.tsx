@@ -18,58 +18,38 @@ export default function AuthGuard({ children, locale }: ChildrenType & { locale:
   const pathname = usePathname()
   const { status } = useSession()
   const wasAuthenticatedRef = useRef(false)
-  // Chờ session ổn định — tránh flash login khi reload
-  // NextAuth có thể trả 'unauthenticated' thoáng qua trước khi sync cookie → authenticated
   const [settled, setSettled] = useState(false)
   const timerRef = useRef<ReturnType<typeof setTimeout>>()
 
   useEffect(() => {
     if (status === 'authenticated') {
-      // Authenticated ngay → clear timer, settled
       clearTimeout(timerRef.current)
+      wasAuthenticatedRef.current = true
       setSettled(true)
     } else if (status === 'unauthenticated') {
-      // Chờ 500ms trước khi kết luận thật sự unauthenticated
-      // Đủ để NextAuth sync session từ cookie nếu có
-      timerRef.current = setTimeout(() => setSettled(true), 500)
+      // Chờ 800ms trước khi kết luận thật sự unauthenticated
+      // NextAuth có thể trả 'unauthenticated' thoáng qua khi client navigation
+      timerRef.current = setTimeout(() => setSettled(true), 800)
     }
 
     return () => clearTimeout(timerRef.current)
   }, [status])
 
-  // Public routes: luôn render content, không cần auth
+  // Public routes: luôn render content
   const isPublicRoute = PUBLIC_ROUTES.some(route => pathname.endsWith(route))
-
-  if (isPublicRoute) {
-    return <>{children}</>
-  }
-
-  // Track trạng thái đã từng authenticated
-  if (status === 'authenticated') {
-    wasAuthenticatedRef.current = true
-  }
-
-  // Đang loading session — giữ content cũ hoặc chờ
-  if (status === 'loading') {
-    if (wasAuthenticatedRef.current) {
-      return <>{children}</>
-    }
-
-    return null
-  }
+  if (isPublicRoute) return <>{children}</>
 
   // Đã đăng nhập → render content
-  if (status === 'authenticated') {
-    return <>{children}</>
-  }
+  if (status === 'authenticated') return <>{children}</>
 
-  // Session chưa ổn định (vừa mount, status chớp unauthenticated) → chờ
-  if (!settled) {
+  // Loading hoặc chưa settled → LUÔN giữ content cũ nếu đã từng authenticated
+  // Tránh flash trắng / flash login khi client navigation
+  if (status === 'loading' || !settled) {
+    if (wasAuthenticatedRef.current) return <>{children}</>
     return null
   }
 
-  // Chắc chắn unauthenticated → hiện login
+  // Chắc chắn unauthenticated (settled = true, đợi đủ 800ms)
   wasAuthenticatedRef.current = false
-
   return <EmptyAuthPage lang={locale} />
 }

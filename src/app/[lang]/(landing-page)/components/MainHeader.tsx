@@ -46,7 +46,7 @@ const MainHeader = ({ serverLogo, serverName }: MainHeaderProps) => {
   const logoIcon = clientLogoIcon || ''
   const name = serverName || clientName
 
-  const isUnauthenticated = session?.status === 'unauthenticated'
+  const isUnauthenticated = session?.status !== 'loading' && session?.status === 'unauthenticated'
 
   // Lightweight scroll listener thay cho framer-motion
   useEffect(() => {

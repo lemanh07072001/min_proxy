@@ -124,7 +124,7 @@ export default function MenuDesktop() {
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
         <LanguageDropdown />
 
-        {session && session.status === 'authenticated' ? (
+        {session && (session.status === 'authenticated' || session.status === 'loading') ? (
           <Link href={`/${locale}/home`} target='_blank' style={ctaPillStyle}>
             Trang chủ
             <ArrowUpRight size={14} />

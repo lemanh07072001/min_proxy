@@ -41,8 +41,9 @@ const NavbarContent = () => {
   const { openAuthModal } = useModalContext()
   const { primaryHover } = useBranding()
 
+  const isLoading = session.status === 'loading'
   const isAuthenticated = session.status === 'authenticated'
-  const isUnauthenticated = session.status === 'unauthenticated'
+  const isUnauthenticated = !isLoading && session.status === 'unauthenticated'
   const { data: pendingData } = usePendingBankQr(isAuthenticated)
   const pendingRecord = pendingData?.data ?? null
   const hasPending = (isAuthenticated || !isUnauthenticated) && !!pendingRecord
