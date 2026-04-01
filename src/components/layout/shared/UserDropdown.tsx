@@ -53,7 +53,7 @@ const UserDropdown = () => {
   const user = session?.data?.user as any
   const userName = user?.name || 'User'
   const userEmail = user?.email || ''
-  const userAvatar = user?.avatar || '/images/avatars/1.png'
+  const userAvatar = user?.avatar || ''
   const userRole = user?.role
 
   // Balance lấy từ Redux — cùng nguồn với sidebar BalanceCard (đồng bộ)
