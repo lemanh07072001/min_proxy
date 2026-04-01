@@ -302,6 +302,33 @@ return `https://img.vietqr.io/image/${bankInfo.bank_code}-${bankInfo.account_num
               <Typography sx={{ fontSize: '13px', color: 'var(--mui-palette-text-secondary, #64748b)', mb: 1.5, lineHeight: 1.6 }}>
                 Nhập đúng tên chủ tài khoản ngân hàng bạn sẽ dùng để chuyển khoản nạp tiền. Hệ thống dùng tên này để tự động xác nhận giao dịch.
               </Typography>
+
+              {/* Ví dụ minh họa */}
+              <Box
+                sx={{
+                  background: '#f0fdf4',
+                  border: '1px solid #bbf7d0',
+                  borderRadius: '8px',
+                  padding: '12px 14px',
+                  mb: 1.5
+                }}
+              >
+                <Typography sx={{ fontSize: '12px', fontWeight: 600, color: '#166534', mb: 1 }}>
+                  Cách tìm tên chủ tài khoản:
+                </Typography>
+                <Box component='ol' sx={{ margin: 0, paddingLeft: '18px', '& li': { fontSize: '12px', color: '#15803d', lineHeight: 1.6, mb: 0.3 } }}>
+                  <li>Mở app ngân hàng (VD: Vietcombank, MB Bank, Techcombank...)</li>
+                  <li>Vào phần <strong>Tài khoản</strong> hoặc <strong>Thông tin cá nhân</strong></li>
+                  <li>Tìm dòng <strong>"Chủ tài khoản"</strong> — thường viết IN HOA, không dấu</li>
+                  <li>Nhập chính xác tên đó vào ô bên dưới</li>
+                </Box>
+                <Box sx={{ mt: 1, p: '8px 10px', background: '#fff', borderRadius: '6px', border: '1px dashed #86efac' }}>
+                  <Typography sx={{ fontSize: '11px', color: '#6b7280' }}>Ví dụ: Tên trên app ngân hàng là</Typography>
+                  <Typography sx={{ fontSize: '14px', fontWeight: 700, color: '#166534', fontFamily: 'monospace' }}>NGUYEN VAN A</Typography>
+                  <Typography sx={{ fontSize: '11px', color: '#6b7280', mt: 0.3 }}>→ Nhập vào ô: <strong>Nguyen Van A</strong> hoặc <strong>NGUYEN VAN A</strong> (đều được, hệ thống tự chuẩn hoá)</Typography>
+                </Box>
+              </Box>
+
               <Box
                 sx={{
                   background: '#fffbeb',
@@ -321,14 +348,14 @@ return `https://img.vietqr.io/image/${bankInfo.bank_code}-${bankInfo.account_num
               </Box>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 <CustomTextField
-                  placeholder='VD: NGUYEN VAN A (viết in hoa, không dấu)'
+                  placeholder='VD: NGUYEN VAN A'
                   value={transferNameInput}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTransferNameInput(e.target.value)}
                   size='small'
                   sx={{ '& .MuiInputBase-root': { fontSize: '14px' } }}
                 />
                 <Typography sx={{ fontSize: '11px', color: 'var(--mui-palette-text-disabled, #94a3b8)', lineHeight: 1.4 }}>
-                  Mở app ngân hàng → xem tên chủ tài khoản → nhập chính xác tên đó. Hệ thống tự động bỏ dấu và viết hoa.
+                  Không cần viết hoa hay bỏ dấu — hệ thống tự xử lý. Chỉ cần nhập đúng tên.
                 </Typography>
                 {transferNameError && (
                   <Box
