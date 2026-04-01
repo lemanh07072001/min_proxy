@@ -6,6 +6,7 @@ import { Box, Typography, MenuItem, IconButton, Tooltip, Card, Button } from '@m
 import { Key, RefreshCw, Shield, Search, Copy, Check, ExternalLink, Clock, User } from 'lucide-react'
 import CustomTextField from '@core/components/mui/TextField'
 import { useOrderItems, type OrderItemRecord } from '@/hooks/apis/useOrderItems'
+import { extractProxyValue, extractProtocol } from '@/utils/protocolProxy'
 
 const STATUS_MAP: Record<number, { label: string; color: string; bg: string }> = {
   0: { label: 'Hoạt động', color: '#16a34a', bg: '#dcfce7' },
@@ -14,9 +15,7 @@ const STATUS_MAP: Record<number, { label: string; color: string; bg: string }> =
 }
 
 const formatProxy = (item: OrderItemRecord) => {
-  const p = item.proxy
-  if (!p) return '—'
-  const raw = p.http || p.HTTP || p.socks5 || p.SOCKS5 || ''
+  const raw = extractProxyValue(item.proxy)
   return raw.replace(/:+$/, '') || '—'
 }
 
@@ -151,7 +150,7 @@ export default function AdminProxyKeysPage() {
                         <span style={{ fontFamily: 'monospace', fontSize: '10px' }} title={proxyText}>{proxyText.length > 25 ? proxyText.slice(0, 25) + '...' : proxyText}</span>
                         {proxyText !== '—' && <CopyBtn copied={copied === `p-${item._id}`} onClick={() => copyText(proxyText, `p-${item._id}`)} />}
                       </Box>
-                      <div style={{ fontSize: '9px', color: '#94a3b8' }}>{(item.protocol || 'http').toUpperCase()}</div>
+                      <div style={{ fontSize: '9px', color: '#94a3b8' }}>{extractProtocol(item.proxy) || (item.protocol || 'http').toUpperCase()}</div>
                     </td>
                     <td style={tdStyle}>
                       {item.allow_ips?.length ? (

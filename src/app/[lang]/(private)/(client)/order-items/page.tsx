@@ -7,6 +7,7 @@ import { Key, RefreshCw, Shield, Search, Copy, Check, ExternalLink, Settings2 } 
 import { toast } from 'react-toastify'
 import CustomTextField from '@core/components/mui/TextField'
 import { useOrderItems, useUpdateAllowIps, type OrderItemRecord } from '@/hooks/apis/useOrderItems'
+import { extractProxyValue, extractProtocol } from '@/utils/protocolProxy'
 
 const STATUS_MAP: Record<number, { label: string; color: string; bg: string }> = {
   0: { label: 'Hoạt động', color: '#16a34a', bg: '#dcfce7' },
@@ -15,9 +16,7 @@ const STATUS_MAP: Record<number, { label: string; color: string; bg: string }> =
 }
 
 const formatProxy = (item: OrderItemRecord) => {
-  const p = item.proxy
-  if (!p) return '—'
-  const raw = p.http || p.HTTP || p.socks5 || p.SOCKS5 || ''
+  const raw = extractProxyValue(item.proxy)
   return raw.replace(/:+$/, '') || '—'
 }
 
@@ -158,7 +157,7 @@ export default function ProxyKeysPage() {
                         <span style={{ fontFamily: 'monospace', fontSize: '11px' }}>{proxyText}</span>
                         {proxyText !== '—' && <CopyBtn copied={copied === `p-${item._id}`} onClick={() => copyText(proxyText, `p-${item._id}`)} />}
                       </Box>
-                      <div style={{ fontSize: '10px', color: '#94a3b8', marginTop: 1 }}>{(item.protocol || 'http').toUpperCase()}</div>
+                      <div style={{ fontSize: '10px', color: '#94a3b8', marginTop: 1 }}>{extractProtocol(item.proxy) || (item.protocol || 'http').toUpperCase()}</div>
                     </td>
                     <td style={tdStyle}>
                       {item.allow_ips?.length ? (
