@@ -37,12 +37,13 @@ const MainHeader = ({ serverLogo, serverName }: MainHeaderProps) => {
   const { openAuthModal } = useModalContext()
   const sessionContext = useContext(SessionContext)
   const session = useSession()
-  const { logo: clientLogo, name: clientName } = useBranding()
+  const { logo: clientLogo, logoIcon: clientLogoIcon, name: clientName } = useBranding()
 
   const { isChild } = useBranding()
 
   // Ưu tiên server logo → client logo → file mặc định (site mẹ)
   const logo = serverLogo || clientLogo || (!isChild ? '/images/logo/Logo_MKT_Proxy.png' : '')
+  const logoIcon = clientLogoIcon || ''
   const name = serverName || clientName
 
   const isUnauthenticated = session?.status === 'unauthenticated'
@@ -114,22 +115,52 @@ const MainHeader = ({ serverLogo, serverName }: MainHeaderProps) => {
             height: '100%'
           }}
         >
-          {/* Logo — thu nhỏ trên mobile */}
+          {/* Logo — mobile: icon thu gọn, desktop: full logo */}
           <a href='#' style={{ display: 'flex', alignItems: 'center', textDecoration: 'none', flexShrink: 0 }}>
+            {/* Mobile: logo icon thu gọn */}
+            {logoIcon && (
+              <Box
+                component='img'
+                src={logoIcon}
+                alt={name}
+                sx={{
+                  display: { xs: 'block', lg: 'none' },
+                  objectFit: 'contain',
+                  width: 32, height: 32,
+                }}
+              />
+            )}
+            {/* Mobile fallback: full logo thu nhỏ nếu không có icon */}
+            {!logoIcon && logo && (
+              <Box
+                component='img'
+                src={logo}
+                alt={name}
+                sx={{
+                  display: { xs: 'block', lg: 'none' },
+                  objectFit: 'contain',
+                  maxHeight: 32, width: 'auto', maxWidth: 100,
+                }}
+              />
+            )}
+            {/* Desktop: full logo */}
             {logo ? (
               <Box
                 component='img'
                 src={logo}
                 alt={name}
                 sx={{
+                  display: { xs: 'none', lg: 'block' },
                   objectFit: 'contain',
-                  maxHeight: { xs: 32, sm: 38, md: 42 },
-                  width: 'auto',
-                  maxWidth: { xs: 120, sm: 140, md: 150 },
+                  maxHeight: 42, width: 'auto', maxWidth: 150,
                 }}
               />
             ) : (
-              <span style={{ fontSize: '18px', fontWeight: 700, color: '#1e293b' }}>{name}</span>
+              <Box component='span' sx={{ display: { xs: 'none', lg: 'block' }, fontSize: '18px', fontWeight: 700, color: '#1e293b' }}>{name}</Box>
+            )}
+            {/* Mobile fallback: tên nếu không có cả logo lẫn icon */}
+            {!logoIcon && !logo && name && (
+              <Box component='span' sx={{ display: { xs: 'block', lg: 'none' }, fontSize: '14px', fontWeight: 700, color: '#1e293b' }}>{name}</Box>
             )}
           </a>
 

@@ -756,29 +756,25 @@ return {
             <div className='table-container' style={{ borderRadius: '12px', overflow: 'hidden', display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
               {/* Toolbar */}
               <div className='table-toolbar' style={{ flexDirection: 'column', alignItems: 'stretch', gap: 0, padding: 0, flexShrink: 0 }}>
-                {/* Row 1: Title */}
+                {/* Row 1: Title + Search */}
                 <div style={{ display: 'flex', alignItems: 'center', padding: '10px 16px 6px', gap: 8 }}>
-                  <div className='header-left'>
+                  <div className='header-left' style={{ flexShrink: 0 }}>
                     <div className='page-icon'>
                       <List size={17} />
                     </div>
-                    <h5 className='mb-0 font-semibold' style={{ whiteSpace: 'nowrap' }}>Quản lý đơn hàng</h5>
+                    <h5 className='mb-0 font-semibold' style={{ whiteSpace: 'nowrap', fontSize: '15px' }}>Quản lý đơn hàng</h5>
                   </div>
-                </div>
-
-                {/* Row 2: Search + Filters — wrap trên mobile */}
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center', padding: '6px 16px 10px' }}>
                   <TextField
                     size='small'
                     placeholder='Tìm mã đơn, user...'
                     value={searchInput}
                     onChange={e => setSearchInput(e.target.value)}
                     onKeyDown={handleKeyDown}
-                    sx={{ flex: '1 1 150px', minWidth: 0, '& .MuiOutlinedInput-root': { fontSize: '13px', borderRadius: '8px' } }}
+                    sx={{ flex: 1, minWidth: 0, ml: 'auto', maxWidth: 260, '& .MuiOutlinedInput-root': { fontSize: '13px', borderRadius: '8px', height: 34 } }}
                     InputProps={{
                       startAdornment: (
                         <InputAdornment position='start'>
-                          <Search size={15} color='#94a3b8' />
+                          <Search size={14} color='#94a3b8' />
                         </InputAdornment>
                       ),
                       endAdornment: searchInput ? (
@@ -790,6 +786,10 @@ return {
                       ) : null
                     }}
                   />
+                </div>
+
+                {/* Row 2: Filters — compact wrap */}
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center', padding: '4px 16px 10px' }}>
                   <CustomTextField
                     size='small'
                     type='date'

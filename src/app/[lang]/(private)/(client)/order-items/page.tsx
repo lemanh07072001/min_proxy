@@ -62,22 +62,23 @@ export default function ProxyKeysPage() {
   const searching = isLoading || isFetching
 
   return (
-    <Box sx={{ p: { xs: 2, sm: 3 }, maxWidth: 1200, mx: 'auto' }}>
-      {/* Header */}
-      <Typography variant='h5' sx={{ fontWeight: 700, mb: 2.5, color: '#1e293b' }}>
-        Danh sách proxy
-      </Typography>
-
-      {/* Filter card */}
-      <Card variant='outlined' sx={{ p: 2, mb: 2.5, borderColor: '#e2e8f0' }}>
-        <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', alignItems: 'flex-end' }}>
-          <CustomTextField select value={type} onChange={e => setType(e.target.value)} size='small' sx={{ minWidth: 120 }} label='Loại'>
-            <MenuItem value=''>Tất cả</MenuItem>
+    <Box sx={{ p: { xs: 1.5, sm: 3 }, maxWidth: 1200, mx: 'auto' }}>
+      {/* Header + Filter — compact */}
+      <Card variant='outlined' sx={{ mb: 2, borderColor: '#e2e8f0', overflow: 'hidden' }}>
+        {/* Title row */}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 2, pt: 1.5, pb: 1 }}>
+          <Key size={17} color='#6366f1' />
+          <Typography sx={{ fontWeight: 700, fontSize: '15px', color: '#1e293b' }}>Danh sách proxy</Typography>
+        </Box>
+        {/* Filters row — wrap */}
+        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center', px: 2, pb: 1.5 }}>
+          <CustomTextField select value={type} onChange={e => setType(e.target.value)} size='small' sx={{ minWidth: 90, flex: '0 0 auto' }}>
+            <MenuItem value=''>Tất cả loại</MenuItem>
             <MenuItem value='ROTATING'>Xoay</MenuItem>
             <MenuItem value='STATIC'>Tĩnh</MenuItem>
           </CustomTextField>
-          <CustomTextField select value={status} onChange={e => setStatus(e.target.value)} size='small' sx={{ minWidth: 130 }} label='Trạng thái'>
-            <MenuItem value=''>Tất cả</MenuItem>
+          <CustomTextField select value={status} onChange={e => setStatus(e.target.value)} size='small' sx={{ minWidth: 100, flex: '0 0 auto' }}>
+            <MenuItem value=''>Tất cả TT</MenuItem>
             <MenuItem value='0'>Hoạt động</MenuItem>
             <MenuItem value='2'>Hết hạn</MenuItem>
           </CustomTextField>
@@ -85,17 +86,17 @@ export default function ProxyKeysPage() {
             size='small' placeholder='Tìm theo key...'
             value={search} onChange={e => setSearch(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && handleSearch()}
-            sx={{ minWidth: 200, flex: 1 }}
+            sx={{ flex: '1 1 120px', minWidth: 0 }}
           />
-          <CustomTextField select value={limit} onChange={e => setLimit(Number(e.target.value))} size='small' sx={{ width: 90 }} label='Số lượng'>
+          <CustomTextField select value={limit} onChange={e => setLimit(Number(e.target.value))} size='small' sx={{ width: 80, flex: '0 0 auto' }}>
             {[100, 500, 1000, 5000, 10000].map(n => <MenuItem key={n} value={n}>{n.toLocaleString()}</MenuItem>)}
           </CustomTextField>
           <Button
             variant='contained' size='small' onClick={handleSearch} disabled={searching}
-            sx={{ height: 40, textTransform: 'none', fontWeight: 600, px: 3, minWidth: 110, background: 'var(--primary-gradient, var(--primary-hover))', '&:hover': { opacity: 0.9 } }}
+            sx={{ height: 36, textTransform: 'none', fontWeight: 600, px: 2, flexShrink: 0, background: 'var(--primary-gradient, var(--primary-hover))', '&:hover': { opacity: 0.9 } }}
           >
-            <Search size={15} style={{ marginRight: 6, ...(searching ? { animation: 'spin 0.8s linear infinite' } : {}) }} />
-            {searching ? 'Đang tìm...' : 'Tìm kiếm'}
+            <Search size={14} style={{ marginRight: 4, ...(searching ? { animation: 'spin 0.8s linear infinite' } : {}) }} />
+            Tìm
           </Button>
         </Box>
       </Card>
