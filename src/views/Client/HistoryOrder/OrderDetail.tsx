@@ -1027,10 +1027,7 @@ function ClientItemLogPanel({ itemKey }: { itemKey: string }) {
                 {log.created_at ? new Date(log.created_at).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : ''}
               </span>
               <span style={{ color: action.color, fontWeight: 600, flexShrink: 0 }}>{action.label}</span>
-              {log.duration_ms != null && (
-                <span style={{ color: '#94a3b8', flexShrink: 0 }}>{log.duration_ms}ms</span>
-              )}
-              {/* provider_code ẩn khỏi user view — chỉ admin site mẹ cần thấy */}
+              {/* duration_ms + provider_code ẩn khỏi user view */}
             </div>
 
             <div style={{
