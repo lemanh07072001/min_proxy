@@ -7,6 +7,12 @@
 >   - **Không** → thông báo user: "Repo BE chưa có, clone bằng: `git clone https://gitlab.com/longlv197/proxy.git ../BE`"
 > - **BE Developer Guide**: `../BE/DEVELOPER-GUIDE.md` — changelog BE ở section 15
 
+> **📂 BỘ NHỚ DỰ ÁN:**
+> - Nằm tại `FE/.project-memory/` — chứa kiến trúc, quyết định thiết kế, feedback, bugs
+> - Index: `FE/.project-memory/MEMORY.md` — đọc file này TRƯỚC để biết cần đọc file nào
+> - **BẮT BUỘC đọc** khi bắt đầu session hoặc khi user đề cập vấn đề đã có trong memory
+> - Khi sửa code xong → kiểm tra memory liên quan có cần cập nhật không
+
 ## Setup workspace (BẮT BUỘC cho dev mới)
 
 ```bash
@@ -28,9 +34,14 @@ mktProxies/          ← mở workspace TẠI ĐÂY
 ├── BE/              ← repo BE (Laravel)
 │   ├── CLAUDE.md
 │   └── DEVELOPER-GUIDE.md (section 15 = changelog)
-└── FE/              ← repo này (Next.js 15)
+└── FE/              ← repo FE (Next.js 15)
     ├── CLAUDE.md
-    └── DEVELOPER-GUIDE.md (section 13 = changelog)
+    ├── DEVELOPER-GUIDE.md (section 13 = changelog)
+    └── .project-memory/  ← bộ nhớ dự án (dùng chung cho cả FE+BE)
+        ├── MEMORY.md     ← index, đọc đầu tiên
+        ├── project_*.md  ← kiến trúc, hệ thống
+        ├── feedback_*.md ← quy tắc phải tuân theo
+        └── bug_*.md      ← bugs đang xử lý
 ```
 
 ## Quy tắc code
