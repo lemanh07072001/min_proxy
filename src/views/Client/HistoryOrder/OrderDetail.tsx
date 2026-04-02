@@ -493,10 +493,10 @@ return row.original?.key || row.original?.api_key || ''
                             return (
                             <tr key={row.id}
                               style={{
-                                borderBottom: '1px solid #f1f5f9', cursor: isRotating ? 'pointer' : undefined,
+                                borderBottom: '1px solid #f1f5f9', cursor: isRotating && isAdmin ? 'pointer' : undefined,
                                 background: isViewing ? '#eff6ff' : undefined, transition: 'background 0.15s',
                               }}
-                              onClick={() => { if (isRotating && itemKey) setViewItemKey(viewItemKey === itemKey ? null : itemKey) }}
+                              onClick={() => { if (isRotating && isAdmin && itemKey) setViewItemKey(viewItemKey === itemKey ? null : itemKey) }}
                               onMouseEnter={(e) => { if (isRotating && !isViewing) e.currentTarget.style.background = '#f8fafc' }}
                               onMouseLeave={(e) => { if (isRotating && !isViewing) e.currentTarget.style.background = '' }}
                             >
@@ -541,8 +541,8 @@ return row.original?.key || row.original?.api_key || ''
                 )}
               </Box>
 
-              {/* Panel phải: log xoay proxy */}
-              {viewItemKey && (
+              {/* Panel phải: log xoay proxy — chỉ admin */}
+              {isAdmin && viewItemKey && (
                 <Box sx={{
                   flex: '0 0 38%', borderLeft: '1px solid #e2e8f0',
                   overflowY: 'auto', maxHeight: '60vh', p: '12px 16px',
