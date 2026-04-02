@@ -664,15 +664,44 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
                     />
                   )}
                 />
-                <CustomTextField
-                  fullWidth
-                  label='Code sản phẩm (site mẹ)'
-                  value={selectedSupplierCode || ''}
-                  onChange={(e: any) => setSelectedSupplierCode(e.target.value || null)}
-                  placeholder={isEditMode ? 'Nhập code SP trên site mẹ' : 'Tự động khi chọn SP'}
-                  helperText={selectedSupplierId ? `ID trên site mẹ: ${selectedSupplierId}` : 'Dùng để mua hàng từ site mẹ'}
-                  sx={{ '& input': { fontFamily: 'monospace' } }}
-                />
+                <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+                  <CustomTextField
+                    fullWidth
+                    label='Code sản phẩm (site mẹ)'
+                    value={selectedSupplierCode || ''}
+                    onChange={(e: any) => { setSelectedSupplierCode(e.target.value || null); if (isEditMode) setCheckedProduct(null) }}
+                    placeholder={isEditMode ? 'Nhập code SP trên site mẹ' : 'Tự động khi chọn SP'}
+                    helperText={
+                      checkedProduct && isEditMode
+                        ? `✓ ${checkedProduct.name} — ${Object.keys(checkedProduct.provider_prices || {}).length} mốc giá`
+                        : selectedSupplierId ? `ID trên site mẹ: ${selectedSupplierId}` : 'Dùng để mua hàng từ site mẹ'
+                    }
+                    sx={{
+                      '& input': { fontFamily: 'monospace' },
+                      '& .MuiFormHelperText-root': { color: checkedProduct && isEditMode ? '#16a34a' : undefined }
+                    }}
+                  />
+                  {isEditMode && (
+                    <Button
+                      size='small'
+                      variant='outlined'
+                      disabled={!selectedSupplierCode || checkProductMutation.isPending}
+                      onClick={() => {
+                        checkProductMutation.mutate(selectedSupplierCode!, {
+                          onSuccess: (data) => {
+                            setCheckedProduct(data)
+                            setSelectedSupplierId(data.supplier_id)
+                            setSelectedSupplierCode(data.supplier_code || selectedSupplierCode)
+                          },
+                          onError: () => setCheckedProduct(null),
+                        })
+                      }}
+                      sx={{ whiteSpace: 'nowrap', minWidth: 90, height: 40, mt: '20px' }}
+                    >
+                      {checkProductMutation.isPending ? '...' : 'Kiểm tra'}
+                    </Button>
+                  )}
+                </div>
               </div>
 
               {/* Chế độ giá — site con được chọn riêng */}
