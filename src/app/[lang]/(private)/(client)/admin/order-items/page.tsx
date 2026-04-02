@@ -2,16 +2,24 @@
 
 import { useState, useCallback } from 'react'
 import { useParams } from 'next/navigation'
-import { Box, Typography, MenuItem, IconButton, Tooltip, Card, Button } from '@mui/material'
-import { Key, RefreshCw, Shield, Search, Copy, Check, ExternalLink, Clock, User } from 'lucide-react'
+import { Box, Typography, MenuItem, IconButton, Tooltip, Card, Button, Chip } from '@mui/material'
+import { Key, RefreshCw, Shield, Search, Copy, Check, ExternalLink, Clock, User, X, Unlock, FileText } from 'lucide-react'
 import CustomTextField from '@core/components/mui/TextField'
 import { useOrderItems, useUnlockRotate, type OrderItemRecord } from '@/hooks/apis/useOrderItems'
+import { useOrderItemLogs, type OrderItemLog } from '@/hooks/apis/useOrderItemLogs'
 import { extractProxyValue, extractProtocol } from '@/utils/protocolProxy'
 
 const STATUS_MAP: Record<number, { label: string; color: string; bg: string }> = {
   0: { label: 'Hoạt động', color: '#16a34a', bg: '#dcfce7' },
   1: { label: 'Tắt', color: '#94a3b8', bg: '#f1f5f9' },
   2: { label: 'Hết hạn', color: '#dc2626', bg: '#fee2e2' },
+}
+
+const ACTION_LABELS: Record<string, { label: string; color: string }> = {
+  rotate_success: { label: 'Xoay OK', color: '#16a34a' },
+  rotate_error: { label: 'Xoay lỗi', color: '#dc2626' },
+  paused: { label: 'Dừng xoay', color: '#f59e0b' },
+  no_provider: { label: 'Không có NCC', color: '#94a3b8' },
 }
 
 const formatProxy = (item: OrderItemRecord) => {
@@ -29,9 +37,11 @@ export default function AdminProxyKeysPage() {
   const [limit, setLimit] = useState(100)
   const [appliedFilters, setAppliedFilters] = useState<any>({ limit: 100 })
   const [copied, setCopied] = useState<string | null>(null)
+  const [selectedItem, setSelectedItem] = useState<OrderItemRecord | null>(null)
 
   const { data, isLoading, isFetching, refetch } = useOrderItems(appliedFilters, true)
   const unlockRotate = useUnlockRotate()
+  const { data: logs = [], isLoading: logsLoading } = useOrderItemLogs(selectedItem?.key ?? null)
   const items = data?.data ?? []
   const meta = data?.meta
 
@@ -133,15 +143,18 @@ export default function AdminProxyKeysPage() {
               ) : items.map((item: OrderItemRecord) => {
                 const st = STATUS_MAP[item.status] ?? STATUS_MAP[2]
                 const proxyText = formatProxy(item)
+                const isSelected = selectedItem?.key === item.key
                 return (
-                  <tr key={item._id} style={{ borderBottom: '1px solid #f1f5f9', transition: 'background 0.1s' }}
-                    onMouseEnter={e => (e.currentTarget.style.background = '#f8fafc')}
-                    onMouseLeave={e => (e.currentTarget.style.background = '')}
+                  <tr key={item._id}
+                    style={{ borderBottom: '1px solid #f1f5f9', cursor: 'pointer', background: isSelected ? '#eff6ff' : undefined, transition: 'background 0.1s' }}
+                    onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = '#f8fafc' }}
+                    onMouseLeave={e => { if (!isSelected) e.currentTarget.style.background = '' }}
+                    onClick={() => setSelectedItem(isSelected ? null : item)}
                   >
                     <td style={tdStyle}>
                       <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
                         <span style={{ fontFamily: 'monospace', fontSize: '10px', color: '#6366f1' }} title={item.key}>{item.key.slice(0, 10)}...</span>
-                        <CopyBtn copied={copied === item.key} onClick={() => copyText(item.key, item.key)} />
+                        <CopyBtn copied={copied === item.key} onClick={(e) => { e.stopPropagation(); copyText(item.key, item.key) }} />
                       </Box>
                     </td>
                     <td style={tdStyle}><span style={{ fontSize: '11px', color: '#475569' }}>#{item.user_id}</span></td>
@@ -149,7 +162,7 @@ export default function AdminProxyKeysPage() {
                     <td style={tdStyle}>
                       <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
                         <span style={{ fontFamily: 'monospace', fontSize: '10px' }} title={proxyText}>{proxyText.length > 25 ? proxyText.slice(0, 25) + '...' : proxyText}</span>
-                        {proxyText !== '—' && <CopyBtn copied={copied === `p-${item._id}`} onClick={() => copyText(proxyText, `p-${item._id}`)} />}
+                        {proxyText !== '—' && <CopyBtn copied={copied === `p-${item._id}`} onClick={(e) => { e.stopPropagation(); copyText(proxyText, `p-${item._id}`) }} />}
                       </Box>
                       <div style={{ fontSize: '9px', color: '#94a3b8' }}>{extractProtocol(item.proxy) || (item.protocol || 'http').toUpperCase()}</div>
                     </td>
@@ -176,19 +189,13 @@ export default function AdminProxyKeysPage() {
                         <span style={{ fontSize: '10px', color: item.next_rotate_seconds > 0 ? '#f59e0b' : '#16a34a', display: 'inline-flex', alignItems: 'center', gap: 2 }}>
                           <Clock size={10} />
                           {item.next_rotate_seconds > 0 ? `${item.next_rotate_seconds}s` : 'OK'}
-                          {item.next_rotate_seconds >= 60 && (
-                            <Tooltip title='Gỡ lock xoay'>
-                              <IconButton size='small' sx={{ p: 0, ml: 0.5 }} onClick={() => unlockRotate.mutate(item.key, { onSuccess: () => refetch() })}>
-                                <RefreshCw size={10} color='#dc2626' />
-                              </IconButton>
-                            </Tooltip>
-                          )}
                         </span>
                       ) : <span style={{ color: '#cbd5e1', fontSize: '10px' }}>—</span>}
                     </td>
                     <td style={tdStyle}>
                       {item.order_code ? (
-                        <a href={`/${locale}/admin/orders?search=${item.order_code}`} style={{ fontSize: '10px', color: '#6366f1', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 2 }}>
+                        <a href={`/${locale}/admin/orders?search=${item.order_code}`} style={{ fontSize: '10px', color: '#6366f1', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 2 }}
+                          onClick={e => e.stopPropagation()}>
                           {item.order_code.slice(-8)} <ExternalLink size={9} />
                         </a>
                       ) : '—'}
@@ -200,11 +207,82 @@ export default function AdminProxyKeysPage() {
           </table>
         </Box>
       </Card>
+
+      {/* Log panel — hiện khi click row */}
+      {selectedItem && (
+        <Card variant='outlined' sx={{ mt: 2, borderColor: '#e2e8f0', overflow: 'hidden' }}>
+          <Box sx={{ px: 2, py: 1.5, background: '#f8fafc', borderBottom: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <FileText size={14} color='#6366f1' />
+              <Typography sx={{ fontSize: 13, fontWeight: 700, color: '#1e293b' }}>
+                Log: <span style={{ fontFamily: 'monospace', color: '#6366f1' }}>{selectedItem.key.slice(0, 16)}...</span>
+              </Typography>
+              <TypeBadge type={selectedItem.type} />
+            </Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              {/* Action buttons */}
+              {selectedItem.type === 'ROTATING' && selectedItem.next_rotate_seconds != null && selectedItem.next_rotate_seconds >= 60 && (
+                <Button
+                  size='small' variant='outlined' color='warning'
+                  startIcon={<Unlock size={13} />}
+                  disabled={unlockRotate.isPending}
+                  onClick={() => unlockRotate.mutate(selectedItem.key, {
+                    onSuccess: () => { refetch() },
+                  })}
+                  sx={{ textTransform: 'none', fontSize: 11, fontWeight: 600, py: 0.25, px: 1.5 }}
+                >
+                  {unlockRotate.isPending ? 'Đang gỡ...' : `Gỡ lock (${selectedItem.next_rotate_seconds}s)`}
+                </Button>
+              )}
+              <IconButton size='small' onClick={() => setSelectedItem(null)}>
+                <X size={16} />
+              </IconButton>
+            </Box>
+          </Box>
+
+          {/* Log entries */}
+          <Box sx={{ maxHeight: 350, overflowY: 'auto', p: 1.5 }}>
+            {logsLoading ? (
+              <Typography sx={{ fontSize: 12, color: '#94a3b8', textAlign: 'center', py: 3 }}>Đang tải log...</Typography>
+            ) : logs.length === 0 ? (
+              <Typography sx={{ fontSize: 12, color: '#94a3b8', textAlign: 'center', py: 3 }}>Chưa có log</Typography>
+            ) : logs.map((log: OrderItemLog, i: number) => {
+              const actionInfo = ACTION_LABELS[log.action] ?? { label: log.action, color: '#475569' }
+              return (
+                <Box key={i} sx={{ mb: 1, p: 1.5, borderRadius: 1.5, border: '1px solid #f1f5f9', background: log.action === 'rotate_error' || log.action === 'paused' ? '#fef2f2' : '#fff', '&:hover': { borderColor: '#d1d5db' } }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Chip label={actionInfo.label} size='small' sx={{ fontSize: 10, fontWeight: 700, height: 20, color: actionInfo.color, borderColor: actionInfo.color, bgcolor: 'transparent' }} variant='outlined' />
+                      {log.duration_ms != null && (
+                        <span style={{ fontSize: 10, color: '#94a3b8' }}>{log.duration_ms}ms</span>
+                      )}
+                      {log.status_code != null && (
+                        <span style={{ fontSize: 10, color: log.status_code >= 400 ? '#dc2626' : '#16a34a' }}>HTTP {log.status_code}</span>
+                      )}
+                    </Box>
+                    <span style={{ fontSize: 10, color: '#94a3b8' }}>
+                      {new Date(log.created_at).toLocaleString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit', day: '2-digit', month: '2-digit' })}
+                    </span>
+                  </Box>
+                  {log.message && (
+                    <div style={{ fontSize: 11, color: '#475569', lineHeight: 1.5 }}>{log.message}</div>
+                  )}
+                  {log.request && (
+                    <div style={{ fontSize: 10, color: '#6366f1', fontFamily: 'monospace', marginTop: 4, padding: '4px 8px', background: '#f8fafc', borderRadius: 4 }}>
+                      {log.request.method} {log.request.url}
+                    </div>
+                  )}
+                </Box>
+              )
+            })}
+          </Box>
+        </Card>
+      )}
     </Box>
   )
 }
 
-function CopyBtn({ copied, onClick }: { copied: boolean; onClick: () => void }) {
+function CopyBtn({ copied, onClick }: { copied: boolean; onClick: (e: React.MouseEvent) => void }) {
   return (
     <Tooltip title={copied ? 'Đã copy!' : 'Copy'}>
       <IconButton size='small' onClick={onClick} sx={{ p: 0.25, opacity: 0.4, '&:hover': { opacity: 1 } }}>
