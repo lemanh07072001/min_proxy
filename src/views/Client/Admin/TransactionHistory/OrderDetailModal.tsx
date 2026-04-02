@@ -311,13 +311,13 @@ export default function OrderDetailModal({ isOpen, onClose, orderData, isLoading
     if (!isOpen) { setRowSelection({}); setTabIndex(0); setViewLogId(null); setViewItemKey(null) }
   }, [isOpen])
 
-  // Auto-show log panel khi mở modal — chỉ site mẹ, chọn item ROTATING đầu tiên
+  // Auto-show log panel khi mở modal — chọn item ROTATING đầu tiên
   useEffect(() => {
-    if (isOpen && !isChild && dataApiKeys?.length && !viewItemKey) {
+    if (isOpen && dataApiKeys?.length && !viewItemKey) {
       const firstRotating = dataApiKeys.find((item: any) => item.type === 'ROTATING')
       if (firstRotating?.key) setViewItemKey(firstRotating.key)
     }
-  }, [isOpen, isChild, dataApiKeys])
+  }, [isOpen, dataApiKeys])
 
   if (!isOpen) return null
 
@@ -494,8 +494,8 @@ export default function OrderDetailModal({ isOpen, onClose, orderData, isLoading
                 )}
               </div>
 
-              {/* Panel phải: log xoay proxy — chỉ site mẹ */}
-              {!isChild && viewItemKey && (() => {
+              {/* Panel phải: log xoay proxy */}
+              {viewItemKey && (() => {
                 const activeItem = (dataApiKeys || []).find((item: any) => item.key === viewItemKey)
                 const nextRotate = activeItem?.next_rotate_seconds
 
