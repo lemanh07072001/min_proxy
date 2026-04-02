@@ -27,6 +27,7 @@ import {
 } from 'lucide-react'
 
 import { extractProxyValue, extractProtocol } from '@/utils/protocolProxy'
+import { useBranding } from '@/app/contexts/BrandingContext'
 import { useReactTable, getCoreRowModel, flexRender, getPaginationRowModel } from '@tanstack/react-table'
 import Dialog from '@mui/material/Dialog'
 import Tabs from '@mui/material/Tabs'
@@ -69,6 +70,7 @@ const LOG_ACTION_CONFIG: Record<string, { icon: any; color: string; label: strin
 }
 
 export default function OrderDetailModal({ isOpen, onClose, orderData, isLoading = false }: OrderDetailModalProps) {
+  const { isChild } = useBranding()
   const [copiedField, setCopiedField] = useState<string | null>(null)
   const [rowSelection, setRowSelection] = useState({})
   const [tabIndex, setTabIndex] = useState(0)
@@ -879,6 +881,7 @@ function ItemDetailPanel({ item }: { item: any }) {
 }
 
 function OrderLogsTimeline({ logs, isLoading }: { logs: OrderLog[]; isLoading: boolean }) {
+  const { isChild } = useBranding()
   if (isLoading) {
     return (
       <div style={{ textAlign: 'center', padding: '30px 0' }}>
@@ -955,7 +958,7 @@ function OrderLogsTimeline({ logs, isLoading }: { logs: OrderLog[]; isLoading: b
                 </div>
               )}
 
-              {log.provider_code && (
+              {!isChild && log.provider_code && (
                 <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: 2 }}>
                   NCC: <span style={{ fontWeight: 500, color: '#64748b' }}>{log.provider_code}</span>
                   {log.http_status && ` • HTTP ${log.http_status}`}
@@ -1093,6 +1096,7 @@ function AdminRenewalSection({ histories, order, viewLogId, onViewLog }: {
 
 /** Admin: log chi tiết per history */
 function AdminHistoryLogPanel({ historyId }: { historyId: number }) {
+  const { isChild } = useBranding()
   const { data: logs, isLoading } = useOrderHistoryLogs(historyId)
 
   if (isLoading) return <div style={{ fontSize: '11px', color: '#94a3b8' }}>Loading...</div>
@@ -1345,6 +1349,7 @@ const ITEM_LOG_ACTION: Record<string, { label: string; color: string }> = {
 }
 
 function ItemLogPanel({ itemKey }: { itemKey: string }) {
+  const { isChild } = useBranding()
   const { data: logs, isLoading } = useOrderItemLogs(itemKey)
 
   if (isLoading) return <div style={{ fontSize: '11px', color: '#94a3b8' }}>Đang tải...</div>
@@ -1366,7 +1371,7 @@ function ItemLogPanel({ itemKey }: { itemKey: string }) {
               {log.duration_ms != null && (
                 <span style={{ color: '#94a3b8', flexShrink: 0 }}>{log.duration_ms}ms</span>
               )}
-              {log.provider_code && (
+              {!isChild && log.provider_code && (
                 <span style={{ color: '#8b5cf6', fontSize: '10px' }}>{log.provider_code}</span>
               )}
             </div>

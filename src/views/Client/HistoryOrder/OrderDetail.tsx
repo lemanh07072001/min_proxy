@@ -1030,9 +1030,7 @@ function ClientItemLogPanel({ itemKey }: { itemKey: string }) {
               {log.duration_ms != null && (
                 <span style={{ color: '#94a3b8', flexShrink: 0 }}>{log.duration_ms}ms</span>
               )}
-              {log.provider_code && (
-                <span style={{ color: '#8b5cf6', fontSize: '10px' }}>{log.provider_code}</span>
-              )}
+              {/* provider_code ẩn khỏi user view — chỉ admin site mẹ cần thấy */}
             </div>
 
             <div style={{
