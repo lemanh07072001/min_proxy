@@ -592,27 +592,29 @@ export default function ServiceFormModal({ open, onClose, serviceId, initialData
   }
 
   const [durationOptions, setDurationOptions] = useState(DEFAULT_DURATION_OPTIONS)
+  const [durationUrlMap, setDurationUrlMap] = useState<Record<string, string>>({})
 
   const updateDurationOptions = useCallback((pid?: string, typ?: string) => {
     try {
       const prov = providers?.find((p: any) => String(p.id) === String(pid))
 
-      if (!prov?.api_config) { setDurationOptions(DEFAULT_DURATION_OPTIONS); return }
+      if (!prov?.api_config) { setDurationOptions(DEFAULT_DURATION_OPTIONS); setDurationUrlMap({}); return }
 
       const config = typeof prov.api_config === 'string' ? JSON.parse(prov.api_config) : prov.api_config
       const buyKey = typ === '0' ? 'buy_static' : 'buy_rotating'
       const urlByDuration = (config?.[buyKey] ?? config?.buy)?.url_by_duration
 
       if (!urlByDuration || typeof urlByDuration !== 'object' || Object.keys(urlByDuration).length === 0) {
-        setDurationOptions(DEFAULT_DURATION_OPTIONS); return
+        setDurationOptions(DEFAULT_DURATION_OPTIONS); setDurationUrlMap({}); return
       }
 
+      setDurationUrlMap(urlByDuration)
       setDurationOptions(
         Object.keys(urlByDuration)
           .map(key => ({ value: key, label: LABEL_MAP[key] || `${key} ngày` }))
           .sort((a, b) => Number(a.value) - Number(b.value))
       )
-    } catch { setDurationOptions(DEFAULT_DURATION_OPTIONS) }
+    } catch { setDurationOptions(DEFAULT_DURATION_OPTIONS); setDurationUrlMap({}) }
   }, [providers])
 
   // Subscribe thay đổi provider_id + type → cập nhật duration options
@@ -2230,14 +2232,21 @@ return <Chip key={val} label={p?.label || val} size='small' />
                             <div key={index} style={{ borderBottom: '1px solid #f1f5f9' }}>
                               {/* Dòng chính */}
                               <div style={{ display: 'grid', gridTemplateColumns: '130px 110px 110px 80px 30px', gap: 6, alignItems: 'center', padding: '6px 12px' }}>
-                                <CustomTextField size='small' select value={field.key} onChange={(e: any) => {
-                                  setPriceFields(prev => prev.map((f, i) => i === index ? { ...f, key: e.target.value } : f))
-                                }} slotProps={{ select: { displayEmpty: true } }}>
-                                  <MenuItem value=''><em>Chọn</em></MenuItem>
-                                  {durationOptions
-                                    .filter(o => o.value === field.key || !priceFields.some(f => f.key === o.value))
-                                    .map(o => <MenuItem key={o.value} value={o.value}>{o.label}</MenuItem>)}
-                                </CustomTextField>
+                                <div>
+                                  <CustomTextField size='small' select value={field.key} onChange={(e: any) => {
+                                    setPriceFields(prev => prev.map((f, i) => i === index ? { ...f, key: e.target.value } : f))
+                                  }} slotProps={{ select: { displayEmpty: true } }}>
+                                    <MenuItem value=''><em>Chọn</em></MenuItem>
+                                    {durationOptions
+                                      .filter(o => o.value === field.key || !priceFields.some(f => f.key === o.value))
+                                      .map(o => <MenuItem key={o.value} value={o.value}>{o.label}</MenuItem>)}
+                                  </CustomTextField>
+                                  {field.key && durationUrlMap[field.key] && (
+                                    <div style={{ fontSize: 9, color: '#6b7280', marginTop: 2, fontFamily: 'monospace', wordBreak: 'break-all', lineHeight: 1.3 }}>
+                                      → {durationUrlMap[field.key]}
+                                    </div>
+                                  )}
+                                </div>
                                 <CustomTextField size='small' type='number' placeholder='đ' value={field.value}
                                   onChange={(e: any) => setPriceFields(prev => prev.map((f, i) => i === index ? { ...f, value: e.target.value } : f))} />
                                 <CustomTextField size='small' type='number' placeholder='đ' value={field.cost || ''}
