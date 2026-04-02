@@ -50,6 +50,7 @@ import { ORDER_STATUS_LABELS, ORDER_STATUS_COLORS } from '@/constants/orderStatu
 import { useApiKeys } from '@/hooks/apis/useOrders'
 import { useRenewOrder, useRenewInfo, useRenewalRefund, useRenewalConfirm, useOrderHistoryLogs } from '@/hooks/apis/useRenewal'
 import { useRole } from '@/hooks/useRole'
+import { useBranding } from '@/app/contexts/BrandingContext'
 import { useOrderHistories, type OrderHistoryItem } from '@/hooks/apis/useOrderHistories'
 import { useOrderItemLogs, type OrderItemLog } from '@/hooks/apis/useOrderItemLogs'
 import { useUnlockRotate } from '@/hooks/apis/useOrderItems'
@@ -88,6 +89,8 @@ const OrderDetail: React.FC<OrderDetailProps> = ({ open, onClose, order }) => {
   const [viewLogId, setViewLogId] = useState<number | null>(null)
   const [viewItemKey, setViewItemKey] = useState<string | null>(null)
   const { isAdmin } = useRole()
+  const { isChild } = useBranding()
+  const canViewRotateLog = isAdmin && !isChild // Chỉ admin site mẹ thấy log xoay
 
   const { data: apiKeysData = [], isLoading: isLoadingKeys } = useApiKeys(order?.id, open)
   const { data: histories = [] } = useOrderHistories(order?.id ?? null, open)
@@ -493,10 +496,10 @@ return row.original?.key || row.original?.api_key || ''
                             return (
                             <tr key={row.id}
                               style={{
-                                borderBottom: '1px solid #f1f5f9', cursor: isRotating && isAdmin ? 'pointer' : undefined,
+                                borderBottom: '1px solid #f1f5f9', cursor: isRotating && canViewRotateLog ? 'pointer' : undefined,
                                 background: isViewing ? '#eff6ff' : undefined, transition: 'background 0.15s',
                               }}
-                              onClick={() => { if (isRotating && isAdmin && itemKey) setViewItemKey(viewItemKey === itemKey ? null : itemKey) }}
+                              onClick={() => { if (isRotating && canViewRotateLog && itemKey) setViewItemKey(viewItemKey === itemKey ? null : itemKey) }}
                               onMouseEnter={(e) => { if (isRotating && !isViewing) e.currentTarget.style.background = '#f8fafc' }}
                               onMouseLeave={(e) => { if (isRotating && !isViewing) e.currentTarget.style.background = '' }}
                             >
@@ -541,8 +544,8 @@ return row.original?.key || row.original?.api_key || ''
                 )}
               </Box>
 
-              {/* Panel phải: log xoay proxy — chỉ admin */}
-              {isAdmin && viewItemKey && (
+              {/* Panel phải: log xoay proxy — chỉ admin site mẹ */}
+              {canViewRotateLog && viewItemKey && (
                 <Box sx={{
                   flex: '0 0 38%', borderLeft: '1px solid #e2e8f0',
                   overflowY: 'auto', maxHeight: '60vh', p: '12px 16px',
@@ -558,7 +561,7 @@ return row.original?.key || row.original?.api_key || ''
                   <div style={{ fontSize: '11px', color: '#6366f1', fontFamily: 'monospace', marginBottom: 8, wordBreak: 'break-all' }}>
                     {viewItemKey}
                   </div>
-                  {isAdmin && <UnlockRotateButton itemKey={viewItemKey} />}
+                  {canViewRotateLog && <UnlockRotateButton itemKey={viewItemKey} />}
                   <ClientItemLogPanel itemKey={viewItemKey} />
                 </Box>
               )}
