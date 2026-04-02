@@ -29,6 +29,7 @@ export interface AdminUser {
   affiliate_balance: number
   avatar: string | null
   is_banned: boolean
+  status: number // 1=active, 2=blocked, 3=banned
   created_at: string
   orders_count: number
 }
@@ -106,7 +107,7 @@ return res?.data
   })
 }
 
-// Hook: toggle ban
+// Hook: toggle ban (backward compat)
 export const useToggleBan = () => {
   const axiosAuth = useAxiosAuth()
   const queryClient = useQueryClient()
@@ -115,8 +116,24 @@ export const useToggleBan = () => {
     mutationFn: async ({ userId, is_banned }: { userId: number; is_banned: boolean }) => {
       const res = await axiosAuth.post(`/admin/users/${userId}/ban`, { is_banned })
 
-      
-return res?.data
+      return res?.data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['adminUsers'] })
+    }
+  })
+}
+
+// Hook: update user status (1=active, 2=blocked, 3=banned)
+export const useUpdateUserStatus = () => {
+  const axiosAuth = useAxiosAuth()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ userId, status }: { userId: number; status: number }) => {
+      const res = await axiosAuth.post(`/admin/users/${userId}/status`, { status })
+
+      return res?.data
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminUsers'] })

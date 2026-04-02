@@ -88,6 +88,12 @@ export default function LoginForm() {
         setEmail(data.email)
       }
 
+      if (errorObj.type === 'banned') {
+        setError(errorObj.message || 'Tài khoản đã bị cấm.')
+
+        return
+      }
+
       toast.error(errorObj.message || t('auth.loginError'))
     } else if (res?.ok) {
       setLoading(false)
@@ -108,6 +114,12 @@ export default function LoginForm() {
   return (
     <>
       <form className='login-modal-form' onSubmit={handleSubmit(onSubmit)} autoComplete='on'>
+        {/* Banned warning */}
+        {showError && (
+          <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, padding: '10px 14px', marginBottom: 12, fontSize: 13, color: '#991b1b', lineHeight: 1.5 }}>
+            {showError}
+          </div>
+        )}
         {/* Email */}
         <div className='login-form-group'>
           <label className={`login-form-label ${errors.email && 'text-red-500'}`}>{t('auth.email')}</label>

@@ -51,7 +51,7 @@ import Grid2 from '@mui/material/Grid2'
 
 import { toast } from 'react-toastify'
 
-import { useAdminUsers, useAdminUserStats, useToggleBan, useResetPassword } from '@/hooks/apis/useAdminUsers'
+import { useAdminUsers, useAdminUserStats, useToggleBan, useUpdateUserStatus, useResetPassword } from '@/hooks/apis/useAdminUsers'
 import type { AdminUser, UserStats } from '@/hooks/apis/useAdminUsers'
 
 interface TableUsersProps {
@@ -125,6 +125,8 @@ export default memo(function TableUsers({ onEditUser, onAdjustBalance, onViewTra
   const { data: response, isLoading, isFetching } = useAdminUsers({ page: 1, per_page: fetchLimit, search })
   const { data: stats } = useAdminUserStats()
   const toggleBanMutation = useToggleBan()
+  const updateStatusMutation = useUpdateUserStatus()
+  const [selectedStatus, setSelectedStatus] = useState<number>(1)
   const resetPasswordMutation = useResetPassword()
 
   const rawUsers: AdminUser[] = response?.data ?? []
@@ -153,6 +155,7 @@ export default memo(function TableUsers({ onEditUser, onAdjustBalance, onViewTra
   // Ban/Unban
   const handleOpenBanDialog = useCallback((user: any) => {
     setUserToBan(user)
+    setSelectedStatus(user?.status ?? 1)
     setBanDialogOpen(true)
   }, [])
 
@@ -163,11 +166,10 @@ export default memo(function TableUsers({ onEditUser, onAdjustBalance, onViewTra
 
   const handleConfirmBan = useCallback(() => {
     if (!userToBan) return
-    toggleBanMutation.mutate(
-      { userId: userToBan.id, is_banned: !userToBan.is_banned },
+    updateStatusMutation.mutate(
+      { userId: userToBan.id, status: selectedStatus },
       {
-        onSuccess: (data) => {
-          toast.success(data?.message || 'Thành công')
+        onSuccess: () => {
           handleCloseBanDialog()
         },
         onError: (error: any) => {
@@ -175,7 +177,7 @@ export default memo(function TableUsers({ onEditUser, onAdjustBalance, onViewTra
         }
       }
     )
-  }, [userToBan, toggleBanMutation, handleCloseBanDialog])
+  }, [userToBan, selectedStatus, updateStatusMutation, handleCloseBanDialog])
 
   // Reset Password
   const handleOpenResetPwDialog = useCallback((user: any) => {
@@ -252,14 +254,15 @@ export default memo(function TableUsers({ onEditUser, onAdjustBalance, onViewTra
       {
         header: 'Trạng thái',
         cell: ({ row }: { row: any }) => {
-          const isBanned = row.original?.is_banned
+          const status = row.original?.status ?? 1
+          const statusConfig: Record<number, { label: string; color: 'success' | 'warning' | 'error'; icon: React.ReactNode }> = {
+            1: { label: 'Hoạt động', color: 'success', icon: <BadgeCheck size={14} /> },
+            2: { label: 'Khoá mua', color: 'warning', icon: <BadgeMinus size={14} /> },
+            3: { label: 'Cấm', color: 'error', icon: <ShieldX size={14} /> },
+          }
+          const cfg = statusConfig[status] || statusConfig[1]
 
-          
-return isBanned ? (
-            <Chip label='Bị khóa' size='small' icon={<BadgeMinus size={14} />} color='error' />
-          ) : (
-            <Chip label='Hoạt động' size='small' icon={<BadgeCheck size={14} />} color='success' />
-          )
+          return <Chip label={cfg.label} size='small' icon={cfg.icon as any} color={cfg.color} />
         },
         size: 120
       },
@@ -300,13 +303,13 @@ return (
                 </IconButton>
               </Tooltip>
 
-              <Tooltip title={user?.is_banned ? 'Mở khóa' : 'Khóa tài khoản'}>
+              <Tooltip title='Đổi trạng thái'>
                 <IconButton
                   size='small'
-                  color={user?.is_banned ? 'warning' : 'error'}
+                  color={user?.status === 3 ? 'error' : user?.status === 2 ? 'warning' : 'default'}
                   onClick={() => handleOpenBanDialog(user)}
                 >
-                  {user?.is_banned ? <ShieldCheck size={17} /> : <ShieldX size={17} />}
+                  {user?.status === 3 ? <ShieldX size={17} /> : user?.status === 2 ? <BadgeMinus size={17} /> : <ShieldCheck size={17} />}
                 </IconButton>
               </Tooltip>
 
@@ -519,27 +522,49 @@ return (
         </div>
       </div>
 
-      {/* Ban/Unban Confirmation Dialog */}
-      <Dialog open={banDialogOpen} onClose={handleCloseBanDialog}>
-        <DialogTitle>{userToBan?.is_banned ? 'Mở khóa tài khoản' : 'Khóa tài khoản'}</DialogTitle>
+      {/* Status Dialog */}
+      <Dialog open={banDialogOpen} onClose={handleCloseBanDialog} maxWidth='xs' fullWidth>
+        <DialogTitle>Đổi trạng thái tài khoản</DialogTitle>
         <DialogContent>
-          <DialogContentText>
-            Bạn có chắc chắn muốn {userToBan?.is_banned ? 'mở khóa' : 'khóa'} tài khoản{' '}
-            <strong>{userToBan?.name}</strong> ({userToBan?.email})?
+          <DialogContentText sx={{ mb: 2 }}>
+            User: <strong>{userToBan?.name}</strong> ({userToBan?.email})
           </DialogContentText>
+          <TextField
+            select
+            fullWidth
+            label='Trạng thái'
+            value={selectedStatus}
+            onChange={e => setSelectedStatus(Number(e.target.value))}
+            SelectProps={{ native: true }}
+            size='small'
+          >
+            <option value={1}>✅ Hoạt động</option>
+            <option value={2}>⚠️ Khoá mua hàng</option>
+            <option value={3}>🚫 Cấm đăng nhập</option>
+          </TextField>
+          {selectedStatus === 2 && (
+            <Typography sx={{ mt: 1, fontSize: 12, color: '#b45309' }}>
+              User vẫn đăng nhập và nạp tiền được, nhưng không mua hàng được.
+            </Typography>
+          )}
+          {selectedStatus === 3 && (
+            <Typography sx={{ mt: 1, fontSize: 12, color: '#dc2626' }}>
+              User không đăng nhập được. Hiện cảnh báo khi cố đăng nhập.
+            </Typography>
+          )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseBanDialog} variant='outlined' disabled={toggleBanMutation.isPending}>
+          <Button onClick={handleCloseBanDialog} variant='outlined' disabled={updateStatusMutation.isPending}>
             Hủy
           </Button>
           <Button
             onClick={handleConfirmBan}
             variant='contained'
-            color={userToBan?.is_banned ? 'success' : 'error'}
-            disabled={toggleBanMutation.isPending}
+            color={selectedStatus === 3 ? 'error' : selectedStatus === 2 ? 'warning' : 'success'}
+            disabled={updateStatusMutation.isPending || selectedStatus === (userToBan?.status ?? 1)}
             sx={{ color: '#fff' }}
           >
-            {toggleBanMutation.isPending ? 'Đang xử lý...' : userToBan?.is_banned ? 'Mở khóa' : 'Khóa'}
+            {updateStatusMutation.isPending ? 'Đang xử lý...' : 'Xác nhận'}
           </Button>
         </DialogActions>
       </Dialog>
