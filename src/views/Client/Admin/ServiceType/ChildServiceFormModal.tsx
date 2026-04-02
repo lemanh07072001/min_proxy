@@ -1058,10 +1058,19 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
                     setSyncStatus('done')
                   } else if (product?.provider_prices) {
                     const sp = product.provider_prices
-                    setPriceFields(prev => prev.map(p => ({
-                      ...p,
-                      cost: String(sp[p.key] || p.cost || '')
-                    })))
+                    setPriceFields(prev => {
+                      // Cập nhật cost cho mốc đã có
+                      const updated = prev.map(p => ({
+                        ...p,
+                        cost: String(sp[p.key] || p.cost || '')
+                      }))
+                      // Thêm mốc mới từ site mẹ mà local chưa có
+                      const existingKeys = new Set(prev.map(p => p.key))
+                      const newFields = Object.entries(sp)
+                        .filter(([key]) => !existingKeys.has(key))
+                        .map(([key, cost]) => ({ key, value: '', cost: String(cost) }))
+                      return [...updated, ...newFields]
+                    })
                     setSyncStatus('done')
                   } else {
                     setSyncStatus('error')
