@@ -1309,12 +1309,20 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
                       control={control}
                       render={({ field }) => (
                         <CustomTextField {...field} fullWidth select label='Xác thực'
-                          helperText={checkedProduct?.auth_type && checkedProduct.auth_type !== field.value
-                            ? `⚠ Site mẹ yêu cầu: ${checkedProduct.auth_type === 'ip_whitelist' ? 'IP Whitelist' : checkedProduct.auth_type === 'both' ? 'Cả hai' : 'User:Pass'}`
-                            : checkedProduct?.auth_type ? `✓ Đồng bộ với site mẹ` : undefined}
-                          sx={checkedProduct?.auth_type && checkedProduct.auth_type !== field.value
-                            ? { '& .MuiFormHelperText-root': { color: '#dc2626' } }
-                            : checkedProduct?.auth_type ? { '& .MuiFormHelperText-root': { color: '#16a34a' } } : {}}>
+                          helperText={(() => {
+                            const parentAuth = checkedProduct?.auth_type
+                            if (!parentAuth) return field.value === 'ip_whitelist' ? 'Khách hàng bắt buộc nhập IP trước khi mua' : field.value === 'both' ? 'Khách chọn User:Pass hoặc IP Whitelist' : undefined
+                            const parentLabel = parentAuth === 'ip_whitelist' ? 'Bắt buộc nhập IP Whitelist' : parentAuth === 'both' ? 'User:Pass hoặc IP Whitelist' : 'User:Pass'
+                            if (parentAuth !== field.value) return `⚠ Site mẹ yêu cầu: ${parentLabel} — bạn đang chọn khác!`
+                            return `✓ Khớp site mẹ: ${parentLabel}`
+                          })()}
+                          sx={(() => {
+                            const parentAuth = checkedProduct?.auth_type
+                            if (parentAuth && parentAuth !== field.value) return { '& .MuiFormHelperText-root': { color: '#dc2626', fontWeight: 600 } } as any
+                            if (parentAuth && parentAuth === field.value) return { '& .MuiFormHelperText-root': { color: '#16a34a' } } as any
+                            if (field.value === 'ip_whitelist') return { '& .MuiFormHelperText-root': { color: '#6366f1' } } as any
+                            return {} as any
+                          })()}>
                           <MenuItem value=''><em>— Không chọn —</em></MenuItem>
                           <MenuItem value='userpass'>User:Pass</MenuItem>
                           <MenuItem value='ip_whitelist'>IP Whitelist</MenuItem>
@@ -1399,7 +1407,7 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
                             const presets = ['', '30', '60', '120', '300', '600', '1800', '3600']
                             const strVal = String(value || '')
                             const isCustom = strVal && !presets.includes(strVal)
-                            const formatSeconds = (s: number) => s >= 3600 ? (s / 3600) + ' giờ' : s >= 60 ? (s / 60) + ' phút' : s + ' giây'
+                            const formatSeconds = (s: number) => !s || isNaN(s) ? 'Tùy chỉnh' : s >= 3600 ? Math.floor(s / 3600) + ' giờ' : s >= 60 ? Math.floor(s / 60) + ' phút' : s + ' giây'
 
                             return (
                               <CustomTextField
@@ -1779,7 +1787,7 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
                     {watchAll.type === '1' && watchAll.rotation_type && (
                       <FeatureRow icon={RefreshCw} iconColor='#e53e3e' label='Kiểu xoay' value={getRotationTypeLabel(watchAll.rotation_type)} />
                     )}
-                    {watchAll.type === '1' && watchAll.rotation_interval && (
+                    {watchAll.type === '1' && watchAll.rotation_interval && !isNaN(Number(watchAll.rotation_interval)) && (
                       <FeatureRow icon={Clock} iconColor='#64748b' label='Tự động xoay' value={Number(watchAll.rotation_interval) >= 60 ? Math.floor(Number(watchAll.rotation_interval) / 60) + ' phút' : watchAll.rotation_interval + ' giây'} />
                     )}
                     {watchAll.type === '1' && watchAll.pool_size && (
