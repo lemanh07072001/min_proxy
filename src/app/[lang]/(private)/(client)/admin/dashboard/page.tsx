@@ -10,8 +10,10 @@ import ProviderBreakdown from '@/views/Client/Admin/Dashboard/PartnerBreakdown'
 import ReconciliationCard from '@/views/Client/Admin/Dashboard/ReconciliationHero'
 import OrderStatusReport from '@/views/Client/Admin/Dashboard/OrderStatusReport'
 import { useFinancialReport, type FinancialReportData } from '@/hooks/apis/useFinancialReport'
+import { useBranding } from '@/app/contexts/BrandingContext'
 
 export default function DashboardPage() {
+  const { isChild } = useBranding()
   const [filterParams, setFilterParams] = useState<{ start?: string; end?: string }>({})
   const { data: apiData, isFetching, isLoading } = useFinancialReport(filterParams)
 
@@ -56,8 +58,8 @@ export default function DashboardPage() {
           periodDays={data.period_days}
         />
 
-        {/* 5. Hiệu suất theo nhà cung cấp */}
-        <ProviderBreakdown data={data.provider_breakdown} />
+        {/* 5. Hiệu suất theo nhà cung cấp — chỉ site mẹ */}
+        {!isChild && <ProviderBreakdown data={data.provider_breakdown} />}
 
         {/* 6. Đối soát tài chính */}
         <ReconciliationCard filterStart={filterParams.start} filterEnd={filterParams.end} />

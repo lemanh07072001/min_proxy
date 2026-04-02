@@ -7,6 +7,7 @@ import Dialog from '@mui/material/Dialog'
 import { formatDateTimeLocal } from '@/utils/formatDate'
 import { ORDER_STATUS_LABELS_ADMIN } from '@/constants'
 import { useOrderLogs } from '@/hooks/apis/useTickets'
+import { useBranding } from '@/app/contexts/BrandingContext'
 
 const ACTION_LABELS: Record<string, string> = {
   created: 'Tạo đơn hàng',
@@ -65,6 +66,7 @@ export default function LogModal({
   onClose: () => void
   orderId: number | null
 }) {
+  const { isChild } = useBranding()
   const { data: logs, isLoading } = useOrderLogs(isOpen ? orderId : null)
 
   if (!isOpen) return null
@@ -144,7 +146,7 @@ export default function LogModal({
                         {log.context?.service_name && (
                           <div className='flex flex-wrap gap-x-3 gap-y-0.5 mt-1 text-xs text-gray-500'>
                             <span>{log.context.service_name}</span>
-                            {log.context.provider_name && <span>NCC: {log.context.provider_name}</span>}
+                            {!isChild && log.context.provider_name && <span>NCC: {log.context.provider_name}</span>}
                             {log.context.quantity && <span>SL: {log.context.quantity}</span>}
                             {log.context.total_amount != null && <span>{Number(log.context.total_amount).toLocaleString()}đ</span>}
                             {log.context.time_days && <span>{log.context.time_days} ngày</span>}
@@ -153,7 +155,7 @@ export default function LogModal({
 
                         <p className='text-xs text-gray-400 mt-1'>
                           {log.created_at ? formatDateTimeLocal(log.created_at) : '—'}
-                          {log.provider_code && <span className='ml-2'>NCC: {log.provider_code}</span>}
+                          {!isChild && log.provider_code && <span className='ml-2'>NCC: {log.provider_code}</span>}
                           {log.retry_count != null && log.retry_count > 0 && <span className='ml-2'>Retry: {log.retry_count}</span>}
                         </p>
 
