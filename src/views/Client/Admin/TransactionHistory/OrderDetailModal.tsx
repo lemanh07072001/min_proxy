@@ -41,6 +41,7 @@ import { useOrderLogs, type OrderLog } from '@/hooks/apis/useOrderLogs'
 import { useOrderHistories, type OrderHistoryItem } from '@/hooks/apis/useOrderHistories'
 import { useOrderHistoryLogs, type HistoryLogItem } from '@/hooks/apis/useRenewal'
 import { useOrderItemLogs, type OrderItemLog } from '@/hooks/apis/useOrderItemLogs'
+import { useUnlockRotate } from '@/hooks/apis/useOrderItems'
 
 interface OrderDetailModalProps {
   isOpen: boolean
@@ -515,8 +516,11 @@ export default function OrderDetailModal({ isOpen, onClose, orderData, isLoading
                     {viewItemKey}
                   </div>
                   {nextRotate != null && (
-                    <div style={{ fontSize: '11px', color: nextRotate > 0 ? '#f59e0b' : '#16a34a', marginBottom: 8 }}>
-                      {nextRotate > 0 ? `Xoay tiếp sau ${nextRotate}s` : 'Sẵn sàng xoay'}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                      <span style={{ fontSize: '11px', color: nextRotate > 0 ? '#f59e0b' : '#16a34a' }}>
+                        {nextRotate > 0 ? `Xoay tiếp sau ${nextRotate}s` : 'Sẵn sàng xoay'}
+                      </span>
+                      {nextRotate >= 60 && <UnlockButton itemKey={viewItemKey} />}
                     </div>
                   )}
                   <ItemLogPanel itemKey={viewItemKey} />
@@ -1407,5 +1411,26 @@ function ItemLogPanel({ itemKey }: { itemKey: string }) {
         )
       })}
     </div>
+  )
+}
+
+function UnlockButton({ itemKey }: { itemKey: string }) {
+  const unlock = useUnlockRotate()
+
+  return (
+    <button
+      onClick={() => unlock.mutate(itemKey)}
+      disabled={unlock.isPending}
+      style={{
+        display: 'inline-flex', alignItems: 'center', gap: 3,
+        padding: '3px 10px', fontSize: '10px', fontWeight: 600, borderRadius: 5,
+        border: '1px solid #f59e0b', background: unlock.isSuccess ? '#dcfce7' : '#fffbeb',
+        color: unlock.isSuccess ? '#16a34a' : '#b45309',
+        cursor: unlock.isPending ? 'wait' : 'pointer',
+      }}
+    >
+      <RefreshCw size={10} />
+      {unlock.isPending ? 'Đang gỡ...' : unlock.isSuccess ? 'Đã gỡ' : 'Gỡ lock'}
+    </button>
   )
 }

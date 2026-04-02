@@ -52,6 +52,7 @@ import { useRenewOrder, useRenewInfo, useRenewalRefund, useRenewalConfirm, useOr
 import { useRole } from '@/hooks/useRole'
 import { useOrderHistories, type OrderHistoryItem } from '@/hooks/apis/useOrderHistories'
 import { useOrderItemLogs, type OrderItemLog } from '@/hooks/apis/useOrderItemLogs'
+import { useUnlockRotate } from '@/hooks/apis/useOrderItems'
 
 const formatVND = (v: number) => new Intl.NumberFormat('vi-VN').format(v) + 'đ'
 
@@ -557,6 +558,7 @@ return row.original?.key || row.original?.api_key || ''
                   <div style={{ fontSize: '11px', color: '#6366f1', fontFamily: 'monospace', marginBottom: 8, wordBreak: 'break-all' }}>
                     {viewItemKey}
                   </div>
+                  {isAdmin && <UnlockRotateButton itemKey={viewItemKey} />}
                   <ClientItemLogPanel itemKey={viewItemKey} />
                 </Box>
               )}
@@ -1040,6 +1042,28 @@ function ClientItemLogPanel({ itemKey }: { itemKey: string }) {
         )
       })}
     </div>
+  )
+}
+
+function UnlockRotateButton({ itemKey }: { itemKey: string }) {
+  const unlock = useUnlockRotate()
+
+  return (
+    <button
+      onClick={() => unlock.mutate(itemKey)}
+      disabled={unlock.isPending}
+      style={{
+        display: 'inline-flex', alignItems: 'center', gap: 4,
+        padding: '5px 12px', marginBottom: 8,
+        fontSize: '11px', fontWeight: 600, borderRadius: 6,
+        border: '1px solid #f59e0b', background: unlock.isSuccess ? '#dcfce7' : '#fffbeb',
+        color: unlock.isSuccess ? '#16a34a' : '#b45309',
+        cursor: unlock.isPending ? 'wait' : 'pointer',
+      }}
+    >
+      <RefreshCw size={11} />
+      {unlock.isPending ? 'Đang gỡ...' : unlock.isSuccess ? 'Đã gỡ lock' : 'Gỡ lock xoay'}
+    </button>
   )
 }
 
