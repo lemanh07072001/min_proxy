@@ -580,9 +580,8 @@ export default function ServiceFormModal({ open, onClose, serviceId, initialData
   const updateMutation = useUpdateServiceType(serviceId)
 
   // Provider duration options — lấy từ api_config NCC
-  const watchedProviderId2 = watch('provider_id')
-  const watchedType2 = watch('type')
-  const selectedProviderForPricing = providers?.find((p: any) => String(p.id) === String(watchedProviderId2)) || null
+  const watchedPid = watch('provider_id')
+  const watchedTyp = watch('type')
 
   const providerDurationOptions = useMemo(() => {
     const DEFAULT_OPTIONS = [
@@ -591,30 +590,36 @@ export default function ServiceFormModal({ open, onClose, serviceId, initialData
       { value: '21', label: '21 ngày' }, { value: '30', label: '30 ngày' }
     ]
 
-    if (!selectedProviderForPricing?.api_config) return DEFAULT_OPTIONS
+    try {
+      const prov = providers?.find((p: any) => String(p.id) === String(watchedPid))
 
-    const config = typeof selectedProviderForPricing.api_config === 'string'
-      ? JSON.parse(selectedProviderForPricing.api_config)
-      : selectedProviderForPricing.api_config
+      if (!prov?.api_config) return DEFAULT_OPTIONS
 
-    const buyKey = watchedType2 === '0' ? 'buy_static' : 'buy_rotating'
-    const buyConfig = config?.[buyKey] ?? config?.buy ?? null
-    const urlByDuration = buyConfig?.url_by_duration
+      const config = typeof prov.api_config === 'string'
+        ? JSON.parse(prov.api_config)
+        : prov.api_config
 
-    if (!urlByDuration || typeof urlByDuration !== 'object' || Object.keys(urlByDuration).length === 0) {
+      const buyKey = watchedTyp === '0' ? 'buy_static' : 'buy_rotating'
+      const buyConfig = config?.[buyKey] ?? config?.buy ?? null
+      const urlByDuration = buyConfig?.url_by_duration
+
+      if (!urlByDuration || typeof urlByDuration !== 'object' || Object.keys(urlByDuration).length === 0) {
+        return DEFAULT_OPTIONS
+      }
+
+      const LABEL_MAP: Record<string, string> = {
+        '1': '1 ngày', '3': '3 ngày', '7': '7 ngày', '14': '14 ngày',
+        '21': '21 ngày', '30': '30 ngày', '60': '60 ngày', '90': '90 ngày',
+        '180': '180 ngày', '365': '365 ngày'
+      }
+
+      return Object.keys(urlByDuration)
+        .map(key => ({ value: key, label: LABEL_MAP[key] || `${key} ngày` }))
+        .sort((a, b) => Number(a.value) - Number(b.value))
+    } catch {
       return DEFAULT_OPTIONS
     }
-
-    const LABEL_MAP: Record<string, string> = {
-      '1': '1 ngày', '3': '3 ngày', '7': '7 ngày', '14': '14 ngày',
-      '21': '21 ngày', '30': '30 ngày', '60': '60 ngày', '90': '90 ngày',
-      '180': '180 ngày', '365': '365 ngày'
-    }
-
-    return Object.keys(urlByDuration)
-      .map(key => ({ value: key, label: LABEL_MAP[key] || `${key} ngày` }))
-      .sort((a, b) => Number(a.value) - Number(b.value))
-  }, [selectedProviderForPricing, watchedType2])
+  }, [watchedPid, watchedTyp, providers])
 
   // Out-of-form state
   const [multiInputFields, setMultiInputFields] = useState<Array<{ key: string; value: string }>>([{ key: '', value: '' }])
