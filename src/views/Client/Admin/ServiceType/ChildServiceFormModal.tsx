@@ -176,10 +176,16 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
       setSelectedSupplierCode(supplierCode)
       setSupplierCodeInput(supplierCode || '')
 
-      // Auto-fetch product từ site mẹ theo code để lấy provider_discount_tiers
+      // Auto-fetch product từ site mẹ theo code để lấy provider_discount_tiers + auth_type
       if (supplierCode && !checkedProduct) {
         checkProductMutation.mutate(supplierCode, {
-          onSuccess: (data) => setCheckedProduct(data),
+          onSuccess: (data) => {
+            setCheckedProduct(data)
+            // Auto-fill auth_type nếu local chưa set
+            if (data.auth_type && !serviceData?.auth_type) {
+              setValue('auth_type', data.auth_type)
+            }
+          },
         })
       }
 
@@ -713,6 +719,38 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
                   )}
                 </div>
               </div>
+
+              {/* Banner cảnh báo IP Whitelist từ site mẹ */}
+              {checkedProduct?.auth_type && (checkedProduct.auth_type === 'ip_whitelist' || checkedProduct.auth_type === 'both') && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', borderRadius: 8, background: '#fef2f2', border: '1px solid #fecaca' }}>
+                  <span style={{ fontSize: '18px' }}>🔒</span>
+                  <div>
+                    <div style={{ fontSize: '12px', fontWeight: 700, color: '#991b1b' }}>
+                      Site mẹ bắt buộc nhập IP Whitelist
+                    </div>
+                    <div style={{ fontSize: '11px', color: '#dc2626', marginTop: 2 }}>
+                      Khách hàng phải nhập IP trước khi mua. Đảm bảo mục "Xác thực" bên dưới chọn "{checkedProduct.auth_type === 'ip_whitelist' ? 'IP Whitelist' : 'Cả hai'}".
+                      {checkedProduct.max_ips ? ` Tối đa ${checkedProduct.max_ips} IP.` : ''}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Banner khi SP local chưa set auth_type nhưng site mẹ yêu cầu */}
+              {checkedProduct?.auth_type && (checkedProduct.auth_type === 'ip_whitelist' || checkedProduct.auth_type === 'both') && watch('auth_type') !== checkedProduct.auth_type && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', borderRadius: 8, background: '#fffbeb', border: '1px solid #fde68a' }}>
+                  <span style={{ fontSize: '18px' }}>⚠️</span>
+                  <div>
+                    <div style={{ fontSize: '12px', fontWeight: 700, color: '#92400e' }}>
+                      Xác thực chưa khớp với site mẹ!
+                    </div>
+                    <div style={{ fontSize: '11px', color: '#b45309', marginTop: 2 }}>
+                      Bạn đang chọn "{watch('auth_type') || 'Không chọn'}" nhưng site mẹ yêu cầu "{checkedProduct.auth_type === 'ip_whitelist' ? 'IP Whitelist' : 'Cả hai'}".
+                      Nếu không khớp, đơn hàng có thể lỗi.
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Chế độ giá — site con được chọn riêng */}
               {(selectedProduct || isEditMode) && (
