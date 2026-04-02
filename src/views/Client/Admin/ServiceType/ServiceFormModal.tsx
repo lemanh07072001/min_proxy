@@ -579,6 +579,43 @@ export default function ServiceFormModal({ open, onClose, serviceId, initialData
   const createMutation = useCreateServiceType()
   const updateMutation = useUpdateServiceType(serviceId)
 
+  // Provider duration options — lấy từ api_config NCC
+  const watchedProviderId2 = watch('provider_id')
+  const watchedType2 = watch('type')
+  const selectedProviderForPricing = providers?.find((p: any) => String(p.id) === String(watchedProviderId2)) || null
+
+  const providerDurationOptions = useMemo(() => {
+    const DEFAULT_OPTIONS = [
+      { value: '1', label: '1 ngày' }, { value: '3', label: '3 ngày' },
+      { value: '7', label: '7 ngày' }, { value: '14', label: '14 ngày' },
+      { value: '21', label: '21 ngày' }, { value: '30', label: '30 ngày' }
+    ]
+
+    if (!selectedProviderForPricing?.api_config) return DEFAULT_OPTIONS
+
+    const config = typeof selectedProviderForPricing.api_config === 'string'
+      ? JSON.parse(selectedProviderForPricing.api_config)
+      : selectedProviderForPricing.api_config
+
+    const buyKey = watchedType2 === '0' ? 'buy_static' : 'buy_rotating'
+    const buyConfig = config?.[buyKey] ?? config?.buy ?? null
+    const urlByDuration = buyConfig?.url_by_duration
+
+    if (!urlByDuration || typeof urlByDuration !== 'object' || Object.keys(urlByDuration).length === 0) {
+      return DEFAULT_OPTIONS
+    }
+
+    const LABEL_MAP: Record<string, string> = {
+      '1': '1 ngày', '3': '3 ngày', '7': '7 ngày', '14': '14 ngày',
+      '21': '21 ngày', '30': '30 ngày', '60': '60 ngày', '90': '90 ngày',
+      '180': '180 ngày', '365': '365 ngày'
+    }
+
+    return Object.keys(urlByDuration)
+      .map(key => ({ value: key, label: LABEL_MAP[key] || `${key} ngày` }))
+      .sort((a, b) => Number(a.value) - Number(b.value))
+  }, [selectedProviderForPricing, watchedType2])
+
   // Out-of-form state
   const [multiInputFields, setMultiInputFields] = useState<Array<{ key: string; value: string }>>([{ key: '', value: '' }])
   const [priceFields, setPriceFields] = useState<Array<{ key: string; value: string; cost?: string; quantity_tiers?: Array<{ min: string; max: string; price: string; cost: string }> }>>([{ key: '', value: '', cost: '' }])
@@ -2165,7 +2202,7 @@ return <Chip key={val} label={p?.label || val} size='small' />
                           <span style={{ fontSize: '12px', fontWeight: 600, color: '#334155' }}>Mốc giá theo thời gian</span>
                           <Button size='small' startIcon={<Plus size={13} />}
                             onClick={() => setPriceFields(prev => [...prev, { key: '', value: '', cost: '' }])}
-                            disabled={priceFields.length >= 6}
+                            disabled={priceFields.length >= providerDurationOptions.length}
                           >Thêm mốc</Button>
                         </div>
                         {/* Header */}
@@ -2183,11 +2220,8 @@ return <Chip key={val} label={p?.label || val} size='small' />
                                   setPriceFields(prev => prev.map((f, i) => i === index ? { ...f, key: e.target.value } : f))
                                 }} slotProps={{ select: { displayEmpty: true } }}>
                                   <MenuItem value=''><em>Chọn</em></MenuItem>
-                                  {[
-                                    { value: '1', label: '1 ngày' }, { value: '3', label: '3 ngày' },
-                                    { value: '7', label: '7 ngày' }, { value: '14', label: '14 ngày' },
-                                    { value: '21', label: '21 ngày' }, { value: '30', label: '30 ngày' }
-                                  ].filter(o => o.value === field.key || !priceFields.some(f => f.key === o.value))
+                                  {providerDurationOptions
+                                    .filter(o => o.value === field.key || !priceFields.some(f => f.key === o.value))
                                     .map(o => <MenuItem key={o.value} value={o.value}>{o.label}</MenuItem>)}
                                 </CustomTextField>
                                 <CustomTextField size='small' type='number' placeholder='đ' value={field.value}
