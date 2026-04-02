@@ -324,16 +324,17 @@ export default function TableServiceType() {
   }, [dataServices, orderedIds])
 
   const getStatusBadge = (status: string) => {
-    switch (status) {
-      // case '':
-      //   return <Chip label='Chờ xử lý' size='small' icon={<BadgeAlert />} color='warning' />
-      case 'active':
-        return <Chip label='ACTIVE' size='small' icon={<BadgeCheck />} color='success' />
-      case 'inactive':
-        return <Chip label='INACTIVE' size='small' icon={<BadgeMinus />} color='error' />
-      default:
-        return <Chip label='Không xác định' size='small' icon={<CircleQuestionMark />} color='secondary' />
+    const styles: Record<string, { bg: string; color: string; dot: string; label: string }> = {
+      active: { bg: '#f0fdf4', color: '#15803d', dot: '#22c55e', label: 'Hoạt động' },
+      inactive: { bg: '#fef2f2', color: '#991b1b', dot: '#ef4444', label: 'Tắt' }
     }
+    const s = styles[status] || { bg: '#f8fafc', color: '#64748b', dot: '#94a3b8', label: 'Không rõ' }
+    return (
+      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: '12px', fontWeight: 600, color: s.color, background: s.bg, borderRadius: 20, padding: '3px 10px 3px 8px' }}>
+        <span style={{ width: 7, height: 7, borderRadius: '50%', background: s.dot, flexShrink: 0 }} />
+        {s.label}
+      </span>
+    )
   }
 
   const filteredData = useMemo(() => {
@@ -392,18 +393,28 @@ return result
         )
       },
       {
-        header: 'Thông tin sản phẩm',
-        minSize: 220,
+        header: 'Sản phẩm',
+        minSize: 240,
         cell: ({ row }: { row: any }) => {
           const o = row.original
           return (
-            <div style={{ lineHeight: 1.5 }}>
-              <div style={{ fontWeight: 600, fontSize: '13px' }}>{o?.name}</div>
-              <div style={{ fontSize: '11px', color: '#64748b', fontFamily: 'monospace' }}>
-                #{o?.id}·{o?.code || '—'}
+            <div style={{ lineHeight: 1.6 }}>
+              <div style={{ fontWeight: 700, fontSize: '14px', color: '#0f172a', marginBottom: 3 }}>{o?.name}</div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, alignItems: 'center' }}>
+                <span style={{ fontSize: '11px', fontFamily: 'monospace', color: '#64748b', background: '#f1f5f9', borderRadius: 4, padding: '1px 6px' }}>
+                  ID: {o?.id}
+                </span>
+                {o?.code && (
+                  <span style={{ fontSize: '11px', fontFamily: 'monospace', color: '#6366f1', background: '#eef2ff', borderRadius: 4, padding: '1px 6px' }}>
+                    {o.code}
+                  </span>
+                )}
               </div>
               {!isChild && o?.provider?.title && (
-                <div style={{ fontSize: '11px', color: '#94a3b8' }}>NCC: {o.provider.title}</div>
+                <div style={{ fontSize: '12px', color: '#64748b', marginTop: 3, display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#a78bfa', flexShrink: 0 }} />
+                  {o.provider.title}
+                </div>
               )}
             </div>
           )
@@ -413,15 +424,18 @@ return result
         header: 'Trạng thái',
         cell: ({ row }: { row: any }) => {
           return (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
               {getStatusBadge(row.original.status)}
               {row.original.is_purchasable === false && (
-                <Chip label='Ngừng bán' size='small' icon={<ShoppingCartIcon size={12} />} color='warning' variant='outlined' />
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: '11px', fontWeight: 500, color: '#92400e', background: '#fffbeb', borderRadius: 20, padding: '2px 8px 2px 6px' }}>
+                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#f59e0b', flexShrink: 0 }} />
+                  Ngừng bán
+                </span>
               )}
             </div>
           )
         },
-        minSize: 100
+        minSize: 110
       },
       {
         header: 'Phân loại',

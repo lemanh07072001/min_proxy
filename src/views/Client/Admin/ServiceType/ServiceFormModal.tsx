@@ -1076,7 +1076,10 @@ return { values: {}, errors: formattedErrors }
 
   return (
     <>
-      <Dialog open={open} onClose={onClose} maxWidth='xl' fullWidth PaperProps={{ sx: { maxHeight: '92vh' } }}>
+      <Dialog open={open} onClose={onClose} maxWidth='xl' fullWidth
+        PaperProps={{ sx: { maxHeight: { xs: '100vh', sm: '92vh' }, m: { xs: 0, sm: '16px' }, borderRadius: { xs: 0, sm: '12px' } } }}
+        sx={{ '& .MuiDialog-container': { alignItems: { xs: 'stretch', sm: 'center' } } }}
+        fullScreen={false}>
         <DialogTitle
           sx={{
             background: 'var(--primary-gradient, linear-gradient(135deg, #F88A4B 0%, #F6734B 100%))',
@@ -1107,7 +1110,7 @@ return { values: {}, errors: formattedErrors }
           </button>
         </DialogTitle>
 
-        <DialogContent sx={{ mt: 1, pb: 1, position: 'relative', display: 'flex', gap: 2, overflow: 'hidden', px: 2 }}>
+        <DialogContent sx={{ mt: 1, pb: 1, position: 'relative', display: 'flex', gap: 2, overflow: 'hidden', px: { xs: 1.5, sm: 2 } }}>
           {/* Loading overlay khi đang xử lý */}
           {isPending && (
             <Box
@@ -2232,35 +2235,33 @@ return <Chip key={val} label={p?.label || val} size='small' />
                           return (
                             <div key={index} style={{ borderBottom: '1px solid #e2e8f0', padding: '10px 12px' }}>
                               {/* Row 1: inputs */}
-                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
-                                <CustomTextField size='small' select value={field.key} onChange={(e: any) => {
-                                  setPriceFields(prev => prev.map((f, i) => i === index ? { ...f, key: e.target.value } : f))
-                                }} slotProps={{ select: { displayEmpty: true } }} sx={{ minWidth: 120, flex: '0 0 auto' }}>
-                                  <MenuItem value=''><em>Chọn</em></MenuItem>
-                                  {durationOptions
-                                    .filter(o => o.value === field.key || !priceFields.some(f => f.key === o.value))
-                                    .map(o => <MenuItem key={o.value} value={o.value}>{o.label}</MenuItem>)}
-                                </CustomTextField>
-                                <div style={{ flex: '1 1 100px', minWidth: 90 }}>
+                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'flex-end' }}>
+                                <div style={{ flex: '0 0 auto' }}>
+                                  <div style={{ fontSize: '10px', color: '#64748b', marginBottom: 2 }}>Thời gian</div>
+                                  <CustomTextField size='small' select value={field.key} onChange={(e: any) => {
+                                    setPriceFields(prev => prev.map((f, i) => i === index ? { ...f, key: e.target.value } : f))
+                                  }} slotProps={{ select: { displayEmpty: true } }} sx={{ minWidth: 110 }}>
+                                    <MenuItem value=''><em>Chọn</em></MenuItem>
+                                    {durationOptions
+                                      .filter(o => o.value === field.key || !priceFields.some(f => f.key === o.value))
+                                      .map(o => <MenuItem key={o.value} value={o.value}>{o.label}</MenuItem>)}
+                                  </CustomTextField>
+                                </div>
+                                <div style={{ flex: '0 1 120px', minWidth: 80 }}>
                                   <div style={{ fontSize: '10px', color: '#64748b', marginBottom: 2 }}>Giá bán</div>
                                   <CustomTextField size='small' type='number' placeholder='đ' value={field.value} fullWidth
                                     onChange={(e: any) => setPriceFields(prev => prev.map((f, i) => i === index ? { ...f, value: e.target.value } : f))} />
                                 </div>
-                                <div style={{ flex: '1 1 100px', minWidth: 90 }}>
+                                <div style={{ flex: '0 1 120px', minWidth: 80 }}>
                                   <div style={{ fontSize: '10px', color: '#64748b', marginBottom: 2 }}>Giá vốn</div>
                                   <CustomTextField size='small' type='number' placeholder='đ' value={field.cost || ''} fullWidth
                                     onChange={(e: any) => setPriceFields(prev => prev.map((f, i) => i === index ? { ...f, cost: e.target.value } : f))} />
                                 </div>
                                 {/* Profit badge */}
                                 {sellPrice > 0 && costPrice > 0 ? (
-                                  <div style={{ padding: '4px 10px', borderRadius: 6, background: profit > 0 ? '#f0fdf4' : profit < 0 ? '#fef2f2' : '#f8fafc', border: `1px solid ${profit > 0 ? '#bbf7d0' : profit < 0 ? '#fecaca' : '#e2e8f0'}`, textAlign: 'center', flex: '0 0 auto' }}>
-                                    <div style={{ fontSize: '12px', fontWeight: 700, color: profitColor }}>
-                                      {profit > 0 ? '+' : ''}{profit.toLocaleString('vi-VN')}đ
-                                    </div>
-                                    <div style={{ fontSize: '10px', color: profitColor }}>
-                                      {profitPct > 0 ? '+' : ''}{profitPct.toFixed(1)}%
-                                    </div>
-                                  </div>
+                                  <span style={{ fontSize: '11px', fontWeight: 600, color: profitColor, background: profit > 0 ? '#f0fdf4' : profit < 0 ? '#fef2f2' : '#f8fafc', borderRadius: 4, padding: '3px 8px', whiteSpace: 'nowrap', lineHeight: 1.4 }}>
+                                    {profit > 0 ? '+' : ''}{profit.toLocaleString('vi-VN')}đ ({profitPct > 0 ? '+' : ''}{profitPct.toFixed(1)}%)
+                                  </span>
                                 ) : null}
                                 <Button size='small' variant={hasQtyTiers ? 'contained' : 'outlined'} color={hasQtyTiers ? 'success' : 'inherit'}
                                   sx={{ fontSize: '10px', minWidth: 0, px: 1, py: 0.3, flex: '0 0 auto' }}
