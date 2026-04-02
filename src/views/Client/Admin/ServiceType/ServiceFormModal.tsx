@@ -2222,16 +2222,21 @@ return <Chip key={val} label={p?.label || val} size='small' />
                           >Thêm mốc</Button>
                         </div>
                         {/* Header */}
-                        <div style={{ display: 'grid', gridTemplateColumns: '130px 110px 110px 80px 30px', gap: 6, padding: '6px 12px', fontSize: '10px', fontWeight: 600, color: '#64748b', background: '#f1f5f9' }}>
-                          <span>Thời gian</span><span>Giá bán</span><span>Giá vốn</span><span>SL giảm</span><span></span>
+                        <div style={{ display: 'grid', gridTemplateColumns: '130px 110px 110px 90px 80px 30px', gap: 6, padding: '6px 12px', fontSize: '10px', fontWeight: 600, color: '#64748b', background: '#f1f5f9' }}>
+                          <span>Thời gian</span><span>Giá bán</span><span>Giá vốn</span><span>Lãi/lỗ</span><span>SL giảm</span><span></span>
                         </div>
                         {priceFields.map((field, index) => {
                           const qtyTiers = field.quantity_tiers || []
                           const hasQtyTiers = qtyTiers.length > 0
+                          const sellPrice = parseFloat(field.value) || 0
+                          const costPrice = parseFloat(field.cost || '') || 0
+                          const profit = sellPrice && costPrice ? sellPrice - costPrice : 0
+                          const profitPct = costPrice > 0 ? ((profit / costPrice) * 100) : 0
+                          const isLoss = profit < 0
                           return (
-                            <div key={index} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                            <div key={index} style={{ borderBottom: '1px solid #f1f5f9', background: isLoss && sellPrice > 0 ? '#fef2f2' : undefined }}>
                               {/* Dòng chính */}
-                              <div style={{ display: 'grid', gridTemplateColumns: '130px 110px 110px 80px 30px', gap: 6, alignItems: 'center', padding: '6px 12px' }}>
+                              <div style={{ display: 'grid', gridTemplateColumns: '130px 110px 110px 90px 80px 30px', gap: 6, alignItems: 'center', padding: '6px 12px' }}>
                                 <div>
                                   <CustomTextField size='small' select value={field.key} onChange={(e: any) => {
                                     setPriceFields(prev => prev.map((f, i) => i === index ? { ...f, key: e.target.value } : f))
@@ -2241,16 +2246,38 @@ return <Chip key={val} label={p?.label || val} size='small' />
                                       .filter(o => o.value === field.key || !priceFields.some(f => f.key === o.value))
                                       .map(o => <MenuItem key={o.value} value={o.value}>{o.label}</MenuItem>)}
                                   </CustomTextField>
-                                  {field.key && durationUrlMap[field.key] && (
-                                    <div style={{ fontSize: 9, color: '#6b7280', marginTop: 2, fontFamily: 'monospace', wordBreak: 'break-all', lineHeight: 1.3 }}>
-                                      → {durationUrlMap[field.key]}
-                                    </div>
-                                  )}
+                                  {field.key && durationUrlMap[field.key] && (() => {
+                                    const url = durationUrlMap[field.key]
+                                    const shortUrl = url.length > 30 ? url.replace(/^https?:\/\//, '').slice(0, 28) + '…' : url.replace(/^https?:\/\//, '')
+                                    return (
+                                      <a href={url} target='_blank' rel='noopener noreferrer' title={url}
+                                        style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: '10px', color: '#6366f1', marginTop: 3, textDecoration: 'none', background: '#eef2ff', borderRadius: 4, padding: '1px 6px', maxWidth: '100%', overflow: 'hidden' }}>
+                                        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{shortUrl}</span>
+                                        <span style={{ fontSize: 8, flexShrink: 0 }}>↗</span>
+                                      </a>
+                                    )
+                                  })()}
                                 </div>
                                 <CustomTextField size='small' type='number' placeholder='đ' value={field.value}
                                   onChange={(e: any) => setPriceFields(prev => prev.map((f, i) => i === index ? { ...f, value: e.target.value } : f))} />
                                 <CustomTextField size='small' type='number' placeholder='đ' value={field.cost || ''}
                                   onChange={(e: any) => setPriceFields(prev => prev.map((f, i) => i === index ? { ...f, cost: e.target.value } : f))} />
+                                {/* Profit indicator */}
+                                <div style={{ fontSize: '11px', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                                  {sellPrice > 0 && costPrice > 0 ? (
+                                    <>
+                                      <span style={{ color: profit > 0 ? '#16a34a' : profit < 0 ? '#ef4444' : '#94a3b8' }}>
+                                        {profit > 0 ? '+' : ''}{profit.toLocaleString('vi-VN')}đ
+                                      </span>
+                                      <br />
+                                      <span style={{ fontSize: '9px', fontWeight: 400, color: profit > 0 ? '#16a34a' : profit < 0 ? '#ef4444' : '#94a3b8' }}>
+                                        {profitPct > 0 ? '+' : ''}{profitPct.toFixed(1)}%
+                                      </span>
+                                    </>
+                                  ) : (
+                                    <span style={{ color: '#cbd5e1', fontSize: '10px' }}>—</span>
+                                  )}
+                                </div>
                                 <Button size='small' variant={hasQtyTiers ? 'contained' : 'outlined'} color={hasQtyTiers ? 'success' : 'inherit'}
                                   sx={{ fontSize: '10px', minWidth: 0, px: 1, py: 0.3 }}
                                   onClick={() => {
@@ -2272,11 +2299,16 @@ return <Chip key={val} label={p?.label || val} size='small' />
                               {/* Sub-rows: qty tiers */}
                               {hasQtyTiers && (
                                 <div style={{ background: '#fafbfc', borderTop: '1px dashed #e2e8f0', padding: '4px 12px 8px 32px' }}>
-                                  <div style={{ display: 'grid', gridTemplateColumns: '70px 70px 100px 100px 30px', gap: 4, fontSize: '9px', color: '#94a3b8', fontWeight: 600, marginBottom: 2 }}>
-                                    <span>Từ SL</span><span>Đến SL</span><span>Giá bán</span><span>Giá vốn</span><span></span>
+                                  <div style={{ display: 'grid', gridTemplateColumns: '70px 70px 100px 100px 70px 30px', gap: 4, fontSize: '9px', color: '#94a3b8', fontWeight: 600, marginBottom: 2 }}>
+                                    <span>Từ SL</span><span>Đến SL</span><span>Giá bán</span><span>Giá vốn</span><span>Lãi/lỗ</span><span></span>
                                   </div>
-                                  {qtyTiers.map((qt, qIdx) => (
-                                    <div key={qIdx} style={{ display: 'grid', gridTemplateColumns: '70px 70px 100px 100px 30px', gap: 4, alignItems: 'center', marginBottom: 2 }}>
+                                  {qtyTiers.map((qt, qIdx) => {
+                                    const qtSell = parseFloat(qt.price) || 0
+                                    const qtCost = parseFloat(qt.cost) || 0
+                                    const qtProfit = qtSell && qtCost ? qtSell - qtCost : 0
+                                    const qtIsLoss = qtProfit < 0
+                                    return (
+                                    <div key={qIdx} style={{ display: 'grid', gridTemplateColumns: '70px 70px 100px 100px 70px 30px', gap: 4, alignItems: 'center', marginBottom: 2, background: qtIsLoss && qtSell > 0 ? '#fef2f2' : undefined, borderRadius: 4, padding: '1px 0' }}>
                                       <CustomTextField size='small' type='number' placeholder='20' value={qt.min}
                                         onChange={(e: any) => setPriceFields(prev => prev.map((f, i) => i === index ? {
                                           ...f, quantity_tiers: (f.quantity_tiers || []).map((t, j) => j === qIdx ? { ...t, min: e.target.value } : t)
@@ -2293,6 +2325,9 @@ return <Chip key={val} label={p?.label || val} size='small' />
                                         onChange={(e: any) => setPriceFields(prev => prev.map((f, i) => i === index ? {
                                           ...f, quantity_tiers: (f.quantity_tiers || []).map((t, j) => j === qIdx ? { ...t, cost: e.target.value } : t)
                                         } : f))} sx={{ '& input': { fontSize: '11px', p: '4px 8px' } }} />
+                                      <span style={{ fontSize: '10px', fontWeight: 600, color: qtProfit > 0 ? '#16a34a' : qtProfit < 0 ? '#ef4444' : '#cbd5e1' }}>
+                                        {qtSell > 0 && qtCost > 0 ? `${qtProfit > 0 ? '+' : ''}${qtProfit.toLocaleString('vi-VN')}đ` : '—'}
+                                      </span>
                                       <IconButton size='small' sx={{ p: '1px' }} color='error'
                                         onClick={() => setPriceFields(prev => prev.map((f, i) => i === index ? {
                                           ...f, quantity_tiers: (f.quantity_tiers || []).filter((_, j) => j !== qIdx)
@@ -2300,7 +2335,8 @@ return <Chip key={val} label={p?.label || val} size='small' />
                                         <X size={12} />
                                       </IconButton>
                                     </div>
-                                  ))}
+                                    )
+                                  })}
                                   <Button size='small' sx={{ fontSize: '10px', mt: 0.5 }} startIcon={<Plus size={11} />}
                                     onClick={() => setPriceFields(prev => prev.map((f, i) => i === index ? {
                                       ...f, quantity_tiers: [...(f.quantity_tiers || []), { min: '', max: '', price: '', cost: '' }]
