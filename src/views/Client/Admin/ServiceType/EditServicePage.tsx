@@ -118,6 +118,7 @@ export default function EditServicePage({ serviceId }: EditServicePageProps) {
   const {
     control,
     handleSubmit,
+    watch,
     formState: { errors },
     reset
   } = useForm({
@@ -161,6 +162,10 @@ return { values: {}, errors: formattedErrors }
       tag: ''
     }
   })
+
+  const watchProviderId = watch('provider_id')
+  const watchType = watch('type')
+  const selectedProvider = providers?.find((p: any) => String(p.id) === String(watchProviderId)) || null
 
   const [isMultiInputModalOpen, setIsMultiInputModalOpen] = useState(false)
 
@@ -848,6 +853,8 @@ return <Chip key={val} label={protocol?.label || val} size='small' />
         onSave={handleSavePrices}
         fields={priceFields}
         setFields={setPriceFields}
+        provider={selectedProvider}
+        proxyType={watchType}
       />
     </Card>
   )
