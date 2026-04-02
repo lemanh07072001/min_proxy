@@ -13,6 +13,12 @@ export interface SupplierProduct {
   country: string | null
 
   provider_discount_tiers?: Array<{ min: string; max: string; discount: string }>
+  auth_type?: string | null
+  max_ips?: number | null
+  pricing_mode?: string | null
+  time_unit?: string | null
+  price_per_unit?: number | null
+  ip_version?: string | null
 
   // Nếu đã import
   local_id?: number

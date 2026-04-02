@@ -262,6 +262,11 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
       setValue('protocols', selectedProduct.protocols)
     }
 
+    // Auto fill auth_type + max_ips từ site mẹ
+    if (selectedProduct.auth_type) {
+      setValue('auth_type', selectedProduct.auth_type)
+    }
+
     // Set pricing mode theo site mẹ
     const parentMode = selectedProduct.pricing_mode || 'fixed'
     setParentPricingMode(parentMode)
@@ -447,6 +452,7 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
         ...(selectedSupplierId ? { provider_product_id: selectedSupplierId } : {}),
         parent_pricing_mode: parentPricingMode,
         allow_custom_auth: allowCustomAuth,
+        max_ips: selectedProduct?.max_ips || existingMeta?.max_ips || null,
         discount_tiers: pricingMode === 'per_unit' ? discountTiers.filter(t => t.min && t.discount) : undefined,
         // Lưu mốc giá nhập từ site mẹ → dùng tính giá vốn khi tạo đơn
         cost_discount_tiers: (() => {
