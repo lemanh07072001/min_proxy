@@ -1492,6 +1492,7 @@ return <Chip key={val} label={p?.label || val} size='small' />
                         placeholder='Mô tả ngắn về sản phẩm (hiển thị dưới tên sản phẩm trên card)'
                         inputProps={{ maxLength: 500 }}
                         helperText={`${(field.value || '').replace(/<[^>]+>/g, '').length}/500 ký tự`}
+                        sx={{ '& .MuiInputBase-inputMultiline': { resize: 'vertical' } }}
                       />
                     )}
                   />

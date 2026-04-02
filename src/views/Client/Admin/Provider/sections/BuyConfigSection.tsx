@@ -26,6 +26,51 @@ import Alert from '@mui/material/Alert'
 import type { BuySectionProps, ParamsMappingEntry } from '../ProviderFormTypes'
 import { STANDARD_VARIABLES, VARIABLE_FORMAT_OPTIONS, defaultParamsMappingEntry } from '../ProviderFormTypes'
 
+// ─── Duration URL Table (dynamic rows) ──────────────
+function DurationUrlTable({ prefix, control }: { prefix: string; control: any }) {
+  const { fields, append, remove } = useFieldArray({ control, name: `${prefix}.duration_urls` })
+
+  // Nếu chưa có dòng nào → thêm 3 mặc định (1/7/30)
+  if (fields.length === 0) {
+    setTimeout(() => {
+      append([
+        { days: '1', url: '' },
+        { days: '7', url: '' },
+        { days: '30', url: '' }
+      ])
+    }, 0)
+
+    return null
+  }
+
+  return (
+    <Box sx={{ border: '1px solid #e2e8f0', borderRadius: 2, overflow: 'hidden' }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#f8fafc', px: 1.5, py: 0.75, borderBottom: '1px solid #e2e8f0' }}>
+        <Typography sx={{ fontSize: 12, fontWeight: 600, color: '#334155' }}>URL theo thời hạn</Typography>
+        <Button size='small' startIcon={<Plus size={13} />} onClick={() => append({ days: '', url: '' })}>Thêm</Button>
+      </Box>
+      <Box sx={{ display: 'grid', gridTemplateColumns: '100px 1fr 36px', gap: 1, px: 1.5, py: 0.5, fontSize: 10, fontWeight: 600, color: '#64748b', background: '#f1f5f9' }}>
+        <span>Số ngày</span><span>URL</span><span></span>
+      </Box>
+      {fields.map((field, index) => (
+        <Box key={field.id} sx={{ display: 'grid', gridTemplateColumns: '100px 1fr 36px', gap: 1, alignItems: 'center', px: 1.5, py: 0.5, borderBottom: '1px solid #f1f5f9' }}>
+          <Controller name={`${prefix}.duration_urls.${index}.days`} control={control} render={({ field: f }) => (
+            <CustomTextField {...f} size='small' type='number' placeholder='VD: 7' sx={{ '& input': { fontSize: 13 } }} />
+          )} />
+          <Controller name={`${prefix}.duration_urls.${index}.url`} control={control} render={({ field: f }) => (
+            <CustomTextField {...f} size='small' placeholder='https://api.provider.com/buy-weekly' sx={{ '& input': { fontSize: 12 } }} />
+          )} />
+          {fields.length > 1 ? (
+            <IconButton size='small' color='error' onClick={() => remove(index)} sx={{ p: '2px' }}>
+              <Trash2 size={14} />
+            </IconButton>
+          ) : <span />}
+        </Box>
+      ))}
+    </Box>
+  )
+}
+
 // ─── Pipeline Step 1: API Call ──────────────────────
 
 function StepApiCall({ prefix, control }: BuySectionProps) {
@@ -89,23 +134,9 @@ function StepApiCall({ prefix, control }: BuySectionProps) {
             )} />
           </Grid2>
         ) : (
-          <>
-            <Grid2 size={{ xs: 12, sm: 4 }}>
-              <Controller name={`${prefix}.url_1`} control={control} render={({ field }) => (
-                <CustomTextField {...field} fullWidth label='URL — 1 ngày' placeholder='https://...' />
-              )} />
-            </Grid2>
-            <Grid2 size={{ xs: 12, sm: 4 }}>
-              <Controller name={`${prefix}.url_7`} control={control} render={({ field }) => (
-                <CustomTextField {...field} fullWidth label='URL — 7 ngày' placeholder='https://...' />
-              )} />
-            </Grid2>
-            <Grid2 size={{ xs: 12, sm: 4 }}>
-              <Controller name={`${prefix}.url_30`} control={control} render={({ field }) => (
-                <CustomTextField {...field} fullWidth label='URL — 30 ngày' placeholder='https://...' />
-              )} />
-            </Grid2>
-          </>
+          <Grid2 size={{ xs: 12 }}>
+            <DurationUrlTable prefix={prefix} control={control} />
+          </Grid2>
         )}
 
         {/* Duration param + mapping */}

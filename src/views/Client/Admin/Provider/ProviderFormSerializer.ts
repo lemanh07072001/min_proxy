@@ -132,9 +132,10 @@ export function parseBuySection(buy: any): ApiConfigBuy {
     enabled: true,
     method: buy.method || 'GET',
     url: buy.url || '',
-    url_1: urlByDuration['1'] || '',
-    url_7: urlByDuration['7'] || '',
-    url_30: urlByDuration['30'] || '',
+    // Dynamic duration URLs
+    duration_urls: Object.keys(urlByDuration).length > 0
+      ? Object.entries(urlByDuration).map(([days, url]) => ({ days, url: String(url || '') }))
+      : [],
     use_url_by_duration: !!buy.url_by_duration,
     auth_type: buy.auth_type || 'query',
     auth_param: buy.auth_param || 'key',
@@ -294,7 +295,8 @@ export function parseApiConfig(apiConfig: any): Partial<FormValues> {
 export function buildBuySection(buy: ApiConfigBuy): object | null {
   if (!buy.enabled) return null
 
-  const hasUrl = buy.url || buy.url_1
+  const hasDurationUrls = buy.duration_urls?.some((d: any) => d.days && d.url)
+  const hasUrl = buy.url || hasDurationUrls
   if (!hasUrl) return null
 
   const result: any = {
@@ -304,11 +306,13 @@ export function buildBuySection(buy: ApiConfigBuy): object | null {
     quantity_param: buy.quantity_param,
   }
 
-  if (buy.use_url_by_duration) {
+  if (buy.use_url_by_duration && buy.duration_urls) {
     result.url_by_duration = {} as any
-    if (buy.url_1) result.url_by_duration['1'] = buy.url_1
-    if (buy.url_7) result.url_by_duration['7'] = buy.url_7
-    if (buy.url_30) result.url_by_duration['30'] = buy.url_30
+    buy.duration_urls.forEach((d: any) => {
+      if (d.days && d.url) {
+        result.url_by_duration[String(d.days)] = d.url
+      }
+    })
   } else if (buy.url) {
     result.url = buy.url
   }

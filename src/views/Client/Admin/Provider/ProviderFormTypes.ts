@@ -90,9 +90,7 @@ export interface ApiConfigBuy {
   enabled: boolean
   method: string
   url: string
-  url_1: string
-  url_7: string
-  url_30: string
+  duration_urls: Array<{ days: string; url: string }>
   use_url_by_duration: boolean
   auth_type: string
   auth_param: string
@@ -330,7 +328,7 @@ export const defaultBuy: ApiConfigBuy = {
   enabled: false,
   method: 'GET',
   url: '',
-  url_1: '', url_7: '', url_30: '',
+  duration_urls: [],
   use_url_by_duration: false,
   auth_type: 'query',
   auth_param: 'key',
