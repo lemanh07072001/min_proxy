@@ -2221,10 +2221,6 @@ return <Chip key={val} label={p?.label || val} size='small' />
                             disabled={priceFields.length >= durationOptions.length}
                           >Thêm mốc</Button>
                         </div>
-                        {/* Header */}
-                        <div style={{ display: 'grid', gridTemplateColumns: '130px 110px 110px 90px 80px 30px', gap: 6, padding: '6px 12px', fontSize: '10px', fontWeight: 600, color: '#64748b', background: '#f1f5f9' }}>
-                          <span>Thời gian</span><span>Giá bán</span><span>Giá vốn</span><span>Lãi/lỗ</span><span>SL giảm</span><span></span>
-                        </div>
                         {priceFields.map((field, index) => {
                           const qtyTiers = field.quantity_tiers || []
                           const hasQtyTiers = qtyTiers.length > 0
@@ -2232,54 +2228,42 @@ return <Chip key={val} label={p?.label || val} size='small' />
                           const costPrice = parseFloat(field.cost || '') || 0
                           const profit = sellPrice && costPrice ? sellPrice - costPrice : 0
                           const profitPct = costPrice > 0 ? ((profit / costPrice) * 100) : 0
-                          const isLoss = profit < 0
+                          const profitColor = profit > 0 ? '#16a34a' : profit < 0 ? '#ef4444' : '#94a3b8'
                           return (
-                            <div key={index} style={{ borderBottom: '1px solid #f1f5f9', background: isLoss && sellPrice > 0 ? '#fef2f2' : undefined }}>
-                              {/* Dòng chính */}
-                              <div style={{ display: 'grid', gridTemplateColumns: '130px 110px 110px 90px 80px 30px', gap: 6, alignItems: 'center', padding: '6px 12px' }}>
-                                <div>
-                                  <CustomTextField size='small' select value={field.key} onChange={(e: any) => {
-                                    setPriceFields(prev => prev.map((f, i) => i === index ? { ...f, key: e.target.value } : f))
-                                  }} slotProps={{ select: { displayEmpty: true } }}>
-                                    <MenuItem value=''><em>Chọn</em></MenuItem>
-                                    {durationOptions
-                                      .filter(o => o.value === field.key || !priceFields.some(f => f.key === o.value))
-                                      .map(o => <MenuItem key={o.value} value={o.value}>{o.label}</MenuItem>)}
-                                  </CustomTextField>
-                                  {field.key && durationUrlMap[field.key] && (() => {
-                                    const url = durationUrlMap[field.key]
-                                    const shortUrl = url.length > 30 ? url.replace(/^https?:\/\//, '').slice(0, 28) + '…' : url.replace(/^https?:\/\//, '')
-                                    return (
-                                      <a href={url} target='_blank' rel='noopener noreferrer' title={url}
-                                        style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: '10px', color: '#6366f1', marginTop: 3, textDecoration: 'none', background: '#eef2ff', borderRadius: 4, padding: '1px 6px', maxWidth: '100%', overflow: 'hidden' }}>
-                                        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{shortUrl}</span>
-                                        <span style={{ fontSize: 8, flexShrink: 0 }}>↗</span>
-                                      </a>
-                                    )
-                                  })()}
+                            <div key={index} style={{ borderBottom: '1px solid #e2e8f0', padding: '10px 12px' }}>
+                              {/* Row 1: inputs */}
+                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
+                                <CustomTextField size='small' select value={field.key} onChange={(e: any) => {
+                                  setPriceFields(prev => prev.map((f, i) => i === index ? { ...f, key: e.target.value } : f))
+                                }} slotProps={{ select: { displayEmpty: true } }} sx={{ minWidth: 120, flex: '0 0 auto' }}>
+                                  <MenuItem value=''><em>Chọn</em></MenuItem>
+                                  {durationOptions
+                                    .filter(o => o.value === field.key || !priceFields.some(f => f.key === o.value))
+                                    .map(o => <MenuItem key={o.value} value={o.value}>{o.label}</MenuItem>)}
+                                </CustomTextField>
+                                <div style={{ flex: '1 1 100px', minWidth: 90 }}>
+                                  <div style={{ fontSize: '10px', color: '#64748b', marginBottom: 2 }}>Giá bán</div>
+                                  <CustomTextField size='small' type='number' placeholder='đ' value={field.value} fullWidth
+                                    onChange={(e: any) => setPriceFields(prev => prev.map((f, i) => i === index ? { ...f, value: e.target.value } : f))} />
                                 </div>
-                                <CustomTextField size='small' type='number' placeholder='đ' value={field.value}
-                                  onChange={(e: any) => setPriceFields(prev => prev.map((f, i) => i === index ? { ...f, value: e.target.value } : f))} />
-                                <CustomTextField size='small' type='number' placeholder='đ' value={field.cost || ''}
-                                  onChange={(e: any) => setPriceFields(prev => prev.map((f, i) => i === index ? { ...f, cost: e.target.value } : f))} />
-                                {/* Profit indicator */}
-                                <div style={{ fontSize: '11px', fontWeight: 600, whiteSpace: 'nowrap' }}>
-                                  {sellPrice > 0 && costPrice > 0 ? (
-                                    <>
-                                      <span style={{ color: profit > 0 ? '#16a34a' : profit < 0 ? '#ef4444' : '#94a3b8' }}>
-                                        {profit > 0 ? '+' : ''}{profit.toLocaleString('vi-VN')}đ
-                                      </span>
-                                      <br />
-                                      <span style={{ fontSize: '9px', fontWeight: 400, color: profit > 0 ? '#16a34a' : profit < 0 ? '#ef4444' : '#94a3b8' }}>
-                                        {profitPct > 0 ? '+' : ''}{profitPct.toFixed(1)}%
-                                      </span>
-                                    </>
-                                  ) : (
-                                    <span style={{ color: '#cbd5e1', fontSize: '10px' }}>—</span>
-                                  )}
+                                <div style={{ flex: '1 1 100px', minWidth: 90 }}>
+                                  <div style={{ fontSize: '10px', color: '#64748b', marginBottom: 2 }}>Giá vốn</div>
+                                  <CustomTextField size='small' type='number' placeholder='đ' value={field.cost || ''} fullWidth
+                                    onChange={(e: any) => setPriceFields(prev => prev.map((f, i) => i === index ? { ...f, cost: e.target.value } : f))} />
                                 </div>
+                                {/* Profit badge */}
+                                {sellPrice > 0 && costPrice > 0 ? (
+                                  <div style={{ padding: '4px 10px', borderRadius: 6, background: profit > 0 ? '#f0fdf4' : profit < 0 ? '#fef2f2' : '#f8fafc', border: `1px solid ${profit > 0 ? '#bbf7d0' : profit < 0 ? '#fecaca' : '#e2e8f0'}`, textAlign: 'center', flex: '0 0 auto' }}>
+                                    <div style={{ fontSize: '12px', fontWeight: 700, color: profitColor }}>
+                                      {profit > 0 ? '+' : ''}{profit.toLocaleString('vi-VN')}đ
+                                    </div>
+                                    <div style={{ fontSize: '10px', color: profitColor }}>
+                                      {profitPct > 0 ? '+' : ''}{profitPct.toFixed(1)}%
+                                    </div>
+                                  </div>
+                                ) : null}
                                 <Button size='small' variant={hasQtyTiers ? 'contained' : 'outlined'} color={hasQtyTiers ? 'success' : 'inherit'}
-                                  sx={{ fontSize: '10px', minWidth: 0, px: 1, py: 0.3 }}
+                                  sx={{ fontSize: '10px', minWidth: 0, px: 1, py: 0.3, flex: '0 0 auto' }}
                                   onClick={() => {
                                     if (!hasQtyTiers) {
                                       setPriceFields(prev => prev.map((f, i) => i === index ? { ...f, quantity_tiers: [{ min: '', max: '', price: '', cost: '' }] } : f))
@@ -2289,45 +2273,52 @@ return <Chip key={val} label={p?.label || val} size='small' />
                                   }}>
                                   {hasQtyTiers ? `${qtyTiers.length} mức` : '+ SL'}
                                 </Button>
-                                {priceFields.length > 1 ? (
-                                  <IconButton size='small' color='error' sx={{ p: '2px' }}
+                                {priceFields.length > 1 && (
+                                  <IconButton size='small' color='error' sx={{ p: '2px', flex: '0 0 auto' }}
                                     onClick={() => setPriceFields(prev => prev.filter((_, i) => i !== index))}>
-                                    <X size={13} />
+                                    <X size={14} />
                                   </IconButton>
-                                ) : <span />}
+                                )}
                               </div>
+                              {/* Row 2: URL */}
+                              {field.key && durationUrlMap[field.key] && (
+                                <a href={durationUrlMap[field.key]} target='_blank' rel='noopener noreferrer'
+                                  style={{ display: 'inline-block', fontSize: '11px', color: '#6366f1', marginTop: 6, textDecoration: 'none', wordBreak: 'break-all', lineHeight: 1.4 }}>
+                                  ↗ {durationUrlMap[field.key]}
+                                </a>
+                              )}
                               {/* Sub-rows: qty tiers */}
                               {hasQtyTiers && (
-                                <div style={{ background: '#fafbfc', borderTop: '1px dashed #e2e8f0', padding: '4px 12px 8px 32px' }}>
-                                  <div style={{ display: 'grid', gridTemplateColumns: '70px 70px 100px 100px 70px 30px', gap: 4, fontSize: '9px', color: '#94a3b8', fontWeight: 600, marginBottom: 2 }}>
-                                    <span>Từ SL</span><span>Đến SL</span><span>Giá bán</span><span>Giá vốn</span><span>Lãi/lỗ</span><span></span>
-                                  </div>
+                                <div style={{ background: '#fafbfc', borderTop: '1px dashed #e2e8f0', padding: '6px 12px 8px 16px', marginTop: 6, borderRadius: '0 0 6px 6px' }}>
+                                  <div style={{ fontSize: '10px', color: '#64748b', fontWeight: 600, marginBottom: 4 }}>Giảm giá theo số lượng:</div>
                                   {qtyTiers.map((qt, qIdx) => {
                                     const qtSell = parseFloat(qt.price) || 0
                                     const qtCost = parseFloat(qt.cost) || 0
                                     const qtProfit = qtSell && qtCost ? qtSell - qtCost : 0
-                                    const qtIsLoss = qtProfit < 0
                                     return (
-                                    <div key={qIdx} style={{ display: 'grid', gridTemplateColumns: '70px 70px 100px 100px 70px 30px', gap: 4, alignItems: 'center', marginBottom: 2, background: qtIsLoss && qtSell > 0 ? '#fef2f2' : undefined, borderRadius: 4, padding: '1px 0' }}>
-                                      <CustomTextField size='small' type='number' placeholder='20' value={qt.min}
+                                    <div key={qIdx} style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center', marginBottom: 4 }}>
+                                      <CustomTextField size='small' type='number' placeholder='Từ SL' value={qt.min}
                                         onChange={(e: any) => setPriceFields(prev => prev.map((f, i) => i === index ? {
                                           ...f, quantity_tiers: (f.quantity_tiers || []).map((t, j) => j === qIdx ? { ...t, min: e.target.value } : t)
-                                        } : f))} sx={{ '& input': { fontSize: '11px', p: '4px 8px' } }} />
-                                      <CustomTextField size='small' type='number' placeholder='∞' value={qt.max}
+                                        } : f))} sx={{ width: 70, '& input': { fontSize: '11px', p: '4px 8px' } }} />
+                                      <span style={{ fontSize: '10px', color: '#94a3b8' }}>→</span>
+                                      <CustomTextField size='small' type='number' placeholder='Đến SL' value={qt.max}
                                         onChange={(e: any) => setPriceFields(prev => prev.map((f, i) => i === index ? {
                                           ...f, quantity_tiers: (f.quantity_tiers || []).map((t, j) => j === qIdx ? { ...t, max: e.target.value } : t)
-                                        } : f))} sx={{ '& input': { fontSize: '11px', p: '4px 8px' } }} />
-                                      <CustomTextField size='small' type='number' placeholder='đ' value={qt.price}
+                                        } : f))} sx={{ width: 70, '& input': { fontSize: '11px', p: '4px 8px' } }} />
+                                      <CustomTextField size='small' type='number' placeholder='Giá bán' value={qt.price}
                                         onChange={(e: any) => setPriceFields(prev => prev.map((f, i) => i === index ? {
                                           ...f, quantity_tiers: (f.quantity_tiers || []).map((t, j) => j === qIdx ? { ...t, price: e.target.value } : t)
-                                        } : f))} sx={{ '& input': { fontSize: '11px', p: '4px 8px' } }} />
-                                      <CustomTextField size='small' type='number' placeholder='đ' value={qt.cost}
+                                        } : f))} sx={{ width: 90, '& input': { fontSize: '11px', p: '4px 8px' } }} />
+                                      <CustomTextField size='small' type='number' placeholder='Giá vốn' value={qt.cost}
                                         onChange={(e: any) => setPriceFields(prev => prev.map((f, i) => i === index ? {
                                           ...f, quantity_tiers: (f.quantity_tiers || []).map((t, j) => j === qIdx ? { ...t, cost: e.target.value } : t)
-                                        } : f))} sx={{ '& input': { fontSize: '11px', p: '4px 8px' } }} />
-                                      <span style={{ fontSize: '10px', fontWeight: 600, color: qtProfit > 0 ? '#16a34a' : qtProfit < 0 ? '#ef4444' : '#cbd5e1' }}>
-                                        {qtSell > 0 && qtCost > 0 ? `${qtProfit > 0 ? '+' : ''}${qtProfit.toLocaleString('vi-VN')}đ` : '—'}
-                                      </span>
+                                        } : f))} sx={{ width: 90, '& input': { fontSize: '11px', p: '4px 8px' } }} />
+                                      {qtSell > 0 && qtCost > 0 && (
+                                        <span style={{ fontSize: '10px', fontWeight: 600, color: qtProfit > 0 ? '#16a34a' : qtProfit < 0 ? '#ef4444' : '#94a3b8' }}>
+                                          {qtProfit > 0 ? '+' : ''}{qtProfit.toLocaleString('vi-VN')}đ
+                                        </span>
+                                      )}
                                       <IconButton size='small' sx={{ p: '1px' }} color='error'
                                         onClick={() => setPriceFields(prev => prev.map((f, i) => i === index ? {
                                           ...f, quantity_tiers: (f.quantity_tiers || []).filter((_, j) => j !== qIdx)
