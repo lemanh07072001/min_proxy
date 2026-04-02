@@ -580,8 +580,8 @@ export default function ServiceFormModal({ open, onClose, serviceId, initialData
   const updateMutation = useUpdateServiceType(serviceId)
 
   // Provider duration options — lấy từ api_config NCC
-  const watchedPid = watch('provider_id')
-  const watchedTyp = watch('type')
+  const watchedPid = useWatch({ control, name: 'provider_id' })
+  const watchedTyp = useWatch({ control, name: 'type' })
 
   const providerDurationOptions = useMemo(() => {
     const DEFAULT_OPTIONS = [
