@@ -579,13 +579,44 @@ export default function ServiceFormModal({ open, onClose, serviceId, initialData
   const createMutation = useCreateServiceType()
   const updateMutation = useUpdateServiceType(serviceId)
 
-  // Duration options cho bảng giá cố định
-  // TODO: lấy từ api_config NCC khi có url_by_duration
-  const providerDurationOptions = [
+  // Duration options cho bảng giá cố định — lấy từ NCC nếu có url_by_duration
+  const DEFAULT_DURATION_OPTIONS = [
     { value: '1', label: '1 ngày' }, { value: '3', label: '3 ngày' },
     { value: '7', label: '7 ngày' }, { value: '14', label: '14 ngày' },
     { value: '21', label: '21 ngày' }, { value: '30', label: '30 ngày' }
   ]
+
+  const getDurationOptions = () => {
+    try {
+      const pid = watch('provider_id')
+      const typ = watch('type')
+      const prov = providers?.find((p: any) => String(p.id) === String(pid))
+
+      if (!prov?.api_config) return DEFAULT_DURATION_OPTIONS
+
+      const config = typeof prov.api_config === 'string'
+        ? JSON.parse(prov.api_config)
+        : prov.api_config
+
+      const buyKey = typ === '0' ? 'buy_static' : 'buy_rotating'
+      const urlByDuration = (config?.[buyKey] ?? config?.buy)?.url_by_duration
+
+      if (!urlByDuration || typeof urlByDuration !== 'object' || Object.keys(urlByDuration).length === 0) {
+        return DEFAULT_DURATION_OPTIONS
+      }
+
+      const LABEL_MAP: Record<string, string> = {
+        '1': '1 ngày', '3': '3 ngày', '7': '7 ngày', '14': '14 ngày',
+        '21': '21 ngày', '30': '30 ngày', '60': '60 ngày', '90': '90 ngày',
+      }
+
+      return Object.keys(urlByDuration)
+        .map(key => ({ value: key, label: LABEL_MAP[key] || `${key} ngày` }))
+        .sort((a, b) => Number(a.value) - Number(b.value))
+    } catch {
+      return DEFAULT_DURATION_OPTIONS
+    }
+  }
 
   // Out-of-form state
   const [multiInputFields, setMultiInputFields] = useState<Array<{ key: string; value: string }>>([{ key: '', value: '' }])
@@ -2173,7 +2204,7 @@ return <Chip key={val} label={p?.label || val} size='small' />
                           <span style={{ fontSize: '12px', fontWeight: 600, color: '#334155' }}>Mốc giá theo thời gian</span>
                           <Button size='small' startIcon={<Plus size={13} />}
                             onClick={() => setPriceFields(prev => [...prev, { key: '', value: '', cost: '' }])}
-                            disabled={priceFields.length >= providerDurationOptions.length}
+                            disabled={priceFields.length >= getDurationOptions().length}
                           >Thêm mốc</Button>
                         </div>
                         {/* Header */}
@@ -2191,7 +2222,7 @@ return <Chip key={val} label={p?.label || val} size='small' />
                                   setPriceFields(prev => prev.map((f, i) => i === index ? { ...f, key: e.target.value } : f))
                                 }} slotProps={{ select: { displayEmpty: true } }}>
                                   <MenuItem value=''><em>Chọn</em></MenuItem>
-                                  {providerDurationOptions
+                                  {getDurationOptions()
                                     .filter(o => o.value === field.key || !priceFields.some(f => f.key === o.value))
                                     .map(o => <MenuItem key={o.value} value={o.value}>{o.label}</MenuItem>)}
                                 </CustomTextField>
