@@ -593,46 +593,41 @@ export default function ServiceFormModal({ open, onClose, serviceId, initialData
 
   const [durationOptions, setDurationOptions] = useState(DEFAULT_DURATION_OPTIONS)
 
+  const updateDurationOptions = useCallback((pid?: string, typ?: string) => {
+    try {
+      const prov = providers?.find((p: any) => String(p.id) === String(pid))
+
+      if (!prov?.api_config) { setDurationOptions(DEFAULT_DURATION_OPTIONS); return }
+
+      const config = typeof prov.api_config === 'string' ? JSON.parse(prov.api_config) : prov.api_config
+      const buyKey = typ === '0' ? 'buy_static' : 'buy_rotating'
+      const urlByDuration = (config?.[buyKey] ?? config?.buy)?.url_by_duration
+
+      if (!urlByDuration || typeof urlByDuration !== 'object' || Object.keys(urlByDuration).length === 0) {
+        setDurationOptions(DEFAULT_DURATION_OPTIONS); return
+      }
+
+      setDurationOptions(
+        Object.keys(urlByDuration)
+          .map(key => ({ value: key, label: LABEL_MAP[key] || `${key} ngày` }))
+          .sort((a, b) => Number(a.value) - Number(b.value))
+      )
+    } catch { setDurationOptions(DEFAULT_DURATION_OPTIONS) }
+  }, [providers])
+
   // Subscribe thay đổi provider_id + type → cập nhật duration options
   useEffect(() => {
+    // Chạy 1 lần khi mount/providers load — cho form edit có data sẵn
+    const currentValues = watch()
+    updateDurationOptions(currentValues.provider_id, currentValues.type)
+
     const subscription = watch((values) => {
-      try {
-        const pid = values.provider_id
-        const typ = values.type
-        const prov = providers?.find((p: any) => String(p.id) === String(pid))
-
-        if (!prov?.api_config) {
-          setDurationOptions(DEFAULT_DURATION_OPTIONS)
-
-          return
-        }
-
-        const config = typeof prov.api_config === 'string'
-          ? JSON.parse(prov.api_config)
-          : prov.api_config
-
-        const buyKey = typ === '0' ? 'buy_static' : 'buy_rotating'
-        const urlByDuration = (config?.[buyKey] ?? config?.buy)?.url_by_duration
-
-        if (!urlByDuration || typeof urlByDuration !== 'object' || Object.keys(urlByDuration).length === 0) {
-          setDurationOptions(DEFAULT_DURATION_OPTIONS)
-
-          return
-        }
-
-        setDurationOptions(
-          Object.keys(urlByDuration)
-            .map(key => ({ value: key, label: LABEL_MAP[key] || `${key} ngày` }))
-            .sort((a, b) => Number(a.value) - Number(b.value))
-        )
-      } catch {
-        setDurationOptions(DEFAULT_DURATION_OPTIONS)
-      }
+      updateDurationOptions(values.provider_id, values.type)
     })
 
     return () => subscription.unsubscribe()
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [providers])
+  }, [providers, updateDurationOptions])
 
   // Out-of-form state
   const [multiInputFields, setMultiInputFields] = useState<Array<{ key: string; value: string }>>([{ key: '', value: '' }])
