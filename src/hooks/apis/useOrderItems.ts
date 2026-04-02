@@ -11,7 +11,7 @@ export interface OrderItemRecord {
   status: number // 0=active, 1=inactive, 2=expired
   protocol: string
   proxy?: Record<string, any>
-  allow_ips?: string[]
+  ip_whitelist?: string[]
   expired_at?: string
   created_at?: string
   order_code?: string
@@ -56,13 +56,13 @@ export const useOrderItems = (params: OrderItemsParams, isAdmin = false, enabled
   })
 }
 
-export const useUpdateAllowIps = () => {
+export const useUpdateIpWhitelist = () => {
   const axiosAuth = useAxiosAuth()
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async ({ key, allow_ips }: { key: string; allow_ips: string[] }) => {
-      const res = await axiosAuth.put(`/order-items/${key}/allow-ips`, { allow_ips })
+    mutationFn: async ({ key, ip_whitelist }: { key: string; ip_whitelist: string[] }) => {
+      const res = await axiosAuth.put(`/order-items/${key}/ip-whitelist`, { ip_whitelist })
       return res.data
     },
     onSuccess: () => {

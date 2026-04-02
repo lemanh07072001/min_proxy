@@ -311,7 +311,7 @@ return pct > 0 ? Math.round(pct) : null
       // Auth options
       ...(customUser && { custom_user: customUser, custom_pass: customPass }),
       ...(showAuthOptions && { auth_method: authMethod }),
-      ...(showIpField && allowIp && { allow_ips: allowIp.split(',').map((ip: string) => ip.trim()).filter(Boolean) }),
+      ...(showIpField && allowIp && { ip_whitelist: allowIp.split(',').map((ip: string) => ip.trim()).filter(Boolean) }),
       ...(Object.keys(customFieldValues).length > 0 && { custom_fields: customFieldValues }),
     }
 

@@ -697,7 +697,7 @@ function StepParamsMapping({ prefix, control }: BuySectionProps) {
 
   const replacedLabels: Record<string, string> = {
     protocol: 'Protocol Override', quantity: 'Quantity Param', duration: 'Duration Param',
-    username: 'User Override', password: 'User Override', allow_ips: 'IP Whitelist', auth_token: 'Auth Query',
+    username: 'User Override', password: 'User Override', ip_whitelist: 'IP Whitelist', auth_token: 'Auth Query',
   }
   const replacedConfigs = [...new Set(usedVars.map(v => replacedLabels[v]).filter(Boolean))]
 

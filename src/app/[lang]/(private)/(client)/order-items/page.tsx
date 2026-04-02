@@ -6,7 +6,7 @@ import { Box, Typography, MenuItem, IconButton, Tooltip, Dialog, DialogTitle, Di
 import { Key, RefreshCw, Shield, Search, Copy, Check, ExternalLink, Settings2 } from 'lucide-react'
 import { toast } from 'react-toastify'
 import CustomTextField from '@core/components/mui/TextField'
-import { useOrderItems, useUpdateAllowIps, type OrderItemRecord } from '@/hooks/apis/useOrderItems'
+import { useOrderItems, useUpdateIpWhitelist, type OrderItemRecord } from '@/hooks/apis/useOrderItems'
 import { extractProxyValue, extractProtocol } from '@/utils/protocolProxy'
 
 const STATUS_MAP: Record<number, { label: string; color: string; bg: string }> = {
@@ -33,7 +33,7 @@ export default function ProxyKeysPage() {
   const [editIp, setEditIp] = useState('')
 
   const { data, isLoading, isFetching, refetch } = useOrderItems(appliedFilters, false)
-  const updateIps = useUpdateAllowIps()
+  const updateIps = useUpdateIpWhitelist()
   const items = data?.data ?? []
   const meta = data?.meta
 
@@ -52,7 +52,7 @@ export default function ProxyKeysPage() {
     if (!editItem) return
     const ip = editIp.trim()
     if (ip && !/^(\d{1,3}\.){3}\d{1,3}$/.test(ip)) { toast.error('IP không hợp lệ'); return }
-    updateIps.mutate({ key: editItem.key, allow_ips: ip ? [ip] : [] }, {
+    updateIps.mutate({ key: editItem.key, ip_whitelist: ip ? [ip] : [] }, {
       onSuccess: () => { setEditItem(null); refetch() },
       onError: () => toast.error('Lỗi cập nhật IP'),
     })
@@ -160,8 +160,8 @@ export default function ProxyKeysPage() {
                       <div style={{ fontSize: '10px', color: '#94a3b8', marginTop: 1 }}>{extractProtocol(item.proxy) || (item.protocol || 'http').toUpperCase()}</div>
                     </td>
                     <td style={tdStyle}>
-                      {item.allow_ips?.length ? (
-                        <span style={{ fontSize: '11px', color: '#2563eb', fontFamily: 'monospace' }}>{item.allow_ips[0]}</span>
+                      {item.ip_whitelist?.length ? (
+                        <span style={{ fontSize: '11px', color: '#2563eb', fontFamily: 'monospace' }}>{item.ip_whitelist[0]}</span>
                       ) : <span style={{ color: '#cbd5e1', fontSize: '11px' }}>—</span>}
                     </td>
                     <td style={tdStyle}>
@@ -182,7 +182,7 @@ export default function ProxyKeysPage() {
                     <td style={{ ...tdStyle, textAlign: 'center' }}>
                       {item.status === 0 && (
                         <Tooltip title='Cập nhật IP'>
-                          <IconButton size='small' onClick={() => { setEditItem(item); setEditIp((item.allow_ips || [])[0] || '') }}>
+                          <IconButton size='small' onClick={() => { setEditItem(item); setEditIp((item.ip_whitelist || [])[0] || '') }}>
                             <Settings2 size={14} color='#64748b' />
                           </IconButton>
                         </Tooltip>

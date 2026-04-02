@@ -233,7 +233,7 @@ export function parseApiConfig(apiConfig: any): Partial<FormValues> {
   if (!apiConfig) return {}
 
   const rotate = apiConfig.rotate || {}
-  const ipCfg = apiConfig.ip_config || {}
+  const ipCfg = apiConfig.ip_whitelist || {}
 
   const buyRotating = apiConfig.buy_rotating || apiConfig.buy || null
   const buyStatic = apiConfig.buy_static || null
@@ -259,8 +259,8 @@ export function parseApiConfig(apiConfig: any): Partial<FormValues> {
           }))
         : [],
     },
-    ip_config: {
-      enabled: !!apiConfig.ip_config,
+    ip_whitelist: {
+      enabled: !!apiConfig.ip_whitelist,
       mode: ipCfg.mode || 'on_rotate',
       max_ips: ipCfg.max_ips || 1,
       param: ipCfg.param || 'ip',
@@ -530,12 +530,12 @@ export function buildApiConfig(form: FormValues): object | null {
     }
   }
 
-  if (form.ip_config.enabled) {
-    config.ip_config = {
-      mode: form.ip_config.mode,
-      max_ips: Number(form.ip_config.max_ips) || 1,
-      param: form.ip_config.param,
-      param_format: form.ip_config.param_format,
+  if (form.ip_whitelist.enabled) {
+    config.ip_whitelist = {
+      mode: form.ip_whitelist.mode,
+      max_ips: Number(form.ip_whitelist.max_ips) || 1,
+      param: form.ip_whitelist.param,
+      param_format: form.ip_whitelist.param_format,
     }
   }
 

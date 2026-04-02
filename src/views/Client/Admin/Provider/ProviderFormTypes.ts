@@ -27,7 +27,7 @@ export interface ParamsMappingValueMap {
 }
 
 export interface ParamsMappingEntry {
-  variable: string         // biến chuẩn: protocol, quantity, duration, username, password, allow_ips, auth_token, ip_version
+  variable: string         // biến chuẩn: protocol, quantity, duration, username, password, ip_whitelist, auth_token, ip_version
   param: string            // tên param gửi NCC
   value_map: ParamsMappingValueMap[]  // bảng chuyển giá trị (VD: http→1)
   default_value: string    // giá trị mặc định nếu biến null
@@ -204,7 +204,7 @@ export interface FormValues {
   buy_rotating: ApiConfigBuy
   buy_static: ApiConfigBuy
   rotate: ApiConfigRotate
-  ip_config: IpConfig
+  ip_whitelist: IpConfig
   renew: RenewConfig
 }
 
@@ -264,7 +264,7 @@ export const STANDARD_VARIABLES = [
   { value: 'duration',   label: 'Thời hạn (ngày)', source: 'Khách chọn khi mua', example: '1, 7, 30' },
   { value: 'username',   label: 'Username proxy',  source: 'Khách tự nhập',      example: 'myuser' },
   { value: 'password',   label: 'Password proxy',  source: 'Khách tự nhập',      example: 'mypass' },
-  { value: 'allow_ips',  label: 'IP whitelist',    source: 'Khách tự nhập',      example: '1.2.3.4, 5.6.7.8', hasFormat: true },
+  { value: 'ip_whitelist', label: 'IP whitelist',    source: 'Khách tự nhập',      example: '1.2.3.4, 5.6.7.8', hasFormat: true },
   { value: 'auth_token', label: 'Token API',       source: 'Tự động từ cấu hình', example: 'abc123...' },
   { value: 'ip_version', label: 'IP version',      source: 'Tự động từ cấu hình', example: 'v4, v6' },
 ]
@@ -389,7 +389,7 @@ export const defaultValues: FormValues = {
     double_ampersand: false,
     rotate_params: [],
   },
-  ip_config: {
+  ip_whitelist: {
     enabled: false,
     mode: 'on_rotate',
     max_ips: 1,

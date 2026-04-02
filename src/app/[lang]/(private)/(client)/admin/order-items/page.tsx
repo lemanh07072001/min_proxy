@@ -153,8 +153,8 @@ export default function AdminProxyKeysPage() {
                       <div style={{ fontSize: '9px', color: '#94a3b8' }}>{extractProtocol(item.proxy) || (item.protocol || 'http').toUpperCase()}</div>
                     </td>
                     <td style={tdStyle}>
-                      {item.allow_ips?.length ? (
-                        <span style={{ fontSize: '10px', color: '#2563eb', fontFamily: 'monospace' }}>{item.allow_ips[0]}</span>
+                      {item.ip_whitelist?.length ? (
+                        <span style={{ fontSize: '10px', color: '#2563eb', fontFamily: 'monospace' }}>{item.ip_whitelist[0]}</span>
                       ) : <span style={{ color: '#cbd5e1', fontSize: '10px' }}>—</span>}
                     </td>
                     <td style={tdStyle}>

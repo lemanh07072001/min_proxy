@@ -9,7 +9,7 @@ import FieldHint from '../components/FieldHint'
 import type { SectionProps } from '../ProviderFormTypes'
 
 export default function IpWhitelistSection({ control }: SectionProps) {
-  const enabled = useWatch({ control, name: 'ip_config.enabled' })
+  const enabled = useWatch({ control, name: 'ip_whitelist.enabled' })
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -26,7 +26,7 @@ export default function IpWhitelistSection({ control }: SectionProps) {
       </Box>
 
       <Controller
-        name='ip_config.enabled'
+        name='ip_whitelist.enabled'
         control={control}
         render={({ field: { value, onChange, ...field } }) => (
           <CustomTextField
@@ -54,7 +54,7 @@ export default function IpWhitelistSection({ control }: SectionProps) {
           <Box sx={{ p: 2 }}>
             <Grid2 container spacing={2}>
               <Grid2 size={{ xs: 12, sm: 6 }}>
-                <Controller name='ip_config.mode' control={control} render={({ field }) => (
+                <Controller name='ip_whitelist.mode' control={control} render={({ field }) => (
                   <CustomTextField {...field} fullWidth select label='Gửi IP cho NCC khi nào?'>
                     <MenuItem value='on_buy'>Khi mua — gửi 1 lần lúc tạo đơn</MenuItem>
                     <MenuItem value='on_rotate'>Mỗi lần xoay — gửi kèm request xoay</MenuItem>
@@ -62,17 +62,17 @@ export default function IpWhitelistSection({ control }: SectionProps) {
                 )} />
               </Grid2>
               <Grid2 size={{ xs: 6, sm: 3 }}>
-                <Controller name='ip_config.max_ips' control={control} render={({ field }) => (
+                <Controller name='ip_whitelist.max_ips' control={control} render={({ field }) => (
                   <CustomTextField {...field} fullWidth type='number' label='Tối đa bao nhiêu IP?' placeholder='1' helperText='NCC cho phép khai báo bao nhiêu IP' />
                 )} />
               </Grid2>
               <Grid2 size={{ xs: 6, sm: 3 }}>
-                <Controller name='ip_config.param' control={control} render={({ field }) => (
+                <Controller name='ip_whitelist.param' control={control} render={({ field }) => (
                   <CustomTextField {...field} fullWidth label='NCC gọi param IP là gì?' placeholder='ip' helperText='VD: ip, allowed_ips, whitelist' />
                 )} />
               </Grid2>
               <Grid2 size={{ xs: 12, sm: 6 }}>
-                <Controller name='ip_config.param_format' control={control} render={({ field }) => (
+                <Controller name='ip_whitelist.param_format' control={control} render={({ field }) => (
                   <CustomTextField {...field} fullWidth select label='Format gửi IP'>
                     <MenuItem value='single'>Đơn — ip=1.2.3.4 (chỉ 1 IP)</MenuItem>
                     <MenuItem value='comma'>Nối bằng dấu phẩy — ip=1.2.3.4,5.6.7.8</MenuItem>

@@ -199,7 +199,7 @@ export default function OrderDetailModal({ isOpen, onClose, orderData, isLoading
           const proxys = row.original.proxy || row.original.proxys
           const text = getProxyText(row.original)
           const protocol = row.original.protocol || extractProtocol(proxys) || '-'
-          const allowIps = row.original.allow_ips
+          const allowIps = row.original.ip_whitelist
           return (
             <div style={{ fontSize: '11px' }}>
               <div style={{ fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={text}>

@@ -63,7 +63,7 @@ export default function ModalAddProvider({ open, onClose, type, providerData }: 
   const buyRotatingEnabled = useWatch({ control, name: 'buy_rotating.enabled' })
   const buyStaticEnabled = useWatch({ control, name: 'buy_static.enabled' })
   const rotateEnabled = useWatch({ control, name: 'rotate.enabled' })
-  const ipEnabled = useWatch({ control, name: 'ip_config.enabled' })
+  const ipEnabled = useWatch({ control, name: 'ip_whitelist.enabled' })
   const renewEnabled = useWatch({ control, name: 'renew.enabled' })
 
   const tabEnabled = [

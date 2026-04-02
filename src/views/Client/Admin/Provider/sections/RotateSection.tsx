@@ -59,7 +59,7 @@ function RotateParamRow({ index, control, onRemove }: { index: number; control: 
       )} />
       {source === 'order_items' ? (
         <Controller name={`rotate.rotate_params.${index}.field` as any} control={control} render={({ field }) => (
-          <CustomTextField {...field} size='small' placeholder='Field (VD: provider_key, allow_ips)' sx={{ flex: 1, minWidth: 150 }} />
+          <CustomTextField {...field} size='small' placeholder='Field (VD: provider_key, ip_whitelist)' sx={{ flex: 1, minWidth: 150 }} />
         )} />
       ) : (
         <Controller name={`rotate.rotate_params.${index}.value` as any} control={control} render={({ field }) => (
