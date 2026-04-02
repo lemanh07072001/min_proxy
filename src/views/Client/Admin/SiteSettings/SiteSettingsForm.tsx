@@ -230,7 +230,7 @@ export default function SiteSettingsForm() {
 
   const { data: supplierData } = useSupplierSettings()
   const updateSupplierMutation = useUpdateSupplierSettings()
-  const [supplier, setSupplier] = useState({ supplier_api_url: '', supplier_api_key: '' })
+  const [supplier, setSupplier] = useState({ provider_api_url: '', provider_api_key: '' })
   const [supplierTestResult, setSupplierTestResult] = useState<any>(null)
 
   const { data: bankData } = useBankSettings()
@@ -319,8 +319,8 @@ export default function SiteSettingsForm() {
   useEffect(() => {
     if (supplierData) {
       setSupplier({
-        supplier_api_url: supplierData.supplier_api_url || '',
-        supplier_api_key: supplierData.supplier_api_key || '',
+        provider_api_url: supplierData.provider_api_url || supplierData.supplier_api_url || '',
+        provider_api_key: supplierData.provider_api_key || supplierData.supplier_api_key || '',
       })
     }
   }, [supplierData])
@@ -1849,16 +1849,16 @@ export default function SiteSettingsForm() {
               <TextField
                 size='small'
                 label='Supplier API URL'
-                value={supplier.supplier_api_url}
-                onChange={e => setSupplier(prev => ({ ...prev, supplier_api_url: e.target.value }))}
+                value={supplier.provider_api_url}
+                onChange={e => setSupplier(prev => ({ ...prev, provider_api_url: e.target.value }))}
                 placeholder='https://app.mktproxy.com/api'
                 fullWidth
               />
               <TextField
                 size='small'
                 label='API Key'
-                value={supplier.supplier_api_key}
-                onChange={e => setSupplier(prev => ({ ...prev, supplier_api_key: e.target.value }))}
+                value={supplier.provider_api_key}
+                onChange={e => setSupplier(prev => ({ ...prev, provider_api_key: e.target.value }))}
                 placeholder='mkt_xxxxx'
                 fullWidth
               />
@@ -1867,7 +1867,7 @@ export default function SiteSettingsForm() {
                   size='small'
                   variant='contained'
                   onClick={() => {
-                    if (!supplier.supplier_api_url || !supplier.supplier_api_key) {
+                    if (!supplier.provider_api_url || !supplier.provider_api_key) {
                       toast.error('Vui lòng nhập đầy đủ URL và API Key')
 
                       return

@@ -3,6 +3,9 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import useAxiosAuth from '@/hocs/useAxiosAuth'
 
 export interface SupplierSettings {
+  provider_api_url: string | null
+  provider_api_key: string | null
+  // backward compat
   supplier_api_url: string | null
   supplier_api_key: string | null
   configured: boolean
@@ -29,8 +32,8 @@ export const useUpdateSupplierSettings = () => {
 
   return useMutation({
     mutationFn: async (data: {
-      supplier_api_url: string
-      supplier_api_key: string
+      provider_api_url: string
+      provider_api_key: string
     }) => {
       const res = await axiosAuth.post('/admin/update-supplier-settings', data)
 
