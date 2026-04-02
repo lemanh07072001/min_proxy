@@ -793,7 +793,7 @@ return <Chip key={val} label={protocol?.label || val} size='small' />
                   render={({ field }) => (
                     <CustomTextField
                       {...field}
-                      rows={4}
+                      rows={3}
                       fullWidth
                       multiline
                       label='Mô tả sản phẩm'
@@ -801,6 +801,7 @@ return <Chip key={val} label={protocol?.label || val} size='small' />
                       id='textarea-note'
                       error={!!errors.note}
                       helperText={errors.note?.message}
+                      sx={{ '& .MuiInputBase-inputMultiline': { resize: 'vertical' } }}
                     />
                   )}
                 />
