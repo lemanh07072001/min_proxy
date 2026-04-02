@@ -698,6 +698,10 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
                             setCheckedProduct(data)
                             setSelectedSupplierId(data.supplier_id)
                             setSelectedSupplierCode(data.supplier_code || selectedSupplierCode)
+                            // Auto-fill auth_type nếu admin chưa chọn
+                            if (data.auth_type && !watch('auth_type')) {
+                              setValue('auth_type', data.auth_type)
+                            }
                           },
                           onError: () => setCheckedProduct(null),
                         })
@@ -1304,7 +1308,13 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
                       name='auth_type'
                       control={control}
                       render={({ field }) => (
-                        <CustomTextField {...field} fullWidth select label='Xác thực'>
+                        <CustomTextField {...field} fullWidth select label='Xác thực'
+                          helperText={checkedProduct?.auth_type && checkedProduct.auth_type !== field.value
+                            ? `⚠ Site mẹ yêu cầu: ${checkedProduct.auth_type === 'ip_whitelist' ? 'IP Whitelist' : checkedProduct.auth_type === 'both' ? 'Cả hai' : 'User:Pass'}`
+                            : checkedProduct?.auth_type ? `✓ Đồng bộ với site mẹ` : undefined}
+                          sx={checkedProduct?.auth_type && checkedProduct.auth_type !== field.value
+                            ? { '& .MuiFormHelperText-root': { color: '#dc2626' } }
+                            : checkedProduct?.auth_type ? { '& .MuiFormHelperText-root': { color: '#16a34a' } } : {}}>
                           <MenuItem value=''><em>— Không chọn —</em></MenuItem>
                           <MenuItem value='userpass'>User:Pass</MenuItem>
                           <MenuItem value='ip_whitelist'>IP Whitelist</MenuItem>
