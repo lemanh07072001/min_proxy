@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation'
 import { Box, Typography, MenuItem, IconButton, Tooltip, Card, Button } from '@mui/material'
 import { Key, RefreshCw, Shield, Search, Copy, Check, ExternalLink, Clock, User } from 'lucide-react'
 import CustomTextField from '@core/components/mui/TextField'
-import { useOrderItems, type OrderItemRecord } from '@/hooks/apis/useOrderItems'
+import { useOrderItems, useUnlockRotate, type OrderItemRecord } from '@/hooks/apis/useOrderItems'
 import { extractProxyValue, extractProtocol } from '@/utils/protocolProxy'
 
 const STATUS_MAP: Record<number, { label: string; color: string; bg: string }> = {
@@ -31,6 +31,7 @@ export default function AdminProxyKeysPage() {
   const [copied, setCopied] = useState<string | null>(null)
 
   const { data, isLoading, isFetching, refetch } = useOrderItems(appliedFilters, true)
+  const unlockRotate = useUnlockRotate()
   const items = data?.data ?? []
   const meta = data?.meta
 
@@ -175,6 +176,13 @@ export default function AdminProxyKeysPage() {
                         <span style={{ fontSize: '10px', color: item.next_rotate_seconds > 0 ? '#f59e0b' : '#16a34a', display: 'inline-flex', alignItems: 'center', gap: 2 }}>
                           <Clock size={10} />
                           {item.next_rotate_seconds > 0 ? `${item.next_rotate_seconds}s` : 'OK'}
+                          {item.next_rotate_seconds >= 60 && (
+                            <Tooltip title='Gỡ lock xoay'>
+                              <IconButton size='small' sx={{ p: 0, ml: 0.5 }} onClick={() => unlockRotate.mutate(item.key, { onSuccess: () => refetch() })}>
+                                <RefreshCw size={10} color='#dc2626' />
+                              </IconButton>
+                            </Tooltip>
+                          )}
                         </span>
                       ) : <span style={{ color: '#cbd5e1', fontSize: '10px' }}>—</span>}
                     </td>
