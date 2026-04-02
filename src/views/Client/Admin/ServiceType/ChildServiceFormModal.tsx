@@ -672,8 +672,8 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
                     onChange={(e: any) => { setSelectedSupplierCode(e.target.value || null); if (isEditMode) setCheckedProduct(null) }}
                     placeholder={isEditMode ? 'Nhập code SP trên site mẹ' : 'Tự động khi chọn SP'}
                     helperText={
-                      checkedProduct && isEditMode
-                        ? `✓ ${checkedProduct.name} — ${Object.keys(checkedProduct.provider_prices || {}).length} mốc giá`
+                      checkedProduct
+                        ? `✓ ${checkedProduct.name} (ID: ${checkedProduct.supplier_id}) — ${Object.keys(checkedProduct.provider_prices || {}).length} mốc giá`
                         : selectedSupplierId ? `ID trên site mẹ: ${selectedSupplierId}` : 'Dùng để mua hàng từ site mẹ'
                     }
                     sx={{
@@ -1049,27 +1049,41 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
                 const unitLabel = timeUnit === 'month' ? 'tháng' : 'ngày'
 
                 // Đồng bộ giá nhập từ supplier product
+                const applySyncData = (product: any) => {
+                  if (parentIsPerUnit && parentCostPerDay > 0) {
+                    setPriceFields(prev => prev.map(p => ({
+                      ...p,
+                      cost: String((parseInt(p.key) || 0) * parentCostPerDay)
+                    })))
+                    setSyncStatus('done')
+                  } else if (product?.provider_prices) {
+                    const sp = product.provider_prices
+                    setPriceFields(prev => prev.map(p => ({
+                      ...p,
+                      cost: String(sp[p.key] || p.cost || '')
+                    })))
+                    setSyncStatus('done')
+                  } else {
+                    setSyncStatus('error')
+                  }
+                  setTimeout(() => setSyncStatus('idle'), 2000)
+                }
+
                 const handleSyncCost = () => {
                   setSyncStatus('loading')
-                  setTimeout(() => {
-                    if (parentIsPerUnit && parentCostPerDay > 0) {
-                      setPriceFields(prev => prev.map(p => ({
-                        ...p,
-                        cost: String((parseInt(p.key) || 0) * parentCostPerDay)
-                      })))
-                      setSyncStatus('done')
-                    } else if (selectedProduct?.provider_prices) {
-                      const sp = selectedProduct.provider_prices
-                      setPriceFields(prev => prev.map(p => ({
-                        ...p,
-                        cost: String(sp[p.key] || p.cost || '')
-                      })))
-                      setSyncStatus('done')
-                    } else {
-                      setSyncStatus('error')
-                    }
-                    setTimeout(() => setSyncStatus('idle'), 2000)
-                  }, 800)
+                  // Nếu chưa check hoặc code đã đổi → fetch lại trước khi sync
+                  if (!selectedProduct && selectedSupplierCode) {
+                    checkProductMutation.mutate(selectedSupplierCode, {
+                      onSuccess: (data) => {
+                        setCheckedProduct(data)
+                        setSelectedSupplierId(data.supplier_id)
+                        applySyncData(data)
+                      },
+                      onError: () => { setSyncStatus('error'); setTimeout(() => setSyncStatus('idle'), 2000) },
+                    })
+                  } else {
+                    setTimeout(() => applySyncData(selectedProduct), 500)
+                  }
                 }
 
                 return (
