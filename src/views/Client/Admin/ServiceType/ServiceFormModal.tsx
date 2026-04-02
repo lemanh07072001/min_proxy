@@ -590,6 +590,8 @@ export default function ServiceFormModal({ open, onClose, serviceId, initialData
     try {
       const pid = watch('provider_id')
       const typ = watch('type')
+      console.log('[getDurationOptions]', { pid, typ, providersCount: providers?.length })
+      const typ = watch('type')
       const prov = providers?.find((p: any) => String(p.id) === String(pid))
 
       if (!prov?.api_config) return DEFAULT_DURATION_OPTIONS
