@@ -579,47 +579,13 @@ export default function ServiceFormModal({ open, onClose, serviceId, initialData
   const createMutation = useCreateServiceType()
   const updateMutation = useUpdateServiceType(serviceId)
 
-  // Provider duration options — lấy từ api_config NCC
-  const watchedPid = useWatch({ control, name: 'provider_id' })
-  const watchedTyp = useWatch({ control, name: 'type' })
-
-  const providerDurationOptions = useMemo(() => {
-    const DEFAULT_OPTIONS = [
-      { value: '1', label: '1 ngày' }, { value: '3', label: '3 ngày' },
-      { value: '7', label: '7 ngày' }, { value: '14', label: '14 ngày' },
-      { value: '21', label: '21 ngày' }, { value: '30', label: '30 ngày' }
-    ]
-
-    try {
-      const prov = providers?.find((p: any) => String(p.id) === String(watchedPid))
-
-      if (!prov?.api_config) return DEFAULT_OPTIONS
-
-      const config = typeof prov.api_config === 'string'
-        ? JSON.parse(prov.api_config)
-        : prov.api_config
-
-      const buyKey = watchedTyp === '0' ? 'buy_static' : 'buy_rotating'
-      const buyConfig = config?.[buyKey] ?? config?.buy ?? null
-      const urlByDuration = buyConfig?.url_by_duration
-
-      if (!urlByDuration || typeof urlByDuration !== 'object' || Object.keys(urlByDuration).length === 0) {
-        return DEFAULT_OPTIONS
-      }
-
-      const LABEL_MAP: Record<string, string> = {
-        '1': '1 ngày', '3': '3 ngày', '7': '7 ngày', '14': '14 ngày',
-        '21': '21 ngày', '30': '30 ngày', '60': '60 ngày', '90': '90 ngày',
-        '180': '180 ngày', '365': '365 ngày'
-      }
-
-      return Object.keys(urlByDuration)
-        .map(key => ({ value: key, label: LABEL_MAP[key] || `${key} ngày` }))
-        .sort((a, b) => Number(a.value) - Number(b.value))
-    } catch {
-      return DEFAULT_OPTIONS
-    }
-  }, [watchedPid, watchedTyp, providers])
+  // Duration options cho bảng giá cố định
+  // TODO: lấy từ api_config NCC khi có url_by_duration
+  const providerDurationOptions = [
+    { value: '1', label: '1 ngày' }, { value: '3', label: '3 ngày' },
+    { value: '7', label: '7 ngày' }, { value: '14', label: '14 ngày' },
+    { value: '21', label: '21 ngày' }, { value: '30', label: '30 ngày' }
+  ]
 
   // Out-of-form state
   const [multiInputFields, setMultiInputFields] = useState<Array<{ key: string; value: string }>>([{ key: '', value: '' }])
