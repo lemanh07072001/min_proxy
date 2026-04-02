@@ -651,6 +651,8 @@ export default function ServiceFormModal({ open, onClose, serviceId, initialData
   const [allowCustomAuth, setAllowCustomAuth] = useState(false)
   const [requireIp, setRequireIp] = useState(false)
   const [maxIps, setMaxIps] = useState(1)
+  const [providerAuthType, setProviderAuthType] = useState<string | null>(null) // auth_type gốc từ site mẹ
+  const [providerMaxIps, setProviderMaxIps] = useState<number | null>(null) // max_ips gốc từ site mẹ
   const [renewable, setRenewable] = useState(false)
   const [renewalDuration, setRenewalDuration] = useState('')
   const [allowExpiredRenew, setAllowExpiredRenew] = useState('')
@@ -831,6 +833,8 @@ return { values: {}, errors: formattedErrors }
       setAllowCustomAuth(!!meta.allow_custom_auth)
       setRequireIp(!!meta.require_ip)
       setMaxIps(meta.max_ips || 1)
+      setProviderAuthType(meta.provider_auth_type || null)
+      setProviderMaxIps(meta.provider_max_ips || meta.max_ips || null)
       setRenewable(!!meta.renewable)
       setRenewalDuration(meta.renewal_duration || '')
       setAllowExpiredRenew(meta.allow_expired_renew != null ? String(meta.allow_expired_renew) : '')
@@ -982,6 +986,8 @@ return { values: {}, errors: formattedErrors }
       response_mapping: responseMappingRows.filter(r => r.from && r.to).length > 0
         ? responseMappingRows.filter(r => r.from && r.to).map(r => ({ from: r.from, to: r.to, store: r.store }))
         : undefined,
+      provider_auth_type: providerAuthType || undefined,
+      provider_max_ips: providerMaxIps || undefined,
     }
 
     const submitData: any = {
@@ -1569,14 +1575,33 @@ return <Chip key={val} label={p?.label || val} size='small' />
                   <Controller
                     name='auth_type'
                     control={control}
-                    render={({ field }) => (
-                      <CustomTextField {...field} fullWidth select label='Xác thực' value={field.value || ''}>
-                        <MenuItem value=''><em>—</em></MenuItem>
-                        <MenuItem value='userpass'>User:Pass</MenuItem>
-                        <MenuItem value='ip_whitelist'>IP Whitelist</MenuItem>
-                        <MenuItem value='both'>User:Pass + IP</MenuItem>
-                      </CustomTextField>
-                    )}
+                    render={({ field }) => {
+                      // Site con: không được nới rộng hơn auth_type site mẹ
+                      const locked = isChild && !!providerAuthType && providerAuthType !== 'both'
+                      return (
+                        <CustomTextField
+                          {...field} fullWidth select label='Xác thực' value={field.value || ''}
+                          disabled={locked}
+                          helperText={locked ? `Site mẹ bắt buộc: ${providerAuthType === 'ip_whitelist' ? 'IP Whitelist' : 'User:Pass'}` : undefined}
+                        >
+                          {isChild && providerAuthType === 'both' ? (
+                            // Site mẹ cho chọn cả 2 → site con được thu hẹp
+                            [
+                              <MenuItem key='both' value='both'>User:Pass + IP (giữ nguyên)</MenuItem>,
+                              <MenuItem key='userpass' value='userpass'>Chỉ User:Pass</MenuItem>,
+                              <MenuItem key='ip_whitelist' value='ip_whitelist'>Chỉ IP Whitelist</MenuItem>,
+                            ]
+                          ) : (
+                            [
+                              <MenuItem key='' value=''><em>—</em></MenuItem>,
+                              <MenuItem key='userpass' value='userpass'>User:Pass</MenuItem>,
+                              <MenuItem key='ip_whitelist' value='ip_whitelist'>IP Whitelist</MenuItem>,
+                              <MenuItem key='both' value='both'>User:Pass + IP</MenuItem>,
+                            ]
+                          )}
+                        </CustomTextField>
+                      )
+                    }}
                   />
                 </Grid2>
 
@@ -1667,8 +1692,9 @@ return <Chip key={val} label={p?.label || val} size='small' />
                     <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 8 }}>
                       <div style={{ fontSize: '12px', color: '#475569' }}>Số IP tối đa:</div>
                       <select value={maxIps} onChange={e => setMaxIps(Number(e.target.value))} style={{ padding: '4px 8px', borderRadius: 6, border: '1px solid #d1d5db', fontSize: '12px' }}>
-                        {[1, 2, 3, 5, 10].map(n => <option key={n} value={n}>{n} IP</option>)}
+                        {[1, 2, 3, 5, 10].filter(n => !isChild || !providerMaxIps || n <= providerMaxIps).map(n => <option key={n} value={n}>{n} IP</option>)}
                       </select>
+                      {isChild && providerMaxIps && <span style={{ fontSize: '11px', color: '#94a3b8' }}>(site mẹ tối đa {providerMaxIps})</span>}
                     </div>
                     <div style={{ padding: '8px 12px', borderRadius: 8, fontSize: '12px', border: '1px solid', background: requireIp ? '#fef2f2' : '#f0fdf4', borderColor: requireIp ? '#fecaca' : '#bbf7d0' }}>
                       {requireIp ? (
