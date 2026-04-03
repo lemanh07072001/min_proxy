@@ -44,6 +44,46 @@ mktProxies/          ← mở workspace TẠI ĐÂY
         └── bug_*.md      ← bugs đang xử lý
 ```
 
+## Chạy local (dev)
+
+**Khi user hỏi "chạy FE như nào":**
+
+```bash
+cd FE
+cp .env.example .env.development    # Lần đầu
+# Sửa: API_URL, NEXT_PUBLIC_API_URL, NEXTAUTH_URL, NEXTAUTH_SECRET
+npm install
+npm run dev                          # → http://localhost:3000
+```
+
+> `NEXT_PUBLIC_*` embed lúc build → production đổi env phải `npm run build` lại.
+> `.env.production` ghi đè `.env` khi build production.
+
+## Chạy BE
+
+Nếu BE chưa clone → hướng dẫn:
+```bash
+git clone https://gitlab.com/longlv197/proxy.git ../BE
+```
+
+```bash
+cd ../BE
+cp .env.example .env       # Lần đầu
+# Sửa .env: DB_*, DB_MONGO_*, REDIS_*, JWT_SECRET, SITE_MASTER_KEY
+composer install
+php artisan key:generate    # Lần đầu
+php artisan jwt:secret      # Lần đầu
+php artisan migrate
+php artisan serve           # → http://127.0.0.1:8000
+```
+
+Workers (cần nếu test mua/xoay/gia hạn):
+```bash
+php artisan place-order              # Xử lý đơn mua
+php artisan scan-rotate-proxies      # Quét proxy cần xoay
+php artisan auto-rotate-proxies      # Worker xoay proxy
+```
+
 ## Quy tắc code
 
 - Giao tiếp **tiếng Việt**
