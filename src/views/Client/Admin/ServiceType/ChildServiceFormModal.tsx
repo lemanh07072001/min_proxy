@@ -1098,10 +1098,13 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
 
                 // Đồng bộ giá nhập từ supplier product
                 const applySyncData = (product: any) => {
-                  if (parentIsPerUnit && parentCostPerDay > 0) {
+                  if (parentIsPerUnit && product?.price_per_unit) {
+                    const newCostPerDay = parseInt(product.price_per_unit) || 0
+
+                    setCostPerUnit(String(newCostPerDay))
                     setPriceFields(prev => prev.map(p => ({
                       ...p,
-                      cost: String((parseInt(p.key) || 0) * parentCostPerDay)
+                      cost: String((parseInt(p.key) || 0) * newCostPerDay)
                     })))
                     setSyncStatus('done')
                   } else if (product?.provider_prices) {
@@ -1128,8 +1131,8 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
 
                 const handleSyncCost = () => {
                   setSyncStatus('loading')
-                  // Nếu chưa check hoặc code đã đổi → fetch lại trước khi sync
-                  if (!selectedProduct && selectedSupplierCode) {
+                  // Luôn gọi API site mẹ lấy giá mới nhất
+                  if (selectedSupplierCode) {
                     checkProductMutation.mutate(selectedSupplierCode, {
                       onSuccess: (data) => {
                         setCheckedProduct(data)
@@ -1139,7 +1142,8 @@ export default function ChildServiceFormModal({ open, onClose, serviceId, initia
                       onError: () => { setSyncStatus('error'); setTimeout(() => setSyncStatus('idle'), 2000) },
                     })
                   } else {
-                    setTimeout(() => applySyncData(selectedProduct), 500)
+                    setSyncStatus('error')
+                    setTimeout(() => setSyncStatus('idle'), 2000)
                   }
                 }
 
